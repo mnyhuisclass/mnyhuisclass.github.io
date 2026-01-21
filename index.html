@@ -13,7 +13,7 @@
             color: #333;
         }
 
-        /* --- 2. NAVIGATION BAR (NEW!) --- */
+        /* --- 2. NAVIGATION BAR --- */
         .navbar {
             overflow: hidden;
             background-color: #333; /* Dark Grey */
@@ -118,13 +118,18 @@
             text-decoration: none;
             border-radius: 5px;
         }
+        .btn:hover {
+            background-color: #219150;
+        }
     </style>
 </head>
 <body>
 
+    <!-- NAVIGATION BAR -->
     <div class="navbar">
         <a href="index.html">Home</a>
         
+        <!-- THE DROPDOWN MENU -->
         <div class="dropdown">
             <button class="dropbtn">Materials ▼</button>
             <div class="dropdown-content">
@@ -143,15 +148,25 @@
     </header>
 
     <div class="container">
+        <!-- CARD 1: GAMES -->
         <div class="card">
             <h2>🎮 Learning Games</h2>
-            <p>Fun browser-based games.</p>
+            <p>Fun browser-based games to practice math and logic skills.</p>
             <a href="games.html" class="btn">Play Now</a>
         </div>
+
+        <!-- CARD 2: WORKSHEETS -->
         <div class="card">
             <h2>📄 Worksheets</h2>
-            <p>Downloadable PDFs.</p>
+            <p>Downloadable PDFs and printable activities for class.</p>
             <a href="worksheets.html" class="btn">View Library</a>
+        </div>
+
+        <!-- CARD 3: VIDEOS -->
+        <div class="card">
+            <h2>🎥 Video Lessons</h2>
+            <p>Watch tutorials and walk-throughs of difficult concepts.</p>
+            <a href="videos.html" class="btn">Watch Videos</a>
         </div>
     </div>
 
