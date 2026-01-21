@@ -11,6 +11,7 @@
             margin: 0;
             background-color: #f4f7f6;
             color: #333;
+            line-height: 1.6;
         }
 
         /* --- 2. NAVIGATION BAR --- */
@@ -86,41 +87,78 @@
         header {
             background-color: #2c3e50;
             color: white;
-            padding: 2rem;
+            padding: 3rem 2rem;
             text-align: center;
         }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        header p { margin-top: 10px; font-size: 1.2rem; opacity: 0.9; }
 
-        /* --- 4. THE LAYOUT GRID --- */
-        .container {
-            max-width: 1000px;
+        /* --- 4. MAIN CONTENT AREA --- */
+        .content-wrapper {
+            max-width: 800px;
             margin: 40px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        /* --- 5. RESOURCE CARDS --- */
-        .card {
+            padding: 40px;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
-            padding: 20px;
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .btn {
+
+        .mission-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mission-section h2 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-top: 0;
+        }
+
+        .mission-statement {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #555;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .info-section h3 {
+            color: #2980b9;
+            margin-bottom: 15px;
+            margin-top: 30px;
+        }
+
+        .info-section p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .info-section ul {
+            margin-bottom: 30px;
+            color: #555;
+        }
+        
+        .info-section li {
+            margin-bottom: 10px;
+        }
+
+        .cta-button {
             display: inline-block;
-            margin-top: 15px;
-            padding: 10px 20px;
             background-color: #27ae60;
             color: white;
+            padding: 12px 25px;
             text-decoration: none;
             border-radius: 5px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-color 0.3s;
         }
-        .btn:hover {
+        .cta-button:hover {
             background-color: #219150;
         }
+
     </style>
 </head>
 <body>
@@ -139,35 +177,46 @@
             </div>
         </div>
         
-        <a href="#contact">Contact</a>
+        <a href="contact.html">Contact</a>
     </div>
 
     <header>
-        <h1>My Learning Hub</h1>
-        <p>Interactive Games, Worksheets, and Study Guides</p>
+        <h1>Level Up Learning</h1>
+        <p>Empowering Students, One Lesson at a Time</p>
     </header>
 
-    <div class="container">
-        <!-- CARD 1: GAMES -->
-        <div class="card">
-            <h2>🎮 Learning Games</h2>
-            <p>Fun browser-based games to practice math and logic skills.</p>
-            <a href="games.html" class="btn">Play Now</a>
+    <div class="content-wrapper">
+        
+        <!-- MISSION STATEMENT -->
+        <div class="mission-section">
+            <h2>My Mission</h2>
+            <p class="mission-statement">
+                "I am dedicated to developing core concepts through learning-based activities. By transforming abstract lessons into tangible, interactive experiences, I aim to build a strong academic foundation and foster a lifelong love of discovery for every student."
+            </p>
         </div>
 
-        <!-- CARD 2: WORKSHEETS -->
-        <div class="card">
-            <h2>📄 Worksheets</h2>
-            <p>Downloadable PDFs and printable activities for class.</p>
-            <a href="worksheets.html" class="btn">View Library</a>
+        <!-- GENERAL INFORMATION -->
+        <div class="info-section">
+            <h3>Welcome to the Hub</h3>
+            <p>
+                I believe that learning should be an adventure, not a chore. This repository serves as a central collection for educational tools designed to support students both in the classroom and at home.
+            </p>
+            
+            <h3>What You Will Find Here</h3>
+            <p>
+                Use the "Materials" menu at the top of the page to explore our growing library:
+            </p>
+            <ul>
+                <li><strong>Interactive Games:</strong> Browser-based puzzles to sharpen math and logic skills.</li>
+                <li><strong>Worksheets:</strong> Printable PDFs for offline practice and review.</li>
+                <li><strong>Video Lessons:</strong> Visual guides to help explain complex topics.</li>
+            </ul>
+
+            <div style="text-align: center;">
+                <a href="games.html" class="cta-button">Start Learning Now</a>
+            </div>
         </div>
 
-        <!-- CARD 3: VIDEOS -->
-        <div class="card">
-            <h2>🎥 Video Lessons</h2>
-            <p>Watch tutorials and walk-throughs of difficult concepts.</p>
-            <a href="videos.html" class="btn">Watch Videos</a>
-        </div>
     </div>
 
 </body>
