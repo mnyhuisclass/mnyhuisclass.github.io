@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interplanetary Practice - Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=Space+Mono&display=swap');
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #05070a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+        }
+
+        /* Mission Card Hover */
+        .mission-card {
+            transition: all 0.3s ease;
+            display: block; /* Ensures anchor tag behaves like a block */
+        }
+        .mission-card:hover {
+            transform: scale(1.02);
+            border-color: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+    <div id="star-container" class="star-field"></div>
+
+    <!-- LANDING PAGE VIEW -->
+    <div id="view-landing" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
+        <div class="text-center max-w-4xl w-full">
+            <span class="text-blue-400 font-mono tracking-[0.3em] uppercase text-xs md:text-sm mb-4 block animate-pulse">United Federation of Learning</span>
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 glow-text tracking-tight">Interplanetary<br>Practice</h1>
+            <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-16 leading-relaxed">
+                Select your specialized training module below. Advanced concepts await in every sector.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-8 w-full">
+                <!-- Math Card (LINKED) -->
+                <a href="nextlevelmath.html" class="mission-card group text-left glass p-8 md:p-10 border border-blue-500/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-6 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="m5 12 5-9"/><path d="m19 12-5 9"/></svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-2 group-hover:text-blue-300">Math Academy</h2>
+                    <p class="text-slate-400 text-sm mb-4">Master Warp Calculations, Nebula Navigation, and Logistic Logic.</p>
+                    <div class="flex gap-2">
+                        <span class="text-[10px] font-mono border border-blue-500/30 px-2 py-1 rounded text-blue-400">5.NS.3</span>
+                        <span class="text-[10px] font-mono border border-blue-500/30 px-2 py-1 rounded text-blue-400">5.NS.4</span>
+                        <span class="text-[10px] font-mono border border-blue-500/30 px-2 py-1 rounded text-blue-400">5.CA.2</span>
+                    </div>
+                </a>
+
+                <!-- Reading Card (LOCAL VIEW) -->
+                <button onclick="toggleReading(true)" class="mission-card w-full group text-left glass p-8 md:p-10 border border-purple-500/30 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+                    <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mb-6 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-2 group-hover:text-purple-300">Reading Archives</h2>
+                    <p class="text-slate-400 text-sm mb-4">Decode alien texts, analyze mission logs, and master comprehension.</p>
+                    <div class="flex gap-2">
+                        <span class="text-[10px] font-mono border border-purple-500/30 px-2 py-1 rounded text-purple-400">5.RN.1</span>
+                        <span class="text-[10px] font-mono border border-purple-500/30 px-2 py-1 rounded text-purple-400">5.RV.2</span>
+                    </div>
+                </button>
+            </div>
+            
+            <p class="mt-16 text-slate-600 text-xs font-mono">System Version 2.0.4 // Authorized Personnel Only</p>
+        </div>
+    </div>
+
+    <!-- READING MODULE VIEW (Placeholder) -->
+    <div id="view-reading" class="hidden min-h-screen flex items-center justify-center p-6 relative z-10">
+        <div class="glass p-10 max-w-2xl text-center border-purple-500/30">
+             <div class="w-20 h-20 bg-purple-600/20 rounded-full flex items-center justify-center mb-6 mx-auto text-purple-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+            <h2 class="text-4xl font-bold text-purple-300 mb-4">Galactic Archives Locked</h2>
+            <p class="text-slate-400 mb-8">This module is currently under development by the Federation's Linguistics Department. Please return to the hub and continue Math training.</p>
+            <button onclick="toggleReading(false)" class="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all">Return to Hub</button>
+        </div>
+    </div>
+
+    <script>
+        // Star Field Generation
+        const starContainer = document.getElementById('star-container');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 3 + 'px';
+            star.style.width = size; star.style.height = size;
+            star.style.top = Math.random() * 100 + '%'; star.style.left = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            starContainer.appendChild(star);
+        }
+
+        function toggleReading(show) {
+            const landing = document.getElementById('view-landing');
+            const reading = document.getElementById('view-reading');
+            if (show) {
+                landing.classList.add('hidden');
+                reading.classList.remove('hidden');
+            } else {
+                landing.classList.remove('hidden');
+                reading.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
