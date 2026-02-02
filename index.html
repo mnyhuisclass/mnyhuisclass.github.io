@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interplanetary Practice - Hub</title>
+    <title>Interplanetary Practice</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for high-quality math rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=Space+Mono&display=swap');
 
@@ -14,6 +27,8 @@
             color: #e2e8f0;
             overflow-x: hidden;
         }
+
+        .mono { font-family: 'Space Mono', monospace; }
 
         .star-field {
             position: fixed;
@@ -50,10 +65,74 @@
             text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
         }
 
+        .tab-btn {
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .tab-btn.active {
+            color: #60a5fa;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #60a5fa;
+            box-shadow: 0 0 8px #60a5fa;
+        }
+
+        .math-card:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        mjx-container {
+            font-size: 1.1em !important;
+        }
+
+        /* Percentage Grid Styles */
+        .grid-cell {
+            aspect-ratio: 1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .grid-cell.active {
+            background-color: #3b82f6;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        /* Visual Feedback Animations */
+        @keyframes calibration-fail {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px) rotate(-1deg); }
+            40% { transform: translateX(8px) rotate(1deg); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        .calibration-error {
+            animation: calibration-fail 0.4s ease-in-out;
+            border-color: #ef4444 !important; /* red-500 */
+            color: #fca5a5 !important; /* red-300 */
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+            background-color: rgba(239, 68, 68, 0.1) !important;
+        }
+
+        .calibration-success {
+            border-color: #4ade80 !important; /* green-400 */
+            background-color: rgba(74, 222, 128, 0.1) !important;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.4);
+        }
+
         /* Mission Card Hover */
         .mission-card {
             transition: all 0.3s ease;
-            display: block; /* Ensures anchor tag behaves like a block */
         }
         .mission-card:hover {
             transform: scale(1.02);
@@ -65,7 +144,9 @@
 <body class="min-h-screen relative">
     <div id="star-container" class="star-field"></div>
 
-    <!-- LANDING PAGE VIEW -->
+    <!-- ========================================== -->
+    <!-- LANDING PAGE VIEW                          -->
+    <!-- ========================================== -->
     <div id="view-landing" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
         <div class="text-center max-w-4xl w-full">
             <span class="text-blue-400 font-mono tracking-[0.3em] uppercase text-xs md:text-sm mb-4 block animate-pulse">United Federation of Learning</span>
@@ -75,8 +156,8 @@
             </p>
 
             <div class="grid md:grid-cols-2 gap-8 w-full">
-                <!-- Math Card (LINKED) -->
-                <a href="nextlevelmath.html" class="mission-card group text-left glass p-8 md:p-10 border border-blue-500/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                <!-- Math Card -->
+                <button onclick="switchView('math')" class="mission-card group text-left glass p-8 md:p-10 border border-blue-500/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
                     <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-6 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="m5 12 5-9"/><path d="m19 12-5 9"/></svg>
                     </div>
@@ -87,10 +168,10 @@
                         <span class="text-[10px] font-mono border border-blue-500/30 px-2 py-1 rounded text-blue-400">5.NS.4</span>
                         <span class="text-[10px] font-mono border border-blue-500/30 px-2 py-1 rounded text-blue-400">5.CA.2</span>
                     </div>
-                </a>
+                </button>
 
-                <!-- Reading Card (LOCAL VIEW) -->
-                <button onclick="toggleReading(true)" class="mission-card w-full group text-left glass p-8 md:p-10 border border-purple-500/30 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+                <!-- Reading Card -->
+                <button onclick="switchView('reading')" class="mission-card group text-left glass p-8 md:p-10 border border-purple-500/30 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
                     <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mb-6 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                     </div>
@@ -107,15 +188,326 @@
         </div>
     </div>
 
-    <!-- READING MODULE VIEW (Placeholder) -->
-    <div id="view-reading" class="hidden min-h-screen flex items-center justify-center p-6 relative z-10">
+
+    <!-- ========================================== -->
+    <!-- MATH MODULE VIEW                           -->
+    <!-- ========================================== -->
+    <div id="view-math" class="hidden">
+        <!-- Navigation -->
+        <nav class="p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-white/10 glass sticky top-0 z-50">
+            <div class="flex items-center gap-3">
+                <button onclick="switchView('landing')" class="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors group" title="Return to Hub">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-hover:text-white"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight glow-text text-blue-300">Math Academy</h1>
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-xs md:text-sm">
+                <button onclick="showSection('briefs')" class="tab-btn active transition-all font-bold tracking-wider text-yellow-400" id="btn-briefs">COMMANDER'S BRIEF</button>
+                <div class="w-px h-4 bg-white/20 my-auto"></div>
+                <button onclick="showSection('powers')" class="tab-btn transition-all" id="btn-powers">POWERS OF 10</button>
+                <button onclick="showSection('percent')" class="tab-btn transition-all" id="btn-percent">NEBULA NAV</button>
+                <button onclick="showSection('division')" class="tab-btn transition-all" id="btn-division">MISSION CONTROL</button>
+            </div>
+        </nav>
+
+        <!-- Hero Header -->
+        <header class="container mx-auto mt-8 md:mt-12 px-6 text-center">
+            <span class="text-blue-400 font-mono tracking-widest uppercase text-xs md:text-sm mb-4 block">Level: Elite Explorer</span>
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 md:mb-6">Advanced Math Academy</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto text-base md:text-lg">
+                Master the scaling of the universe, visual proportions, and deep-space logistics.
+            </p>
+        </header>
+
+        <main class="container mx-auto px-6 py-8 md:py-12">
+            <!-- [CONTENT FROM ORIGINAL FILE PRESERVED BELOW] -->
+            
+            <!-- SECTION: Learning Module / Mission Briefs -->
+            <section id="section-briefs" class="space-y-12 max-w-4xl mx-auto">
+                <div class="glass p-8 border-l-4 border-yellow-400 bg-black/40">
+                    <h3 class="text-3xl font-bold text-yellow-400 mb-2">Commander's Briefing</h3>
+                    <p class="text-slate-400 italic mb-6">Read these directives before engaging mission controls.</p>
+                    
+                    <div class="space-y-12">
+                        <!-- Brief 1 -->
+                        <div>
+                            <h4 class="text-xl font-bold text-blue-300 mb-3 flex items-center gap-2">
+                                <span class="bg-blue-900/50 px-2 py-1 rounded text-xs border border-blue-500/50">5.NS.3</span>
+                                Mission Brief 1: The Warp Drive
+                            </h4>
+                            <div class="prose prose-invert max-w-none text-slate-300 space-y-4">
+                                <p>In deep space, we don't just count by ones; we scale by powers of 10. When you see an exponent like $10^3$, you are looking at a "Warp Factor."</p>
+                                
+                                <div class="bg-blue-500/10 p-4 rounded-lg border border-blue-500/20">
+                                    <strong class="text-white block mb-2">1. The Power of the Zero</strong>
+                                    <p class="text-sm">When multiplying a whole number by a power of 10, the exponent tells you exactly how many zeros will be in the product.</p>
+                                    <ul class="list-disc pl-5 mt-2 text-sm font-mono text-blue-200">
+                                        <li>$5 \times 10^1 = 50$ (1 zero)</li>
+                                        <li>$5 \times 10^3 = 5,000$ (3 zeros)</li>
+                                    </ul>
+                                </div>
+
+                                <div class="bg-purple-500/10 p-4 rounded-lg border border-purple-500/20">
+                                    <strong class="text-white block mb-2">2. The Decimal Shift</strong>
+                                    <p class="text-sm">Multiplying by a power of 10 shifts the decimal <strong>Right</strong> (number gets bigger). Dividing shifts the decimal <strong>Left</strong> (number gets smaller).</p>
+                                    <p class="text-xs mt-2 text-purple-300 italic">Elite Insight: The decimal point doesn't actually "move"—the digits shift to different place value columns!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-white/10">
+
+                        <!-- Brief 2 -->
+                        <div>
+                            <h4 class="text-xl font-bold text-emerald-400 mb-3 flex items-center gap-2">
+                                <span class="bg-emerald-900/50 px-2 py-1 rounded text-xs border border-emerald-500/50">5.NS.4</span>
+                                Mission Brief 2: Nebula Navigation
+                            </h4>
+                            <div class="prose prose-invert max-w-none text-slate-300 space-y-4">
+                                <p>A "Percent" comes from the Latin <em>per centum</em>, meaning <strong>"out of 100."</strong> Imagine every sector of a nebula is divided into a 10x10 grid.</p>
+                                
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div class="bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20">
+                                        <strong class="text-white block mb-2">Visualizing 100</strong>
+                                        <p class="text-sm mb-2">If 25 signal towers are active out of 100:</p>
+                                        <ul class="text-sm font-mono text-emerald-200 space-y-1">
+                                            <li>Percent: $25\%$</li>
+                                            <li>Decimal: $0.25$</li>
+                                            <li>Fraction: $\frac{25}{100}$</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20">
+                                        <strong class="text-white block mb-2">Equivalent Fractions</strong>
+                                        <p class="text-sm mb-2">Always simplify your signal data using the GCF.</p>
+                                        <div class="text-center font-mono text-lg text-white bg-black/20 p-2 rounded">
+                                            $\frac{25 \div 25}{100 \div 25} = \frac{1}{4}$
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-white/10">
+
+                        <!-- Brief 3 -->
+                        <div>
+                            <h4 class="text-xl font-bold text-orange-400 mb-3 flex items-center gap-2">
+                                <span class="bg-orange-900/50 px-2 py-1 rounded text-xs border border-orange-500/50">5.CA.2</span>
+                                Mission Brief 3: Logistics & Logic
+                            </h4>
+                            <div class="prose prose-invert max-w-none text-slate-300 space-y-4">
+                                <p>Math in a textbook is perfect, but math in space is messy. Sometimes, you have "leftovers" (remainders). How you handle them determines the success of the mission.</p>
+                                
+                                <div class="grid gap-3">
+                                    <div class="p-3 bg-white/5 rounded border-l-2 border-orange-400">
+                                        <strong class="text-orange-300">1. Round Up ("No Man Left Behind")</strong>
+                                        <p class="text-sm text-slate-400">13 astronauts, ship holds 5. $13 \div 5 = 2 \text{ R } 3$. You need <strong>3 ships</strong>.</p>
+                                    </div>
+                                    <div class="p-3 bg-white/5 rounded border-l-2 border-blue-400">
+                                        <strong class="text-blue-300">2. Turn into Decimal ("Fuel Split")</strong>
+                                        <p class="text-sm text-slate-400">5 gallons, 2 rockets. $5 \div 2 = 2.5$. Each gets <strong>2.5 gallons</strong>.</p>
+                                    </div>
+                                    <div class="p-3 bg-white/5 rounded border-l-2 border-red-400">
+                                        <strong class="text-red-300">3. Ignore It ("Whole Units Only")</strong>
+                                        <p class="text-sm text-slate-400">$20 budget, $6 item. $20 \div 6 = 3 \text{ R } 2$. You can only buy <strong>3 items</strong>.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button onclick="showSection('powers')" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-full font-bold transition-all shadow-lg shadow-blue-900/50 animate-bounce">
+                        Proceed to Training Simulation &darr;
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Section: Powers of 10 (5.NS.3) -->
+            <section id="section-powers" class="hidden space-y-12">
+                <!-- Exploration Tool -->
+                <div class="grid lg:grid-cols-2 gap-8 items-stretch">
+                    <div class="glass p-6 md:p-8 space-y-6 flex flex-col justify-center">
+                        <h3 class="text-2xl md:text-3xl font-bold text-blue-300">The Warp Drive Effect</h3>
+                        <p class="text-slate-300 leading-relaxed text-sm md:text-base">
+                            Use the simulator to visualize decimal shifts.
+                        </p>
+                        <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded">
+                             <h4 class="text-white font-bold mb-2">Exploration Mode</h4>
+                             <p class="text-sm text-slate-400">Test different values to see how the pattern holds.</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Power Shifter -->
+                    <div class="glass p-6 md:p-8 border-blue-500/30">
+                        <h4 class="text-xl font-bold mb-4">Interactive Warp Simulator</h4>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm text-slate-400 mb-2">Target Number</label>
+                                <input type="number" id="baseNum" value="4.5" step="0.01" class="w-full bg-white/5 border border-white/10 rounded p-3 text-white focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button onclick="calculatePower('mult')" class="flex-1 bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold transition-colors">Multiply by $10^x$</button>
+                                <button onclick="calculatePower('div')" class="flex-1 bg-purple-600 hover:bg-purple-500 p-3 rounded font-bold transition-colors">Divide by $10^x$</button>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-slate-400 mb-2">Exponent ($x$)</label>
+                                <input type="range" id="exponent" min="0" max="6" value="1" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                                <div class="flex justify-between text-xs mt-2 font-mono">
+                                    <span>$10^0$</span><span>$10^1$</span><span>$10^2$</span><span>$10^3$</span><span>$10^4$</span><span>$10^5$</span><span>$10^6$</span>
+                                </div>
+                            </div>
+                            <div id="warp-result" class="text-center p-6 bg-blue-900/20 border border-blue-500/20 rounded-xl hidden">
+                                <p class="text-sm text-blue-400 uppercase tracking-widest mb-2">Warp Output</p>
+                                <div id="resultText" class="text-3xl md:text-4xl font-bold mono tracking-tighter break-all"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DRILL SECTION 1 -->
+                <div class="mt-12 border-t border-white/10 pt-8">
+                    <h4 class="text-xl md:text-2xl font-bold text-yellow-400 mb-6 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        Simulation: Warp Calculations
+                    </h4>
+                    <div class="glass p-8 bg-black/40 border border-yellow-500/20">
+                        <div class="flex flex-col md:flex-row gap-8 items-center justify-between">
+                            <div class="flex-1 w-full">
+                                <p class="text-slate-400 text-sm mb-2">Solve the equation by shifting the decimal:</p>
+                                <div id="drill-power-q" class="text-3xl font-mono text-white mb-4 bg-white/5 p-4 rounded text-center">
+                                    Press Start to Begin
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="number" id="drill-power-input" placeholder="Enter result..." class="flex-1 bg-white/10 border border-white/20 rounded p-3 text-white focus:border-yellow-400 outline-none transition-all duration-300">
+                                    <button onclick="checkPowerDrill()" class="bg-yellow-600 hover:bg-yellow-500 px-6 rounded font-bold transition-colors">Submit</button>
+                                </div>
+                                <div id="drill-power-feedback" class="mt-2 h-6 text-sm font-bold"></div>
+                            </div>
+                            <div class="w-full md:w-auto">
+                                <button onclick="generatePowerDrill()" class="w-full md:w-auto py-3 px-8 bg-white/5 border border-white/20 hover:bg-white/10 rounded-full transition-all text-sm uppercase tracking-widest">
+                                    New Problem
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Percents (5.NS.4) -->
+            <section id="section-percent" class="hidden space-y-12">
+                <!-- Exploration Tool -->
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="glass p-6 md:p-8 space-y-6">
+                        <h3 class="text-2xl md:text-3xl font-bold text-emerald-400">Nebula Navigator</h3>
+                        <p class="text-slate-300">
+                            Use the grid to visualize percent.
+                        </p>
+                        <div class="p-6 bg-black/40 rounded-xl border border-emerald-500/20">
+                            <div class="grid grid-cols-3 gap-4 text-center">
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase mb-1">Percent</p>
+                                    <div id="display-percent" class="text-2xl font-bold text-emerald-400">0%</div>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase mb-1">Fraction</p>
+                                    <div id="display-fraction" class="text-2xl font-bold text-white">$\frac{0}{100}$</div>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase mb-1">Decimal</p>
+                                    <div id="display-decimal" class="text-2xl font-bold text-blue-400">0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="setPercent(25)" class="flex-1 py-2 rounded bg-white/5 border border-white/10 hover:bg-emerald-500/20 transition-all text-sm font-mono">25%</button>
+                            <button onclick="setPercent(50)" class="flex-1 py-2 rounded bg-white/5 border border-white/10 hover:bg-emerald-500/20 transition-all text-sm font-mono">50%</button>
+                            <button onclick="setPercent(75)" class="flex-1 py-2 rounded bg-white/5 border border-white/10 hover:bg-emerald-500/20 transition-all text-sm font-mono">75%</button>
+                        </div>
+                        <button onclick="clearGrid()" class="w-full py-2 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all text-sm">Reset Signal Grid</button>
+                    </div>
+
+                    <div class="glass p-4 flex justify-center items-center relative">
+                        <div id="percent-grid" class="grid grid-cols-10 grid-rows-10 gap-1 w-full max-w-[400px] bg-black/20 p-2 rounded shadow-2xl">
+                            <!-- JS generates 100 cells here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DRILL SECTION 2 -->
+                <div class="mt-12 border-t border-white/10 pt-8">
+                    <h4 class="text-xl md:text-2xl font-bold text-yellow-400 mb-6 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        Simulation: Signal Locking
+                    </h4>
+                    <div class="glass p-8 bg-black/40 border border-yellow-500/20">
+                        <div class="flex flex-col items-center text-center">
+                            <p class="text-slate-300 mb-2">Engage the correct number of sectors on the grid above to match the target signal.</p>
+                            <div id="drill-percent-target" class="text-4xl font-bold text-white mb-4 bg-emerald-900/30 px-8 py-2 rounded border border-emerald-500/30">
+                                ---
+                            </div>
+                            <div class="flex gap-4">
+                                <button onclick="generatePercentDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded transition-all">New Target</button>
+                                <button onclick="checkPercentDrill()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded font-bold transition-all">Verify Signal</button>
+                            </div>
+                            <div id="drill-percent-feedback" class="mt-4 h-6 text-sm font-bold"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Mission Control (5.CA.2) -->
+            <section id="section-division" class="hidden space-y-12">
+                <div class="glass p-6 md:p-8 border-l-4 border-yellow-500">
+                    <h3 class="text-2xl md:text-3xl font-bold text-yellow-300 mb-4">Mission Control: Real-World Logistics (5.CA.2)</h3>
+                    
+                    <!-- DRILL SECTION 3 (Replaces static challenge) -->
+                    <div class="bg-black/30 p-6 md:p-8 rounded-xl border border-white/10 shadow-inner mt-6">
+                        <h4 class="text-xl font-bold mb-4 flex items-center justify-between">
+                            <span>Simulation: Logistics Generator</span>
+                            <span class="text-xs bg-yellow-500 text-black px-2 py-1 rounded font-bold">LIVE SCENARIO</span>
+                        </h4>
+                        
+                        <div class="flex flex-col gap-6">
+                            <div id="logistics-scenario-box" class="bg-white/5 p-6 rounded-lg border border-white/10 min-h-[120px] flex flex-col justify-center">
+                                <p id="logistics-text" class="text-lg md:text-xl text-slate-200 leading-relaxed">
+                                    Awaiting scenario generation...
+                                </p>
+                            </div>
+                            
+                            <div id="logistics-options" class="grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
+                                <!-- Dynamic Options Injected Here -->
+                            </div>
+
+                            <div class="flex justify-center mt-4">
+                                <button onclick="generateLogisticsDrill()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-full font-bold shadow-lg shadow-blue-900/20 transition-all">
+                                    Generate New Scenario
+                                </button>
+                            </div>
+                            <div id="logistics-feedback" class="text-center text-sm font-bold h-6"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="mt-24 p-12 glass border-t border-white/10 text-center">
+            <p class="text-slate-500 text-xs md:text-sm mb-4">Advanced Curriculum | Indiana Standards 5.NS.3, 5.NS.4, & 5.CA.2</p>
+        </footer>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- READING MODULE VIEW (Placeholder)          -->
+    <!-- ========================================== -->
+    <div id="view-reading" class="hidden min-h-screen flex items-center justify-center p-6">
         <div class="glass p-10 max-w-2xl text-center border-purple-500/30">
              <div class="w-20 h-20 bg-purple-600/20 rounded-full flex items-center justify-center mb-6 mx-auto text-purple-400">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             </div>
             <h2 class="text-4xl font-bold text-purple-300 mb-4">Galactic Archives Locked</h2>
             <p class="text-slate-400 mb-8">This module is currently under development by the Federation's Linguistics Department. Please return to the hub and continue Math training.</p>
-            <button onclick="toggleReading(false)" class="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all">Return to Hub</button>
+            <button onclick="switchView('landing')" class="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all">Return to Hub</button>
         </div>
     </div>
 
@@ -132,15 +524,218 @@
             starContainer.appendChild(star);
         }
 
-        function toggleReading(show) {
-            const landing = document.getElementById('view-landing');
-            const reading = document.getElementById('view-reading');
-            if (show) {
-                landing.classList.add('hidden');
-                reading.classList.remove('hidden');
+        // VIEW SWITCHER (Landing vs Math vs Reading)
+        function switchView(viewName) {
+            // Hide all views
+            ['landing', 'math', 'reading'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+            // Show selected view
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        // Section Toggling (Math Module)
+        function showSection(section) {
+            ['briefs', 'powers', 'percent', 'division'].forEach(s => {
+                document.getElementById('section-' + s).classList.add('hidden');
+                document.getElementById('btn-' + s).classList.remove('active');
+            });
+            document.getElementById('section-' + section).classList.remove('hidden');
+            document.getElementById('btn-' + section).classList.add('active');
+            window.scrollTo(0,0);
+            if (window.MathJax) MathJax.typesetPromise();
+
+            // Auto-start drill if entering for first time
+            if (section === 'powers' && !currentPowerDrill) generatePowerDrill();
+            if (section === 'percent' && !currentPercentTarget) generatePercentDrill();
+            if (section === 'division' && !currentLogisticsAnswer) generateLogisticsDrill();
+        }
+
+        // --- Powers of 10 Tools ---
+        function calculatePower(type) {
+            const base = parseFloat(document.getElementById('baseNum').value);
+            const exp = parseInt(document.getElementById('exponent').value);
+            if (isNaN(base)) return;
+            const res = type === 'mult' ? base * Math.pow(10, exp) : base / Math.pow(10, exp);
+            document.getElementById('resultText').innerText = Number(res.toPrecision(12)).toString();
+            document.getElementById('warp-result').classList.remove('hidden');
+        }
+
+        // --- DRILL: Powers ---
+        let currentPowerAnswer = 0;
+        let currentPowerDrill = false;
+
+        function generatePowerDrill() {
+            currentPowerDrill = true;
+            const isMult = Math.random() > 0.5;
+            const base = (Math.random() * 100).toFixed(Math.floor(Math.random() * 2) + 1); // 1-2 decimal places
+            const exp = Math.floor(Math.random() * 3) + 1; // 1 to 3
+            
+            currentPowerAnswer = isMult ? (base * Math.pow(10, exp)) : (base / Math.pow(10, exp));
+            // Fix float precision for comparison
+            currentPowerAnswer = parseFloat(currentPowerAnswer.toPrecision(10));
+
+            const symbol = isMult ? "\\times" : "\\div";
+            const qContainer = document.getElementById('drill-power-q');
+            qContainer.innerHTML = `$${base} ${symbol} 10^{${exp}} = ?$`;
+            
+            const inputEl = document.getElementById('drill-power-input');
+            inputEl.value = '';
+            inputEl.classList.remove('calibration-error', 'calibration-success');
+            document.getElementById('drill-power-feedback').innerHTML = '';
+            
+            if (window.MathJax) MathJax.typesetPromise([qContainer]);
+        }
+
+        function checkPowerDrill() {
+            const inputEl = document.getElementById('drill-power-input');
+            const userVal = parseFloat(inputEl.value);
+            const fb = document.getElementById('drill-power-feedback');
+            
+            // Clear existing classes/animations
+            inputEl.classList.remove('calibration-error', 'calibration-success');
+            void inputEl.offsetWidth; // Force reflow to restart animation
+
+            if (Math.abs(userVal - currentPowerAnswer) < 0.000001) {
+                fb.className = "mt-2 h-6 text-sm font-bold text-green-400";
+                fb.innerText = "CORRECT: Navigation calibrated!";
+                inputEl.classList.add('calibration-success');
             } else {
-                landing.classList.remove('hidden');
-                reading.classList.add('hidden');
+                fb.className = "mt-2 h-6 text-sm font-bold text-red-400";
+                fb.innerText = "CRITICAL FAILURE: Calibration unstable!";
+                inputEl.classList.add('calibration-error');
+            }
+        }
+
+
+        // --- Percent Grid Logic ---
+        const grid = document.getElementById('percent-grid');
+        for (let i = 1; i <= 100; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.index = i;
+            cell.onclick = () => toggleCells(i);
+            grid.appendChild(cell);
+        }
+
+        function toggleCells(count) {
+            const cells = document.querySelectorAll('.grid-cell');
+            cells.forEach((c, idx) => {
+                c.classList.toggle('active', idx < count);
+            });
+            updatePercentDisplay(count);
+        }
+
+        function setPercent(val) { toggleCells(val); }
+        function clearGrid() { toggleCells(0); }
+
+        function updatePercentDisplay(count) {
+            document.getElementById('display-percent').innerText = count + "%";
+            document.getElementById('display-decimal').innerText = (count/100).toFixed(2);
+            
+            const gcd = (a, b) => b ? gcd(b, a % b) : a;
+            const common = gcd(count, 100);
+            const displayFrac = document.getElementById('display-fraction');
+            displayFrac.innerHTML = `$\\frac{${count/common}}{${100/common}}$`;
+            if (window.MathJax) MathJax.typesetPromise([displayFrac]);
+        }
+
+        // --- DRILL: Percent ---
+        let currentPercentTarget = 0;
+
+        function generatePercentDrill() {
+            currentPercentTarget = Math.floor(Math.random() * 90) + 5; // 5 to 95
+            document.getElementById('drill-percent-target').innerText = `Target: ${currentPercentTarget}%`;
+            document.getElementById('drill-percent-feedback').innerText = '';
+            clearGrid();
+        }
+
+        function checkPercentDrill() {
+            const activeCount = document.querySelectorAll('.grid-cell.active').length;
+            const fb = document.getElementById('drill-percent-feedback');
+            
+            if (activeCount === currentPercentTarget) {
+                fb.className = "mt-4 h-6 text-sm font-bold text-green-400";
+                fb.innerText = "SIGNAL LOCKED: Coordinates verified.";
+            } else {
+                fb.className = "mt-4 h-6 text-sm font-bold text-red-400";
+                fb.innerText = `MISMATCH: Signal at ${activeCount}%. Adjust grid.`;
+            }
+        }
+
+
+        // --- DRILL: Logistics (Division) ---
+        let currentLogisticsAnswer = null;
+
+        function generateLogisticsDrill() {
+            const scenarios = [
+                {
+                    type: 'roundUp',
+                    template: (total, cap) => `Evacuation Protocol: We have <b>${total}</b> colonists to rescue. Each shuttle holds <b>${cap}</b> people. How many shuttles are needed to save EVERYONE?`,
+                    logic: (t, c) => Math.ceil(t/c)
+                },
+                {
+                    type: 'decimal',
+                    template: (total, cap) => `Resource Allocation: We have <b>${total}</b> tons of Titanium to share equally among <b>${cap}</b> construction bases. Exactly how much does each base get?`,
+                    logic: (t, c) => parseFloat((t/c).toFixed(2))
+                },
+                {
+                    type: 'roundDown',
+                    template: (total, cap) => `Budget Constraint: We have <b>${total}</b> credits. Each repair drone costs <b>${cap}</b> credits. What is the maximum number of drones we can buy?`,
+                    logic: (t, c) => Math.floor(t/c)
+                }
+            ];
+
+            const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            
+            // Generate numbers
+            const num1 = Math.floor(Math.random() * 500) + 100;
+            const num2 = Math.floor(Math.random() * 20) + 5;
+            
+            const rawAns = num1 / num2;
+            const correctAns = scenario.logic(num1, num2);
+            
+            currentLogisticsAnswer = correctAns;
+
+            // Render Text
+            document.getElementById('logistics-text').innerHTML = scenario.template(num1, num2);
+            document.getElementById('logistics-feedback').innerText = '';
+
+            // Generate Options
+            const optsContainer = document.getElementById('logistics-options');
+            optsContainer.classList.remove('hidden');
+            optsContainer.innerHTML = '';
+
+            // Create distractors
+            let distractors = new Set();
+            distractors.add(correctAns);
+            distractors.add(parseFloat(rawAns.toFixed(2))); // The exact decimal
+            distractors.add(Math.floor(rawAns)); // Floor
+            distractors.add(Math.ceil(rawAns)); // Ceil
+            
+            // Ensure we have 3 distinct options
+            while(distractors.size < 3) {
+                distractors.add(correctAns + Math.floor(Math.random() * 5) + 1);
+            }
+
+            Array.from(distractors).sort((a,b) => a-b).forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition-all text-left font-mono";
+                btn.innerText = opt;
+                btn.onclick = () => checkLogisticsAnswer(opt);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function checkLogisticsAnswer(val) {
+            const fb = document.getElementById('logistics-feedback');
+            if (val === currentLogisticsAnswer) {
+                fb.className = "text-center text-sm font-bold h-6 text-green-400";
+                fb.innerText = "LOGISTICS APPROVED: Optimal solution found.";
+            } else {
+                fb.className = "text-center text-sm font-bold h-6 text-red-400";
+                fb.innerText = "LOGISTICS FAILURE: Check your remainder logic.";
             }
         }
     </script>
