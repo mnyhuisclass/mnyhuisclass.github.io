@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Mission Logbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background: #fff; color: #000; }
+        .mono { font-family: 'Space Mono', monospace; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 0.9rem; }
+        th { background-color: #f3f4f6; font-weight: bold; text-transform: uppercase; }
+        .status-success { color: #16a34a; font-weight: bold; }
+        .status-error { color: #dc2626; font-weight: bold; }
+        
+        /* Print Styles */
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; margin: 0; }
+            .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            button { display: none; }
+        }
+    </style>
+</head>
+<body class="p-8 max-w-4xl mx-auto container">
+
+    <!-- Header -->
+    <div class="flex justify-between items-end border-b-4 border-black pb-4 mb-6">
+        <div>
+            <h1 class="text-4xl font-bold uppercase tracking-tighter">Mission Logbook</h1>
+            <p class="font-mono text-sm">United Federation of Learning // Official Record</p>
+        </div>
+        <div class="text-right">
+            <p class="font-bold text-xl" id="cadet-name">Unknown Cadet</p>
+            <p class="font-mono text-sm" id="cadet-id">ID: ---</p>
+            <p class="font-mono text-xs mt-1" id="report-date"></p>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="border-2 border-black p-4 bg-gray-50">
+            <p class="text-xs uppercase font-bold text-gray-500">Total Attempts</p>
+            <p class="text-3xl font-bold" id="stat-total">0</p>
+        </div>
+        <div class="border-2 border-black p-4 bg-gray-50">
+            <p class="text-xs uppercase font-bold text-gray-500">Success Rate</p>
+            <p class="text-3xl font-bold text-green-700" id="stat-rate">0%</p>
+        </div>
+        <div class="border-2 border-black p-4 bg-gray-50">
+            <p class="text-xs uppercase font-bold text-gray-500">Active Squads</p>
+            <p class="text-lg font-mono leading-tight mt-1" id="stat-squads">-</p>
+        </div>
+    </div>
+
+    <!-- Detailed Log -->
+    <h2 class="text-xl font-bold uppercase mb-2 border-b-2 border-black inline-block">Detailed Activity Log</h2>
+    <table class="mb-12">
+        <thead>
+            <tr>
+                <th class="w-24">Time</th>
+                <th class="w-24">Squad</th>
+                <th class="w-32">Module</th>
+                <th>Task / Question</th>
+                <th class="w-32">Result</th>
+            </tr>
+        </thead>
+        <tbody id="log-body">
+            <tr><td colspan="5" class="text-center italic py-4">No data found. Please complete missions in the main hub first.</td></tr>
+        </tbody>
+    </table>
+
+    <!-- Footer / Signature -->
+    <div class="flex justify-between items-end mt-12 pt-8 border-t border-gray-300">
+        <div class="text-xs font-mono text-gray-500">Generated automatically by Interplanetary Practice System v3.2</div>
+        <div class="text-right w-64">
+            <div class="border-b border-black h-8"></div>
+            <p class="text-xs font-bold uppercase mt-1">Teacher Signature</p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="fixed bottom-6 right-6 flex gap-4 no-print">
+        <button onclick="window.print()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-full shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print / Save PDF
+        </button>
+    </div>
+
+    <script>
+        // Load Data on Startup
+        window.onload = function() {
+            const userRaw = localStorage.getItem('interplanetary_user');
+            const logsRaw = localStorage.getItem('interplanetary_mission_log');
+
+            if (userRaw) {
+                const user = JSON.parse(userRaw);
+                document.getElementById('cadet-name').innerText = user.name || "Unknown";
+                document.getElementById('cadet-id').innerText = `ID: ${user.id || "---"}`;
+            }
+            document.getElementById('report-date').innerText = new Date().toLocaleString();
+
+            if (logsRaw) {
+                const logs = JSON.parse(logsRaw);
+                if (logs.length > 0) {
+                    renderLogs(logs);
+                    renderStats(logs);
+                }
+            }
+        };
+
+        function renderLogs(logs) {
+            const tbody = document.getElementById('log-body');
+            tbody.innerHTML = '';
+            
+            // Show newest first
+            logs.slice().reverse().forEach(log => {
+                const tr = document.createElement('tr');
+                const statusClass = log.status === 'success' ? 'status-success' : 'status-error';
+                tr.innerHTML = `
+                    <td class="font-mono text-xs">${log.time}</td>
+                    <td class="font-bold uppercase text-xs">${log.squad}</td>
+                    <td>${log.module}</td>
+                    <td class="font-mono text-xs">${log.task}</td>
+                    <td class="${statusClass}">${log.result}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderStats(logs) {
+            const total = logs.length;
+            const success = logs.filter(l => l.status === 'success').length;
+            const rate = total === 0 ? 0 : Math.round((success / total) * 100);
+            
+            // Unique Squads
+            const uniqueSquads = [...new Set(logs.map(l => l.squad))];
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-rate').innerText = rate + "%";
+            document.getElementById('stat-squads').innerText = uniqueSquads.length > 0 ? uniqueSquads.join(", ") : "-";
+        }
+    </script>
+</body>
+</html>
