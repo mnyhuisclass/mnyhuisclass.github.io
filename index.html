@@ -8,61 +8,174 @@
     <!-- MathJax for high-quality math rendering -->
     <script>
         window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
-            svg: { fontCache: 'global' }
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=Space+Mono&display=swap');
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #05070a; color: #e2e8f0; overflow-x: hidden; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #05070a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
         .mono { font-family: 'Space Mono', monospace; }
-        .star-field { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%); overflow: hidden; }
-        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: twinkle var(--duration) infinite ease-in-out; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; }
-        .glow-text { text-shadow: 0 0 10px rgba(96, 165, 250, 0.5); }
-        .mission-card { transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; cursor: pointer; }
-        .mission-card:hover { transform: translateY(-5px); }
+
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+        }
+
+        .mission-card {
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            cursor: pointer;
+        }
+        .mission-card:hover {
+            transform: translateY(-5px);
+        }
+        
         .card-blue:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
         .card-green:hover { border-color: #10b981; background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
         .card-yellow:hover { border-color: #eab308; background: rgba(234, 179, 8, 0.1); box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
         .card-red:hover { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
         .card-purple:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
-        .squad-badge { font-family: 'Space Mono', monospace; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-bottom: 1rem; display: inline-block; }
+
+        .squad-badge {
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
         .tab-btn { position: relative; padding-bottom: 4px; }
         .tab-btn.active { color: currentColor; }
-        .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: currentColor; box-shadow: 0 0 8px currentColor; }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+            background: currentColor; box-shadow: 0 0 8px currentColor;
+        }
+
         .grid-cell { aspect-ratio: 1; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: all 0.2s; }
         .grid-cell.active-blue { background-color: #3b82f6; box-shadow: inset 0 0 10px rgba(255,255,255,0.3); }
         .grid-cell.active-green { background-color: #10b981; box-shadow: inset 0 0 5px rgba(255,255,255,0.5); }
+        
         mjx-container { font-size: 1.1em !important; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+        /* Animation for Errors */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
         .input-error { animation: shake 0.4s ease-in-out; border-color: #ef4444 !important; color: #fca5a5 !important; }
         .input-success { border-color: #4ade80 !important; color: #4ade80 !important; }
+
         /* Base 10 Blocks CSS */
-        .block-100 { width: 60px; height: 60px; background-color: #ef4444; border: 2px solid #b91c1c; display: inline-block; margin: 2px; background-image: linear-gradient(#b91c1c 1px, transparent 1px), linear-gradient(90deg, #b91c1c 1px, transparent 1px); background-size: 6px 6px; }
-        .block-10 { width: 10px; height: 60px; background-color: #ef4444; border: 1px solid #b91c1c; display: inline-block; margin: 2px; background-image: linear-gradient(#b91c1c 1px, transparent 1px); background-size: 100% 6px; }
-        .block-1 { width: 10px; height: 10px; background-color: #ef4444; border: 1px solid #b91c1c; display: inline-block; margin: 2px; }
+        .block-100 {
+            width: 60px; height: 60px; background-color: #ef4444; 
+            border: 2px solid #b91c1c; display: inline-block; margin: 2px;
+            background-image: linear-gradient(#b91c1c 1px, transparent 1px), linear-gradient(90deg, #b91c1c 1px, transparent 1px);
+            background-size: 6px 6px;
+        }
+        .block-10 {
+            width: 10px; height: 60px; background-color: #ef4444; 
+            border: 1px solid #b91c1c; display: inline-block; margin: 2px;
+            background-image: linear-gradient(#b91c1c 1px, transparent 1px);
+            background-size: 100% 6px;
+        }
+        .block-1 {
+            width: 10px; height: 10px; background-color: #ef4444; 
+            border: 1px solid #b91c1c; display: inline-block; margin: 2px;
+        }
+
+        /* Print styles for Report */
+        @media print {
+            body * { visibility: hidden; }
+            #view-report, #view-report * { visibility: visible; }
+            #view-report { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; }
+            .no-print { display: none !important; }
+            .glass { background: none; border: 1px solid #000; color: black; box-shadow: none; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid black; padding: 8px; text-align: left; }
+            .text-white, .text-slate-300, .text-slate-400 { color: black !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen relative">
     <div id="star-container" class="star-field"></div>
 
-    <!-- VIEW: LOGIN -->
+    <!-- ========================================== -->
+    <!-- VIEW: LOGIN (First Screen)                 -->
+    <!-- ========================================== -->
     <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-50">
         <div class="glass p-10 max-w-md w-full text-center border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.2)]">
             <h1 class="text-3xl font-bold text-white mb-2">Identity Verification</h1>
             <p class="text-slate-400 mb-8 text-sm">Enter Cadet credentials to begin mission.</p>
+            
             <div class="space-y-4">
-                <div class="text-left"><label class="block text-blue-300 text-xs font-mono mb-1">CADET NAME</label><input type="text" id="login-name" class="w-full bg-white/10 border border-white/20 rounded p-3 text-white focus:border-blue-500 outline-none" placeholder="Enter full name"></div>
-                <div class="text-left"><label class="block text-blue-300 text-xs font-mono mb-1">SQUAD ID</label><input type="text" id="login-id" class="w-full bg-white/10 border border-white/20 rounded p-3 text-white focus:border-blue-500 outline-none" placeholder="e.g. 001"></div>
+                <div class="text-left">
+                    <label class="block text-blue-300 text-xs font-mono mb-1">CADET NAME</label>
+                    <input type="text" id="login-name" class="w-full bg-white/10 border border-white/20 rounded p-3 text-white focus:border-blue-500 outline-none" placeholder="Enter full name">
+                </div>
+                <div class="text-left">
+                    <label class="block text-blue-300 text-xs font-mono mb-1">SQUAD ID</label>
+                    <input type="text" id="login-id" class="w-full bg-white/10 border border-white/20 rounded p-3 text-white focus:border-blue-500 outline-none" placeholder="e.g. 001">
+                </div>
                 <button onclick="attemptLogin()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded font-bold text-white transition-all shadow-lg mt-4">INITIALIZE SYSTEM</button>
             </div>
         </div>
     </div>
 
-    <!-- VIEW: SPLASH -->
+    <!-- ========================================== -->
+    <!-- VIEW: SPLASH PAGE (Mission Select)         -->
+    <!-- ========================================== -->
     <div id="view-splash" class="hidden min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
         <div class="absolute top-6 right-6 text-right">
             <div class="text-xs text-slate-500 font-mono">LOGGED IN AS</div>
@@ -70,85 +183,250 @@
             <!-- UPDATED: Opens separate file -->
             <button onclick="window.open('logbook.html', '_blank')" class="text-xs text-yellow-400 hover:text-yellow-300 mt-2 underline">OPEN LOGBOOK PAGE</button>
         </div>
+
         <div class="text-center max-w-5xl w-full">
             <span class="text-slate-400 font-mono tracking-[0.3em] uppercase text-xs md:text-sm mb-4 block animate-pulse">United Federation of Learning</span>
             <h1 class="text-5xl md:text-7xl font-extrabold mb-6 glow-text tracking-tight">Interplanetary<br>Practice</h1>
-            <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-16">Choose your mission protocol to begin training.</p>
+            <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-16">
+                Choose your mission protocol to begin training.
+            </p>
+
             <div class="grid md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto">
+                <!-- Math Mission -->
                 <button onclick="switchView('hub')" class="mission-card group glass p-10 border border-blue-500/30 text-left hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-6 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="m5 12 5-9"/><path d="m19 12-5 9"/></svg></div>
+                    <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mb-6 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="m5 12 5-9"/><path d="m19 12-5 9"/></svg>
+                    </div>
                     <h2 class="text-3xl font-bold text-white mb-2 group-hover:text-blue-300">Math Operations</h2>
                     <p class="text-slate-400 text-sm">Squad-based tactical training in arithmetic, logic, and resource management.</p>
-                    <div class="mt-8 flex gap-2"><span class="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20">Blue</span><span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded border border-emerald-500/20">Green</span><span class="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-xs rounded border border-yellow-500/20">Yellow</span><span class="px-3 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20">Red</span></div>
+                    <div class="mt-8 flex gap-2">
+                        <span class="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20">Blue</span>
+                        <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded border border-emerald-500/20">Green</span>
+                        <span class="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-xs rounded border border-yellow-500/20">Yellow</span>
+                        <span class="px-3 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20">Red</span>
+                    </div>
                 </button>
+
+                <!-- Reading Mission -->
                 <button onclick="switchView('reading-hub')" class="mission-card group glass p-10 border border-purple-500/30 text-left hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]">
-                    <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mb-6 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+                    <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mb-6 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
                     <h2 class="text-3xl font-bold text-white mb-2 group-hover:text-purple-300">Linguistic Archives</h2>
                     <p class="text-slate-400 text-sm">Decode mission logs, analyze text structures, and deduce meaning from alien transmissions.</p>
-                    <div class="mt-8 flex gap-2"><span class="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20">Blue</span><span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded border border-emerald-500/20">Green</span><span class="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-xs rounded border border-yellow-500/20">Yellow</span><span class="px-3 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20">Red</span></div>
+                    <div class="mt-8 flex gap-2">
+                        <span class="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20">Blue</span>
+                        <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded border border-emerald-500/20">Green</span>
+                        <span class="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-xs rounded border border-yellow-500/20">Yellow</span>
+                        <span class="px-3 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20">Red</span>
+                    </div>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- VIEW: MATH HUB -->
+    <!-- ========================================== -->
+    <!-- VIEW: MATH HUB (Squad Select)              -->
+    <!-- ========================================== -->
     <div id="view-hub" class="hidden min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
-        <button onclick="switchView('splash')" class="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span class="font-mono text-sm">Return to Orbit</span></button>
+        <button onclick="switchView('splash')" class="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            <span class="font-mono text-sm">Return to Orbit</span>
+        </button>
+
         <div class="text-center max-w-6xl w-full">
             <h1 class="text-4xl md:text-6xl font-extrabold mb-4 glow-text tracking-tight">Math Operations</h1>
             <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-12">Select your Squad for targeted training.</p>
+
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                <button onclick="switchView('blue')" class="mission-card card-blue glass p-6 border border-blue-500/30 text-left"><span class="squad-badge border border-blue-500 text-blue-400">Blue Squad</span><h2 class="text-2xl font-bold text-white mb-2">Elite Explorers</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Advanced training in powers of 10, complex logistics, and fractions.</p><div class="text-xs text-blue-300 font-mono mt-auto">Grade 5 Standards</div></button>
-                <button onclick="switchView('green')" class="mission-card card-green glass p-6 border border-emerald-500/30 text-left"><span class="squad-badge border border-emerald-500 text-emerald-400">Green Squad</span><h2 class="text-2xl font-bold text-white mb-2">Commanders</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Core operations: Decimals, multi-digit multiplication, and word problems.</p><div class="text-xs text-emerald-300 font-mono mt-auto">Grade 4 Standards</div></button>
-                <button onclick="switchView('yellow')" class="mission-card card-yellow glass p-6 border border-yellow-500/30 text-left"><span class="squad-badge border border-yellow-500 text-yellow-400">Yellow Squad</span><h2 class="text-2xl font-bold text-white mb-2">Specialists</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Fluency in multiplication, division, and fractions.</p><div class="text-xs text-yellow-300 font-mono mt-auto">Grade 3 Standards</div></button>
-                <button onclick="switchView('red')" class="mission-card card-red glass p-6 border border-red-500/30 text-left"><span class="squad-badge border border-red-500 text-red-400">Red Squad</span><h2 class="text-2xl font-bold text-white mb-2">Cadets</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Building foundations in place value, addition, and subtraction.</p><div class="text-xs text-red-300 font-mono mt-auto">Grade 2 Standards</div></button>
+                <!-- BLUE (Grade 5) -->
+                <button onclick="switchView('blue')" class="mission-card card-blue glass p-6 border border-blue-500/30 text-left">
+                    <span class="squad-badge border border-blue-500 text-blue-400">Blue Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Elite Explorers</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Advanced training in powers of 10, complex logistics, and fractions.</p>
+                    <div class="text-xs text-blue-300 font-mono mt-auto">Grade 5 Standards</div>
+                </button>
+                <!-- GREEN (Grade 4) -->
+                <button onclick="switchView('green')" class="mission-card card-green glass p-6 border border-emerald-500/30 text-left">
+                    <span class="squad-badge border border-emerald-500 text-emerald-400">Green Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Commanders</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Core operations: Decimals, multi-digit multiplication, and word problems.</p>
+                    <div class="text-xs text-emerald-300 font-mono mt-auto">Grade 4 Standards</div>
+                </button>
+                <!-- YELLOW (Grade 3) -->
+                <button onclick="switchView('yellow')" class="mission-card card-yellow glass p-6 border border-yellow-500/30 text-left">
+                    <span class="squad-badge border border-yellow-500 text-yellow-400">Yellow Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Specialists</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Fluency in multiplication, division, and fractions.</p>
+                    <div class="text-xs text-yellow-300 font-mono mt-auto">Grade 3 Standards</div>
+                </button>
+                <!-- RED (Grade 2) -->
+                <button onclick="switchView('red')" class="mission-card card-red glass p-6 border border-red-500/30 text-left">
+                    <span class="squad-badge border border-red-500 text-red-400">Red Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Cadets</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Building foundations in place value, addition, and subtraction.</p>
+                    <div class="text-xs text-red-300 font-mono mt-auto">Grade 2 Standards</div>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- VIEW: READING HUB -->
+    <!-- ========================================== -->
+    <!-- VIEW: READING HUB (Squad Select)           -->
+    <!-- ========================================== -->
     <div id="view-reading-hub" class="hidden min-h-screen flex flex-col items-center justify-center p-6 relative z-10">
-        <button onclick="switchView('splash')" class="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span class="font-mono text-sm">Return to Orbit</span></button>
+        <button onclick="switchView('splash')" class="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            <span class="font-mono text-sm">Return to Orbit</span>
+        </button>
+
         <div class="text-center max-w-6xl w-full">
             <h1 class="text-4xl md:text-6xl font-extrabold mb-4 glow-text tracking-tight text-purple-300">Linguistic Archives</h1>
             <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-12">Identify your clearance level to access mission logs.</p>
+
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                <button onclick="initReadingModule('blue')" class="mission-card card-blue glass p-6 border border-blue-500/30 text-left"><span class="squad-badge border border-blue-500 text-blue-400">Blue Squad</span><h2 class="text-2xl font-bold text-white mb-2">Lexile 1000+</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Complex academic texts analyzing scientific phenomena.</p></button>
-                <button onclick="initReadingModule('green')" class="mission-card card-green glass p-6 border border-emerald-500/30 text-left"><span class="squad-badge border border-emerald-500 text-emerald-400">Green Squad</span><h2 class="text-2xl font-bold text-white mb-2">Lexile 800-1000</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Detailed mission reports requiring strong inference.</p></button>
-                <button onclick="initReadingModule('yellow')" class="mission-card card-yellow glass p-6 border border-yellow-500/30 text-left"><span class="squad-badge border border-yellow-500 text-yellow-400">Yellow Squad</span><h2 class="text-2xl font-bold text-white mb-2">Lexile 650-800</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Operational logs focused on main ideas and clear details.</p></button>
-                <button onclick="initReadingModule('red')" class="mission-card card-red glass p-6 border border-red-500/30 text-left"><span class="squad-badge border border-red-500 text-red-400">Red Squad</span><h2 class="text-2xl font-bold text-white mb-2">Lexile 380-530</h2><p class="text-slate-400 text-sm mb-4 flex-grow">Fundamental status updates identifying key themes.</p></button>
+                <!-- BLUE READING -->
+                <button onclick="initReadingModule('blue')" class="mission-card card-blue glass p-6 border border-blue-500/30 text-left">
+                    <span class="squad-badge border border-blue-500 text-blue-400">Blue Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Lexile 1000+</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Complex academic texts analyzing scientific phenomena.</p>
+                </button>
+                <!-- GREEN READING -->
+                <button onclick="initReadingModule('green')" class="mission-card card-green glass p-6 border border-emerald-500/30 text-left">
+                    <span class="squad-badge border border-emerald-500 text-emerald-400">Green Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Lexile 800-1000</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Detailed mission reports requiring strong inference.</p>
+                </button>
+                <!-- YELLOW READING -->
+                <button onclick="initReadingModule('yellow')" class="mission-card card-yellow glass p-6 border border-yellow-500/30 text-left">
+                    <span class="squad-badge border border-yellow-500 text-yellow-400">Yellow Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Lexile 650-800</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Operational logs focused on main ideas and clear details.</p>
+                </button>
+                <!-- RED READING -->
+                <button onclick="initReadingModule('red')" class="mission-card card-red glass p-6 border border-red-500/30 text-left">
+                    <span class="squad-badge border border-red-500 text-red-400">Red Squad</span>
+                    <h2 class="text-2xl font-bold text-white mb-2">Lexile 380-530</h2>
+                    <p class="text-slate-400 text-sm mb-4 flex-grow">Fundamental status updates identifying key themes.</p>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- VIEW: READING MODULE -->
+    <!-- ========================================== -->
+    <!-- VIEW: READING MODULE                       -->
+    <!-- ========================================== -->
     <div id="view-reading-module" class="hidden min-h-screen">
         <nav class="p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-purple-900/30 glass sticky top-0 z-50">
-            <div class="flex items-center gap-3"><button onclick="switchView('reading-hub')" class="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors text-purple-400" title="Return to Squad Select"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><h1 class="text-xl md:text-2xl font-bold tracking-tight glow-text text-purple-300" id="reading-header">Archives</h1></div>
-            <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-xs md:text-sm text-purple-400"><button onclick="setReadingMode('structure')" class="tab-btn active transition-all" id="btn-read-structure">STRUCTURE (RC.7)</button><button onclick="setReadingMode('inference')" class="tab-btn transition-all" id="btn-read-inference">INFERENCE (RC.1)</button><button onclick="setReadingMode('theme')" class="tab-btn transition-all" id="btn-read-theme">THEME (RC.2)</button><button onclick="setReadingMode('mainidea')" class="tab-btn transition-all" id="btn-read-mainidea">CORE SIGNAL (RC.5)</button></div>
+            <div class="flex items-center gap-3">
+                <button onclick="switchView('reading-hub')" class="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors text-purple-400" title="Return to Squad Select">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight glow-text text-purple-300" id="reading-header">Archives</h1>
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-xs md:text-sm text-purple-400">
+                <button onclick="setReadingMode('structure')" class="tab-btn active transition-all" id="btn-read-structure">STRUCTURE (RC.7)</button>
+                <button onclick="setReadingMode('inference')" class="tab-btn transition-all" id="btn-read-inference">INFERENCE (RC.1)</button>
+                <button onclick="setReadingMode('theme')" class="tab-btn transition-all" id="btn-read-theme">THEME (RC.2)</button>
+                <button onclick="setReadingMode('mainidea')" class="tab-btn transition-all" id="btn-read-mainidea">CORE SIGNAL (RC.5)</button>
+            </div>
         </nav>
+
         <main class="container mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
-            <div class="lg:w-1/2 glass p-8 bg-black/40 border-purple-500/20 max-h-[80vh] overflow-y-auto"><div class="flex justify-between items-center mb-6 border-b border-purple-500/20 pb-4"><h2 class="text-2xl font-bold text-white" id="text-title">Loading...</h2><span class="text-xs font-mono text-purple-400 border border-purple-500/30 px-2 py-1 rounded" id="text-lexile">LEXILE</span></div><div id="text-content" class="text-lg leading-relaxed text-slate-300 font-serif space-y-4"></div><div class="mt-8 flex justify-between"><button onclick="prevLog()" class="text-xs text-slate-500 hover:text-white">&larr; Prev Log</button><button onclick="nextLog()" class="text-xs text-slate-500 hover:text-white">Next Log &rarr;</button></div></div>
+            <!-- TEXT PANEL -->
+            <div class="lg:w-1/2 glass p-8 bg-black/40 border-purple-500/20 max-h-[80vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6 border-b border-purple-500/20 pb-4">
+                    <h2 class="text-2xl font-bold text-white" id="text-title">Loading...</h2>
+                    <span class="text-xs font-mono text-purple-400 border border-purple-500/30 px-2 py-1 rounded" id="text-lexile">LEXILE</span>
+                </div>
+                <div id="text-content" class="text-lg leading-relaxed text-slate-300 font-serif space-y-4"></div>
+                <div class="mt-8 flex justify-between">
+                    <button onclick="prevLog()" class="text-xs text-slate-500 hover:text-white">&larr; Prev Log</button>
+                    <button onclick="nextLog()" class="text-xs text-slate-500 hover:text-white">Next Log &rarr;</button>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE PANEL -->
             <div class="lg:w-1/2 glass p-8 border-purple-500/20 flex flex-col">
-                <div id="tool-structure" class="space-y-6"><h3 class="text-xl font-bold text-purple-300 mb-2">Structure Scanner (4.RC.7)</h3><div class="grid gap-3" id="structure-opts"></div><div id="structure-feedback" class="h-6 text-sm font-bold mt-2"></div></div>
-                <div id="tool-inference" class="hidden space-y-6"><h3 class="text-xl font-bold text-purple-300 mb-2">Inference Ray (4.RC.1)</h3><div class="bg-purple-900/20 p-4 rounded border border-purple-500/20 mb-4"><p class="text-white italic" id="inference-q">Loading...</p></div><div class="grid gap-3" id="inference-opts"></div><div id="inference-feedback" class="h-6 text-sm font-bold mt-2"></div></div>
-                <div id="tool-theme" class="hidden space-y-6"><h3 class="text-xl font-bold text-purple-300 mb-2">Theme Decoder (4.RC.2)</h3><div class="grid gap-3" id="theme-opts"></div><div id="theme-feedback" class="h-6 text-sm font-bold mt-2"></div></div>
-                <div id="tool-mainidea" class="hidden space-y-6"><h3 class="text-xl font-bold text-purple-300 mb-2">Core Signal (4.RC.5)</h3><div class="grid gap-3" id="mainidea-opts"></div><div id="mainidea-feedback" class="h-6 text-sm font-bold mt-2"></div></div>
+                <div id="tool-structure" class="space-y-6">
+                    <h3 class="text-xl font-bold text-purple-300 mb-2">Structure Scanner (4.RC.7)</h3>
+                    <div class="grid gap-3" id="structure-opts"></div>
+                    <div id="structure-feedback" class="h-6 text-sm font-bold mt-2"></div>
+                </div>
+                <div id="tool-inference" class="hidden space-y-6">
+                    <h3 class="text-xl font-bold text-purple-300 mb-2">Inference Ray (4.RC.1)</h3>
+                    <div class="bg-purple-900/20 p-4 rounded border border-purple-500/20 mb-4">
+                        <p class="text-white italic" id="inference-q">Loading...</p>
+                    </div>
+                    <div class="grid gap-3" id="inference-opts"></div>
+                    <div id="inference-feedback" class="h-6 text-sm font-bold mt-2"></div>
+                </div>
+                <div id="tool-theme" class="hidden space-y-6">
+                    <h3 class="text-xl font-bold text-purple-300 mb-2">Theme Decoder (4.RC.2)</h3>
+                    <div class="grid gap-3" id="theme-opts"></div>
+                    <div id="theme-feedback" class="h-6 text-sm font-bold mt-2"></div>
+                </div>
+                <div id="tool-mainidea" class="hidden space-y-6">
+                    <h3 class="text-xl font-bold text-purple-300 mb-2">Core Signal (4.RC.5)</h3>
+                    <div class="grid gap-3" id="mainidea-opts"></div>
+                    <div id="mainidea-feedback" class="h-6 text-sm font-bold mt-2"></div>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- VIEW: BLUE SQUAD -->
+    <!-- ========================================== -->
+    <!-- VIEW: BLUE SQUAD (Grade 5)                 -->
+    <!-- ========================================== -->
+    <!-- (Same Blue Squad code as before) -->
     <div id="view-blue" class="hidden min-h-screen">
         <nav class="p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-blue-900/30 glass sticky top-0 z-50">
-            <div class="flex items-center gap-3"><button onclick="switchView('hub')" class="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors text-blue-400" title="Return to Hub"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><h1 class="text-xl md:text-2xl font-bold tracking-tight glow-text text-blue-300">Blue Squad: Elite</h1></div>
-            <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-xs md:text-sm text-blue-400"><button onclick="showBlueSection('briefs')" class="tab-btn active transition-all font-bold tracking-wider text-yellow-400" id="btn-blue-briefs">BRIEFING</button><button onclick="showBlueSection('powers')" class="tab-btn transition-all" id="btn-blue-powers">POWERS OF 10</button><button onclick="showBlueSection('percent')" class="tab-btn transition-all" id="btn-blue-percent">NEBULA NAV</button><button onclick="showBlueSection('division')" class="tab-btn transition-all" id="btn-blue-division">LOGISTICS</button></div>
+            <div class="flex items-center gap-3">
+                <button onclick="switchView('hub')" class="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors text-blue-400" title="Return to Hub"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight glow-text text-blue-300">Blue Squad: Elite</h1>
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-xs md:text-sm text-blue-400">
+                <button onclick="showBlueSection('briefs')" class="tab-btn active transition-all font-bold tracking-wider text-yellow-400" id="btn-blue-briefs">BRIEFING</button>
+                <button onclick="showBlueSection('powers')" class="tab-btn transition-all" id="btn-blue-powers">POWERS OF 10</button>
+                <button onclick="showBlueSection('percent')" class="tab-btn transition-all" id="btn-blue-percent">NEBULA NAV</button>
+                <button onclick="showBlueSection('division')" class="tab-btn transition-all" id="btn-blue-division">LOGISTICS</button>
+            </div>
         </nav>
         <main class="container mx-auto px-6 py-8">
-            <section id="blue-briefs" class="max-w-4xl mx-auto space-y-8"><div class="glass p-8 border-l-4 border-yellow-400 bg-black/40"><h3 class="text-2xl font-bold text-yellow-400 mb-4">Commander's Briefing</h3><p class="text-slate-300 mb-4">Welcome, Elite Explorers.</p><ul class="space-y-4 text-sm text-slate-400"><li class="bg-blue-900/20 p-3 rounded border border-blue-500/20"><strong class="text-blue-300 block mb-1">5.NS.3 (Warp Drive):</strong> Moving the decimal point based on powers of 10.</li></ul><div class="mt-8 text-center"><button onclick="showBlueSection('powers')" class="px-6 py-2 bg-blue-600 rounded-full font-bold hover:bg-blue-500 transition-all">Begin Simulation</button></div></div></section>
-            <section id="blue-powers" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-blue-500"><h3 class="text-2xl font-bold text-blue-400 mb-4">Warp Calculations</h3><div class="flex flex-col md:flex-row gap-8 items-center"><div class="flex-1 text-center md:text-left"><div id="drill-power-q" class="text-3xl font-mono text-white mb-4 bg-white/5 p-4 rounded">Press Start</div><div class="flex gap-2"><input type="number" id="drill-power-input" placeholder="Result..." class="flex-1 bg-white/10 border border-white/20 rounded p-3 text-white outline-none focus:border-blue-500"><button onclick="checkPowerDrill()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded font-bold">Engage</button></div><div id="drill-power-feedback" class="mt-2 h-6 text-sm font-bold"></div></div><button onclick="generatePowerDrill()" class="px-6 py-2 border border-white/20 rounded-full hover:bg-white/10">New Coordinates</button></div></div></section>
-            <section id="blue-percent" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-emerald-500"><h3 class="text-2xl font-bold text-emerald-400 mb-4">Nebula Navigation</h3><div class="grid lg:grid-cols-2 gap-8"><div class="flex flex-col items-center"><div id="drill-percent-target" class="text-3xl font-mono text-white mb-4">Target: ---</div><button onclick="checkPercentDrill()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded font-bold mb-2">Verify Grid</button><button onclick="generatePercentDrill()" class="w-full py-2 bg-white/10 hover:bg-white/20 rounded">New Signal</button><div id="drill-percent-feedback" class="mt-2 h-6 text-sm font-bold text-center"></div></div><div class="flex justify-center"><div id="percent-grid" class="grid grid-cols-10 grid-rows-10 gap-1 w-[300px] h-[300px]"></div></div></div></div></section>
-            <section id="blue-division" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-orange-500"><h3 class="text-2xl font-bold text-orange-400 mb-4">Logistics Control</h3><div class="bg-black/30 p-6 rounded border border-white/10 mb-6 min-h-[100px] flex items-center justify-center"><p id="logistics-text" class="text-lg text-center text-slate-200">Awaiting scenario...</p></div><div id="logistics-options" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div><div class="text-center"><button onclick="generateLogisticsDrill()" class="px-8 py-2 bg-orange-600 hover:bg-orange-500 rounded-full font-bold">Next Scenario</button><div id="logistics-feedback" class="mt-4 h-6 font-bold text-sm"></div></div></div></section>
+            <section id="blue-briefs" class="max-w-4xl mx-auto space-y-8">
+                <div class="glass p-8 border-l-4 border-yellow-400 bg-black/40">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">Commander's Briefing</h3>
+                    <p class="text-slate-300 mb-4">Welcome, Elite Explorers.</p>
+                    <ul class="space-y-4 text-sm text-slate-400"><li class="bg-blue-900/20 p-3 rounded border border-blue-500/20"><strong class="text-blue-300 block mb-1">5.NS.3 (Warp Drive):</strong> Moving the decimal point based on powers of 10.</li></ul>
+                    <div class="mt-8 text-center"><button onclick="showBlueSection('powers')" class="px-6 py-2 bg-blue-600 rounded-full font-bold hover:bg-blue-500 transition-all">Begin Simulation</button></div>
+                </div>
+            </section>
+            <section id="blue-powers" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-blue-500">
+                    <h3 class="text-2xl font-bold text-blue-400 mb-4">Warp Calculations</h3>
+                    <div class="flex flex-col md:flex-row gap-8 items-center">
+                        <div class="flex-1 text-center md:text-left"><div id="drill-power-q" class="text-3xl font-mono text-white mb-4 bg-white/5 p-4 rounded">Press Start</div><div class="flex gap-2"><input type="number" id="drill-power-input" placeholder="Result..." class="flex-1 bg-white/10 border border-white/20 rounded p-3 text-white outline-none focus:border-blue-500"><button onclick="checkPowerDrill()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded font-bold">Engage</button></div><div id="drill-power-feedback" class="mt-2 h-6 text-sm font-bold"></div></div>
+                        <button onclick="generatePowerDrill()" class="px-6 py-2 border border-white/20 rounded-full hover:bg-white/10">New Coordinates</button>
+                    </div>
+                </div>
+            </section>
+            <section id="blue-percent" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-emerald-500">
+                    <h3 class="text-2xl font-bold text-emerald-400 mb-4">Nebula Navigation</h3>
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div class="flex flex-col items-center"><div id="drill-percent-target" class="text-3xl font-mono text-white mb-4">Target: ---</div><button onclick="checkPercentDrill()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded font-bold mb-2">Verify Grid</button><button onclick="generatePercentDrill()" class="w-full py-2 bg-white/10 hover:bg-white/20 rounded">New Signal</button><div id="drill-percent-feedback" class="mt-2 h-6 text-sm font-bold text-center"></div></div>
+                        <div class="flex justify-center"><div id="percent-grid" class="grid grid-cols-10 grid-rows-10 gap-1 w-[300px] h-[300px]"></div></div>
+                    </div>
+                </div>
+            </section>
+            <section id="blue-division" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-orange-500">
+                    <h3 class="text-2xl font-bold text-orange-400 mb-4">Logistics Control</h3>
+                    <div class="bg-black/30 p-6 rounded border border-white/10 mb-6 min-h-[100px] flex items-center justify-center"><p id="logistics-text" class="text-lg text-center text-slate-200">Awaiting scenario...</p></div>
+                    <div id="logistics-options" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"></div>
+                    <div class="text-center"><button onclick="generateLogisticsDrill()" class="px-8 py-2 bg-orange-600 hover:bg-orange-500 rounded-full font-bold">Next Scenario</button><div id="logistics-feedback" class="mt-4 h-6 font-bold text-sm"></div></div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -159,9 +437,32 @@
             <div class="flex gap-6 text-sm text-emerald-400"><button onclick="showGreenSection('decimals')" class="tab-btn active transition-all" id="btn-green-decimals">DECIMAL RADAR</button><button onclick="showGreenSection('cargo')" class="tab-btn transition-all" id="btn-green-cargo">CARGO OPS</button><button onclick="showGreenSection('mission')" class="tab-btn transition-all" id="btn-green-mission">MISSION LOGS</button></div>
         </nav>
         <main class="container mx-auto px-6 py-8">
-            <section id="green-decimals" class="space-y-8"><div class="glass p-8 border-l-4 border-emerald-500"><h3 class="text-2xl font-bold text-emerald-400 mb-4">Decimal Radar (4.NS.6)</h3><div class="grid lg:grid-cols-2 gap-8"><div class="flex flex-col items-center justify-center space-y-4"><div id="radar-target" class="text-4xl font-bold text-white bg-emerald-900/40 px-8 py-4 rounded-xl border border-emerald-500/30">Target: ---</div><div class="flex gap-4 w-full"><button onclick="generateDecimalDrill()" class="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded font-bold">New Target</button><button onclick="checkDecimalDrill()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 rounded font-bold">Scan</button></div><div id="decimal-feedback" class="h-6 font-bold text-sm"></div></div><div class="flex justify-center"><div id="decimal-grid" class="grid grid-cols-10 grid-rows-10 gap-1 w-[300px] h-[300px] bg-black/40 p-2 rounded"></div></div></div></div></section>
-            <section id="green-cargo" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-blue-500 text-center"><h3 class="text-2xl font-bold text-blue-400 mb-4">Cargo Operations (4.C.2)</h3><div id="cargo-problem" class="text-4xl font-mono text-white mb-6">Press New Manifest</div><div class="max-w-xs mx-auto mb-4"><input type="number" id="cargo-input" placeholder="Total Weight..." class="w-full bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none focus:border-blue-500"></div><div class="flex gap-4 justify-center"><button onclick="generateCargoDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">New Manifest</button><button onclick="checkCargoDrill()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded font-bold">Verify</button></div><div id="cargo-feedback" class="mt-4 h-6 font-bold text-sm"></div></div></section>
-            <section id="green-mission" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-yellow-500"><h3 class="text-2xl font-bold text-yellow-400 mb-4">Mission Logs (4.AT.1)</h3><div class="bg-black/30 p-6 rounded border border-white/10 mb-6 min-h-[100px] flex items-center justify-center"><p id="mission-text" class="text-lg text-slate-200 text-center">Awaiting Mission Parameters...</p></div><div id="mission-options" class="grid md:grid-cols-2 gap-4 mb-6"></div><div class="text-center"><button onclick="generateMission()" class="px-8 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-full font-bold">Receive Orders</button><div id="mission-feedback" class="mt-4 h-6 font-bold text-sm"></div></div></div></section>
+            <section id="green-decimals" class="space-y-8">
+                <div class="glass p-8 border-l-4 border-emerald-500">
+                    <h3 class="text-2xl font-bold text-emerald-400 mb-4">Decimal Radar (4.NS.6)</h3>
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div class="flex flex-col items-center justify-center space-y-4"><div id="radar-target" class="text-4xl font-bold text-white bg-emerald-900/40 px-8 py-4 rounded-xl border border-emerald-500/30">Target: ---</div><div class="flex gap-4 w-full"><button onclick="generateDecimalDrill()" class="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded font-bold">New Target</button><button onclick="checkDecimalDrill()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 rounded font-bold">Scan</button></div><div id="decimal-feedback" class="h-6 font-bold text-sm"></div></div>
+                        <div class="flex justify-center"><div id="decimal-grid" class="grid grid-cols-10 grid-rows-10 gap-1 w-[300px] h-[300px] bg-black/40 p-2 rounded"></div></div>
+                    </div>
+                </div>
+            </section>
+            <section id="green-cargo" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-blue-500 text-center">
+                    <h3 class="text-2xl font-bold text-blue-400 mb-4">Cargo Operations (4.C.2)</h3>
+                    <div id="cargo-problem" class="text-4xl font-mono text-white mb-6">Press New Manifest</div>
+                    <div class="max-w-xs mx-auto mb-4"><input type="number" id="cargo-input" placeholder="Total Weight..." class="w-full bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none focus:border-blue-500"></div>
+                    <div class="flex gap-4 justify-center"><button onclick="generateCargoDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">New Manifest</button><button onclick="checkCargoDrill()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded font-bold">Verify</button></div>
+                    <div id="cargo-feedback" class="mt-4 h-6 font-bold text-sm"></div>
+                </div>
+            </section>
+            <section id="green-mission" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-yellow-500">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">Mission Logs (4.AT.1)</h3>
+                    <div class="bg-black/30 p-6 rounded border border-white/10 mb-6 min-h-[100px] flex items-center justify-center"><p id="mission-text" class="text-lg text-slate-200 text-center">Awaiting Mission Parameters...</p></div>
+                    <div id="mission-options" class="grid md:grid-cols-2 gap-4 mb-6"></div>
+                    <div class="text-center"><button onclick="generateMission()" class="px-8 py-2 bg-yellow-600 hover:bg-yellow-500 rounded-full font-bold">Receive Orders</button><div id="mission-feedback" class="mt-4 h-6 font-bold text-sm"></div></div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -172,9 +473,39 @@
             <div class="flex gap-6 text-sm text-yellow-400"><button onclick="showYellowSection('array')" class="tab-btn active transition-all" id="btn-yellow-array">ARRAY ANALYZER</button><button onclick="showYellowSection('fraction')" class="tab-btn transition-all" id="btn-yellow-fraction">FRACTION SCAN</button><button onclick="showYellowSection('division')" class="tab-btn transition-all" id="btn-yellow-division">DIVISION SECTOR</button></div>
         </nav>
         <main class="container mx-auto px-6 py-8">
-            <section id="yellow-array" class="space-y-8"><div class="glass p-8 border-l-4 border-yellow-500"><h3 class="text-2xl font-bold text-yellow-400 mb-4">Multiplication Arrays (3.C.1)</h3><div class="flex flex-col items-center"><p class="text-slate-300 mb-4">Analyze the grid configuration to calculate total units.</p><div id="array-display" class="grid gap-1 mb-4 p-4 bg-black/40 rounded border border-yellow-500/20 transition-all duration-500"></div><div class="flex gap-2 items-center mb-4"><span class="text-xl font-mono text-white" id="array-dims">? x ?</span><span class="text-xl font-mono text-white">=</span><input type="number" id="array-input" class="w-20 bg-white/10 border border-white/20 rounded p-2 text-white text-center outline-none"><button onclick="checkArrayDrill()" class="bg-yellow-600 px-4 py-2 rounded font-bold hover:bg-yellow-500">Check</button></div><div id="array-feedback" class="h-6 font-bold text-sm"></div><button onclick="generateArrayDrill()" class="mt-4 text-xs text-slate-500 hover:text-white border border-white/10 px-3 py-1 rounded">Generate New Array</button></div></div></section>
-            <section id="yellow-fraction" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-yellow-500"><h3 class="text-2xl font-bold text-yellow-400 mb-4">Fraction Scanner (3.NS.3)</h3><div class="flex flex-col items-center"><p class="text-slate-300 mb-4">Identify the fuel rod capacity.</p><div id="fraction-bar" class="w-full max-w-md h-12 border-2 border-yellow-500 rounded flex overflow-hidden mb-6"></div><div class="flex gap-2 items-center text-white text-xl font-mono"><input type="number" id="frac-num" class="w-16 bg-white/10 border border-white/20 rounded p-2 text-center" placeholder="Num"><span>/</span><input type="number" id="frac-den" class="w-16 bg-white/10 border border-white/20 rounded p-2 text-center" placeholder="Den"></div><div class="mt-4 flex gap-4"><button onclick="generateFractionDrill()" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded">New Scan</button><button onclick="checkFractionDrill()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded font-bold">Verify</button></div><div id="fraction-feedback" class="mt-4 h-6 font-bold text-sm"></div></div></div></section>
-            <section id="yellow-division" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-yellow-500 text-center"><h3 class="text-2xl font-bold text-yellow-400 mb-4">Division Sector (Fluency)</h3><div id="division-q" class="text-4xl font-mono text-white mb-6">Press Start</div><input type="number" id="division-input" class="w-24 bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none mb-4"><div class="flex justify-center gap-4"><button onclick="generateDivisionDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">Next</button><button onclick="checkDivisionDrill()" class="px-6 py-2 bg-yellow-600 hover:bg-yellow-500 rounded font-bold">Solve</button></div><div id="division-feedback" class="mt-4 h-6 font-bold text-sm"></div></div></section>
+            <section id="yellow-array" class="space-y-8">
+                <div class="glass p-8 border-l-4 border-yellow-500">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">Multiplication Arrays (3.C.1)</h3>
+                    <div class="flex flex-col items-center">
+                        <p class="text-slate-300 mb-4">Analyze the grid configuration to calculate total units.</p>
+                        <div id="array-display" class="grid gap-1 mb-4 p-4 bg-black/40 rounded border border-yellow-500/20 transition-all duration-500"></div>
+                        <div class="flex gap-2 items-center mb-4"><span class="text-xl font-mono text-white" id="array-dims">? x ?</span><span class="text-xl font-mono text-white">=</span><input type="number" id="array-input" class="w-20 bg-white/10 border border-white/20 rounded p-2 text-white text-center outline-none"><button onclick="checkArrayDrill()" class="bg-yellow-600 px-4 py-2 rounded font-bold hover:bg-yellow-500">Check</button></div>
+                        <div id="array-feedback" class="h-6 font-bold text-sm"></div>
+                        <button onclick="generateArrayDrill()" class="mt-4 text-xs text-slate-500 hover:text-white border border-white/10 px-3 py-1 rounded">Generate New Array</button>
+                    </div>
+                </div>
+            </section>
+            <section id="yellow-fraction" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-yellow-500">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">Fraction Scanner (3.NS.3)</h3>
+                    <div class="flex flex-col items-center">
+                        <p class="text-slate-300 mb-4">Identify the fuel rod capacity.</p>
+                        <div id="fraction-bar" class="w-full max-w-md h-12 border-2 border-yellow-500 rounded flex overflow-hidden mb-6"></div>
+                        <div class="flex gap-2 items-center text-white text-xl font-mono"><input type="number" id="frac-num" class="w-16 bg-white/10 border border-white/20 rounded p-2 text-center" placeholder="Num"><span>/</span><input type="number" id="frac-den" class="w-16 bg-white/10 border border-white/20 rounded p-2 text-center" placeholder="Den"></div>
+                        <div class="mt-4 flex gap-4"><button onclick="generateFractionDrill()" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded">New Scan</button><button onclick="checkFractionDrill()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded font-bold">Verify</button></div>
+                        <div id="fraction-feedback" class="mt-4 h-6 font-bold text-sm"></div>
+                    </div>
+                </div>
+            </section>
+            <section id="yellow-division" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-yellow-500 text-center">
+                    <h3 class="text-2xl font-bold text-yellow-400 mb-4">Division Sector (Fluency)</h3>
+                    <div id="division-q" class="text-4xl font-mono text-white mb-6">Press Start</div>
+                    <input type="number" id="division-input" class="w-24 bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none mb-4">
+                    <div class="flex justify-center gap-4"><button onclick="generateDivisionDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">Next</button><button onclick="checkDivisionDrill()" class="px-6 py-2 bg-yellow-600 hover:bg-yellow-500 rounded font-bold">Solve</button></div>
+                    <div id="division-feedback" class="mt-4 h-6 font-bold text-sm"></div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -185,13 +516,122 @@
             <div class="flex gap-6 text-sm text-red-400"><button onclick="showRedSection('place')" class="tab-btn active transition-all" id="btn-red-place">PLACE VALUE</button><button onclick="showRedSection('add')" class="tab-btn transition-all" id="btn-red-add">ADDITION</button><button onclick="showRedSection('sub')" class="tab-btn transition-all" id="btn-red-sub">SUBTRACTION</button></div>
         </nav>
         <main class="container mx-auto px-6 py-8">
-            <section id="red-place" class="space-y-8"><div class="glass p-8 border-l-4 border-red-500"><h3 class="text-2xl font-bold text-red-400 mb-4">Place Value Construct (2.NS.1)</h3><div class="flex flex-col items-center"><p class="text-slate-300 mb-6">Calculate the total value of the cargo blocks.</p><div id="place-visual" class="flex flex-wrap justify-center items-end gap-4 mb-6 p-4 bg-black/40 rounded border border-red-500/20 min-h-[100px]"></div><div class="flex gap-2 items-center"><span class="text-white">Total:</span><input type="number" id="place-input" class="w-24 bg-white/10 border border-white/20 rounded p-2 text-white text-center"><button onclick="checkPlaceDrill()" class="bg-red-600 px-4 py-2 rounded font-bold hover:bg-red-500">Verify</button></div><div id="place-feedback" class="mt-4 h-6 font-bold text-sm"></div><button onclick="generatePlaceDrill()" class="mt-2 text-xs text-slate-500 hover:text-white">New Cargo</button></div></div></section>
-            <section id="red-add" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-red-500 text-center"><h3 class="text-2xl font-bold text-red-400 mb-4">Addition Thrusters (2.CA.1)</h3><div id="add-q" class="text-4xl font-mono text-white mb-6">Press Start</div><input type="number" id="add-input" class="w-24 bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none mb-4"><div class="flex justify-center gap-4"><button onclick="generateAddDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">Next</button><button onclick="checkAddDrill()" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded font-bold">Ignite</button></div><div id="add-feedback" class="mt-4 h-6 font-bold text-sm"></div></div></section>
-            <section id="red-sub" class="hidden space-y-8"><div class="glass p-8 border-l-4 border-red-500 text-center"><h3 class="text-2xl font-bold text-red-400 mb-4">Subtraction Shields (2.CA.1)</h3><div id="sub-q" class="text-4xl font-mono text-white mb-6">Press Start</div><input type="number" id="sub-input" class="w-24 bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none mb-4"><div class="flex justify-center gap-4"><button onclick="generateSubDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">Next</button><button onclick="checkSubDrill()" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded font-bold">Deflect</button></div><div id="sub-feedback" class="mt-4 h-6 font-bold text-sm"></div></div></section>
+            <section id="red-place" class="space-y-8">
+                <div class="glass p-8 border-l-4 border-red-500">
+                    <h3 class="text-2xl font-bold text-red-400 mb-4">Place Value Construct (2.NS.1)</h3>
+                    <div class="flex flex-col items-center">
+                        <p class="text-slate-300 mb-6">Calculate the total value of the cargo blocks.</p>
+                        <div id="place-visual" class="flex flex-wrap justify-center items-end gap-4 mb-6 p-4 bg-black/40 rounded border border-red-500/20 min-h-[100px]"></div>
+                        <div class="flex gap-2 items-center"><span class="text-white">Total:</span><input type="number" id="place-input" class="w-24 bg-white/10 border border-white/20 rounded p-2 text-white text-center"><button onclick="checkPlaceDrill()" class="bg-red-600 px-4 py-2 rounded font-bold hover:bg-red-500">Verify</button></div>
+                        <div id="place-feedback" class="mt-4 h-6 font-bold text-sm"></div>
+                        <button onclick="generatePlaceDrill()" class="mt-2 text-xs text-slate-500 hover:text-white">New Cargo</button>
+                    </div>
+                </div>
+            </section>
+            <section id="red-add" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-red-500 text-center">
+                    <h3 class="text-2xl font-bold text-red-400 mb-4">Addition Thrusters (2.CA.1)</h3>
+                    <div id="add-q" class="text-4xl font-mono text-white mb-6">Press Start</div>
+                    <input type="number" id="add-input" class="w-24 bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none mb-4">
+                    <div class="flex justify-center gap-4"><button onclick="generateAddDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">Next</button><button onclick="checkAddDrill()" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded font-bold">Ignite</button></div>
+                    <div id="add-feedback" class="mt-4 h-6 font-bold text-sm"></div>
+                </div>
+            </section>
+            <section id="red-sub" class="hidden space-y-8">
+                <div class="glass p-8 border-l-4 border-red-500 text-center">
+                    <h3 class="text-2xl font-bold text-red-400 mb-4">Subtraction Shields (2.CA.1)</h3>
+                    <div id="sub-q" class="text-4xl font-mono text-white mb-6">Press Start</div>
+                    <input type="number" id="sub-input" class="w-24 bg-white/10 border border-white/20 rounded p-3 text-white text-center text-xl outline-none mb-4">
+                    <div class="flex justify-center gap-4"><button onclick="generateSubDrill()" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded">Next</button><button onclick="checkSubDrill()" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded font-bold">Deflect</button></div>
+                    <div id="sub-feedback" class="mt-4 h-6 font-bold text-sm"></div>
+                </div>
+            </section>
         </main>
     </div>
 
     <script>
+        // --- READING LOGS DATA (RE-ADDED) ---
+        const logs = [
+            {
+                title: "Log 402: The Martian Dust Storm",
+                content: {
+                    red: "The dust storm started on Monday. It was very big. The sky turned red. The rover had to stop. It waited for three days. Then the sun came out again.",
+                    yellow: "On Monday, a massive dust storm began on Mars. The sky turned a deep red color because of the sand. The rover was forced to stop its mission to stay safe. After three long days, the sun finally appeared.",
+                    green: "Atmospheric sensors detected a high-velocity dust storm originating from the northern crater on Monday. As opacity increased, the sky shifted to a crimson hue. Protocol required the rover to cease locomotion immediately. Following a 72-hour stasis period, solar visibility returned to nominal levels.",
+                    blue: "Meteorological arrays registered a significant atmospheric disturbance commencing on Monday, characterized by high-velocity particulate matter. The resulting optical density rendered the atmosphere an opaque crimson. In accordance with safety protocols, the rover initiated an immediate cessation of all locomotive functions. Following a 72-hour duration of non-operation, solar irradiance levels normalized, permitting mission resumption."
+                },
+                structure: { type: "Chronological", options: ["Chronological", "Compare/Contrast", "Problem/Solution", "Descriptive"] },
+                inference: { q: "Why did the rover stop?", correct: "To protect itself from the storm.", options: ["It ran out of battery.", "To protect itself from the storm.", "It was night time.", "It broke down."] },
+                theme: { correct: "Nature can force technology to pause.", options: ["Nature can force technology to pause.", "Mars is always sunny.", "Rovers are faster than storms.", "Dust storms are small."] },
+                mainidea: { correct: "A dust storm paused the rover's mission for three days.", options: ["The sky is red on Mars.", "A dust storm paused the rover's mission for three days.", "The rover has wheels.", "Monday is a busy day."] }
+            },
+            {
+                title: "Log 89: The Hydroponic Garden",
+                content: {
+                    red: "Plants grow in water in space. We do not use dirt. This is called hydroponics. It saves space on the ship. The astronauts eat fresh lettuce.",
+                    yellow: "In space, we grow plants directly in water instead of using soil. This method is called hydroponics. It helps us save heavy soil weight on the rocket. The crew enjoys eating fresh, green lettuce.",
+                    green: "Space agriculture relies on hydroponics, a method of cultivating plants in nutrient-rich water rather than soil. This technique is crucial because hauling soil adds unnecessary mass to the spacecraft. Consequently, the crew can sustain themselves with fresh produce like lettuce during long voyages.",
+                    blue: "The cultivation of flora within the spacecraft utilizes hydroponic systems, negating the necessity for pedological substrates (soil). This methodology is imperative for mass optimization, as transporting soil is logistically inefficient. The resulting harvest provides the crew with essential fresh vegetation, such as lettuce, mitigating nutritional deficiencies during extended interstellar travel."
+                },
+                structure: { type: "Cause/Effect", options: ["Chronological", "Cause/Effect", "Problem/Solution", "Sequential"] },
+                inference: { q: "Why don't they use dirt in space?", correct: "It is too heavy to carry on the rocket.", options: ["There is no dirt on Earth.", "It is too heavy to carry on the rocket.", "The plants hate dirt.", "Water is cheaper than dirt."] },
+                theme: { correct: "Innovation allows life to thrive in new places.", options: ["Innovation allows life to thrive in new places.", "Lettuce tastes bad.", "Space is empty.", "Water is dangerous."] },
+                mainidea: { correct: "Hydroponics allows astronauts to grow food without heavy soil.", options: ["Hydroponics allows astronauts to grow food without heavy soil.", "Lettuce is green.", "Rockets are fast.", "Astronauts drink water."] }
+            },
+            {
+                title: "Log 215: The Silent Antenna",
+                content: {
+                    red: "The big radio stopped working. The crew could not talk to Earth. Captain Jay went outside the ship. He fixed a broken wire. Now they can talk again.",
+                    yellow: "Communication with Earth was lost when the main antenna failed. It was too quiet. Captain Jay put on his suit and went outside. He found a snapped wire and repaired it. Suddenly, voices from Earth came back.",
+                    green: "Mission Control fell silent due to a critical failure in the high-gain antenna array. To restore the link, Captain Jay executed an emergency EVA (Extravehicular Activity). He identified a severed coaxial cable and spliced it. Telemetry confirmed the connection was successfully re-established.",
+                    blue: "A catastrophic severance in the primary communications array resulted in a total loss of downlink capability with terrestrial command. Mitigating this isolation required an immediate EVA intervention. Captain Jay performed a manual splice of the compromised transmission line, successfully restoring bidirectional data flow and voice comms."
+                },
+                structure: { type: "Problem/Solution", options: ["Chronological", "Problem/Solution", "Compare/Contrast", "Descriptive"] },
+                inference: { q: "How did the crew likely feel before the repair?", correct: "Worried and isolated.", options: ["Happy and relaxed.", "Worried and isolated.", "Hungry for lunch.", "Sleepy and bored."] },
+                theme: { correct: "Bravery and skill can solve dangerous problems.", options: ["Bravery and skill can solve dangerous problems.", "Wires break easily.", "Space is very quiet.", "Talking is not important."] },
+                mainidea: { correct: "Captain Jay fixed a broken antenna to restore communication.", options: ["Captain Jay went for a walk.", "The radio was old.", "Captain Jay fixed a broken antenna to restore communication.", "Earth is far away."] }
+            },
+            {
+                title: "Log 330: Two Worlds",
+                content: {
+                    red: "Earth has one sun. Kepler-186f has a red sun. Earth has blue water. Kepler has dark water. Both planets have clouds. Both planets have rocks.",
+                    yellow: "Earth and the planet Kepler-186f are different. Earth orbits a bright yellow sun, while Kepler orbits a dim red star. Earth's oceans look blue, but Kepler's look black. However, both planets have rocky ground and clouds in the sky.",
+                    green: "While Earth orbits a solitary G-type yellow dwarf star, Kepler-186f revolves around a cooler red dwarf. This difference in light makes Earth's oceans appear azure, whereas Kepler's liquid bodies appear almost black. Despite these spectral disparities, both celestial bodies possess significant atmospheric cloud cover and lithospheric similarities.",
+                    blue: "A comparative analysis of Earth and Kepler-186f reveals distinct stellar parentage; Earth orbits a G-type main sequence star, while Kepler orbits an M-type red dwarf. Consequently, the hydrospheric reflection spectra differ, yielding blue oceans on Earth and near-black bodies on Kepler. Conversely, both exoplanets exhibit analogous silicate crust compositions and atmospheric condensation patterns."
+                },
+                structure: { type: "Compare/Contrast", options: ["Chronological", "Compare/Contrast", "Cause/Effect", "Sequential"] },
+                inference: { q: "Why does the water look different on Kepler?", correct: "Because the star (sun) is a different color.", options: ["The water is dirty.", "Because the star (sun) is a different color.", "There is no water on Kepler.", "The clouds hide the water."] },
+                theme: { correct: "Worlds can be similar yet strikingly different.", options: ["Worlds can be similar yet strikingly different.", "Earth is the best planet.", "Red stars are hot.", "Rocks are everywhere."] },
+                mainidea: { correct: "Earth and Kepler-186f have different stars and water colors, but similar ground.", options: ["Kepler is a red planet.", "Earth has one sun.", "Earth and Kepler-186f have different stars and water colors, but similar ground.", "Clouds are white."] }
+            },
+            {
+                title: "Log 501: EVA Suit Protocol",
+                content: {
+                    red: "First, put on the soft clothes. Second, step into the legs. Third, put on the hard chest piece. Last, lock the helmet. Check the air.",
+                    yellow: "To put on a space suit, follow these steps. First, wear the cooling undergarment. Next, step into the lower pants section. Then, pull the hard upper torso over your head. Finally, lock the helmet and check your oxygen.",
+                    green: "The Extravehicular Mobility Unit (EMU) donning procedure is strict. Step 1: Don the Liquid Cooling and Ventilation Garment (LCVG). Step 2: Enter the Lower Torso Assembly. Step 3: Secure the Hard Upper Torso. Step 4: Engage the helmet locking ring. Step 5: Verify oxygen pressure levels.",
+                    blue: "Initiating the EVA suit donning sequence requires adherence to sequential protocol. The astronaut first dons the Liquid Cooling and Ventilation Garment (LCVG) to regulate thermal output. Subsequently, ingress into the Lower Torso Assembly is required, followed by the securing of the Hard Upper Torso. The procedure concludes with the mechanical engagement of the helmet locking ring and a comprehensive life-support systems check."
+                },
+                structure: { type: "Sequential", options: ["Sequential", "Cause/Effect", "Compare/Contrast", "Problem/Solution"] },
+                inference: { q: "What might happen if you skip the helmet lock?", correct: "Air would leak out.", options: ["The suit would be too tight.", "Air would leak out.", "You would get too hot.", "The boots wouldn't fit."] },
+                theme: { correct: "Following order is critical for safety.", options: ["Following order is critical for safety.", "Space suits are heavy.", "Walking is hard.", "Helmets are round."] },
+                mainidea: { correct: "There are specific steps to safely putting on a space suit.", options: ["Space suits are white.", "There are specific steps to safely putting on a space suit.", "Oxygen is air.", "The suit has legs."] }
+            },
+            {
+                title: "Log 612: The Crystal Cavern",
+                content: {
+                    red: "The cave was dark. Bright blue crystals covered the walls. They glowed like stars. The floor was smooth. It felt cold inside.",
+                    yellow: "The cave was deep and dark, but not empty. Massive blue crystals grew on every wall, glowing softly like distant stars. The floor was smooth black rock. The air inside felt freezing cold.",
+                    green: "The subterranean cavern was devoid of natural sunlight, yet illuminated by the bioluminescence of azure crystalline formations. These minerals adhered to the jagged walls, emitting a light comparable to starlight. The basaltic floor was remarkably polished, and thermal readings indicated a sub-zero ambient temperature.",
+                    blue: "The subterranean cavern was devoid of solar incidence, yet bathed in the bioluminescent resonance of extensive azure crystalline aggregations. These geological formations coated the vertical strata, emitting a lux output analogous to stellar magnitude. The basaltic floor exhibited a vitreous smoothness, while atmospheric sensors registered a significant thermal deficit (sub-zero)."
+                },
+                structure: { type: "Descriptive", options: ["Descriptive", "Sequential", "Problem/Solution", "Chronological"] },
+                inference: { q: "Where was the light coming from?", correct: "The crystals themselves.", options: ["The sun outside.", "A flashlight.", "The crystals themselves.", "A fire."] },
+                theme: { correct: "Beauty can be found in dark places.", options: ["Beauty can be found in dark places.", "Caves are scary.", "Rocks are hard.", "Blue is a nice color."] },
+                mainidea: { correct: "The cave was cold and filled with glowing blue crystals.", options: ["The cave was cold and filled with glowing blue crystals.", "It was dark.", "The floor was smooth.", "Crystals are rocks."] }
+            }
+        ];
+
         // --- AUTHENTICATION & DATA HANDLING ---
         let sessionUser = { name: "Cadet", id: "000" };
         let missionLog = [];
