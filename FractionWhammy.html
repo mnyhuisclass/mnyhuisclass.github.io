@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraction Fortune: Team Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .game-title {
+            font-family: 'Bungee', cursive;
+            text-shadow: 4px 4px 0px #3b82f6;
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        @keyframes pulse {
+            from { opacity: 0.5; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Board Grid */
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .board-cell {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            background: #1e293b;
+            border: 4px solid #334155;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        .board-cell.active {
+            background: #fef08a;
+            color: #000;
+            border-color: #eab308;
+            box-shadow: 0 0 20px #eab308, inset 0 0 10px white;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        /* Fraction Display - simplified for utility class usage */
+        .fraction {
+            /* Basic resets, size handled by Tailwind classes in JS */
+            line-height: 1; 
+        }
+
+        .whammy-icon {
+            font-size: 2.5rem;
+            color: #ef4444;
+            animation: bounce 1s infinite;
+        }
+
+        /* Buttons */
+        .btn-press {
+            background: linear-gradient(to bottom, #ef4444, #b91c1c);
+            box-shadow: 0 6px 0 #7f1d1d;
+            transition: all 0.1s;
+        }
+        .btn-press:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #7f1d1d;
+        }
+
+        .money-text {
+            color: #22c55e;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        .sparkle {
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        /* Team Card Styles */
+        .team-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .team-card.active-turn {
+            border-color: #fbbf24;
+            background-color: #1e293b;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- GAME CONTAINER -->
+    <div id="game-container" class="w-full max-w-5xl bg-slate-900 rounded-3xl p-6 border-4 border-slate-700 shadow-2xl relative">
+        
+        <!-- HEADER -->
+        <header class="text-center mb-6">
+            <h1 class="game-title text-4xl md:text-5xl text-yellow-400 mb-2">FRACTION FORTUNE</h1>
+            <div class="flex justify-center gap-4 text-slate-400 text-sm md:text-base font-bold uppercase tracking-widest" id="game-info-header">
+                <span>Team Edition</span>
+            </div>
+        </header>
+
+        <!-- VIEW: SETUP SCREEN -->
+        <div id="setup-view" class="text-center py-8">
+            <h2 class="text-3xl text-white font-bold mb-8">How many teams are playing?</h2>
+            <div class="flex justify-center gap-4 md:gap-6 mb-12 flex-wrap">
+                <button onclick="initGame(2)" class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-slate-800 hover:bg-blue-600 border-4 border-slate-600 hover:border-blue-400 text-3xl md:text-4xl font-bold transition-all transform hover:-translate-y-2">2</button>
+                <button onclick="initGame(3)" class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-slate-800 hover:bg-blue-600 border-4 border-slate-600 hover:border-blue-400 text-3xl md:text-4xl font-bold transition-all transform hover:-translate-y-2">3</button>
+                <button onclick="initGame(4)" class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-slate-800 hover:bg-blue-600 border-4 border-slate-600 hover:border-blue-400 text-3xl md:text-4xl font-bold transition-all transform hover:-translate-y-2">4</button>
+                <button onclick="initGame(5)" class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-slate-800 hover:bg-blue-600 border-4 border-slate-600 hover:border-blue-400 text-3xl md:text-4xl font-bold transition-all transform hover:-translate-y-2">5</button>
+            </div>
+            <div class="text-slate-400 max-w-lg mx-auto text-sm">
+                Each team will take turns answering 3 questions to earn spins, then trying their luck on the board!
+            </div>
+        </div>
+
+        <!-- VIEW: TURN START -->
+        <div id="turn-start-view" class="hidden text-center py-20">
+            <h2 class="text-2xl text-slate-400 mb-4">It's time for</h2>
+            <h1 id="turn-team-name" class="text-6xl text-yellow-400 font-black mb-12 game-title tracking-wider">TEAM 1</h1>
+            <button onclick="startQuizPhase()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-12 rounded-full text-2xl shadow-lg animate-bounce">
+                START TURN
+            </button>
+        </div>
+
+        <!-- VIEW: QUIZ MODE -->
+        <div id="quiz-view" class="hidden w-full max-w-3xl mx-auto">
+            <div class="flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div class="font-bold text-blue-400 text-xl" id="quiz-team-indicator">TEAM 1</div>
+                <div class="text-yellow-400 font-bold text-xl">Spins Earned: <span id="quiz-spins">0</span></div>
+            </div>
+
+            <div class="bg-slate-800 rounded-2xl p-8 mb-6 text-center border-2 border-slate-700 min-h-[300px] flex flex-col justify-center">
+                <div class="text-slate-400 text-sm mb-4 uppercase tracking-wider" id="topic-badge">Topic</div>
+                <h2 id="question-text" class="text-4xl md:text-5xl font-bold mb-10 flex items-center justify-center gap-4 flex-wrap leading-normal">
+                    <!-- Question injected here -->
+                </h2>
+                
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+            <div id="feedback-msg" class="h-8 text-center font-bold text-xl"></div>
+        </div>
+
+        <!-- VIEW: BOARD MODE -->
+        <div id="board-view" class="hidden w-full">
+            
+            <!-- Scoreboard Strip -->
+            <div id="scoreboard-strip" class="flex flex-wrap justify-center gap-2 mb-4">
+                <!-- Team scores injected here -->
+            </div>
+
+            <!-- Active Player Stats -->
+            <div class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-4 rounded-xl mb-4 border-2 border-slate-600 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-2 h-full bg-yellow-400"></div>
+                <div class="pl-4 text-center md:text-left mb-2 md:mb-0">
+                    <div class="text-sm text-yellow-400 font-bold uppercase tracking-wider mb-1" id="board-team-name">TEAM 1</div>
+                    <div class="text-xs text-slate-400">ROUND BANK</div>
+                    <div class="text-4xl font-bold text-green-400">$<span id="score-display">0</span></div>
+                </div>
+                
+                <div class="flex gap-4 items-center">
+                    <div class="text-right">
+                        <div class="text-xs text-slate-400">SPINS LEFT</div>
+                        <div class="text-3xl font-bold text-white" id="spins-left">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6 items-start justify-center">
+                <!-- THE BIG BOARD -->
+                <div class="board-grid flex-grow w-full lg:w-auto" id="game-board">
+                    <!-- Cells generated by JS -->
+                </div>
+
+                <!-- CONTROLS -->
+                <div class="flex flex-col gap-3 min-w-[220px] w-full lg:w-auto text-center bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <div id="board-message" class="text-lg font-bold min-h-[60px] flex items-center justify-center text-yellow-300 leading-tight mb-2">
+                        Press SPIN!
+                    </div>
+
+                    <button id="spin-btn" onclick="toggleSpin()" class="btn-press py-5 px-6 rounded-xl text-2xl font-black text-white uppercase tracking-wider w-full">
+                        SPIN!
+                    </button>
+                    
+                    <button id="cashout-btn" onclick="cashOut()" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all w-full opacity-50 cursor-not-allowed" disabled>
+                        KEEP MONEY<br><span class="text-xs font-normal opacity-80">(Ends Turn)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- GAME DATA --- */
+        const questionBank = [
+            // --- MIXED NUMBERS (20 Questions) ---
+            { topic: "Mixed Numbers", q: "2 1/2 + 1 1/2", options: ["3 1/2", "4", "3", "4 1/2"], correct: 1 },
+            { topic: "Mixed Numbers", q: "3 3/4 - 1 1/4", options: ["2 1/2", "2 1/4", "1 1/2", "2"], correct: 0 },
+            { topic: "Mixed Numbers", q: "1 2/3 + 2 2/3", options: ["3 1/3", "3 2/3", "4 1/3", "4"], correct: 2 },
+            { topic: "Mixed Numbers", q: "5 - 1 1/4", options: ["4 1/4", "3 3/4", "3 1/4", "4 3/4"], correct: 1 },
+            { topic: "Mixed Numbers", q: "4 1/5 - 2 3/5", options: ["1 3/5", "2 2/5", "1 2/5", "1 4/5"], correct: 0 },
+            { topic: "Mixed Numbers", q: "1 1/3 + 1 1/3", options: ["2 2/3", "2 1/3", "3", "1 2/3"], correct: 0 },
+            { topic: "Mixed Numbers", q: "2 5/8 + 1 2/8", options: ["3 5/8", "3 3/4", "3 7/8", "4"], correct: 2 },
+            { topic: "Mixed Numbers", q: "3 1/6 + 2 5/6", options: ["5 1/6", "5 5/6", "6", "6 1/6"], correct: 2 },
+            { topic: "Mixed Numbers", q: "4 1/2 - 2", options: ["2", "3 1/2", "2 1/2", "4"], correct: 2 },
+            { topic: "Mixed Numbers", q: "3 - 1 2/5", options: ["2 2/5", "1 3/5", "1 2/5", "2 3/5"], correct: 1 },
+            { topic: "Mixed Numbers", q: "2 1/4 + 3 3/4", options: ["5 1/4", "5 3/4", "5", "6"], correct: 3 },
+            { topic: "Mixed Numbers", q: "5 3/8 - 2 1/8", options: ["3 1/4", "3 2/8", "3 1/8", "3 3/8"], correct: 1 }, // accept 3 2/8 or 3 1/4, here 3 2/8 displayed
+            { topic: "Mixed Numbers", q: "1 5/10 + 2 5/10", options: ["3 5/10", "4", "3", "4 5/10"], correct: 1 },
+            { topic: "Mixed Numbers", q: "6 2/3 - 4 1/3", options: ["2 1/3", "2 2/3", "2", "3 1/3"], correct: 0 },
+            { topic: "Mixed Numbers", q: "2 1/5 + 1 3/5", options: ["3 2/5", "4 1/5", "3 4/5", "3 1/5"], correct: 2 },
+            { topic: "Mixed Numbers", q: "3 7/9 - 1 2/9", options: ["2 2/9", "2 5/9", "2 7/9", "1 5/9"], correct: 1 },
+            { topic: "Mixed Numbers", q: "4 1/2 + 2 1/2", options: ["6 1/2", "7", "6", "7 1/2"], correct: 1 },
+            { topic: "Mixed Numbers", q: "5 5/6 - 2 1/6", options: ["3 2/3", "3 4/6", "3 1/6", "3 3/6"], correct: 1 },
+            { topic: "Mixed Numbers", q: "1 3/8 + 2 7/8", options: ["3 7/8", "4 1/4", "4", "3 3/8"], correct: 1 },
+            { topic: "Mixed Numbers", q: "4 - 2 1/3", options: ["2 1/3", "1 2/3", "2 2/3", "1 1/3"], correct: 1 },
+
+            // --- LIKE DENOMINATORS / FRACTIONS (20 Questions) ---
+            { topic: "Adding Fractions", q: "1/5 + 2/5", options: ["3/5", "3/10", "2/5", "1"], correct: 0 },
+            { topic: "Subtracting Fractions", q: "7/8 - 3/8", options: ["4/16", "1/2", "5/8", "10/8"], correct: 1 },
+            { topic: "Adding Fractions", q: "2/9 + 4/9", options: ["6/18", "2/3", "8/9", "6/9"], correct: 3 }, 
+            { topic: "Adding Fractions", q: "3/4 + 3/4", options: ["6/8", "1 1/2", "1 1/4", "9/4"], correct: 1 },
+            { topic: "Adding Fractions", q: "1/3 + 1/3", options: ["2/6", "2/3", "1", "3/3"], correct: 1 },
+            { topic: "Subtracting Fractions", q: "5/6 - 1/6", options: ["4/6", "3/6", "2/6", "1"], correct: 0 },
+            { topic: "Adding Fractions", q: "2/7 + 3/7", options: ["5/7", "5/14", "6/7", "1/7"], correct: 0 },
+            { topic: "Subtracting Fractions", q: "9/10 - 3/10", options: ["6/10", "5/10", "12/10", "6/20"], correct: 0 },
+            { topic: "Adding Fractions", q: "3/8 + 4/8", options: ["7/16", "1/8", "7/8", "8/8"], correct: 2 },
+            { topic: "Subtracting Fractions", q: "11/12 - 5/12", options: ["4/12", "1/2", "7/12", "5/12"], correct: 1 },
+            { topic: "Adding Fractions", q: "2/5 + 4/5", options: ["6/10", "1 1/5", "3/5", "6/5"], correct: 3 },
+            { topic: "Adding Fractions", q: "4/9 + 4/9", options: ["8/18", "1", "8/9", "0"], correct: 2 },
+            { topic: "Adding Fractions", q: "7/10 + 3/10", options: ["10/20", "1", "9/10", "4/10"], correct: 1 },
+            { topic: "Subtracting Fractions", q: "3/4 - 1/4", options: ["1/4", "1/2", "3/4", "1"], correct: 1 },
+            { topic: "Adding Fractions", q: "5/8 + 5/8", options: ["10/16", "1 1/4", "10/8", "1 1/8"], correct: 2 },
+            { topic: "Subtracting Fractions", q: "6/7 - 2/7", options: ["4/7", "3/7", "5/7", "8/7"], correct: 0 },
+            { topic: "Adding Fractions", q: "1/6 + 5/6", options: ["6/12", "5/6", "1", "4/6"], correct: 2 },
+            { topic: "Subtracting Fractions", q: "8/9 - 2/9", options: ["5/9", "6/9", "10/9", "1"], correct: 1 },
+            { topic: "Adding Fractions", q: "1/4 + 2/4", options: ["3/8", "3/4", "1/2", "1"], correct: 1 },
+            { topic: "Adding Fractions", q: "5/12 + 2/12", options: ["7/24", "7/12", "3/12", "8/12"], correct: 1 },
+            
+            // --- EQUIVALENT FRACTIONS (20 Questions) ---
+            { topic: "Equivalent Fractions", q: "1/2 = ?/6", options: ["2", "3", "4", "1"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "2/3 = 4/?", options: ["6", "9", "5", "8"], correct: 0 },
+            { topic: "Equivalent Fractions", q: "1/4 = ?/8", options: ["2", "4", "3", "1"], correct: 0 },
+            { topic: "Equivalent Fractions", q: "3/5 = 6/?", options: ["8", "9", "10", "15"], correct: 2 },
+            { topic: "Equivalent Fractions", q: "1/3 = ?/9", options: ["2", "3", "4", "1"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "3/4 = ?/8", options: ["5", "6", "7", "4"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "2/5 = 4/?", options: ["10", "8", "15", "5"], correct: 0 },
+            { topic: "Equivalent Fractions", q: "1/2 = 5/?", options: ["5", "8", "10", "15"], correct: 2 },
+            { topic: "Equivalent Fractions", q: "4/8 = 1/?", options: ["4", "3", "2", "8"], correct: 2 },
+            { topic: "Equivalent Fractions", q: "2/3 = ?/12", options: ["6", "8", "9", "4"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "5/6 = 10/?", options: ["10", "11", "12", "18"], correct: 2 },
+            { topic: "Equivalent Fractions", q: "3/4 = 9/?", options: ["12", "16", "8", "10"], correct: 0 },
+            { topic: "Equivalent Fractions", q: "1/5 = ?/10", options: ["1", "2", "3", "5"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "6/10 = ?/5", options: ["2", "3", "4", "1"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "8/12 = ?/3", options: ["1", "2", "3", "4"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "2/8 = 1/?", options: ["2", "3", "4", "5"], correct: 2 },
+            { topic: "Equivalent Fractions", q: "4/5 = ?/15", options: ["8", "10", "12", "14"], correct: 2 },
+            { topic: "Equivalent Fractions", q: "3/9 = 1/?", options: ["2", "3", "4", "1"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "1/2 = ?/100", options: ["25", "50", "10", "75"], correct: 1 },
+            { topic: "Equivalent Fractions", q: "7/7 = ?/9", options: ["7", "8", "9", "1"], correct: 2 },
+        ];
+
+        // Board Values
+        const boardValues = [
+            { type: 'cash', val: 500 }, { type: 'cash', val: 750 }, { type: 'whammy', val: 0 }, { type: 'cash', val: 1000 },
+            { type: 'cash', val: 1500 }, { type: 'spin', val: 1 }, { type: 'cash', val: 2500 }, { type: 'whammy', val: 0 },
+            { type: 'cash', val: 5000 }, { type: 'cash', val: 300 }, { type: 'cash', val: 2000 }, { type: 'whammy', val: 0 },
+            { type: 'cash', val: 1250 }, { type: 'cash', val: 600 }, { type: 'spin', val: 2 }, { type: 'cash', val: 4000 }
+        ];
+
+        /* --- STATE --- */
+        let teams = []; // { name: 'Team 1', score: 0 }
+        let currentTeamIndex = 0;
+        let roundQuestions = []; // Subset of questions for current turn
+        let currentQIndex = 0;
+        let turnSpins = 0;
+        let turnCash = 0;
+        let isSpinning = false;
+        let spinInterval;
+        let activeCellIndex = 0;
+
+        /* --- DOM ELEMENTS --- */
+        const views = {
+            setup: document.getElementById('setup-view'),
+            turnStart: document.getElementById('turn-start-view'),
+            quiz: document.getElementById('quiz-view'),
+            board: document.getElementById('board-view')
+        };
+
+        /* --- INIT --- */
+        function switchView(viewName) {
+            Object.values(views).forEach(el => el.classList.add('hidden'));
+            views[viewName].classList.remove('hidden');
+        }
+
+        function initGame(numTeams) {
+            teams = [];
+            for(let i=1; i<=numTeams; i++) {
+                teams.push({ name: `TEAM ${i}`, score: 0 });
+            }
+            currentTeamIndex = 0;
+            switchView('turnStart');
+            updateTurnStartScreen();
+        }
+
+        function updateTurnStartScreen() {
+            const team = teams[currentTeamIndex];
+            const nameEl = document.getElementById('turn-team-name');
+            nameEl.innerText = team.name;
+            // Color cycling for teams
+            const colors = ['text-blue-400', 'text-red-400', 'text-green-400', 'text-yellow-400', 'text-purple-400'];
+            nameEl.className = `text-6xl font-black mb-12 game-title tracking-wider ${colors[currentTeamIndex % colors.length]}`;
+        }
+
+        function startQuizPhase() {
+            // Pick 3 random questions
+            roundQuestions = [...questionBank].sort(() => 0.5 - Math.random()).slice(0, 3);
+            currentQIndex = 0;
+            turnSpins = 0;
+            turnCash = 0; // Reset cash for the new turn
+            
+            document.getElementById('quiz-team-indicator').innerText = teams[currentTeamIndex].name;
+            document.getElementById('quiz-spins').innerText = '0';
+            
+            switchView('quiz');
+            loadQuestion();
+        }
+
+        /* --- QUIZ LOGIC --- */
+        function loadQuestion() {
+            if (currentQIndex >= roundQuestions.length) {
+                // End of quiz, go to board
+                startBoardPhase();
+                return;
+            }
+
+            const qData = roundQuestions[currentQIndex];
+            
+            // Format
+            document.getElementById('topic-badge').innerText = qData.topic;
+            document.getElementById('question-text').innerHTML = formatMixedNumber(qData.q);
+            
+            const optsContainer = document.getElementById('options-container');
+            optsContainer.innerHTML = '';
+
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-slate-700 hover:bg-slate-600 text-white text-2xl font-bold py-6 px-4 rounded-xl border-b-4 border-slate-900 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center";
+                btn.innerHTML = formatMixedNumber(opt);
+                btn.onclick = () => handleAnswer(index, qData.correct, btn);
+                optsContainer.appendChild(btn);
+            });
+        }
+
+        function formatMixedNumber(str) {
+            // Styling constants
+            const wholeClass = "text-5xl md:text-6xl font-black mr-2"; 
+            
+            // 1. Mixed Numbers: "2 1/2" -> Big 2, small vertical 1/2
+            let s = str.replace(/(\d+)\s+(\d+|[\?])\/(\d+|[\?])/g, 
+                `<div class="inline-flex items-center align-middle mx-2">
+                    <span class="${wholeClass}">$1</span>
+                    <div class="fraction flex flex-col items-center leading-none text-2xl md:text-3xl font-bold">
+                        <span class="numerator border-b-2 border-current px-1 mb-0.5">$2</span>
+                        <span class="denominator px-1 mt-0.5">$3</span>
+                    </div>
+                 </div>`);
+            
+            // 2. Simple Fractions: "1/2" or "3/4" (must not follow digit+space to avoid double matching)
+            s = s.replace(/(^|[^0-9])(\d+|[\?])\/(\d+|[\?])/g, 
+                `$1<div class="fraction inline-flex flex-col items-center align-middle leading-none mx-1 text-3xl md:text-4xl font-bold">
+                    <span class="numerator border-b-2 border-current px-1 mb-0.5">$2</span>
+                    <span class="denominator px-1 mt-0.5">$3</span>
+                 </div>`);
+            
+            // 3. Standalone Whole Numbers: Wraps "5" in "5 - 1/4" or option "4"
+            // We ensure these are just as big as the whole numbers in mixed sets
+            s = s.replace(/(^|\s)(\d+)(?=\s|$)/g, 
+                `$1<span class="${wholeClass} inline-block align-middle">$2</span>`);
+
+            return s;
+        }
+
+        function handleAnswer(selected, correct, btnElement) {
+            const buttons = document.getElementById('options-container').children;
+            for(let btn of buttons) btn.disabled = true;
+
+            const feedback = document.getElementById('feedback-msg');
+
+            if (selected === correct) {
+                btnElement.classList.remove('bg-slate-700');
+                btnElement.classList.add('bg-green-600', 'border-green-800');
+                turnSpins += 3; // 3 Spins per correct
+                document.getElementById('quiz-spins').innerText = turnSpins;
+                feedback.innerText = "CORRECT! +3 SPINS";
+                feedback.className = "h-8 text-center font-bold text-xl text-green-400 mt-4";
+            } else {
+                btnElement.classList.remove('bg-slate-700');
+                btnElement.classList.add('bg-red-600', 'border-red-800');
+                feedback.innerText = "Incorrect.";
+                feedback.className = "h-8 text-center font-bold text-xl text-red-400 mt-4";
+                buttons[correct].classList.add('ring-4', 'ring-green-400');
+            }
+
+            setTimeout(() => {
+                currentQIndex++;
+                feedback.innerText = "";
+                loadQuestion();
+            }, 2000);
+        }
+
+        /* --- BOARD LOGIC --- */
+        function startBoardPhase() {
+            switchView('board');
+            generateBoard();
+            renderScoreboard();
+            updateControls();
+            
+            // Update Board Header
+            document.getElementById('board-team-name').innerText = teams[currentTeamIndex].name;
+        }
+
+        function renderScoreboard() {
+            const container = document.getElementById('scoreboard-strip');
+            container.innerHTML = '';
+            
+            teams.forEach((team, idx) => {
+                const div = document.createElement('div');
+                const isCurrent = idx === currentTeamIndex;
+                div.className = `p-2 rounded-lg text-center min-w-[80px] ${isCurrent ? 'bg-slate-700 border border-yellow-500' : 'bg-slate-800 opacity-60'}`;
+                div.innerHTML = `
+                    <div class="text-[10px] uppercase font-bold text-slate-400">${team.name}</div>
+                    <div class="text-green-400 font-bold">$${team.score}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function generateBoard() {
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+            const shuffled = [...boardValues].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach((item, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.id = `cell-${index}`;
+                
+                if (item.type === 'cash') {
+                    cell.innerHTML = `<span class="money-text">$${item.val}</span>`;
+                } else if (item.type === 'whammy') {
+                    cell.innerHTML = `<i class="fa-solid fa-ghost whammy-icon"></i><div class="text-red-500 text-xs mt-1 font-black">WHAMMY</div>`;
+                } else if (item.type === 'spin') {
+                    cell.innerHTML = `<span class="text-yellow-400 text-2xl">+${item.val}</span><span class="text-[10px]">SPINS</span>`;
+                }
+                
+                cell.dataset.type = item.type;
+                cell.dataset.val = item.val;
+                board.appendChild(cell);
+            });
+        }
+
+        function updateControls() {
+            const spinBtn = document.getElementById('spin-btn');
+            const cashBtn = document.getElementById('cashout-btn');
+            const msg = document.getElementById('board-message');
+
+            document.getElementById('spins-left').innerText = turnSpins;
+            document.getElementById('score-display').innerText = turnCash;
+
+            if (turnSpins <= 0) {
+                // Forced end of turn
+                spinBtn.disabled = true;
+                cashBtn.disabled = true;
+                spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                msg.innerText = "Out of Spins! Turn Over.";
+                setTimeout(() => endTurn(), 2000);
+            } else {
+                spinBtn.disabled = false;
+                spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                // Can cash out if we have money and not spinning
+                if (turnCash > 0 && !isSpinning) {
+                    cashBtn.disabled = false;
+                    cashBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    cashBtn.disabled = true;
+                    cashBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }
+
+        function toggleSpin() {
+            if (turnSpins <= 0) return;
+            const btn = document.getElementById('spin-btn');
+            const msg = document.getElementById('board-message');
+
+            if (!isSpinning) {
+                isSpinning = true;
+                turnSpins--;
+                updateControls();
+                
+                btn.innerText = "STOP!";
+                btn.classList.replace('bg-gradient-to-b', 'bg-yellow-500'); 
+                msg.innerText = "Big money...!";
+                
+                let lastIndex = -1;
+                spinInterval = setInterval(() => {
+                    const cells = document.querySelectorAll('.board-cell');
+                    if(lastIndex !== -1) cells[lastIndex].classList.remove('active');
+                    
+                    let nextIndex;
+                    do { nextIndex = Math.floor(Math.random() * cells.length); } while (nextIndex === lastIndex);
+                    
+                    cells[nextIndex].classList.add('active');
+                    activeCellIndex = nextIndex;
+                    lastIndex = nextIndex;
+                }, 50);
+
+            } else {
+                clearInterval(spinInterval);
+                isSpinning = false;
+                btn.innerText = "SPIN!";
+                handleResult();
+            }
+        }
+
+        function handleResult() {
+            const cell = document.getElementById(`cell-${activeCellIndex}`);
+            const type = cell.dataset.type;
+            const val = parseInt(cell.dataset.val);
+            const msg = document.getElementById('board-message');
+
+            // Flash effect
+            cell.style.backgroundColor = '#fff';
+            setTimeout(() => { cell.style.backgroundColor = ''; }, 300);
+
+            if (type === 'cash') {
+                turnCash += val;
+                msg.innerText = `Yes! $${val}!`;
+                msg.className = "text-lg font-bold min-h-[60px] flex items-center justify-center text-green-400";
+                updateControls();
+            } else if (type === 'spin') {
+                turnSpins += val;
+                msg.innerText = `Bonus Spins! +${val}`;
+                msg.className = "text-lg font-bold min-h-[60px] flex items-center justify-center text-blue-400";
+                updateControls();
+            } else if (type === 'whammy') {
+                turnCash = 0; // Wipe CURRENT turn cash
+                turnSpins = 0; // Wipe spins to end turn
+                
+                msg.innerHTML = "WHAMMY!<br>Turn Over!";
+                msg.className = "text-lg font-bold min-h-[60px] flex items-center justify-center text-red-500 animate-pulse text-center leading-none";
+                document.getElementById('game-container').classList.add('animate-bounce');
+                setTimeout(() => document.getElementById('game-container').classList.remove('animate-bounce'), 500);
+
+                // Manually update UI to zero since we skip updateControls to preserve message
+                document.getElementById('spins-left').innerText = "0";
+                document.getElementById('score-display').innerText = "0";
+                
+                // Disable buttons manually
+                const spinBtn = document.getElementById('spin-btn');
+                const cashBtn = document.getElementById('cashout-btn');
+                spinBtn.disabled = true;
+                spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                cashBtn.disabled = true;
+                cashBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                // Move to next team after delay
+                setTimeout(() => endTurn(), 2500);
+            }
+        }
+
+        function cashOut() {
+            // Player chose to stop
+            const msg = document.getElementById('board-message');
+            msg.innerText = "Banking Cash...";
+            setTimeout(() => endTurn(), 1000);
+        }
+
+        function endTurn() {
+            // Add turn cash to total score
+            teams[currentTeamIndex].score += turnCash;
+            
+            // Move to next team
+            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            
+            // Show start screen for next team
+            switchView('turnStart');
+            updateTurnStartScreen();
+        }
+
+    </script>
+</body>
+</html>
