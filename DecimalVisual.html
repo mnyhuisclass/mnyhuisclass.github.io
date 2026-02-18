@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decimal Place Value Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Fredoka', sans-serif; /* Fun, rounded font */
+            background-color: #e0f2fe;
+            padding: 2rem;
+        }
+
+        /* Coin/Bill Visuals using CSS gradients/borders */
+        .dollar-bill {
+            width: 80px;
+            height: 40px;
+            background-color: #86efac;
+            border: 2px solid #16a34a;
+            color: #14532d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 14px;
+            margin: 2px;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .dime {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #e5e7eb, #9ca3af);
+            border: 2px solid #6b7280;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #374151;
+            margin: 2px;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .penny {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #fdba74, #ea580c);
+            border: 2px solid #c2410c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #7c2d12;
+            margin: 2px;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Base 10 Block Visuals */
+        .block-one {
+            width: 60px;
+            height: 60px;
+            background-color: #3b82f6;
+            border: 2px solid #1d4ed8;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 0;
+            margin: 4px;
+        }
+        .block-one div { border: 0.1px solid rgba(255,255,255,0.3); }
+
+        .block-tenth {
+            width: 10px;
+            height: 60px;
+            background-color: #10b981;
+            border: 1px solid #047857;
+            display: grid;
+            grid-template-rows: repeat(10, 1fr);
+            margin: 4px;
+        }
+        .block-tenth div { border-bottom: 0.1px solid rgba(255,255,255,0.4); }
+
+        .block-hundredth {
+            width: 10px;
+            height: 10px;
+            background-color: #f59e0b;
+            border: 1px solid #b45309;
+            margin: 2px;
+        }
+
+        .place-column {
+            min-height: 400px;
+            transition: all 0.3s ease;
+        }
+
+        /* Print Settings */
+        @media print {
+            @page { size: landscape; margin: 0.25in; }
+            body { background-color: white; padding: 0; }
+            .no-print { display: none !important; }
+            .container-main { 
+                box-shadow: none !important; 
+                border: 2px solid #ccc !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+            .place-column { min-height: 500px; }
+            h1 { font-size: 24pt; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Controls (Hidden on Print) -->
+    <div class="no-print max-w-6xl mx-auto mb-6 bg-white p-4 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4 w-full md:w-auto">
+            <label class="font-bold text-gray-700 text-lg">Build a Number:</label>
+            <input type="number" id="numberInput" step="0.01" min="0" max="9.99" placeholder="e.g. 2.45" 
+                   class="border-2 border-blue-300 rounded-lg px-4 py-2 text-xl w-40 text-center font-bold focus:outline-none focus:border-blue-500 transition"
+                   oninput="updateVisuals()">
+            <button onclick="clearVisuals()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 font-bold">Clear</button>
+        </div>
+        <div class="text-gray-500 text-sm italic text-center">
+            Type a number to see the model, or leave empty to print a blank mat!
+        </div>
+        <button onclick="window.print()" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-purple-700 shadow-md transition transform hover:scale-105">
+            🖨️ Print Visual
+        </button>
+    </div>
+
+    <!-- Main Visual Container -->
+    <div class="container-main max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-gray-200">
+        
+        <!-- Header -->
+        <div class="bg-slate-800 text-white p-4 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-wider uppercase">Decimal Place Value Park</h1>
+        </div>
+
+        <!-- The Chart Grid -->
+        <div class="grid grid-cols-11 w-full border-b-4 border-gray-200">
+            
+            <!-- ONES COLUMN (Width 4/11) -->
+            <div class="col-span-4 border-r-4 border-dashed border-gray-300 bg-blue-50 place-column flex flex-col">
+                <div class="bg-blue-500 text-white p-2 text-center border-b-4 border-blue-600">
+                    <h2 class="text-2xl font-bold">ONES</h2>
+                    <p class="text-sm opacity-90">Whole Numbers (1.0)</p>
+                </div>
+                <div class="p-4 flex-grow flex flex-col items-center">
+                    <div id="ones-container" class="flex flex-wrap content-start justify-center gap-2 w-full h-full">
+                        <!-- Visuals injected here -->
+                    </div>
+                    <div id="ones-empty-msg" class="text-blue-200 text-4xl font-bold opacity-30 mt-10">1</div>
+                </div>
+            </div>
+
+            <!-- DECIMAL POINT (Width 1/11) -->
+            <div class="col-span-1 flex items-center justify-center bg-white relative">
+                <div class="w-4 h-full bg-gray-100 absolute left-1/2 -translate-x-1/2"></div>
+                <div class="z-10 bg-slate-800 text-white rounded-full w-12 h-12 flex items-center justify-center text-4xl font-bold shadow-lg mb-20">.</div>
+                <div class="absolute bottom-4 text-center w-full text-xs font-bold text-gray-400 uppercase tracking-widest -rotate-90">Decimal<br>Point</div>
+            </div>
+
+            <!-- TENTHS COLUMN (Width 3/11) -->
+            <div class="col-span-3 border-r-4 border-dashed border-gray-300 bg-green-50 place-column flex flex-col">
+                <div class="bg-green-500 text-white p-2 text-center border-b-4 border-green-600">
+                    <h2 class="text-2xl font-bold">TENTHS</h2>
+                    <p class="text-sm opacity-90">$$\frac{1}{10}$$ or 0.1</p>
+                </div>
+                <div class="p-4 flex-grow flex flex-col items-center">
+                    <div id="tenths-container" class="flex flex-wrap content-start justify-center gap-4 w-full h-full">
+                        <!-- Visuals injected here -->
+                    </div>
+                    <div id="tenths-empty-msg" class="text-green-200 text-4xl font-bold opacity-30 mt-10">.1</div>
+                </div>
+            </div>
+
+            <!-- HUNDREDTHS COLUMN (Width 3/11) -->
+            <div class="col-span-3 bg-orange-50 place-column flex flex-col">
+                <div class="bg-orange-500 text-white p-2 text-center border-b-4 border-orange-600">
+                    <h2 class="text-2xl font-bold text-sm md:text-2xl">HUNDREDTHS</h2>
+                    <p class="text-sm opacity-90">$$\frac{1}{100}$$ or 0.01</p>
+                </div>
+                <div class="p-4 flex-grow flex flex-col items-center">
+                    <div id="hundredths-container" class="flex flex-wrap content-start justify-center gap-2 w-full h-full">
+                        <!-- Visuals injected here -->
+                    </div>
+                    <div id="hundredths-empty-msg" class="text-orange-200 text-4xl font-bold opacity-30 mt-10">.01</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key / Legend -->
+        <div class="bg-gray-100 p-4 border-t-2 border-gray-300">
+            <h3 class="text-center font-bold text-gray-500 uppercase tracking-widest text-sm mb-2">Visual Key</h3>
+            <div class="flex justify-around items-center text-sm md:text-base">
+                <div class="flex items-center gap-2">
+                    <div class="block-one scale-50"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    <span>= 1 Whole ($1.00)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="block-tenth scale-75"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                    <span>= 1 Tenth ($0.10)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="block-hundredth scale-150"></div>
+                    <span>= 1 Hundredth ($0.01)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createDiv(className) {
+            const div = document.createElement('div');
+            div.className = className;
+            return div;
+        }
+
+        // Helper to create grid lines inside blocks
+        function addGridLines(element, count) {
+            for(let i=0; i<count; i++) {
+                element.appendChild(document.createElement('div'));
+            }
+        }
+
+        function updateVisuals() {
+            const input = document.getElementById('numberInput').value;
+            const onesContainer = document.getElementById('ones-container');
+            const tenthsContainer = document.getElementById('tenths-container');
+            const hundredthsContainer = document.getElementById('hundredths-container');
+            
+            // Clear previous
+            onesContainer.innerHTML = '';
+            tenthsContainer.innerHTML = '';
+            hundredthsContainer.innerHTML = '';
+
+            // Toggle background numbers
+            document.getElementById('ones-empty-msg').style.display = input ? 'none' : 'block';
+            document.getElementById('tenths-empty-msg').style.display = input ? 'none' : 'block';
+            document.getElementById('hundredths-empty-msg').style.display = input ? 'none' : 'block';
+
+            if (!input) return;
+
+            const num = parseFloat(input);
+            if (isNaN(num)) return;
+
+            // Breakdown
+            const ones = Math.floor(num);
+            // Get decimals safely to avoid floating point errors
+            const decimalPart = Math.round((num - ones) * 100); 
+            const tenths = Math.floor(decimalPart / 10);
+            const hundredths = decimalPart % 10;
+
+            // Render Ones
+            for (let i = 0; i < ones; i++) {
+                // Group container
+                const group = createDiv('flex flex-col items-center m-2');
+                
+                // Block
+                const block = createDiv('block-one');
+                addGridLines(block, 100);
+                
+                // Money
+                const money = createDiv('dollar-bill');
+                money.textContent = '$1';
+
+                group.appendChild(block);
+                group.appendChild(money);
+                onesContainer.appendChild(group);
+            }
+
+            // Render Tenths
+            for (let i = 0; i < tenths; i++) {
+                const group = createDiv('flex flex-col items-center m-2');
+
+                const block = createDiv('block-tenth');
+                addGridLines(block, 10);
+
+                const money = createDiv('dime');
+                money.textContent = '10¢';
+
+                group.appendChild(block);
+                group.appendChild(money);
+                tenthsContainer.appendChild(group);
+            }
+
+            // Render Hundredths
+            for (let i = 0; i < hundredths; i++) {
+                const group = createDiv('flex flex-col items-center m-1');
+
+                const block = createDiv('block-hundredth');
+
+                const money = createDiv('penny');
+                money.textContent = '1¢';
+
+                group.appendChild(block);
+                group.appendChild(money);
+                hundredthsContainer.appendChild(group);
+            }
+        }
+
+        function clearVisuals() {
+            document.getElementById('numberInput').value = '';
+            updateVisuals();
+        }
+    </script>
+</body>
+</html>
