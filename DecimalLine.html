@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line: Decimals & Fractions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f0f9ff; /* Light blue sky */
+            padding: 2rem;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* Container for the visual */
+        .visual-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 4px solid #bae6fd;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* The lines themselves */
+        .number-line-container {
+            position: relative;
+            height: 160px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .main-line {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            transform: translateY(-50%);
+        }
+
+        /* Ticks */
+        .tick {
+            position: absolute;
+            top: 50%;
+            width: 4px;
+            height: 24px;
+            background: #334155;
+            transform:translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+        .tick.minor {
+            height: 16px; /* Slightly taller for visibility in zoom */
+            width: 2px;
+            background: #64748b;
+        }
+
+        /* Labels */
+        .label-top {
+            position: absolute;
+            top: 10px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #059669; /* Emerald Green for Decimals */
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .label-bottom {
+            position: absolute;
+            bottom: 5px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #2563eb; /* Blue for Fractions */
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        /* Smaller font for the dense hundredths view */
+        .label-top.dense { font-size: 0.9rem; color: #047857; top: 18px; }
+        .label-bottom.dense { font-size: 0.85rem; color: #1d4ed8; bottom: 12px; }
+
+        /* Highlight Zone */
+        .zoom-zone {
+            position: absolute;
+            top: 10%;
+            height: 80%;
+            background-color: rgba(253, 186, 116, 0.3); /* Orange tint */
+            border: 2px dashed #f97316;
+            border-radius: 8px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Connector Lines (SVG) */
+        svg.connectors {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Interactive Click Zones */
+        .click-zone:hover {
+            background-color: rgba(99, 102, 241, 0.1); /* Light Indigo Hover */
+            border-radius: 4px;
+        }
+
+        /* Print adjustments */
+        @media print {
+            @page { size: landscape; margin: 0.25in; }
+            body { padding: 0; background: white; }
+            .no-print { display: none !important; }
+            .visual-card { 
+                box-shadow: none; 
+                border: 2px solid #ccc;
+                width: 100%;
+                max-width: none;
+            }
+            /* Force exact colors */
+            .label-top { color: #059669 !important; }
+            .label-bottom { color: #2563eb !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Controls -->
+    <div class="no-print max-w-5xl mx-auto mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-700">Teacher Tool: The Number Line</h1>
+            <p class="text-slate-500">Click any Tenths section on the top line to zoom in!</p>
+        </div>
+        <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-md transition transform hover:scale-105">
+            🖨️ Print Poster
+        </button>
+    </div>
+
+    <!-- Main Visual Card -->
+    <div class="visual-card relative pb-10">
+        
+        <!-- Header -->
+        <div class="bg-slate-100 p-6 border-b-2 border-slate-200 text-center">
+            <h2 class="text-3xl font-bold text-slate-800 uppercase tracking-wide">Connecting Fractions & Decimals</h2>
+            <div class="flex justify-center gap-8 mt-2 text-lg font-bold">
+                <span class="text-emerald-600 flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-emerald-600 mr-2"></span> Decimals (Top)
+                </span>
+                <span class="text-blue-600 flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-blue-600 mr-2"></span> Fractions (Bottom)
+                </span>
+            </div>
+        </div>
+
+        <!-- SVG Layer for connection lines -->
+        <svg id="connector-svg" class="connectors" style="height: 600px;"></svg>
+
+        <!-- TOP LINE: TENTHS -->
+        <div class="px-12 relative z-10">
+            <div class="text-left font-bold text-slate-400 text-sm mt-4 uppercase tracking-widest">The "Tenths" Line (0 to 1)</div>
+            <div id="top-line-container" class="number-line-container">
+                <div class="main-line"></div>
+                <div id="zoom-box" class="zoom-zone hidden"></div>
+                <!-- Ticks injected here -->
+            </div>
+        </div>
+
+        <!-- Spacer for visual separation -->
+        <div class="h-16 flex items-center justify-center">
+            <div class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-sm font-bold border border-orange-200 shadow-sm z-20">
+                🔍 Zooming in on <span id="zoom-label">0.2 to 0.3</span>
+            </div>
+        </div>
+
+        <!-- BOTTOM LINE: HUNDREDTHS -->
+        <div class="px-12 relative z-10">
+            <div class="text-left font-bold text-slate-400 text-sm mt-0 uppercase tracking-widest">The "Hundredths" Zoom (Showing all steps)</div>
+            <div id="bottom-line-container" class="number-line-container" style="margin-top: 40px;">
+                <div class="main-line"></div>
+                <!-- Ticks injected here -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Explainer Text -->
+    <div class="max-w-4xl mx-auto mt-6 text-center text-slate-600 text-sm no-print">
+        <p><strong>Teacher Tip:</strong> Use this to show that <span class="font-bold text-emerald-600">0.25</span> is simply a specific point between <span class="font-bold text-emerald-600">0.2</span> and <span class="font-bold text-emerald-600">0.3</span>, just like <span class="font-bold text-blue-600">25/100</span> is between <span class="font-bold text-blue-600">2/10</span> and <span class="font-bold text-blue-600">3/10</span>.</p>
+    </div>
+
+    <script>
+        let currentStart = 0.2; // Default start of zoom
+        let currentEnd = 0.3;   // Default end of zoom
+
+        // --- RENDER TOP LINE (TENTHS) ---
+        function renderTopLine() {
+            const container = document.getElementById('top-line-container');
+            const width = container.offsetWidth;
+            
+            // Clear old ticks but keep main-line and zoom-box
+            const staticElements = container.querySelectorAll('.main-line, .zoom-zone');
+            container.innerHTML = '';
+            staticElements.forEach(el => container.appendChild(el));
+
+            for (let i = 0; i <= 10; i++) {
+                const pct = i * 10; // 0, 10, 20... 100%
+                
+                // Tick
+                const tick = document.createElement('div');
+                tick.className = 'tick';
+                tick.style.left = pct + '%';
+                
+                // Decimal Label (Top)
+                const decLabel = document.createElement('div');
+                decLabel.className = 'label-top';
+                decLabel.innerText = (i / 10).toFixed(1);
+                decLabel.style.left = pct + '%';
+                decLabel.style.top = '-35px';
+
+                // Fraction Label (Bottom)
+                const fracLabel = document.createElement('div');
+                fracLabel.className = 'label-bottom';
+                fracLabel.innerHTML = `\\(\\frac{${i}}{10}\\)`;
+                fracLabel.style.left = pct + '%';
+                fracLabel.style.bottom = '-45px'; // Push down to make room
+
+                container.appendChild(tick);
+                container.appendChild(decLabel);
+                container.appendChild(fracLabel);
+
+                // Click zones (invisible divs to handle clicks between ticks)
+                if (i < 10) {
+                    const clickZone = document.createElement('div');
+                    clickZone.className = 'click-zone'; // Apply CSS class for hover
+                    clickZone.style.position = 'absolute';
+                    clickZone.style.left = pct + '%';
+                    clickZone.style.width = '10%';
+                    clickZone.style.height = '140%'; // Taller to catch clumsy clicks
+                    clickZone.style.top = '-20%';
+                    clickZone.style.zIndex = '20';
+                    clickZone.style.cursor = 'pointer';
+                    clickZone.onclick = () => updateZoom(i);
+                    container.appendChild(clickZone);
+                }
+            }
+        }
+
+        // --- RENDER BOTTOM LINE (HUNDREDTHS) ---
+        function renderBottomLine(startTenth) {
+            const container = document.getElementById('bottom-line-container');
+            container.innerHTML = '<div class="main-line"></div>'; // Reset
+
+            for (let i = 0; i <= 10; i++) {
+                const pct = i * 10;
+                
+                // Accurate Calculation
+                // startTenth is integer 0-9.
+                // We want values like 20/100, 21/100...
+                const numerator = (startTenth * 10) + i;
+                const val = numerator / 100;
+                
+                const isMajor = (i === 0 || i === 10 || i === 5); // Highlight ends and middle
+
+                // Tick
+                const tick = document.createElement('div');
+                tick.className = isMajor ? 'tick' : 'tick minor';
+                tick.style.left = pct + '%';
+                container.appendChild(tick);
+
+                // Labels - SHOW ALL
+                const decLabel = document.createElement('div');
+                // Use 'dense' class for standard ones to make them fit, larger class for majors
+                decLabel.className = isMajor ? 'label-top' : 'label-top dense'; 
+                decLabel.innerText = val.toFixed(2);
+                decLabel.style.left = pct + '%';
+                // Adjust top position slightly for minor ticks to allow staggering or visual hierarchy if needed
+                decLabel.style.top = isMajor ? '-35px' : '-28px'; 
+                
+                const fracLabel = document.createElement('div');
+                fracLabel.className = isMajor ? 'label-bottom' : 'label-bottom dense';
+                fracLabel.innerHTML = `\\(\\frac{${numerator}}{100}\\)`;
+                fracLabel.style.left = pct + '%';
+                fracLabel.style.bottom = isMajor ? '-45px' : '-38px';
+
+                container.appendChild(decLabel);
+                container.appendChild(fracLabel);
+            }
+        }
+
+        // --- LOGIC ---
+        function updateZoom(startIndex) {
+            currentStart = startIndex / 10;
+            currentEnd = (startIndex + 1) / 10;
+
+            // Move Highlight Box
+            const zoomBox = document.getElementById('zoom-box');
+            zoomBox.classList.remove('hidden');
+            zoomBox.style.left = (startIndex * 10) + '%';
+            zoomBox.style.width = '10%';
+
+            // Update Text
+            document.getElementById('zoom-label').innerText = `${currentStart.toFixed(1)} to ${currentEnd.toFixed(1)}`;
+
+            // Render Bottom
+            renderBottomLine(startIndex);
+            
+            // Draw connecting lines
+            drawConnectors(startIndex);
+
+            // Typeset Math
+            MathJax.typeset();
+        }
+
+        function drawConnectors(startIndex) {
+            const svg = document.getElementById('connector-svg');
+            const topContainer = document.getElementById('top-line-container');
+            const bottomContainer = document.getElementById('bottom-line-container');
+
+            // Get coordinates relative to the card
+            const topRect = topContainer.getBoundingClientRect();
+            const botRect = bottomContainer.getBoundingClientRect();
+            const cardRect = document.querySelector('.visual-card').getBoundingClientRect();
+
+            // Calculate "Left" and "Right" of the selected tenth zone
+            // The top line starts at 5% left and has width 90%
+            // So pixel X = (5% + (index * 10% of 90%)) * cardWidth
+            const leftPercent = 5 + (startIndex * 9); 
+            const rightPercent = 5 + ((startIndex + 1) * 9);
+
+            // Bottom line is full 5% to 95% visually relative to its container
+            const botLeftPercent = 5;
+            const botRightPercent = 95;
+
+            // Y positions relative to the SVG/Card container
+            const topY = topRect.bottom - cardRect.top - 20; // Just below top line labels
+            const botY = botRect.top - cardRect.top - 20;   // Just above bottom line labels
+
+            // Helper to get X pixels from percent
+            const getX = (pct) => (pct / 100) * cardRect.width;
+
+            // Draw Paths
+            // Left Line
+            const path1 = `M ${getX(leftPercent)} ${topY} C ${getX(leftPercent)} ${topY + 50}, ${getX(botLeftPercent)} ${botY - 50}, ${getX(botLeftPercent)} ${botY}`;
+            
+            // Right Line
+            const path2 = `M ${getX(rightPercent)} ${topY} C ${getX(rightPercent)} ${topY + 50}, ${getX(botRightPercent)} ${botY - 50}, ${getX(botRightPercent)} ${botY}`;
+
+            // Create SVG elements
+            svg.innerHTML = `
+                <path d="${path1}" stroke="#fdba74" stroke-width="2" fill="none" stroke-dasharray="5,5" />
+                <path d="${path2}" stroke="#fdba74" stroke-width="2" fill="none" stroke-dasharray="5,5" />
+                <path d="M ${getX(leftPercent)} ${topY} L ${getX(rightPercent)} ${topY} L ${getX(botRightPercent)} ${botY} L ${getX(botLeftPercent)} ${botY} Z" fill="rgba(253, 186, 116, 0.1)" stroke="none" />
+            `;
+        }
+
+        // --- INIT ---
+        window.onload = function() {
+            renderTopLine();
+            updateZoom(2); // Default zoom 0.2-0.3
+            
+            // Handle resize to redraw SVG lines
+            window.addEventListener('resize', () => updateZoom(currentStart * 10));
+        };
+    </script>
+</body>
+</html>
