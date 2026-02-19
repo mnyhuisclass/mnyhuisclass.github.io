@@ -30,9 +30,9 @@
         /* The lines themselves */
         .number-line-container {
             position: relative;
-            height: 160px;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            height: 220px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             cursor: pointer;
         }
 
@@ -66,7 +66,6 @@
         /* Labels */
         .label-top {
             position: absolute;
-            top: 10px;
             transform: translateX(-50%);
             font-weight: bold;
             color: #059669; /* Emerald Green for Decimals */
@@ -76,7 +75,6 @@
         }
         .label-bottom {
             position: absolute;
-            bottom: 5px;
             transform: translateX(-50%);
             font-weight: bold;
             color: #2563eb; /* Blue for Fractions */
@@ -86,15 +84,15 @@
         }
         
         /* Smaller font for the dense hundredths view */
-        .label-top.dense { font-size: 0.9rem; color: #047857; top: 18px; }
-        .label-bottom.dense { font-size: 0.85rem; color: #1d4ed8; bottom: 12px; }
+        .label-top.dense { font-size: 0.9rem; color: #047857; }
+        .label-bottom.dense { font-size: 0.85rem; color: #1d4ed8; }
 
         /* Highlight Zone */
         .zoom-zone {
             position: absolute;
-            top: 10%;
-            height: 80%;
-            background-color: rgba(253, 186, 116, 0.3); /* Orange tint */
+            top: 0;
+            height: 100%;
+            background-color: rgba(253, 186, 116, 0.2); /* Orange tint */
             border: 2px dashed #f97316;
             border-radius: 8px;
             pointer-events: none;
@@ -178,8 +176,8 @@
         </div>
 
         <!-- Spacer for visual separation -->
-        <div class="h-16 flex items-center justify-center">
-            <div class="bg-orange-100 text-orange-600 px-4 py-1 rounded-full text-sm font-bold border border-orange-200 shadow-sm z-20">
+        <div class="py-6 flex items-center justify-center relative z-20">
+            <div class="bg-orange-100 text-orange-600 px-6 py-2 rounded-full text-base font-bold border border-orange-300 shadow-md">
                 🔍 Zooming in on <span id="zoom-label">0.2 to 0.3</span>
             </div>
         </div>
@@ -227,14 +225,14 @@
                 decLabel.className = 'label-top';
                 decLabel.innerText = (i / 10).toFixed(1);
                 decLabel.style.left = pct + '%';
-                decLabel.style.top = '-35px';
+                decLabel.style.top = '10px';
 
                 // Fraction Label (Bottom)
                 const fracLabel = document.createElement('div');
                 fracLabel.className = 'label-bottom';
                 fracLabel.innerHTML = `\\(\\frac{${i}}{10}\\)`;
                 fracLabel.style.left = pct + '%';
-                fracLabel.style.bottom = '-45px'; // Push down to make room
+                fracLabel.style.bottom = '10px';
 
                 container.appendChild(tick);
                 container.appendChild(decLabel);
@@ -247,8 +245,8 @@
                     clickZone.style.position = 'absolute';
                     clickZone.style.left = pct + '%';
                     clickZone.style.width = '10%';
-                    clickZone.style.height = '140%'; // Taller to catch clumsy clicks
-                    clickZone.style.top = '-20%';
+                    clickZone.style.height = '100%'; 
+                    clickZone.style.top = '0';
                     clickZone.style.zIndex = '20';
                     clickZone.style.cursor = 'pointer';
                     clickZone.onclick = () => updateZoom(i);
@@ -286,13 +284,13 @@
                 decLabel.innerText = val.toFixed(2);
                 decLabel.style.left = pct + '%';
                 // Adjust top position slightly for minor ticks to allow staggering or visual hierarchy if needed
-                decLabel.style.top = isMajor ? '-35px' : '-28px'; 
+                decLabel.style.top = isMajor ? '10px' : '35px'; 
                 
                 const fracLabel = document.createElement('div');
                 fracLabel.className = isMajor ? 'label-bottom' : 'label-bottom dense';
                 fracLabel.innerHTML = `\\(\\frac{${numerator}}{100}\\)`;
                 fracLabel.style.left = pct + '%';
-                fracLabel.style.bottom = isMajor ? '-45px' : '-38px';
+                fracLabel.style.bottom = isMajor ? '10px' : '35px';
 
                 container.appendChild(decLabel);
                 container.appendChild(fracLabel);
@@ -344,8 +342,8 @@
             const botRightPercent = 95;
 
             // Y positions relative to the SVG/Card container
-            const topY = topRect.bottom - cardRect.top - 20; // Just below top line labels
-            const botY = botRect.top - cardRect.top - 20;   // Just above bottom line labels
+            const topY = topRect.bottom - cardRect.top; 
+            const botY = botRect.top - cardRect.top;   
 
             // Helper to get X pixels from percent
             const getX = (pct) => (pct / 100) * cardRect.width;
