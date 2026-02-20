@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worksheet Generator: Lesson 18 Complete</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Print-specific rules */
+        @media print {
+            @page { margin: 0.3in; size: letter portrait; }
+            body { margin: 0; padding: 0; background: white; -webkit-print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .worksheet-container { 
+                box-shadow: none !important; 
+                border: none !important; 
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important; 
+                min-height: auto !important;
+            }
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 1rem;
+        }
+        .worksheet-container {
+            background: white;
+            width: 8.5in;
+            min-height: 11in;
+            margin: 0 auto;
+            padding: 0.5in;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb;
+            position: relative;
+        }
+        .name-line {
+            border-bottom: 1px solid black;
+            width: 180px;
+            display: inline-block;
+            height: 1.2em;
+        }
+        .problem {
+            margin-bottom: 1.25rem; 
+            break-inside: avoid;
+        }
+        .grid-box {
+            width: 80px;
+            height: 80px;
+            border: 1.5px solid #000;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            background: white;
+        }
+        .grid-cell {
+            border: 0.5px solid #ccc;
+        }
+        .shaded {
+            background-color: #4b5563;
+        }
+        .fraction-input {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 5px;
+        }
+        .fraction-input .top {
+            border-bottom: 1px solid black;
+            width: 40px;
+            height: 20px;
+            text-align: center;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fraction-input .bottom {
+            width: 40px;
+            height: 20px;
+            text-align: center;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Answer Key Styles */
+        .answer-text {
+            color: #dc2626;
+            font-weight: bold;
+            display: none;
+        }
+        .show-answers .answer-text {
+            display: inline;
+        }
+        /* When answers are shown, hide the blank line that serves as the placeholder */
+        .show-answers .blank-line {
+            display: none !important;
+        }
+        .key-badge {
+            display: none;
+        }
+        .show-answers .key-badge {
+            display: block;
+        }
+        .number-line {
+            position: relative;
+            height: 40px;
+            border-bottom: 2px solid black;
+            margin: 20px 10px;
+        }
+        .tick {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            height: 10px;
+            background: black;
+        }
+        .tick-label {
+            position: absolute;
+            bottom: -20px;
+            transform: translateX(-50%);
+            font-size: 10px;
+        }
+        .point {
+            position: absolute;
+            bottom: -5px;
+            width: 10px;
+            height: 10px;
+            background: #dc2626;
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Control Panel -->
+    <div class="no-print max-w-4xl mx-auto mb-6 bg-white p-4 rounded-xl shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex flex-col gap-2">
+            <h2 class="font-bold text-lg text-gray-700">Lesson 18 Worksheet Generator</h2>
+            <div class="flex items-center gap-2">
+                <label class="text-sm font-bold text-gray-600">Select Day:</label>
+                <select id="day-selector" onchange="generateWorksheet()" class="border-2 border-blue-200 rounded px-2 py-1 text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-500">
+                    <option value="1">Day 1: Intro (p. 182-183)</option>
+                    <option value="1.5">Day 1b: Remediation (Visuals)</option>
+                    <option value="2">Day 2: Equivalence (p. 184-185)</option>
+                    <option value="3">Day 3: Connect Fractions/Decimals (p. 186-187)</option>
+                    <option value="4">Day 4: Mixed Numbers (p. 188-189)</option>
+                    <option value="5">Day 5: Problem Solving (p. 190-191)</option>
+                    <option value="6">Day 6: Lesson Quiz (p. 192-193)</option>
+                    <option value="7">Final Assessment: End of Lesson Test</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="generateWorksheet()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow text-sm">
+                🔄 Generate New
+            </button>
+            <button onclick="toggleAnswers()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition shadow text-sm">
+                👁️ Toggle Key
+            </button>
+            <button onclick="window.print()" class="bg-gray-700 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition shadow text-sm">
+                🖨️ Print
+            </button>
+        </div>
+    </div>
+
+    <div id="worksheet" class="worksheet-container">
+        <!-- Header Generated by JS -->
+        <div id="worksheet-content"></div>
+    </div>
+
+    <script>
+        // --- Utilities ---
+        const numberWords = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        function getName() { const names = ["Sarah", "Max", "Leo", "Maya", "Sam", "Chloe", "Jaden", "Kai", "Elara"]; return names[getRandomInt(0, names.length-1)]; }
+        
+        // --- Components ---
+        function createHeader(dayTitle, pages) {
+            return `
+                <div class="key-badge bg-red-100 border-l-4 border-red-500 text-red-700 p-2 mb-4 text-center font-bold uppercase tracking-wider text-sm">Teacher Answer Key</div>
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h1 class="text-xl font-bold uppercase tracking-tight">Relating Decimals & Fractions</h1>
+                        <p class="text-sm text-gray-600 italic">${dayTitle} ${pages ? `(Pages ${pages})` : ''}</p>
+                    </div>
+                    <div class="text-right space-y-1 text-sm">
+                        <p>Name: <span class="name-line text-center pt-1 answer-text w-full">TEACHER KEY</span><span class="blank-line inline-block w-[180px]"></span></p>
+                        <p>Date: <span class="name-line"></span></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createGrid(shadedCount) {
+            let html = '<div class="grid-box">';
+            for(let i=0; i<100; i++) {
+                html += `<div class="grid-cell ${i < shadedCount ? 'shaded' : ''}"></div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function createNumberLine(targetVal, labelType) {
+            // labelType: 'decimal' or 'fraction'
+            let html = '<div class="number-line">';
+            for(let i=0; i<=10; i++) {
+                let left = i * 10;
+                let label = labelType === 'decimal' ? (i/10).toFixed(1) : `\\(\\frac{${i}}{10}\\)`;
+                if(i === 0) label = "0";
+                if(i === 10) label = "1";
+                html += `<div class="tick" style="left:${left}%"></div>`;
+                html += `<div class="tick-label" style="left:${left}%">${label}</div>`;
+            }
+            // Add point
+            html += `<div class="point" style="left:${targetVal * 100}%"></div>`;
+            html += '</div>';
+            return html;
+        }
+
+        function answerSpan(text) {
+            return `<span class="answer-text pl-1">${text}</span><span class="blank-line">____________________</span>`;
+        }
+
+        // Handle optional underlines for fractions
+        function createHtmlAnswer(text, showUnderline = true) {
+             const underlineStyle = showUnderline ? "border-bottom:1px solid black; display:inline-block; width:25px;" : "display:inline-block; width:1px;";
+             
+             if (!showUnderline) {
+                 return `<span class="answer-text">${text}</span>`;
+             }
+             
+             return `<span class="answer-text">${text}</span><span class="blank-line" style="${underlineStyle}"></span>`;
+        }
+
+        // --- Generators ---
+
+        function generateDay1() {
+            const pennies = getRandomInt(115, 495);
+            const dollars = Math.floor(pennies/100);
+            const cents = pennies % 100;
+            const shaded = getRandomInt(20, 80);
+            
+            return `
+                ${createHeader("Introduction & Money Models", "182-183")}
+                <div class="space-y-6">
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. ${getName()} has ${pennies} pennies. How many whole dollars is this? What fraction of a dollar is left?</p>
+                        <div class="ml-4 space-y-2 text-sm">
+                            <p>Whole Dollars: ${answerSpan(dollars)}</p>
+                            <p>Fraction of a dollar: ${answerSpan(`\\(\\frac{${cents}}{100}\\)`)}</p>
+                            <p>Decimal form: ${answerSpan(`$${(pennies/100).toFixed(2)}`)}</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Visual Model: If the grid represents 1 whole, write the shaded amount.</p>
+                        <div class="flex items-center gap-6 ml-4">
+                            ${createGrid(shaded)}
+                            <div class="text-sm space-y-2">
+                                <div class="flex items-center">Fraction: <div class="fraction-input ml-2"><div class="top"><span class="answer-text">${shaded}</span></div><div class="bottom">100</div></div></div>
+                                <div>Decimal: ${answerSpan((shaded/100).toFixed(2))}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">3. Fill in the missing values.</p>
+                        <div class="grid grid-cols-2 gap-4 ml-4 text-sm">
+                            <div>a. 7 dimes = ${answerSpan("70")} pennies</div>
+                            <div>b. \\(\\frac{4}{10}\\) of a dollar = ${answerSpan("40")} cents</div>
+                            <div>c. 0.90 dollars = ${answerSpan("9")} dimes</div>
+                            <div class="flex items-center">d. \\(\\frac{30}{100} = \\) <div class="fraction-input ml-1"><div class="top">${createHtmlAnswer("3", false)}</div><div class="bottom">10</div></div></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay1Remediation() {
+            const v1 = getRandomInt(1, 9);
+            const v2 = getRandomInt(1, 9);
+            const v3 = getRandomInt(1, 9);
+            const pennies = getRandomInt(1, 9) * 10; 
+
+            return `
+                ${createHeader("Remediation: Visuals & Names", "Review")}
+                <div class="space-y-6">
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. The "Say It Out Loud" Table</p>
+                        <p class="text-sm mb-4 italic text-gray-600">Read the name out loud. Then fill in the missing fraction or decimal that sounds the EXACT same.</p>
+                        <div class="grid grid-cols-3 gap-4 text-sm font-bold bg-gray-100 p-2 rounded-t-lg border-b-2 border-gray-300 text-center">
+                            <div>Word Form</div>
+                            <div>Fraction</div>
+                            <div>Decimal</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-sm border-b border-gray-200 p-2 items-center text-center">
+                            <div>"${numberWords[v1]} Tenths"</div>
+                            <div>${answerSpan(`\\(\\frac{${v1}}{10}\\)`)}</div>
+                            <div>${answerSpan(`0.${v1}`)}</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-sm border-b border-gray-200 p-2 items-center text-center">
+                            <div>${answerSpan(`"${numberWords[v2]} Tenths"`)}</div>
+                            <div>\\(\\frac{${v2}}{10}\\)</div>
+                            <div>${answerSpan(`0.${v2}`)}</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-sm border-b border-gray-200 p-2 items-center text-center">
+                            <div>${answerSpan(`"${numberWords[v3]} Tenths"`)}</div>
+                            <div>${answerSpan(`\\(\\frac{${v3}}{10}\\)`)}</div>
+                            <div>0.${v3}</div>
+                        </div>
+                    </div>
+
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Money Connection (The "Dollar Rule")</p>
+                        <div class="ml-4 space-y-3 text-sm p-3 bg-blue-50 rounded-lg border border-blue-100">
+                            <p class="font-bold text-center">1 Dollar = 1 Whole (1.00)</p>
+                            <div class="flex items-center gap-4">
+                                <div class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-xs font-bold text-white shadow">1¢</div>
+                                <div>
+                                    <p class="font-bold">Penny = 1 Hundredth</p>
+                                    <p>\\(\\frac{1}{100}\\) = 0.01</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-[10px] font-bold text-gray-700 shadow border border-gray-400">10¢</div>
+                                <div>
+                                    <p class="font-bold">Dime = 1 Tenth</p>
+                                    <p>\\(\\frac{1}{10}\\) = 0.1</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 ml-4 text-sm border-l-4 border-gray-300 pl-4">
+                            <p class="mb-2"><strong>Practice:</strong> You have ${pennies} pennies. (This is the same as ${pennies/10} dimes!)</p>
+                            <p class="mb-2">a. Fraction of a dollar: ${answerSpan(`\\(\\frac{${pennies}}{100}\\)`)}</p>
+                            <p class="mb-2">b. Decimal of a dollar: ${answerSpan(`0.${pennies}`)}</p>
+                            <p class="mb-2">c. Is this <strong>tenths</strong> or <strong>hundredths</strong>? ${answerSpan("Both (Equivalent)")}</p>
+                        </div>
+                    </div>
+
+                    <div class="problem">
+                        <p class="font-bold mb-2">3. Visual Matching</p>
+                        <div class="flex gap-8 ml-4 items-center">
+                            ${createGrid(v1 * 10)} 
+                            <div class="space-y-2 text-sm">
+                                <p class="font-bold">Look at the shaded grid (${v1} full columns).</p>
+                                <p>Is it \\(\\frac{${v1}}{10}\\)?  ____ ${answerSpan("Yes")}</p>
+                                <p>Is it 0.${v1}?  ____ ${answerSpan("Yes")}</p>
+                                <p>Is it \\(\\frac{${v1*10}}{100}\\)?  ____ ${answerSpan("Yes")}</p>
+                                <p>Is it 0.0${v1}?  ____ ${answerSpan("No")}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay2() {
+            const tenths = getRandomInt(2, 9);
+            const q2a = getRandomInt(2, 9);
+            const q2b = getRandomInt(2, 9);
+            const q2c = getRandomInt(2, 9) * 10;
+            const q2d = getRandomInt(2, 9) * 10;
+            const q3a = getRandomInt(2, 9);
+            const q3b = getRandomInt(2, 9);
+            const q3c = getRandomInt(2, 9);
+
+            return `
+                ${createHeader("Equivalent Fractions & Decimals", "184-185")}
+                <div class="space-y-6">
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. Look at the model below. It shows ${tenths} tenths.</p>
+                        <div class="flex items-center gap-6 ml-4">
+                            ${createGrid(tenths*10)}
+                            <div class="text-sm">
+                                <p class="mb-2">a. Write as a decimal in tenths: ${answerSpan(`0.${tenths}`)}</p>
+                                <p class="mb-2">b. Write as a decimal in hundredths: ${answerSpan(`0.${tenths}0`)}</p>
+                                <p>c. Are they equivalent? <span class="answer-text font-bold">YES</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Convert the values.</p>
+                        <div class="grid grid-cols-2 gap-y-4 ml-4 text-sm">
+                            <div class="flex items-center">a. \\(\\frac{${q2a}}{10} = \\) <div class="fraction-input ml-1"><div class="top">${createHtmlAnswer(q2a*10, false)}</div><div class="bottom">100</div></div></div>
+                            <div class="flex items-center">b. 0.${q2b} = 0.${createHtmlAnswer(q2b + '0', true)}</div>
+                            <div class="flex items-center">c. \\(\\frac{${q2c}}{100} = \\) <div class="fraction-input ml-1"><div class="top">${createHtmlAnswer(q2c/10, false)}</div><div class="bottom">10</div></div></div>
+                            <div class="flex items-center">d. 0.${q2d} = <div class="fraction-input ml-1"><div class="top">${createHtmlAnswer(q2d/10, false)}</div><div class="bottom">10</div></div></div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">3. Circle TRUE or FALSE.</p>
+                        <div class="ml-4 space-y-2 text-sm">
+                            <p>a. 0.${q3a} is the same as 0.0${q3a}. <span class="answer-text ml-4 font-bold border border-red-500 rounded px-1">FALSE</span></p>
+                            <p>b. \\(\\frac{${q3b}}{10}\\) is equivalent to 0.${q3b}0. <span class="answer-text ml-4 font-bold border border-red-500 rounded px-1">TRUE</span></p>
+                            <p>c. ${q3c}0 hundredths is equal to ${q3c} tenths. <span class="answer-text ml-4 font-bold border border-red-500 rounded px-1">TRUE</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay3() {
+            const point = getRandomInt(1, 9) / 10;
+            const w1 = getRandomInt(2, 9);
+            const w2_words = ["Twenty-five", "Thirty-four", "Forty-six", "Fifty-two", "Sixty-eight", "Seventy-one", "Eighty-three", "Ninety-seven"];
+            const w2_vals = [25, 34, 46, 52, 68, 71, 83, 97];
+            const w2_idx = getRandomInt(0, 7);
+            const w3 = getRandomInt(2, 9);
+            const err_val = getRandomInt(2, 9);
+
+            return `
+                ${createHeader("Connecting Fractions & Decimals", "186-187")}
+                <div class="space-y-6">
+                    <div class="problem">
+                        <p class="font-bold mb-4">1. Identify the point on the number line.</p>
+                        ${createNumberLine(point, 'fraction')}
+                        <div class="mt-8 ml-4 text-sm">
+                            <p>The point is at \\(\\frac{${point*10}}{10}\\).</p>
+                            <p class="mt-2">Write this as a decimal: ${answerSpan(point)}</p>
+                            <p class="mt-2">Write this as a fraction with denominator 100: ${answerSpan(`\\(\\frac{${point*100}}{100}\\)`)}</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Write each word form as a decimal and a fraction.</p>
+                        <div class="ml-4 space-y-3 text-sm">
+                            <p>a. "${numberWords[w1]} tenths" -> Dec: ${answerSpan(`0.${w1}`)} Frac: ${answerSpan(`\\(\\frac{${w1}}{10}\\)`)}</p>
+                            <p>b. "${w2_words[w2_idx]} hundredths" -> Dec: ${answerSpan(`0.${w2_vals[w2_idx]}`)} Frac: ${answerSpan(`\\(\\frac{${w2_vals[w2_idx]}}{100}\\)`)}</p>
+                            <p>c. "${numberWords[w3]} hundredths" -> Dec: ${answerSpan(`0.0${w3}`)} Frac: ${answerSpan(`\\(\\frac{${w3}}{100}\\)`)}</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">3. Explain why 0.0${err_val} is less than 0.${err_val}.</p>
+                        <div class="border-b border-gray-300 w-full h-8 relative p-1">
+                            <span class="answer-text text-xs">0.0${err_val} is ${err_val} hundredths. 0.${err_val} is ${err_val} tenths (or ${err_val}0 hundredths). ${err_val}0 > ${err_val}.</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay4() {
+            const whole = getRandomInt(1, 3);
+            const part = getRandomInt(15, 85);
+            const m1_w = getRandomInt(1, 9), m1_p = getRandomInt(11, 99);
+            const m2_w = getRandomInt(1, 9), m2_p = getRandomInt(2, 9);
+            const m3_w = getRandomInt(1, 9), m3_p = getRandomInt(1, 9);
+            const m4_w = getRandomInt(1, 9), m4_p = getRandomInt(2, 9) * 10;
+
+            return `
+                ${createHeader("Mixed Numbers & Decimals", "188-189")}
+                <div class="space-y-6">
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. Visual Model: The image below shows ${whole} full grids and ${part} shaded squares on the last grid.</p>
+                        <div class="flex gap-2 ml-4 mb-2">
+                            ${Array(whole).fill(createGrid(100)).join('')}
+                            ${createGrid(part)}
+                        </div>
+                        <div class="ml-4 text-sm space-y-2">
+                            <p>Write as a Mixed Number: ${answerSpan(`${whole} \\(\\frac{${part}}{100}\\)`)}</p>
+                            <p>Write as a Decimal: ${answerSpan(`${whole}.${part}`)}</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Convert Mixed Numbers to Decimals.</p>
+                        <div class="grid grid-cols-2 gap-4 ml-4 text-sm">
+                            <div>a. \\(${m1_w} \\frac{${m1_p}}{100} = \\) ${answerSpan(`${m1_w}.${m1_p}`)}</div>
+                            <div>b. \\(${m2_w} \\frac{${m2_p}}{10} = \\) ${answerSpan(`${m2_w}.${m2_p}`)}</div>
+                            <div>c. \\(${m3_w} \\frac{${m3_p}}{100} = \\) ${answerSpan(`${m3_w}.0${m3_p}`)}</div>
+                            <div>d. \\(${m4_w} \\frac{${m4_p}}{100} = \\) ${answerSpan(`${m4_w}.${m4_p}`)}</div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">3. ${getName()} ran ${whole} and ${part} hundredths miles. Write this distance as a decimal.</p>
+                        <p class="ml-4 text-sm">Answer: ${answerSpan(`${whole}.${part}`)} miles</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay5() {
+             const err_num = getRandomInt(2, 9);
+             const money_d = getRandomInt(1, 8);
+             const money_c = getRandomInt(11, 99);
+             const ch_w = getRandomInt(1, 5);
+             const ch_t = getRandomInt(2, 8); 
+             const ch_h = (ch_t * 10) - getRandomInt(1, 9); 
+             const p_ones = getRandomInt(1, 9);
+             const p_tenths = getRandomInt(1, 9);
+             const p_hund = getRandomInt(1, 9);
+
+             return `
+                ${createHeader("Problem Solving & Analysis", "190-191")}
+                <div class="space-y-6">
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. Error Analysis</p>
+                        <p class="text-sm italic mb-2">"Write ${err_num} hundredths as a decimal."</p>
+                        <p class="text-sm mb-2">${getName()} wrote 0.${err_num}. Is this correct? Explain the mistake.</p>
+                        <div class="border-b border-gray-300 w-full min-h-[40px] p-1 relative">
+                             <span class="answer-text text-xs">No. 0.${err_num} is ${err_num} tenths. ${err_num} hundredths should be written as 0.0${err_num}.</span>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Word Problem</p>
+                        <p class="text-sm mb-2">A notebook costs $${money_d}.${money_c}. Write this amount as a mixed number in terms of dollars and cents.</p>
+                        <div class="ml-4 text-sm">Answer: ${answerSpan(`\\(${money_d} \\frac{${money_c}}{100}\\)`)} dollars</div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">3. Challenge</p>
+                        <p class="text-sm mb-2">Which is greater: \\(${ch_w} \\frac{${ch_t}}{10}\\) or ${ch_w}.${ch_h}? Show your work.</p>
+                        <div class="border-b border-gray-300 w-full min-h-[40px] p-1 relative">
+                             <span class="answer-text text-xs">\\(${ch_w} \\frac{${ch_t}}{10} = ${ch_w}.${ch_t}0\\). ${ch_w}.${ch_t}0 is greater than ${ch_w}.${ch_h}.</span>
+                        </div>
+                    </div>
+                     <div class="problem">
+                        <p class="font-bold mb-2">4. Convert</p>
+                        <div class="ml-4 text-sm">
+                            Write ${p_ones} ones, ${p_tenths} tenths, and ${p_hund} hundredths as a decimal: ${answerSpan(`${p_ones}.${p_tenths}${p_hund}`)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay6() {
+            const q1_num = getRandomInt(2, 9);
+            const q2_tens = getRandomInt(2, 9);
+            const q3_w = getRandomInt(1, 9);
+            const q3_h = getRandomInt(1, 9);
+            const q4_num = getRandomInt(2, 9);
+            const q5_t = getRandomInt(2, 9);
+            const q5_h = getRandomInt(11, 19);
+
+            return `
+                ${createHeader("Lesson Quiz", "192-193")}
+                <div class="space-y-5">
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">1. Which equation is true? (Select One)</p>
+                        <div class="ml-4 text-sm space-y-1">
+                            <p>A. 0.${q1_num} = \\(\\frac{${q1_num}}{100}\\)</p>
+                            <p>B. 0.${q1_num}0 = \\(\\frac{${q1_num}}{10}\\) <span class="answer-text text-red-600 font-bold ml-2"><- Correct</span></p>
+                            <p>C. 0.0${q1_num} = \\(\\frac{${q1_num}}{10}\\)</p>
+                            <p>D. ${q1_num}.0 = \\(\\frac{${q1_num}0}{100}\\)</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">2. Look at the grid (${q2_tens}0 shaded squares). Choose Yes or No.</p>
+                        <div class="flex gap-4 ml-4 items-center">
+                            ${createGrid(q2_tens*10)}
+                            <div class="text-sm space-y-1">
+                                <p>a. Is it 0.${q2_tens}? _____ <span class="answer-text">YES</span></p>
+                                <p>b. Is it 0.0${q2_tens}? _____ <span class="answer-text">NO</span></p>
+                                <p>c. Is it \\(\\frac{${q2_tens}0}{100}\\)? _____ <span class="answer-text">YES</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">3. Write \\(${q3_w} \\frac{${q3_h}}{100}\\) as a decimal.</p>
+                        <p class="ml-4 text-sm mb-2">Answer: ${answerSpan(`${q3_w}.0${q3_h}`)}</p>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">4. Select all fractions equivalent to 0.${q4_num}.</p>
+                        <div class="ml-4 text-sm grid grid-cols-2">
+                             <p>A. \\(\\frac{${q4_num}}{10}\\) <span class="answer-text text-red-600 font-bold"><- Correct</span></p>
+                             <p>B. \\(\\frac{${q4_num}0}{100}\\) <span class="answer-text text-red-600 font-bold"><- Correct</span></p>
+                             <p>C. \\(\\frac{${q4_num}}{100}\\)</p>
+                             <p>D. \\(\\frac{${q4_num}0}{10}\\)</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">5. ${getName()} says that 0.${q5_t} is less than 0.${q5_h} because ${q5_t} is less than ${q5_h}. Is he correct?</p>
+                        <div class="border-b border-gray-300 w-full min-h-[30px] p-1 relative">
+                             <span class="answer-text text-xs">No. 0.${q5_t} is ${q5_t}0 hundredths. ${q5_t}0 > ${q5_h}.</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateFinalQuiz() {
+            const pennies = getRandomInt(105, 895);
+            const gridShaded = getRandomInt(2, 9) * 10;
+            const nl_point = getRandomInt(1, 9) / 10;
+            const m_w = getRandomInt(1, 9), m_p = getRandomInt(1, 9);
+            const eq_tens = getRandomInt(2, 8); 
+            const p_w = getRandomInt(1, 3); 
+            const p_t = getRandomInt(2, 9); 
+            const name1 = getName();
+            let name2 = getName();
+            while(name2 === name1) name2 = getName();
+
+            return `
+                ${createHeader("Final Assessment", "Comprehensive Review")}
+                <div class="space-y-5">
+                    <!-- Q1 -->
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">1. A toy costs $${(pennies/100).toFixed(2)}. Write this amount as a mixed number fraction.</p>
+                        <div class="ml-4 text-sm">Answer: ${answerSpan(`\\(${Math.floor(pennies/100)} \\frac{${pennies%100}}{100}\\)`)}</div>
+                    </div>
+                    <!-- Q2 -->
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">2. Write the shaded amount as a fraction AND a decimal.</p>
+                        <div class="flex items-center gap-6 ml-4 mt-2">
+                            ${createGrid(gridShaded)}
+                            <div class="text-sm space-y-2">
+                                <div class="flex items-center">Fraction: <div class="fraction-input ml-2"><div class="top">${createHtmlAnswer(gridShaded, false)}</div><div class="bottom">100</div></div></div>
+                                <div>Decimal: ${answerSpan(`0.${gridShaded/10} (or 0.${gridShaded})`)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Q3 -->
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">3. Identify the point on the number line as a decimal.</p>
+                        ${createNumberLine(nl_point, 'decimal')}
+                        <div class="mt-8 ml-4 text-sm">
+                            Decimal: ${answerSpan(nl_point.toFixed(1))}
+                        </div>
+                    </div>
+                    <!-- Q4 -->
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">4. Write \\(${m_w} \\frac{${m_p}}{100}\\) as a decimal.</p>
+                        <div class="ml-4 text-sm">Answer: ${answerSpan(`${m_w}.0${m_p}`)}</div>
+                    </div>
+                    <!-- Q5 -->
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">5. Select ALL fractions that are equivalent to 0.${eq_tens}.</p>
+                        <div class="ml-4 text-sm grid grid-cols-2 gap-2 mt-1">
+                            <p>A. \\(\\frac{${eq_tens}}{100}\\)</p>
+                            <p>B. \\(\\frac{${eq_tens}0}{100}\\) <span class="answer-text text-red-600 font-bold ml-2"><- Correct</span></p>
+                            <p>C. \\(\\frac{${eq_tens}}{10}\\) <span class="answer-text text-red-600 font-bold ml-2"><- Correct</span></p>
+                            <p>D. \\(\\frac{${eq_tens}0}{10}\\)</p>
+                        </div>
+                    </div>
+                    <!-- Q6 -->
+                    <div class="problem">
+                        <p class="font-bold text-sm mb-1">6. Word Problem: Compare the Distances</p>
+                        <p class="text-sm mb-1 ml-4">${name1} ran ${p_w}.${p_t} miles. ${name2} ran ${p_w}.0${p_t} miles. Who ran further? Explain.</p>
+                        <div class="border-b border-gray-300 w-full min-h-[30px] p-1 relative mt-1 ml-4">
+                            <span class="answer-text text-xs">${name1} ran further. ${p_w}.${p_t} is ${p_t} tenths (${p_t}0 hundredths). ${p_w}.0${p_t} is only ${p_t} hundredths. ${p_t}0 > ${p_t}.</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Core ---
+        
+        function generateWorksheet() {
+            const day = document.getElementById('day-selector').value;
+            const contentDiv = document.getElementById('worksheet-content');
+            
+            let html = '';
+            switch(day) {
+                case '1': html = generateDay1(); break;
+                case '1.5': html = generateDay1Remediation(); break;
+                case '2': html = generateDay2(); break;
+                case '3': html = generateDay3(); break;
+                case '4': html = generateDay4(); break;
+                case '5': html = generateDay5(); break;
+                case '6': html = generateDay6(); break;
+                case '7': html = generateFinalQuiz(); break;
+            }
+            contentDiv.innerHTML = html;
+            MathJax.typeset();
+        }
+
+        function toggleAnswers() {
+            document.getElementById('worksheet').classList.toggle('show-answers');
+        }
+
+        // Init
+        window.onload = generateWorksheet;
+    </script>
+</body>
+</html>
