@@ -108,6 +108,12 @@
         .show-answers .key-badge {
             display: block;
         }
+        .answer-point {
+            display: none;
+        }
+        .show-answers .answer-point {
+            display: block;
+        }
         .number-line {
             position: relative;
             height: 40px;
@@ -150,9 +156,13 @@
                     <option value="1">Day 1: Intro (p. 182-183)</option>
                     <option value="1.5">Day 1b: Remediation (Visuals)</option>
                     <option value="2">Day 2: Equivalence (p. 184-185)</option>
+                    <option value="2.5">Day 2b: Remediation (Equivalence)</option>
                     <option value="3">Day 3: Connect Fractions/Decimals (p. 186-187)</option>
+                    <option value="3.5">Day 3b: Remediation (Connecting)</option>
                     <option value="4">Day 4: Mixed Numbers (p. 188-189)</option>
+                    <option value="4.5">Day 4b: Remediation (Mixed Numbers)</option>
                     <option value="5">Day 5: Problem Solving (p. 190-191)</option>
+                    <option value="5.5">Day 5b: Remediation (Problem Solving)</option>
                     <option value="6">Day 6: Lesson Quiz (p. 192-193)</option>
                     <option value="7">Final Assessment: End of Lesson Test</option>
                 </select>
@@ -208,7 +218,7 @@
             return html;
         }
 
-        function createNumberLine(targetVal, labelType) {
+        function createNumberLine(targetVal, labelType, hidePointForStudent = false) {
             // labelType: 'decimal' or 'fraction'
             let html = '<div class="number-line">';
             for(let i=0; i<=10; i++) {
@@ -220,7 +230,8 @@
                 html += `<div class="tick-label" style="left:${left}%">${label}</div>`;
             }
             // Add point
-            html += `<div class="point" style="left:${targetVal * 100}%"></div>`;
+            const pointClass = hidePointForStudent ? "point answer-point" : "point";
+            html += `<div class="${pointClass}" style="left:${targetVal * 100}%"></div>`;
             html += '</div>';
             return html;
         }
@@ -405,6 +416,44 @@
             `;
         }
 
+        function generateDay2Remediation() {
+            const v = getRandomInt(2, 9);
+            return `
+                ${createHeader("Remediation: Equivalence", "Review")}
+                <div class="space-y-6">
+                    <div class="problem bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <p class="font-bold mb-2 text-blue-900">The "Zero" Trick (Multiplying by 10)</p>
+                        <p class="text-sm">When we change <strong>tenths</strong> to <strong>hundredths</strong>, we are slicing the pieces 10 times smaller. We just add a zero to the top AND the bottom!</p>
+                        <div class="flex items-center gap-4 mt-2 justify-center font-bold text-lg">
+                            <div class="fraction-input"><div class="top">${v}</div><div class="bottom">10</div></div>
+                            <span>=</span>
+                            <div class="fraction-input"><div class="top">${v}0</div><div class="bottom">100</div></div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. Practice adding the "Zero"</p>
+                        <div class="grid grid-cols-2 gap-y-6 ml-4 text-sm">
+                            <div class="flex items-center">a. \\(\\frac{3}{10} = \\) <div class="fraction-input ml-1"><div class="top">${createHtmlAnswer("30", false)}</div><div class="bottom">100</div></div></div>
+                            <div class="flex items-center">b. 0.4 = 0.${createHtmlAnswer("40", true)}</div>
+                            <div class="flex items-center">c. \\(\\frac{${v}}{10} = \\) <div class="fraction-input ml-1"><div class="top">${createHtmlAnswer(v*10, false)}</div><div class="bottom">100</div></div></div>
+                            <div class="flex items-center">d. 0.${v} = 0.${createHtmlAnswer(v*10, true)}</div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Visual Proof</p>
+                        <div class="flex gap-8 ml-4 items-center">
+                            ${createGrid(v * 10)}
+                            <div class="space-y-3 text-sm">
+                                <p>Look at the shaded columns. There are <strong>${v}</strong> full columns (tenths).</p>
+                                <p>There are <strong>${v*10}</strong> little squares total (hundredths).</p>
+                                <p>Are \\(\\frac{${v}}{10}\\) and \\(\\frac{${v*10}}{100}\\) the exact same amount? ${answerSpan("YES")}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function generateDay3() {
             const point = getRandomInt(1, 9) / 10;
             const w1 = getRandomInt(2, 9);
@@ -439,6 +488,45 @@
                         <div class="border-b border-gray-300 w-full h-8 relative p-1">
                             <span class="answer-text text-xs">0.0${err_val} is ${err_val} hundredths. 0.${err_val} is ${err_val} tenths (or ${err_val}0 hundredths). ${err_val}0 > ${err_val}.</span>
                         </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay3Remediation() {
+            const num = getRandomInt(2, 9);
+            const w_words = ["Twenty-five", "Thirty-four", "Forty-one", "Fifty-six", "Sixty-two", "Seventy-eight", "Eighty-five", "Ninety-three"];
+            const w_vals = [25, 34, 41, 56, 62, 78, 85, 93];
+            const idx = getRandomInt(0, 7);
+            const targetTenths = getRandomInt(1, 9);
+            
+            return `
+                ${createHeader("Remediation: Connect Fractions & Decimals", "Review")}
+                <div class="space-y-6">
+                    <div class="problem bg-green-50 p-4 rounded-lg border border-green-100 mb-4">
+                        <p class="font-bold mb-1 text-green-900">Place Value Cheat Sheet</p>
+                        <p class="text-sm"><strong>1 decimal place</strong> = Tenths (e.g., 0.5 = 5 tenths = \\(\\frac{5}{10}\\))</p>
+                        <p class="text-sm"><strong>2 decimal places</strong> = Hundredths (e.g., 0.05 = 5 hundredths = \\(\\frac{5}{100}\\))</p>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. Use the Cheat Sheet to match</p>
+                        <div class="ml-4 space-y-4 text-sm">
+                            <p>a. "${numberWords[num]} tenths"</p>
+                            <p class="ml-4 text-gray-700">How many places? ${answerSpan("1 (Tenths)")} ➔ Decimal: ${answerSpan(`0.${num}`)} ➔ Fraction: ${answerSpan(`\\(\\frac{${num}}{10}\\)`)}</p>
+                            
+                            <p>b. "${numberWords[num]} hundredths"</p>
+                            <p class="ml-4 text-gray-700">How many places? ${answerSpan("2 (Hundredths)")} ➔ Decimal: ${answerSpan(`0.0${num}`)} ➔ Fraction: ${answerSpan(`\\(\\frac{${num}}{100}\\)`)}</p>
+                            
+                            <p>c. "${w_words[idx]} hundredths"</p>
+                            <p class="ml-4 text-gray-700">How many places? ${answerSpan("2 (Hundredths)")} ➔ Decimal: ${answerSpan(`0.${w_vals[idx]}`)} ➔ Fraction: ${answerSpan(`\\(\\frac{${w_vals[idx]}}{100}\\)`)}</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Locate and Convert</p>
+                        <p class="text-sm mb-6 ml-4">a. Draw a point at <strong>0.${targetTenths}</strong> on the number line.</p>
+                        <div class="px-4">${createNumberLine(targetTenths / 10, 'decimal', true)}</div>
+                        <p class="text-sm mt-10 ml-4">b. Write 0.${targetTenths} as a decimal in hundredths: ${answerSpan(`0.${targetTenths}0`)}</p>
+                        <p class="text-sm mt-2 ml-4">c. Write 0.${targetTenths} as a fraction in hundredths: ${answerSpan(`\\(\\frac{${targetTenths}0}{100}\\)`)}</p>
                     </div>
                 </div>
             `;
@@ -483,6 +571,45 @@
             `;
         }
 
+        function generateDay4Remediation() {
+            const whole = getRandomInt(1, 3);
+            const part = getRandomInt(12, 45);
+            return `
+                ${createHeader("Remediation: Mixed Numbers", "Review")}
+                <div class="space-y-6">
+                    <div class="problem bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                        <p class="font-bold mb-2 text-yellow-900">Think of Money!</p>
+                        <p class="text-sm mb-1">A <strong>Mixed Number</strong> has a WHOLE part (Dollars) and a FRACTION part (Cents).</p>
+                        <p class="text-sm font-bold mt-2 text-gray-800">Example: 2 dollars and 45 cents = \\(2 \\frac{45}{100}\\) = 2.45</p>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. Break it down</p>
+                        <div class="ml-4 space-y-4 text-sm">
+                            <div class="border-l-4 border-yellow-400 bg-white p-3 shadow-sm rounded">
+                                <p class="mb-3 text-lg"><strong>You have ${whole} full dollars and ${part} extra pennies.</strong></p>
+                                <p class="mb-1">a. Whole Number (Dollars): ${answerSpan(whole)}</p>
+                                <p class="mb-1">b. Fraction (Pennies out of 100): ${answerSpan(`\\(\\frac{${part}}{100}\\)`)}</p>
+                                <p class="mb-1">c. Put them together (Mixed Number): ${answerSpan(`\\(${whole} \\frac{${part}}{100}\\)`)}</p>
+                                <p>d. Decimal form: ${answerSpan(`${whole}.${part}`)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. Visual Practice</p>
+                        <div class="flex gap-2 ml-4 mb-3">
+                            ${createGrid(100)}
+                            ${createGrid(part)}
+                        </div>
+                        <div class="ml-4 text-sm space-y-2">
+                            <p>How many completely full boxes? ${answerSpan("1")}</p>
+                            <p>How many little squares are shaded in the last box? ${answerSpan(part)}</p>
+                            <p>Write the Decimal: ${answerSpan(`1.${part}`)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function generateDay5() {
              const err_num = getRandomInt(2, 9);
              const money_d = getRandomInt(1, 8);
@@ -521,6 +648,42 @@
                         <p class="font-bold mb-2">4. Convert</p>
                         <div class="ml-4 text-sm">
                             Write ${p_ones} ones, ${p_tenths} tenths, and ${p_hund} hundredths as a decimal: ${answerSpan(`${p_ones}.${p_tenths}${p_hund}`)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateDay5Remediation() {
+             const t = getRandomInt(2, 5);
+             const h = (t * 10) - getRandomInt(2, 8);
+             return `
+                ${createHeader("Remediation: Problem Solving", "Review")}
+                <div class="space-y-6">
+                    <div class="problem bg-purple-50 p-4 rounded-lg border border-purple-100">
+                        <p class="font-bold mb-2 text-purple-900">The "Apples to Apples" Rule</p>
+                        <p class="text-sm">You cannot easily compare <strong>tenths</strong> to <strong>hundredths</strong>. You must change the tenths into hundredths first (add a zero!) so they are exactly the same size pieces.</p>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">1. Guided Comparison</p>
+                        <p class="text-sm mb-2 ml-4">Which is bigger: 0.${t} or 0.${h}?</p>
+                        <div class="ml-4 space-y-3 text-sm border-l-4 border-purple-300 pl-4 py-2 bg-white rounded shadow-sm">
+                            <p class="text-purple-800 font-bold">Step 1: Make them both hundredths.</p>
+                            <p class="ml-4">0.${t} = 0.${createHtmlAnswer(t + "0", true)} (Add a zero!)</p>
+                            <p class="ml-4">0.${h} is already hundredths.</p>
+                            
+                            <p class="text-purple-800 font-bold mt-4">Step 2: Compare the whole number of hundredths.</p>
+                            <p class="ml-4">Which is more, ${t}0 or ${h}? ${answerSpan(t + "0")}</p>
+                            
+                            <p class="text-purple-800 font-bold mt-4">Step 3: Answer the question.</p>
+                            <p class="ml-4">The bigger decimal is: ${answerSpan(`0.${t}`)}</p>
+                        </div>
+                    </div>
+                    <div class="problem">
+                        <p class="font-bold mb-2">2. True or False</p>
+                        <div class="ml-4 space-y-3 text-sm">
+                            <p>a. 0.3 is bigger than 0.25 <span class="text-gray-500 italic ml-2">(Hint: 0.3 = 0.30)</span> : ${answerSpan("TRUE")}</p>
+                            <p>b. 0.09 is bigger than 0.1 <span class="text-gray-500 italic ml-2">(Hint: 0.1 = 0.10)</span> : ${answerSpan("FALSE")}</p>
                         </div>
                     </div>
                 </div>
@@ -659,9 +822,13 @@
                 case '1': html = generateDay1(); break;
                 case '1.5': html = generateDay1Remediation(); break;
                 case '2': html = generateDay2(); break;
+                case '2.5': html = generateDay2Remediation(); break;
                 case '3': html = generateDay3(); break;
+                case '3.5': html = generateDay3Remediation(); break;
                 case '4': html = generateDay4(); break;
+                case '4.5': html = generateDay4Remediation(); break;
                 case '5': html = generateDay5(); break;
+                case '5.5': html = generateDay5Remediation(); break;
                 case '6': html = generateDay6(); break;
                 case '7': html = generateFinalQuiz(); break;
             }
