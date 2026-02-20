@@ -657,6 +657,14 @@
         function generateDay5Remediation() {
              const t = getRandomInt(2, 5);
              const h = (t * 10) - getRandomInt(2, 8);
+             
+             // Variables for Problem 2 (True/False)
+             const t1 = getRandomInt(3, 9);
+             const h1 = getRandomInt(11, (t1 * 10) - 1); // Ensures 0.t1 > 0.h1
+             
+             const t2 = getRandomInt(1, 4);
+             const h2 = getRandomInt(2, 9); // Ensures 0.0h2 < 0.t2
+             
              return `
                 ${createHeader("Remediation: Problem Solving", "Review")}
                 <div class="space-y-6">
@@ -682,8 +690,8 @@
                     <div class="problem">
                         <p class="font-bold mb-2">2. True or False</p>
                         <div class="ml-4 space-y-3 text-sm">
-                            <p>a. 0.3 is bigger than 0.25 <span class="text-gray-500 italic ml-2">(Hint: 0.3 = 0.30)</span> : ${answerSpan("TRUE")}</p>
-                            <p>b. 0.09 is bigger than 0.1 <span class="text-gray-500 italic ml-2">(Hint: 0.1 = 0.10)</span> : ${answerSpan("FALSE")}</p>
+                            <p>a. 0.${t1} is bigger than 0.${h1} <span class="text-gray-500 italic ml-2">(Hint: 0.${t1} = 0.${t1}0)</span> : ${answerSpan("TRUE")}</p>
+                            <p>b. 0.0${h2} is bigger than 0.${t2} <span class="text-gray-500 italic ml-2">(Hint: 0.${t2} = 0.${t2}0)</span> : ${answerSpan("FALSE")}</p>
                         </div>
                     </div>
                 </div>
