@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade 4 ELA ILEARN Daily Worksheets — Offline Edition</title>
+<style>
+:root {
+  --bg: #F5F3EE;
+  --surface: #FFFFFF;
+  --surface2: #EDEAE3;
+  --accent: #2C4A6E;
+  --accent-light: #EAF0F8;
+  --accent2: #C8603A;
+  --accent2-light: #FBF0EB;
+  --accent3: #4A8267;
+  --accent3-light: #EAF3EE;
+  --gold: #B07D2A;
+  --gold-light: #FBF5E6;
+  --text: #1C1C2E;
+  --text2: #4A4A62;
+  --text3: #8A8AA0;
+  --border: rgba(28,28,46,0.10);
+  --border2: rgba(28,28,46,0.18);
+  --radius: 8px;
+  --radius-lg: 14px;
+  --shadow: 0 2px 10px rgba(28,28,46,0.08);
+  --shadow-lg: 0 6px 24px rgba(28,28,46,0.11);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{background:var(--accent);color:white;padding:1.75rem 2rem;}
+.header-inner{max-width:980px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.header-left h1{font-size:1.6rem;font-weight:700;margin-bottom:2px;}
+.header-left p{font-size:13px;color:rgba(255,255,255,0.68);font-family:Arial,sans-serif;}
+.header-badge{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:5px 14px;border-radius:20px;font-family:Arial,sans-serif;white-space:nowrap;}
+.main{max-width:980px;margin:0 auto;padding:1.75rem 1.25rem;display:grid;grid-template-columns:260px 1fr;gap:1.5rem;align-items:start;}
+@media(max-width:680px){.main{grid-template-columns:1fr;}}
+.sidebar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;position:sticky;top:1.5rem;box-shadow:var(--shadow);font-family:Arial,sans-serif;}
+.sidebar-heading{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.9rem;}
+.week-group{margin-bottom:1rem;}
+.week-label{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.week-label-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.day-btns{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.day-btn{padding:7px 4px;text-align:center;font-family:Arial,sans-serif;font-size:12px;font-weight:600;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;line-height:1.2;}
+.day-btn:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
+.day-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+.sidebar-divider{height:1px;background:var(--border);margin:.9rem 0;}
+.print-btn{width:100%;padding:10px;background:var(--accent2);color:white;font-family:Arial,sans-serif;font-size:13px;font-weight:700;border:none;border-radius:var(--radius);cursor:pointer;transition:background .15s;}
+.print-btn:hover{background:#a84e2a;}
+.print-note{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5;text-align:center;}
+.worksheet{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden;}
+.ws-topbar{background:var(--accent);color:white;padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+.ws-topbar-title{font-size:1.05rem;font-weight:700;}
+.ws-topbar-meta{font-size:12px;color:rgba(255,255,255,.72);font-family:Arial,sans-serif;}
+.day-pills{display:flex;gap:5px;}
+.day-pill{font-size:11px;font-weight:700;font-family:Arial,sans-serif;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.65);}
+.day-pill.active-pill{background:rgba(255,255,255,.9);color:var(--accent);}
+.ws-fields{font-size:13px;color:var(--text2);padding:9px 1.5rem;background:#fff;border-bottom:1px solid var(--border);display:flex;gap:2rem;font-family:Arial,sans-serif;}
+.ws-field{display:flex;gap:6px;align-items:center;}
+.ws-field strong{font-weight:700;}
+.field-line{display:inline-block;width:130px;border-bottom:1px solid var(--text3);}
+.mini-lesson{margin:1.25rem 1.5rem;border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;}
+.ml-header{background:var(--gold-light);border-bottom:1px solid rgba(176,125,42,.2);padding:.7rem 1.1rem;display:flex;align-items:center;gap:.6rem;}
+.ml-icon{font-size:1rem;flex-shrink:0;}
+.ml-title{font-size:13px;font-weight:700;font-family:Arial,sans-serif;color:var(--gold);letter-spacing:.02em;text-transform:uppercase;}
+.ml-day-label{margin-left:auto;font-size:11px;font-weight:700;font-family:Arial,sans-serif;background:var(--gold);color:white;padding:2px 10px;border-radius:20px;}
+.ml-body{padding:1rem 1.1rem;font-family:Arial,sans-serif;font-size:13.5px;line-height:1.65;color:var(--text);}
+.ml-rule{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:.65rem .9rem;margin-bottom:.85rem;font-size:13.5px;}
+.ml-rule strong{color:var(--accent);display:block;font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.ml-examples{margin-bottom:.85rem;}
+.ml-examples strong{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);display:block;margin-bottom:6px;}
+.example-row{display:flex;gap:.5rem;align-items:baseline;margin-bottom:5px;font-size:13.5px;}
+.ex-label{font-weight:700;color:var(--accent3);flex-shrink:0;width:22px;}
+.ex-wrong{color:#b03030;text-decoration:line-through;margin-right:4px;}
+.ex-right{color:#2a6e3f;font-weight:700;}
+.ml-tip{background:var(--accent2-light);border-left:3px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;padding:.6rem .9rem;margin-bottom:.5rem;font-size:13px;}
+.ml-tip strong{color:var(--accent2);font-size:12px;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px;}
+.ml-chart{margin-bottom:.85rem;overflow-x:auto;}
+.ml-chart table{width:100%;border-collapse:collapse;font-size:13px;font-family:Arial,sans-serif;}
+.ml-chart th{background:var(--accent);color:white;padding:6px 10px;text-align:left;font-weight:700;font-size:12px;}
+.ml-chart td{padding:5px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.45;}
+.ml-chart tr:last-child td{border-bottom:none;}
+.ml-chart tr:nth-child(even) td{background:var(--surface2);}
+.ws-questions{padding:0 1.5rem 1.25rem;}
+.qs-label{font-size:11px;font-weight:700;font-family:Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:.85rem;display:flex;align-items:center;gap:8px;}
+.qs-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.question{margin-bottom:1.3rem;}
+.q-num{font-weight:700;color:var(--accent);font-family:Arial,sans-serif;margin-right:4px;}
+.q-stem{font-size:14px;line-height:1.6;margin-bottom:7px;}
+.q-passage{background:var(--surface2);border-left:3px solid var(--border2);border-radius:0 var(--radius) var(--radius) 0;padding:7px 12px;margin-bottom:8px;font-size:13.5px;font-style:italic;line-height:1.6;color:var(--text2);}
+.q-choices{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;padding-left:2px;}
+@media(max-width:480px){.q-choices{grid-template-columns:1fr;}}
+.choice{font-size:13.5px;line-height:1.5;display:flex;gap:5px;}
+.choice-letter{font-weight:700;color:var(--text3);flex-shrink:0;width:18px;font-family:Arial,sans-serif;}
+.answer-key-wrap{border-top:1px solid var(--border);}
+.answer-key-wrap summary{padding:11px 1.5rem;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:Arial,sans-serif;list-style:none;display:flex;align-items:center;gap:6px;user-select:none;}
+.answer-key-wrap summary::-webkit-details-marker{display:none;}
+.answer-key-wrap summary::before{content:"▶";font-size:10px;transition:transform .2s;}
+.answer-key-wrap[open] summary::before{transform:rotate(90deg);}
+.ak-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px;padding:0 1.5rem 1.25rem;}
+.ak-item{background:var(--surface2);border-radius:var(--radius);padding:7px 11px;font-size:12.5px;font-family:Arial,sans-serif;line-height:1.5;}
+.ak-num{font-weight:700;color:var(--accent);margin-right:3px;}
+.ak-ans{font-weight:700;color:var(--accent2);margin-right:5px;}
+.ws-actions{display:flex;gap:8px;padding:1rem 1.5rem;border-top:1px solid var(--border);background:var(--surface2);font-family:Arial,sans-serif;}
+.ws-action-btn{flex:1;padding:8px;font-size:13px;font-weight:600;font-family:Arial,sans-serif;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;}
+.ws-action-btn:hover{background:var(--accent);color:white;border-color:var(--accent);}
+.empty-state{background:var(--surface);border:1px dashed var(--border2);border-radius:var(--radius-lg);padding:3rem 2rem;text-align:center;color:var(--text3);font-family:Arial,sans-serif;}
+.empty-state h3{font-size:1.05rem;color:var(--text2);margin-bottom:8px;}
+.empty-state p{font-size:13.5px;line-height:1.65;}
+@media print{
+  header,.sidebar,.ws-actions,.answer-key-wrap,.day-pills,.ws-topbar-meta{display:none!important;}
+  body{background:white;}
+  .main{grid-template-columns:1fr;padding:0;}
+  .worksheet{box-shadow:none;border:none;border-radius:0;}
+  .ws-topbar{background:var(--accent)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .mini-lesson{page-break-inside:avoid;}
+  .question{page-break-inside:avoid;}
+  .ml-rule,.ml-tip{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>ELA Daily Worksheets</h1>
+      <p>Indiana ILEARN · Approaching Proficiency · Grade 4 · Fully Offline</p>
+    </div>
+    <div class="header-badge">6 Weeks · 4 Days Each</div>
+  </div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Select a worksheet</div>
+    <div class="week-group">
+      <div class="week-label"><span class="week-label-dot"></span>Week 1 · Figurative Language</div>
+      <div class="day-btns">
+        <button class="day-btn" onclick="show(1,1)">Day 1<br><span style="font-weight:400;font-size:10px;">Simile</span></button>
+        <button class="day-btn" onclick="show(1,2)">Day 2<br><span style="font-weight:400;font-size:10px;">Metaphor</span></button>
+        <button class="day-btn" onclick="show(1,3)">Day 3<br><span style="font-weight:400;font-size:10px;">Idioms</span></button>
+        <button class="day-btn" onclick="show(1,4)">Day 4<br><span style="font-weight:400;font-size:10px;">Mixed Review</span></button>
+      </div>
+    </div>
+    <div class="week-group">
+      <div class="week-label"><span class="week-label-dot" style="background:var(--accent2)"></span>Week 2 · Base Words &amp; Affixes</div>
+      <div class="day-btns">
+        <button class="day-btn" onclick="show(2,1)">Day 1<br><span style="font-weight:400;font-size:10px;">Prefixes</span></button>
+        <button class="day-btn" onclick="show(2,2)">Day 2<br><span style="font-weight:400;font-size:10px;">Suffixes</span></button>
+        <button class="day-btn" onclick="show(2,3)">Day 3<br><span style="font-weight:400;font-size:10px;">In Context</span></button>
+        <button class="day-btn" onclick="show(2,4)">Day 4<br><span style="font-weight:400;font-size:10px;">Mixed Review</span></button>
+      </div>
+    </div>
+    <div class="week-group">
+      <div class="week-label"><span class="week-label-dot" style="background:var(--accent3)"></span>Week 3 · Verb Tenses &amp; Modals</div>
+      <div class="day-btns">
+        <button class="day-btn" onclick="show(3,1)">Day 1<br><span style="font-weight:400;font-size:10px;">Progressive Tenses</span></button>
+        <button class="day-btn" onclick="show(3,2)">Day 2<br><span style="font-weight:400;font-size:10px;">Tense Shifts</span></button>
+        <button class="day-btn" onclick="show(3,3)">Day 3<br><span style="font-weight:400;font-size:10px;">Modal Auxiliaries</span></button>
+        <button class="day-btn" onclick="show(3,4)">Day 4<br><span style="font-weight:400;font-size:10px;">Mixed Review</span></button>
+      </div>
+    </div>
+    <div class="week-group">
+      <div class="week-label"><span class="week-label-dot" style="background:var(--gold)"></span>Week 4 · Relative Adverbs</div>
+      <div class="day-btns">
+        <button class="day-btn" onclick="show(4,1)">Day 1<br><span style="font-weight:400;font-size:10px;">Where &amp; When</span></button>
+        <button class="day-btn" onclick="show(4,2)">Day 2<br><span style="font-weight:400;font-size:10px;">Why</span></button>
+        <button class="day-btn" onclick="show(4,3)">Day 3<br><span style="font-weight:400;font-size:10px;">Prepositions</span></button>
+        <button class="day-btn" onclick="show(4,4)">Day 4<br><span style="font-weight:400;font-size:10px;">Mixed Review</span></button>
+      </div>
+    </div>
+    <div class="week-group">
+      <div class="week-label"><span class="week-label-dot" style="background:#7A5CA8"></span>Week 5 · Apostrophes &amp; Contractions</div>
+      <div class="day-btns">
+        <button class="day-btn" onclick="show(5,1)">Day 1<br><span style="font-weight:400;font-size:10px;">Contractions</span></button>
+        <button class="day-btn" onclick="show(5,2)">Day 2<br><span style="font-weight:400;font-size:10px;">it's vs. its</span></button>
+        <button class="day-btn" onclick="show(5,3)">Day 3<br><span style="font-weight:400;font-size:10px;">you're / they're</span></button>
+        <button class="day-btn" onclick="show(5,4)">Day 4<br><span style="font-weight:400;font-size:10px;">Mixed Review</span></button>
+      </div>
+    </div>
+    <div class="week-group">
+      <div class="week-label"><span class="week-label-dot" style="background:#2A7A6E"></span>Week 6 · Commas &amp; Quotation Marks</div>
+      <div class="day-btns">
+        <button class="day-btn" onclick="show(6,1)">Day 1<br><span style="font-weight:400;font-size:10px;">Direct Speech</span></button>
+        <button class="day-btn" onclick="show(6,2)">Day 2<br><span style="font-weight:400;font-size:10px;">Compound Sentences</span></button>
+        <button class="day-btn" onclick="show(6,3)">Day 3<br><span style="font-weight:400;font-size:10px;">More Direct Speech</span></button>
+        <button class="day-btn" onclick="show(6,4)">Day 4<br><span style="font-weight:400;font-size:10px;">Mixed Review</span></button>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+    <p class="print-note">Sidebar hides automatically when printing.</p>
+  </aside>
+
+  <div id="rightPanel">
+    <div class="empty-state">
+      <div style="font-size:2.2rem;margin-bottom:.9rem;">📋</div>
+      <h3>Select a day to begin</h3>
+      <p>Choose any week and day from the sidebar. Each worksheet has a mini lesson and 6 practice questions that get a little harder each day.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+
+/* ══════════════════════════════════════
+   WEEK 1 — FIGURATIVE LANGUAGE
+══════════════════════════════════════ */
+"1-1":{
+  week:1,day:1,weekTitle:"Figurative Language",dayTitle:"Simile",skill:"Simile",
+  miniLesson:{
+    rule:`A <strong>simile</strong> compares two different things using the words <em>like</em> or <em>as</em>. It helps paint a picture in the reader's mind.`,
+    chart:{headers:["Signal Word","Example","What It Means"],rows:[
+      ["like","The frog jumped <em>like a rocket</em>.","The frog jumped very fast and high."],
+      ["as","Her hair was <em>as bright as the sun</em>.","Her hair was very yellow and shiny."]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"The dog ran like the wind. (simile — uses like)",plain:""},
+      {label:"✓",wrong:"",right:"He was as quiet as a mouse. (simile — uses as)",plain:""}
+    ],
+    tip:`<strong>Watch out:</strong> Not every sentence with like or as is a simile. "I like pizza" is NOT a simile — it does not compare two different things.`
+  },
+  questions:[
+    {stem:"Which sentence is a <strong>simile</strong>?",choices:["A) The rabbit hopped across the yard.","B) The rabbit was as fast as a race car.","C) The rabbit had soft brown fur.","D) The rabbit jumped very high."],answer:"B",explanation:"As fast as a race car uses as to compare the rabbit to a race car — that is a simile."},
+    {stem:"Which sentence is a <strong>simile</strong>?",choices:["A) My backpack is heavy today.","B) The moon was bright last night.","C) My backpack felt like a rock on my shoulders.","D) I packed my lunch in my bag."],answer:"C",explanation:"Felt like a rock uses like to compare the backpack to a rock — that is a simile."},
+    {stem:"Read the sentence. What does the simile tell you about the lemonade?",passage:"The lemonade was <u>as sour as a lemon</u>.",choices:["A) The lemonade tasted very sweet.","B) The lemonade tasted very sour.","C) The lemonade was yellow.","D) The lemonade was cold."],answer:"B",explanation:"As sour as a lemon is a simile using as that tells us the lemonade tasted very sour."},
+    {stem:"Read the sentence. What does the simile mean?",passage:"When the thunder boomed, my little sister ran to Mom <u>like a scared puppy</u>.",choices:["A) My sister became a puppy.","B) My sister ran slowly and carefully.","C) My sister ran to Mom feeling very scared and upset.","D) My sister barked at the thunder."],answer:"C",explanation:"Like a scared puppy is a simile comparing how my sister ran — quickly, scared, and wanting comfort."},
+    {stem:"Which sentence does <strong>NOT</strong> contain a simile?",choices:["A) The old tree looked like a giant reaching for the sky.","B) Her voice was as sweet as honey.","C) The puppy wagged its tail and licked my hand.","D) The snow fell like tiny white feathers."],answer:"C",explanation:"The puppy wagged its tail and licked my hand is a plain description — no comparison using like or as."},
+    {stem:"Read the two sentences. Which one uses a simile to best describe how fast Marcus ran?",choices:["A) Marcus ran very fast to catch the bus.","B) Marcus ran like a cheetah to catch the bus.","C) Marcus almost missed the bus this morning.","D) Marcus ran and made it to the bus just in time."],answer:"B",explanation:"Ran like a cheetah uses like to compare Marcus to a cheetah — it gives a strong picture of his speed."}
+  ]
+},
+
+"1-2":{
+  week:1,day:2,weekTitle:"Figurative Language",dayTitle:"Metaphor",skill:"Metaphor",
+  miniLesson:{
+    rule:`A <strong>metaphor</strong> also compares two different things, but it does <em>not</em> use like or as. A metaphor says one thing <em>IS</em> another thing.`,
+    chart:{headers:["Type","Example","Key Difference"],rows:[
+      ["Simile","The classroom was <em>like a zoo</em>.","Uses like or as"],
+      ["Metaphor","The classroom was <em>a zoo</em>.","No like or as — says it IS a zoo"]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"The moon is a glowing lantern in the sky. (metaphor — the moon IS a lantern)",plain:""},
+      {label:"✗",wrong:"",right:"The moon is like a lantern in the sky. (this one is a simile — uses like)",plain:""}
+    ],
+    tip:`<strong>Tip:</strong> If you can add the word like or as and it still makes sense, it might be a simile. A metaphor cannot have like or as added — it directly says one thing IS another.`
+  },
+  questions:[
+    {stem:"Which sentence is a <strong>metaphor</strong>?",choices:["A) The baby's laugh was like music to our ears.","B) The baby's laugh was music to our ears.","C) The baby laughed very loudly.","D) The baby smiled and clapped her hands."],answer:"B",explanation:"The baby's laugh was music to our ears is a metaphor — it says the laugh IS music, with no like or as."},
+    {stem:"Which sentence is a <strong>metaphor</strong>?",choices:["A) Dad's old truck was like a tired old horse.","B) Dad's old truck was slow and rusty.","C) Dad's old truck was a tired old horse that could barely make it up the hill.","D) Dad's old truck needed a lot of repairs."],answer:"C",explanation:"Was a tired old horse says the truck IS a horse — no like or as — that is a metaphor."},
+    {stem:"Read the sentence. What does the metaphor tell us about the playground?",passage:"At recess, our playground is <u>a jungle</u> of running, yelling, and laughing.",choices:["A) The playground has real jungle animals.","B) The playground is wild, loud, and full of energy.","C) The playground is boring and quiet.","D) The playground has lots of trees and plants."],answer:"B",explanation:"Calling the playground a jungle is a metaphor that shows it is wild, noisy, and full of energy — just like a jungle."},
+    {stem:"Read the sentence. What does the metaphor mean?",passage:"After the long soccer game, Marcus's legs were <u>wet noodles</u>.",choices:["A) Marcus ate noodles before the game.","B) Marcus's legs felt weak and wobbly from running.","C) Marcus ran very fast during the game.","D) Marcus was very hungry after the game."],answer:"B",explanation:"Wet noodles is a metaphor for legs that feel limp and weak — noodles are floppy, just like tired legs."},
+    {stem:"Which sentence uses a <strong>metaphor</strong>?",choices:["A) The stars were like tiny diamonds scattered across the sky.","B) The night sky was a black blanket covered in tiny diamonds.","C) The stars were bright and easy to see last night.","D) I looked up at the stars for a long time."],answer:"B",explanation:"Was a black blanket covered in tiny diamonds is a metaphor — the sky IS a blanket, the stars ARE diamonds. No like or as."},
+    {stem:"Read the two sentences. Which one is a <strong>metaphor</strong>, and what does it mean?",choices:["A) 'Her smile was like sunshine' — Her smile was warm and bright. (This is a simile.)","B) 'Her smile was sunshine on a cloudy day' — Her smile brought warmth and happiness. (This is a metaphor.)","C) Both sentences are metaphors.","D) Neither sentence is a metaphor."],answer:"B",explanation:"Her smile was sunshine has no like or as — it says her smile IS sunshine, which makes it a metaphor meaning her smile brought warmth and happiness."}
+  ]
+},
+
+"1-3":{
+  week:1,day:3,weekTitle:"Figurative Language",dayTitle:"Idioms",skill:"Idioms",
+  miniLesson:{
+    rule:`An <strong>idiom</strong> is a phrase that means something <em>different</em> from what the words actually say. You cannot figure out an idiom by looking at each word — you have to know the special meaning of the whole phrase.`,
+    chart:{headers:["Idiom","What It Literally Says","What It Really Means"],rows:[
+      ["It's raining cats and dogs.","Animals are falling from the sky.","It is raining very hard."],
+      ["Break a leg!","Hurt your leg.","Good luck!"],
+      ["Hold your horses.","Grab actual horses.","Slow down / wait a moment."],
+      ["She has a green thumb.","Her thumb is green.","She is very good at growing plants."]
+    ]},
+    examples:[],
+    tip:`<strong>Tip:</strong> When you read an idiom and the words seem to say something silly or impossible, that is a clue! The phrase has a special meaning that is different from the words.`
+  },
+  questions:[
+    {stem:"Read the sentence. What does the underlined idiom mean?",passage:"Before his big speech, Marcus's teacher told him to <u>break a leg</u>.",choices:["A) to fall down on the stage","B) to good luck","C) to speak very quietly","D) to practice one more time"],answer:"B",explanation:"Break a leg is an idiom meaning good luck — it has nothing to do with actually breaking anything."},
+    {stem:"Read the sentence. What does the underlined idiom mean?",passage:"My mom told me to <u>hold my horses</u> before I ran out to play — I had to finish my homework first.",choices:["A) to carry the horses to a safe place","B) to slow down and wait","C) to run very fast like a horse","D) to go outside and play"],answer:"B",explanation:"Hold your horses is an idiom telling someone to slow down or be patient."},
+    {stem:"Which sentence uses an idiom?",choices:["A) The rain came down very hard this afternoon.","B) My dog ran around the yard three times.","C) It was raining cats and dogs on the way to school.","D) I walked to the bus stop with my umbrella."],answer:"C",explanation:"Raining cats and dogs is an idiom meaning it was raining very hard — no animals were actually falling."},
+    {stem:"Read the sentence. What does the underlined idiom most likely mean?",passage:"When it was time for the spelling test, Jada said it was <u>a piece of cake</u>.",choices:["A) The class got cake after the test.","B) The test was very easy.","C) Jada was very nervous.","D) The test was about food."],answer:"B",explanation:"A piece of cake is an idiom meaning something is very easy to do."},
+    {stem:"Read the sentence. What does the underlined idiom mean?",passage:"Learning to ride a bike was hard at first, but after lots of practice, it was <u>like riding a bike</u> — wait, I mean it became second nature!",passage2:"Try this one: Dad told me to <u>zip my lips</u> during the movie.",choices:["A) to put a zipper on your mouth","B) to leave the room quietly","C) to stop talking and be quiet","D) to eat a snack"],answer:"C",explanation:"Zip your lips is an idiom meaning to stop talking and be quiet."},
+    {stem:"Read the two sentences. One uses an idiom and one does not. Which is the idiom, and what does it mean?",choices:["A) 'She has a green thumb' is the idiom — it means she is great at growing plants.","B) 'She wore green nail polish' is the idiom — it means she likes the color green.","C) Both sentences are idioms.","D) Neither sentence is an idiom."],answer:"A",explanation:"She has a green thumb is an idiom meaning she is very skilled at gardening and growing plants. The other sentence is a literal description."}
+  ]
+},
+
+"1-4":{
+  week:1,day:4,weekTitle:"Figurative Language",dayTitle:"Mixed Review",skill:"Simile, Metaphor & Idiom — Mixed Review",
+  miniLesson:{
+    rule:`This week you learned three types of figurative language. Today you will practice telling them apart and explaining what they mean.`,
+    chart:{headers:["Type","Clue","Example"],rows:[
+      ["Simile","Uses <em>like</em> or <em>as</em>","Her eyes sparkled like stars."],
+      ["Metaphor","Says one thing IS another (no like/as)","Her eyes were stars."],
+      ["Idiom","Phrase with a special meaning","She was over the moon with excitement."]
+    ]},
+    examples:[],
+    tip:`<strong>Strategy:</strong> (1) Does it compare using like or as? → Simile. (2) Does it say something IS something else? → Metaphor. (3) Does the phrase mean something totally different from the words? → Idiom.`
+  },
+  questions:[
+    {stem:"Read the sentence. Which type of figurative language is used?",passage:"The new student was <u>as nervous as a long-tailed cat in a room full of rocking chairs</u>.",choices:["A) Metaphor","B) Idiom","C) Simile","D) None — it is a plain description"],answer:"C",explanation:"As nervous as… uses as to make a comparison — that is a simile."},
+    {stem:"Read the sentence. Which type of figurative language is used?",passage:"After she heard the good news, Keisha was <u>on cloud nine</u> for the rest of the day.",choices:["A) Simile","B) Metaphor","C) Idiom","D) None — it is a plain description"],answer:"C",explanation:"On cloud nine is an idiom meaning to feel extremely happy — she was not literally on a cloud."},
+    {stem:"Read the sentence. What does the underlined phrase mean?",passage:"The old barn was <u>a sleeping giant</u> at the edge of the field.",choices:["A) A real giant was sleeping in the barn.","B) The barn was very large and quiet.","C) The barn was moving slowly across the field.","D) The barn was small and hard to see."],answer:"B",explanation:"A sleeping giant is a metaphor — it says the barn IS a giant, suggesting it is very large and still."},
+    {stem:"Read the passage. Which type of figurative language does the author use?",passage:"The wind sang softly through the leaves as the children played below.",choices:["A) Simile — the wind is compared to a singer using like.","B) Idiom — sang through the leaves is a common phrase with a different meaning.","C) Metaphor — the wind is given a human action (singing) and called a singer.","D) None — this is a plain description of the wind."],answer:"C",explanation:"Saying the wind sang gives the wind a human action — the wind IS a singer in this metaphor."},
+    {stem:"Read the sentence. Which type of figurative language is used, and what does it mean?",passage:"When the teacher handed back our graded projects, Jake said he had <u>butterflies in his stomach</u>.",choices:["A) Idiom — Jake was hungry and wanted a snack.","B) Simile — Jake felt like a butterfly.","C) Idiom — Jake felt nervous and anxious.","D) Metaphor — Jake's stomach was full of butterflies."],answer:"C",explanation:"Butterflies in your stomach is an idiom meaning you feel nervous or anxious — no butterflies were involved."},
+    {stem:"Read the two sentences from a story. Identify the type of figurative language in <strong>each</strong> sentence.",passage:"Sentence 1: The gym was a beehive of activity before the big game.\nSentence 2: Players darted around the court like fish in a rushing stream.",choices:["A) Sentence 1: Simile; Sentence 2: Metaphor","B) Sentence 1: Metaphor; Sentence 2: Simile","C) Both sentences are idioms.","D) Sentence 1: Idiom; Sentence 2: Simile"],answer:"B",explanation:"Was a beehive is a metaphor (no like/as). Like fish in a rushing stream uses like — that is a simile."}
+  ]
+},
+
+/* ══════════════════════════════════════
+   WEEK 2 — BASE WORDS & AFFIXES
+══════════════════════════════════════ */
+"2-1":{
+  week:2,day:1,weekTitle:"Base Words & Affixes",dayTitle:"Prefixes",skill:"Prefixes",
+  miniLesson:{
+    rule:`A <strong>prefix</strong> is a word part added to the <em>beginning</em> of a word. Prefixes change the meaning of the word. Knowing what a prefix means helps you figure out unfamiliar words.`,
+    chart:{headers:["Prefix","Meaning","Example","Meaning of New Word"],rows:[
+      ["un-","not","unhappy","not happy"],
+      ["re-","again","redo","do again"],
+      ["pre-","before","preheat","heat before"],
+      ["mis-","badly or wrongly","misspell","spell wrongly"],
+      ["dis-","not / the opposite","disagree","not agree"]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"re + play = replay → to play again",plain:""},
+      {label:"✓",wrong:"",right:"un + kind = unkind → not kind",plain:""}
+    ],
+    tip:`<strong>Tip:</strong> Cover the prefix and read the base word first. Then put the prefix meaning in front of it. re + build = build again = rebuild!`
+  },
+  questions:[
+    {stem:"What does the underlined word mean?",passage:"Please <u>reheat</u> the soup before you eat it.",choices:["A) heat for the first time","B) heat again","C) cool down","D) throw away"],answer:"B",explanation:"The prefix re- means again, so reheat means to heat again."},
+    {stem:"What does the underlined word mean?",passage:"The directions were <u>unclear</u>, so I asked my teacher for help.",choices:["A) very clear","B) too long","C) not clear","D) written in pencil"],answer:"C",explanation:"The prefix un- means not, so unclear means not clear."},
+    {stem:"What does the underlined word mean?",passage:"I had to <u>retie</u> my shoelace three times during gym class.",choices:["A) cut the shoelace","B) tie the shoelace for the first time","C) tie the shoelace again","D) lose the shoelace"],answer:"C",explanation:"The prefix re- means again, so retie means to tie again."},
+    {stem:"What does the underlined word mean?",passage:"It was <u>unfair</u> that only some students got extra recess time.",choices:["A) very fair","B) not fair","C) lots of fun","D) very boring"],answer:"B",explanation:"The prefix un- means not, so unfair means not fair."},
+    {stem:"Which word means 'spelled the wrong way'?",choices:["A) respell","B) prespell","C) misspell","D) unspell"],answer:"C",explanation:"The prefix mis- means badly or wrongly, so misspell means to spell a word wrongly."},
+    {stem:"Read the sentence. Which prefix and meaning best explain the underlined word?",passage:"Mom said we could <u>preview</u> the movie before deciding if we wanted to watch the whole thing.",choices:["A) re- (again) — we would watch the movie again","B) mis- (wrongly) — we watched the wrong movie","C) pre- (before) — we would look at the movie before watching all of it","D) un- (not) — we would not be allowed to watch the movie"],answer:"C",explanation:"The prefix pre- means before, so preview means to look at something before seeing the full version."}
+  ]
+},
+
+"2-2":{
+  week:2,day:2,weekTitle:"Base Words & Affixes",dayTitle:"Suffixes",skill:"Suffixes",
+  miniLesson:{
+    rule:`A <strong>suffix</strong> is a word part added to the <em>end</em> of a word. Suffixes often change what type of word it is (noun, adjective, etc.) and add meaning.`,
+    chart:{headers:["Suffix","Meaning","Example","Meaning of New Word"],rows:[
+      ["-ful","full of","thankful","full of thanks"],
+      ["-less","without","hopeless","without hope"],
+      ["-er","-or one who does","teacher","one who teaches"],
+      ["-tion","-sion act of","action","the act of acting"],
+      ["-ly","in a certain way","kindly","in a kind way"]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"care + ful = careful → full of care",plain:""},
+      {label:"✓",wrong:"",right:"help + less = helpless → without help",plain:""}
+    ],
+    tip:`<strong>Tip:</strong> When you see -ful or -less at the end of a word, think of the base word and then add 'full of' or 'without.' It almost always works!`
+  },
+  questions:[
+    {stem:"What does the underlined word mean?",passage:"The little girl was <u>fearless</u> as she climbed to the top of the jungle gym.",choices:["A) full of fear","B) without fear","C) very small","D) very careful"],answer:"B",explanation:"The suffix -less means without, so fearless means without fear."},
+    {stem:"What does the underlined word mean?",passage:"My neighbor is a wonderful <u>gardener</u> — her flowers are always beautiful.",choices:["A) someone who sells flowers","B) a type of garden tool","C) one who gardens","D) a place where plants grow"],answer:"C",explanation:"The suffix -er means one who does, so gardener means one who gardens."},
+    {stem:"What does the underlined word mean?",passage:"We were all <u>thankful</u> when the rain stopped before our picnic.",choices:["A) without thanks","B) full of thanks or grateful","C) very surprised","D) a little sad"],answer:"B",explanation:"The suffix -ful means full of, so thankful means full of thanks — or grateful."},
+    {stem:"What does the underlined word mean?",passage:"The puppy ate <u>quickly</u> and then ran back outside to play.",choices:["A) in a slow way","B) with a lot of food","C) in a fast way","D) without eating much"],answer:"C",explanation:"The suffix -ly means in a certain way, so quickly means in a quick (fast) way."},
+    {stem:"Which word means 'the act of collecting'?",choices:["A) collector","B) collectful","C) collection","D) collectless"],answer:"C",explanation:"The suffix -tion means the act of, so collection means the act of collecting."},
+    {stem:"Read the sentence. Which suffix and meaning explain the underlined word?",passage:"The whole school was <u>joyful</u> on the last day before winter break.",choices:["A) -less (without) — the school had no joy","B) -ful (full of) — the school was full of joy and happiness","C) -ly (in a certain way) — the school acted in a joyful way","D) -er (one who) — the school was one who brings joy"],answer:"B",explanation:"The suffix -ful means full of, so joyful means full of joy and happiness."}
+  ]
+},
+
+"2-3":{
+  week:2,day:3,weekTitle:"Base Words & Affixes",dayTitle:"In Context",skill:"Using Affixes in Context",
+  miniLesson:{
+    rule:`Today you will use <strong>both</strong> what you know about prefixes and suffixes <em>and</em> the context of the sentence to figure out what a word means. Use both clues together!`,
+    chart:{headers:["Step","What to Do","Example"],rows:[
+      ["1. Find the base word","Cover the prefix or suffix","un + <em>lock</em> + able"],
+      ["2. Know the affix meaning","Use what you learned","un = not, -able = can be"],
+      ["3. Put it together","Combine base + affix meaning","not able to be locked = unlockable"],
+      ["4. Check the sentence","Does it make sense in context?","The old chest was unlockable without the key. ✓"]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"The path was <u>impassable</u> after the flood. → im (not) + pass + able (can be) = not able to be passed",plain:""}
+    ],
+    tip:`<strong>Tip:</strong> Always check your answer against the sentence. Ask: Does my definition make sense here?`
+  },
+  questions:[
+    {stem:"Use the suffix to find the meaning of the underlined word.",passage:"The children were <u>restless</u> on the long car ride and kept asking if we were there yet.",choices:["A) full of rest and very sleepy","B) without rest; unable to sit still","C) very tired from the trip","D) happy and excited"],answer:"B",explanation:"The suffix -less means without, so restless means without rest — unable to sit still."},
+    {stem:"Use the prefix to find the meaning of the underlined word.",passage:"My little brother <u>misbehaved</u> at the restaurant, so we had to leave early.",choices:["A) behaved very well","B) behaved for the first time","C) behaved in a wrong or bad way","D) behaved better than usual"],answer:"C",explanation:"The prefix mis- means badly or wrongly, so misbehaved means behaved in a bad or wrong way."},
+    {stem:"Use the suffix AND the sentence to find the meaning of the underlined word.",passage:"The firefighter was <u>courageous</u> when she ran into the burning building to save the family.",choices:["A) very frightened","B) full of courage and bravery","C) without any training","D) moving very quickly"],answer:"B",explanation:"The suffix -ous means full of, so courageous means full of courage — very brave."},
+    {stem:"Use the prefix to find the meaning of the underlined word.",passage:"We had to <u>reorganize</u> our classroom after the reading groups changed.",choices:["A) organize for the first time","B) organize in the wrong way","C) organize again","D) take everything apart"],answer:"C",explanation:"The prefix re- means again, so reorganize means to organize again."},
+    {stem:"Use both the prefix and suffix to find the meaning of the underlined word.",passage:"The treasure chest was <u>unopenable</u> without the secret key.",choices:["A) able to be opened easily","B) opened again and again","C) not able to be opened","D) opened in the wrong way"],answer:"C",explanation:"Un- (not) + open + -able (can be done) = not able to be opened."},
+    {stem:"Read the sentence. Use the affix AND the context to choose the best meaning.",passage:"After the long hike, everyone was <u>exhausted</u> and ready for a good meal and sleep.",choices:["A) -ed (past action) — they completed the hike (no prefix clue needed)","B) The context tells us exhausted means very tired; ex- can mean out of, suggesting all energy is used up","C) The prefix ex- means again, so exhausted means energized again","D) The suffix -ed means full of, so exhausted means full of energy"],answer:"B",explanation:"Context tells us they are ready for sleep and food. Ex- (out of) + haust + -ed suggests all energy is drained out — exhausted means extremely tired."}
+  ]
+},
+
+"2-4":{
+  week:2,day:4,weekTitle:"Base Words & Affixes",dayTitle:"Mixed Review",skill:"Prefixes & Suffixes — Mixed Review",
+  miniLesson:{
+    rule:`Today you will use everything you know about <strong>prefixes</strong> and <strong>suffixes</strong> to find the meaning of words in sentences.`,
+    chart:{headers:["Word Part","Where?","What It Does","Common Examples"],rows:[
+      ["Prefix","Beginning","Changes meaning","un-, re-, pre-, mis-, dis-"],
+      ["Suffix","End","Changes meaning or word type","-ful, -less, -er, -tion, -ly"]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"dis + honest = dishonest → not honest",plain:""},
+      {label:"✓",wrong:"",right:"pain + ful = painful → full of pain",plain:""}
+    ],
+    tip:`<strong>Review tip:</strong> First ask — is the word part at the beginning (prefix) or end (suffix)? Then use its meaning plus the base word to build the definition.`
+  },
+  questions:[
+    {stem:"What does the underlined word mean?",passage:"The students were <u>disappointed</u> when the field trip was canceled.",choices:["A) very excited","B) not pleased or let down","C) confused and unsure","D) tired from waiting"],answer:"B",explanation:"The prefix dis- means not or the opposite, so disappointed means not pleased — let down."},
+    {stem:"What does the underlined word mean?",passage:"My grandma is the most <u>cheerful</u> person I know — she always makes me smile.",choices:["A) without cheer","B) full of cheer and happiness","C) very quiet","D) full of worry"],answer:"B",explanation:"The suffix -ful means full of, so cheerful means full of cheer and happiness."},
+    {stem:"What does the underlined word mean?",passage:"The instructions said to <u>preheat</u> the oven before putting in the cookies.",choices:["A) cool the oven down","B) heat the oven again","C) heat the oven before using it","D) turn the oven off"],answer:"C",explanation:"The prefix pre- means before, so preheat means to heat the oven before using it."},
+    {stem:"What does the underlined word mean?",passage:"The baby crawled <u>slowly</u> toward the colorful ball.",choices:["A) in a fast way","B) in a slow way","C) with a lot of noise","D) without stopping"],answer:"B",explanation:"The suffix -ly means in a certain way, so slowly means in a slow way."},
+    {stem:"Which word means 'not able to be read'?",choices:["A) rereadable","B) prereadable","C) unreadable","D) misreadable"],answer:"C",explanation:"Un- (not) + read + -able (can be done) = unreadable: not able to be read."},
+    {stem:"Read the sentence. Use the prefix AND the context to find the best meaning.",passage:"After the argument, Sam and his friend decided to <u>rebuild</u> their friendship by talking things out.",choices:["A) build a friendship for the very first time","B) build their friendship again after it was damaged","C) build a wrong kind of friendship","D) build a friendship before meeting each other"],answer:"B",explanation:"Re- means again. In context, they are rebuilding something that was damaged — so rebuild means to build (their friendship) again."}
+  ]
+},
+
+/* ══════════════════════════════════════
+   WEEK 3 — VERB TENSES & MODALS
+══════════════════════════════════════ */
+"3-1":{
+  week:3,day:1,weekTitle:"Verb Tenses & Modals",dayTitle:"Progressive Tenses",skill:"Progressive Verb Tenses",
+  miniLesson:{
+    rule:`<strong>Progressive tenses</strong> show an action that is <em>in progress</em> (still happening). They always use a form of the verb <em>to be</em> + the main verb with <strong>-ing</strong>.`,
+    chart:{headers:["Tense","Helping Verb","Example"],rows:[
+      ["Present Progressive (happening NOW)","am / is / are + -ing","She <em>is reading</em> right now."],
+      ["Past Progressive (was happening THEN)","was / were + -ing","They <em>were reading</em> when I walked in."],
+      ["Future Progressive (will be happening)","will be + -ing","He <em>will be reading</em> all afternoon."]
+    ]},
+    examples:[
+      {label:"✗",wrong:"She is read her book.",right:"She is reading her book.",plain:"(need -ing)"},
+      {label:"✗",wrong:"The boys was playing outside.",right:"The boys were playing outside.",plain:"(plural = were)"}
+    ],
+    tip:`<strong>Watch out:</strong> Singular subjects use is/was. Plural subjects use are/were. Always add -ing to the main verb!`
+  },
+  questions:[
+    {stem:"Which sentence uses the <strong>present progressive</strong> correctly?",choices:["A) The cat is sleep on the couch.","B) The cat are sleeping on the couch.","C) The cat is sleeping on the couch.","D) The cat sleeping on the couch."],answer:"C",explanation:"Present progressive uses is + verb-ing for a singular subject. Is sleeping is correct."},
+    {stem:"Which sentence uses the <strong>past progressive</strong> correctly?",choices:["A) The dog was chase the ball when it rolled under the porch.","B) The dog were chasing the ball when it rolled under the porch.","C) The dog was chasing the ball when it rolled under the porch.","D) The dog chasing the ball when it rolled under the porch."],answer:"C",explanation:"Past progressive uses was + verb-ing for a singular subject. Was chasing is correct."},
+    {stem:"Which sentence uses the <strong>future progressive</strong> correctly?",choices:["A) We will playing games at the party tonight.","B) We will be play games at the party tonight.","C) We will be playing games at the party tonight.","D) We will been playing games at the party tonight."],answer:"C",explanation:"Future progressive uses will be + verb-ing. Will be playing is correct."},
+    {stem:"Which word or words correctly fill in the blank?",passage:"The students _____ their art projects when the bell rang.",choices:["A) are finishing","B) were finishing","C) will be finishing","D) is finishing"],answer:"B",explanation:"The bell rang is past tense, so we need the past progressive: were finishing."},
+    {stem:"Which sentence has an error?",choices:["A) I am writing a story about a brave knight.","B) My friends are coming over after school today.","C) The teacher were handing out the papers.","D) We will be eating dinner soon."],answer:"C",explanation:"The teacher is singular, so it needs was — not were. The correct form is was handing out."},
+    {stem:"Read the two sentences. Which one uses the past progressive correctly to show what was happening when something else happened?",choices:["A) She walked to school when it started to rain.","B) She was walking to school when it started to rain.","C) She walks to school when it starts to rain.","D) She will be walking to school when it starts to rain."],answer:"B",explanation:"Past progressive (was walking) shows an action in progress in the past that was interrupted by another event (started to rain)."}
+  ]
+},
+
+"3-2":{
+  week:3,day:2,weekTitle:"Verb Tenses & Modals",dayTitle:"Tense Shifts",skill:"Inappropriate Tense Shifts",
+  miniLesson:{
+    rule:`A <strong>tense shift</strong> happens when the verb tense changes in the middle of a sentence or paragraph without a good reason. This confuses readers. Keep verbs in the same tense unless the time actually changes.`,
+    chart:{headers:["","Example","Problem"],rows:[
+      ["❌ Tense shift","She <em>opened</em> the door and <em>runs</em> inside.","opened (past) → runs (present) — wrong!"],
+      ["✓ Correct","She <em>opened</em> the door and <em>ran</em> inside.","Both verbs match — past tense — correct!"],
+      ["✓ OK shift","Yesterday I <em>was</em> sick, but today I <em>feel</em> better.","Time words (yesterday/today) explain the change."]
+    ]},
+    examples:[],
+    tip:`<strong>How to check:</strong> Underline all the verbs in a sentence. Are they in the same tense? If not, is there a time word (yesterday, today, now) that explains the change? If not, it is an error!`
+  },
+  questions:[
+    {stem:"Which sentence has an <strong>inappropriate tense shift</strong>?",choices:["A) The rabbit hopped across the yard and hid behind the bush.","B) She opened her lunchbox and finds a note inside.","C) We finished our math test and put our pencils down.","D) The bird flew away and landed in the tall oak tree."],answer:"B",explanation:"Opened is past tense but finds is present tense — an inappropriate shift. It should be found."},
+    {stem:"Which sentence does <strong>NOT</strong> have a tense shift?",choices:["A) He picks up the book and read the first page.","B) They ran outside and starts playing right away.","C) The puppy barked at the mail carrier and ran under the porch.","D) She writes in her journal and went to sleep."],answer:"C",explanation:"Barked and ran are both past tense — consistent and correct."},
+    {stem:"How should you fix the tense shift in this sentence?",passage:"My dad <u>made</u> pancakes and then <u>calls</u> us down for breakfast.",choices:["A) Change made to makes","B) Change calls to called","C) Change both verbs to present tense","D) The sentence is correct — no shift exists"],answer:"B",explanation:"Made is past tense, so calls must change to called to match."},
+    {stem:"Which sentence keeps the verb tense <strong>consistent</strong>?",choices:["A) The bear spotted the honey and grabs it quickly.","B) The bear spotted the honey and grabbed it quickly.","C) The bear spots the honey and grabbed it quickly.","D) The bear spotted the honey, and it grabbing it quickly."],answer:"B",explanation:"Spotted and grabbed are both past tense — consistent and correct."},
+    {stem:"Read the paragraph. Which verb is the tense shift?",passage:"Last Friday, the class went to the science museum. We looked at the dinosaur bones and learned many facts. Then the guide takes us to the gift shop.",choices:["A) went","B) learned","C) takes","D) looked"],answer:"C",explanation:"The paragraph is in past tense (went, looked, learned), but takes is present tense — the tense shift."},
+    {stem:"How do you fix the tense shift in this paragraph?",passage:"We walked to the park and found a great spot by the lake. We set up our blanket and eat our lunch. Then we played by the water until sunset.",choices:["A) Change walked to walk and found to find","B) Change eat to ate — it should match the past tense of the paragraph","C) Change played to play to use only present tense","D) The paragraph has no tense shifts"],answer:"B",explanation:"The paragraph is written in past tense (walked, found, set, played). Eat must change to ate to match."}
+  ]
+},
+
+"3-3":{
+  week:3,day:3,weekTitle:"Verb Tenses & Modals",dayTitle:"Modal Auxiliaries",skill:"Modal Auxiliaries",
+  miniLesson:{
+    rule:`<strong>Modal auxiliaries</strong> are special helping verbs. They show if something is possible, allowed, required, or advised. Always use the base form of the verb after a modal — no -ing, no -ed, no -s.`,
+    chart:{headers:["Modal","What It Shows","Example"],rows:[
+      ["can","ability","I <em>can</em> swim."],
+      ["could","past ability or polite possibility","She <em>could</em> run fast when she was little."],
+      ["may","permission","You <em>may</em> use the restroom."],
+      ["might","possibility (not sure)","It <em>might</em> snow tomorrow."],
+      ["must","strong need or rule","You <em>must</em> wear a helmet."],
+      ["should","advice","You <em>should</em> study tonight."],
+      ["will","certain future","The bus <em>will</em> arrive at 3 p.m."],
+      ["would","polite or conditional","I <em>would</em> like some help."]
+    ]},
+    examples:[
+      {label:"✗",wrong:"You must to wash your hands.",right:"You must wash your hands.",plain:"(never use to after a modal)"},
+      {label:"✗",wrong:"She should studied harder.",right:"She should study harder.",plain:"(always use base verb — no -ed)"}
+    ],
+    tip:`<strong>Two rules to remember:</strong> (1) Never add <em>to</em> after a modal. (2) Always use the BASE form of the verb — not running, not studied — just run, study.`
+  },
+  questions:[
+    {stem:"Which word correctly fills in the blank?",passage:"You _____ always look both ways before crossing the street.",choices:["A) might","B) should","C) would","D) could"],answer:"B",explanation:"Should gives advice or a strong recommendation — it is the best word here."},
+    {stem:"Which sentence uses a modal <strong>incorrectly</strong>?",choices:["A) I can ride my bike to the park after school.","B) She might bring her dog to the picnic.","C) He must to finish his homework before dinner.","D) We should leave early to avoid traffic."],answer:"C",explanation:"Must to is incorrect — never use to after a modal. The correct form is must finish."},
+    {stem:"Which modal best shows that something is <strong>allowed</strong>?",passage:"_____ I go to the library during lunch today?",choices:["A) Must","B) Will","C) May","D) Should"],answer:"C",explanation:"May is used to ask for or give permission — it is the best modal for asking if something is allowed."},
+    {stem:"Which modal best shows that something is <strong>possible but not certain</strong>?",passage:"We _____ go to the zoo this weekend if the weather is nice.",choices:["A) must","B) might","C) will","D) should"],answer:"B",explanation:"Might shows possibility — something that could happen but is not certain."},
+    {stem:"Which sentence uses a modal correctly?",choices:["A) She can sings really well in the school choir.","B) We might going to the movies after dinner.","C) You should be careful walking on that icy sidewalk.","D) He would likes to join the soccer team."],answer:"C",explanation:"Should + base verb (be) is correctly formed. The other options add -s, -ing, or -s to the main verb incorrectly."},
+    {stem:"Read the sentence. Which modal fits best, and why?",passage:"If you want to be on the team, you _____ come to every practice.",choices:["A) might — it shows this is just a possibility","B) could — it shows you had this ability in the past","C) must — it shows this is a requirement","D) would — it shows a polite request"],answer:"C",explanation:"Must shows a strong requirement or rule. Attending every practice is required to be on the team, so must is the best modal."}
+  ]
+},
+
+"3-4":{
+  week:3,day:4,weekTitle:"Verb Tenses & Modals",dayTitle:"Mixed Review",skill:"Progressive Tenses, Tense Shifts & Modals — Mixed Review",
+  miniLesson:{
+    rule:`Today you will review all three grammar skills from this week: <strong>progressive tenses</strong>, <strong>tense shifts</strong>, and <strong>modal auxiliaries</strong>.`,
+    chart:{headers:["Skill","Quick Reminder","Watch Out For"],rows:[
+      ["Progressive tenses","be verb + verb-ing","Wrong helping verb (was vs. were) or missing -ing"],
+      ["Tense shifts","Keep tenses consistent","Mixing past and present without a time word"],
+      ["Modal auxiliaries","modal + base verb","Adding to, -ing, or -ed after the modal"]
+    ]},
+    examples:[],
+    tip:`<strong>Strategy:</strong> For each question, decide which skill is being tested, then apply only that rule.`
+  },
+  questions:[
+    {stem:"Which sentence has an error?",choices:["A) The birds were singing all morning long.","B) She must to bring her permission slip tomorrow.","C) We will be taking a test on Friday.","D) They were waiting for the bus when it started to rain."],answer:"B",explanation:"Must to is incorrect — never use to after a modal. The correct form is must bring."},
+    {stem:"Which sentence has an inappropriate tense shift?",choices:["A) The dog barked at the squirrel and ran to the fence.","B) She picked up the book and reads the first chapter.","C) We packed our bags and left for the airport.","D) He found his missing shoe under the bed."],answer:"B",explanation:"Picked is past tense but reads is present — an inappropriate tense shift. It should be read."},
+    {stem:"Which sentence uses a progressive tense correctly?",choices:["A) The children is swimming at the community pool.","B) My mom are making dinner right now.","C) The puppy was chewing on a toy when I walked in.","D) We will playing basketball after school."],answer:"C",explanation:"Was chewing uses was + verb-ing correctly for a past progressive with a singular subject."},
+    {stem:"Read the sentence. What is the error, and how should it be fixed?",passage:"My sister was dancing in the living room and then she runs to answer the phone.",choices:["A) Was dancing should be is dancing.","B) Runs should be ran — it should match the past tense of was dancing.","C) And then should be removed.","D) There is no error."],answer:"B",explanation:"The sentence is past tense (was dancing), so runs is a tense shift — it should be ran."},
+    {stem:"Which sentence is correct?",choices:["A) You should studied for the spelling test tonight.","B) She could swims faster than anyone on the team.","C) We might visit my grandparents this weekend.","D) He must to wear his seatbelt in the car."],answer:"C",explanation:"Might + base verb (visit) is correctly formed. The other options add -ed, -s, or to after the modal."},
+    {stem:"Read the short paragraph. Find ALL errors and choose the answer that names them.",passage:"Yesterday, our class was working on a mural. We painted flowers and animals. Then the art teacher walks over and tells us it looked amazing.",choices:["A) Walks and tells are tense shifts — they should be walked and told","B) Was working should be worked; painted is wrong","C) Walks is correct; tells should be told","D) There are no errors in this paragraph"],answer:"A",explanation:"The paragraph is in past tense (was working, painted). Walks and tells are present tense — both are tense shifts that should be walked and told."}
+  ]
+},
+
+/* ══════════════════════════════════════
+   WEEK 4 — RELATIVE ADVERBS & PREPOSITIONS
+══════════════════════════════════════ */
+"4-1":{
+  week:4,day:1,weekTitle:"Relative Adverbs",dayTitle:"Where & When",skill:"Relative Adverbs: Where and When",
+  miniLesson:{
+    rule:`A <strong>relative adverb</strong> is a word that connects a noun to a describing clause. <strong>Where</strong> describes a <em>place</em>. <strong>When</strong> describes a <em>time</em>.`,
+    chart:{headers:["Relative Adverb","Used For","Example"],rows:[
+      ["where","a place","The park is the place <em>where</em> we play soccer."],
+      ["when","a time","Friday is the day <em>when</em> we have art class."]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"The library is the place where I do my homework. (where = describes a place)",plain:""},
+      {label:"✓",wrong:"",right:"Summer is the season when school is out. (when = describes a time)",plain:""}
+    ],
+    tip:`<strong>Tip:</strong> Find the noun before the relative adverb. Ask: is it a place or a time? Place → where. Time → when.`
+  },
+  questions:[
+    {stem:"What is the job of the underlined relative adverb?",passage:"The cafeteria is the room <u>where</u> we eat lunch every day.",choices:["A) It tells us a time.","B) It tells us a reason.","C) It tells us a place.","D) It tells us how."],answer:"C",explanation:"Where tells us about a place — the cafeteria is the place being described."},
+    {stem:"Which relative adverb correctly fills in the blank?",passage:"Monday is the day _____ our class goes to the computer lab.",choices:["A) where","B) why","C) when","D) what"],answer:"C",explanation:"Monday is a day — a time — so when is the correct relative adverb."},
+    {stem:"What is the job of the underlined relative adverb?",passage:"August is the month <u>when</u> my family always goes on vacation.",choices:["A) It tells us a place.","B) It tells us a reason.","C) It tells us a time.","D) It tells us how."],answer:"C",explanation:"When tells us about a time — August is the month (a time) being described."},
+    {stem:"Which relative adverb correctly fills in the blank?",passage:"The gym is the place _____ students practice for the talent show.",choices:["A) when","B) where","C) why","D) how"],answer:"B",explanation:"The gym is a place, so where is the correct relative adverb."},
+    {stem:"Is the relative adverb used correctly in this sentence?",passage:"Recess is the time <u>where</u> we get to play outside.",choices:["A) Yes — where is correct because it describes a place.","B) No — where should be when because recess is a time, not a place.","C) Yes — where works for both places and times.","D) No — where should be why."],answer:"B",explanation:"Recess is a time, not a place. When is the correct relative adverb: Recess is the time when we get to play outside."},
+    {stem:"Read the two sentences. Identify the correct relative adverb for each.",passage:"Sentence A: The bakery is the shop _____ my grandma buys her bread.\nSentence B: Saturday morning is the time _____ the farmers' market opens.",choices:["A) A: when  B: where","B) A: where  B: when","C) A: why  B: where","D) A: where  B: why"],answer:"B",explanation:"Bakery is a place → where. Saturday morning is a time → when."}
+  ]
+},
+
+"4-2":{
+  week:4,day:2,weekTitle:"Relative Adverbs",dayTitle:"Why",skill:"Relative Adverb: Why",
+  miniLesson:{
+    rule:`The relative adverb <strong>why</strong> connects a noun (usually the word <em>reason</em>) to a clause that explains the reason for something.`,
+    chart:{headers:["Relative Adverb","Used For","Example"],rows:[
+      ["where","a place","the place <em>where</em>…"],
+      ["when","a time","the time <em>when</em>…"],
+      ["why","a reason","the reason <em>why</em>…"]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"She explained the reason why she was late. (why = gives the reason)",plain:""},
+      {label:"✓",wrong:"",right:"Nobody knows the reason why the power went out. (why = gives the reason)",plain:""}
+    ],
+    tip:`<strong>Tip:</strong> Why almost always comes right after the word <em>reason</em>. If you see the reason _____, the answer is almost always why.`
+  },
+  questions:[
+    {stem:"What is the job of the underlined relative adverb?",passage:"The teacher told us the reason <u>why</u> we needed to be quiet during the test.",choices:["A) It tells us a place.","B) It tells us a time.","C) It tells us a reason.","D) It tells us how."],answer:"C",explanation:"Why introduces a clause that gives the reason — why they needed to be quiet."},
+    {stem:"Which relative adverb correctly fills in the blank?",passage:"My mom explained the reason _____ we had to leave the party early.",choices:["A) where","B) when","C) why","D) what"],answer:"C",explanation:"After the word reason, we use why to introduce the explaining clause."},
+    {stem:"Which sentence uses the relative adverb <strong>why</strong> correctly?",choices:["A) That is the school why my dad went as a child.","B) That is the year why I started playing the piano.","C) That is the reason why I always carry an umbrella.","D) That is the park why we play every Friday."],answer:"C",explanation:"Why correctly follows the word reason. The other sentences use why to describe places or times, which is incorrect."},
+    {stem:"Which relative adverb correctly fills in the blank?",passage:"She finally understood the reason _____ practicing every day was so important.",choices:["A) where","B) when","C) why","D) which"],answer:"C",explanation:"Reason is being described, so why is the correct relative adverb."},
+    {stem:"Read the sentence. Choose the correct relative adverb and tell what kind of information it gives.",passage:"Spring is the season _____ flowers begin to bloom.",choices:["A) why — it gives a reason for spring","B) where — it tells a place where spring happens","C) when — it tells a time (spring is a season)","D) what — it identifies what spring is"],answer:"C",explanation:"Spring is a season — a time. When is the correct relative adverb; it introduces a clause describing a time."},
+    {stem:"Read the three sentences. Choose the correct relative adverb (where, when, or why) for each.",passage:"A: The shed is the place _____ Dad keeps his tools.\nB: Winter is the season _____ the pond freezes over.\nC: She gave the reason _____ she missed the bus.",choices:["A) A: when  B: where  C: why","B) A: where  B: when  C: why","C) A: why  B: when  C: where","D) A: where  B: why  C: when"],answer:"B",explanation:"Shed = place → where. Winter = time → when. Reason → why."}
+  ]
+},
+
+"4-3":{
+  week:4,day:3,weekTitle:"Relative Adverbs",dayTitle:"Prepositions",skill:"Correct & Incorrect Use of Prepositions",
+  miniLesson:{
+    rule:`A <strong>preposition</strong> is a word that shows the relationship between a noun and another word in the sentence. Prepositions can show place, direction, or time.`,
+    chart:{headers:["Type","Common Prepositions","Example"],rows:[
+      ["Place","in, on, at, under, above, beside, between","The book is <em>on</em> the table."],
+      ["Direction","to, into, onto, through, across, toward","She walked <em>into</em> the room."],
+      ["Time","at, on, in, before, after, during","Class starts <em>at</em> 9 o'clock."]
+    ]},
+    examples:[
+      {label:"✗",wrong:"She arrived to school at 8.",right:"She arrived at school at 8.",plain:"(arrive AT a place, not arrive to)"},
+      {label:"✗",wrong:"The cat jumped off of the table.",right:"The cat jumped off the table.",plain:"(off already gives the direction — don't add of)"}
+    ],
+    tip:`<strong>Watch for these common mistakes:</strong> "arrive to" (wrong) → "arrive at" (right). "off of" (wrong) → just "off" (right). "besides" (means in addition to) ≠ "beside" (means next to).`
+  },
+  questions:[
+    {stem:"Which sentence uses the preposition <strong>correctly</strong>?",choices:["A) She arrived to the party just in time.","B) She arrived at the party just in time.","C) She arrived into the party just in time.","D) She arrived by the party just in time."],answer:"B",explanation:"The correct preposition with arrive is at — arrived at the party."},
+    {stem:"Which sentence uses the preposition <strong>incorrectly</strong>?",choices:["A) The cat slept under the warm blanket.","B) We walked through the tall cornfield.","C) He sat besides his best friend at the lunch table.","D) She put the flowers on the kitchen table."],answer:"C",explanation:"Besides means in addition to. Beside (without the s) means next to. He sat beside his best friend is correct."},
+    {stem:"Which preposition correctly fills in the blank?",passage:"The bird flew _____ the open window and landed on the bookshelf.",choices:["A) under","B) between","C) through","D) above"],answer:"C",explanation:"Through means to go from one side to the other — the bird flew through the window opening."},
+    {stem:"Which sentence uses the preposition correctly?",choices:["A) The dog jumped off of the couch when the doorbell rang.","B) The dog jumped off the couch when the doorbell rang.","C) The dog jumped of the couch when the doorbell rang.","D) The dog jumped off from of the couch when the doorbell rang."],answer:"B",explanation:"Off is the correct preposition on its own — off of adds an unnecessary second preposition."},
+    {stem:"Which sentence has an incorrect preposition?",choices:["A) The homework is due on Monday morning.","B) We will meet at the front of the school at noon.","C) She has lived in this town since she was a baby.","D) He graduated of the fourth grade with great grades."],answer:"D",explanation:"Graduated of is incorrect. The correct preposition is from — graduated from the fourth grade."},
+    {stem:"Read the sentence. Find the error and choose the correction.",passage:"The children played <u>besides</u> the pond all afternoon, catching frogs.",choices:["A) Besides is correct — it means next to.","B) Besides should be beside — beside means next to; besides means in addition to.","C) Besides should be between — two objects are being compared.","D) Besides should be at — the correct preposition for a location."],answer:"B",explanation:"Beside means next to. The children were playing next to the pond, so beside is the correct preposition."}
+  ]
+},
+
+"4-4":{
+  week:4,day:4,weekTitle:"Relative Adverbs",dayTitle:"Mixed Review",skill:"Relative Adverbs & Prepositions — Mixed Review",
+  miniLesson:{
+    rule:`Today you will review <strong>relative adverbs</strong> (where, when, why) and <strong>prepositions</strong> together.`,
+    chart:{headers:["Word","Job","Example"],rows:[
+      ["where","Describes a place","the place <em>where</em> we play"],
+      ["when","Describes a time","the day <em>when</em> we left"],
+      ["why","Describes a reason","the reason <em>why</em> I was late"],
+      ["Prepositions","Shows a relationship (place, direction, time)","She sat <em>beside</em> her friend."]
+    ]},
+    examples:[],
+    tip:`<strong>Mixed review tip:</strong> If the underlined word describes a place, time, or reason noun → it's a relative adverb. If it shows a relationship between nouns → it's a preposition.`
+  },
+  questions:[
+    {stem:"Which word is the relative adverb in this sentence?",passage:"Wednesday is the day when our class visits the school library.",choices:["A) Wednesday","B) day","C) when","D) library"],answer:"C",explanation:"When is the relative adverb — it introduces a clause describing a time (Wednesday, a day)."},
+    {stem:"Which sentence uses a preposition correctly?",choices:["A) She sat besides her sister on the bus.","B) She sat beside her sister on the bus.","C) She sat between of her sister on the bus.","D) She sat among her sister on the bus."],answer:"B",explanation:"Beside means next to — the correct preposition for sitting next to one person."},
+    {stem:"What is the job of the relative adverb in this sentence?",passage:"The art room is the place <u>where</u> we keep all of our supplies.",choices:["A) It describes a reason.","B) It describes a time.","C) It describes a place.","D) It describes how something is done."],answer:"C",explanation:"Where introduces a clause describing the art room — a place."},
+    {stem:"Which sentence has an error — either a wrong relative adverb or a wrong preposition?",choices:["A) The reason why she stayed home was that she felt sick.","B) She arrived at the school with five minutes to spare.","C) The garden is the place where my grandpa grows tomatoes.","D) Summer is the season where we go swimming every day."],answer:"D",explanation:"Summer is a time, not a place. Where should be when: Summer is the season when we go swimming."},
+    {stem:"Which word correctly fills in the blank?",passage:"Nobody told me the reason _____ my name was not on the list.",choices:["A) where","B) when","C) why","D) which"],answer:"C",explanation:"After the word reason, why is the correct relative adverb."},
+    {stem:"Read the short paragraph. Find ALL errors and choose the answer that names every correction needed.",passage:"The playground is the place when students play at recess. It is also the reason where we practice good sportsmanship.",choices:["A) No errors","B) when → where; where → why","C) when → why; where → when","D) when → where; where → when"],answer:"B",explanation:"The playground is a place → where (not when). The second clause gives a reason → why (not where)."}
+  ]
+},
+
+/* ══════════════════════════════════════
+   WEEK 5 — APOSTROPHES & CONTRACTIONS
+══════════════════════════════════════ */
+"5-1":{
+  week:5,day:1,weekTitle:"Apostrophes & Contractions",dayTitle:"Contractions",skill:"Forming Contractions",
+  miniLesson:{
+    rule:`A <strong>contraction</strong> is when two words are joined together and one or more letters are left out. An <strong>apostrophe ( ' )</strong> shows where the missing letters were.`,
+    chart:{headers:["Two Words","Contraction","Letters Removed"],rows:[
+      ["do not","don't","the o in not"],
+      ["did not","didn't","the o in not"],
+      ["cannot","can't","no in cannot"],
+      ["I am","I'm","the a in am"],
+      ["they are","they're","the a in are"],
+      ["she will","she'll","the wi in will"],
+      ["we have","we've","the ha in have"],
+      ["will not","won't","irregular — spelling changes!"]
+    ]},
+    examples:[
+      {label:"✗",wrong:"I ca'nt find my pencil.",right:"I can't find my pencil.",plain:"(apostrophe between n and t)"},
+      {label:"✗",wrong:"She wont be here today.",right:"She won't be here today.",plain:"(will not → won't — special spelling)"}
+    ],
+    tip:`<strong>Watch out for won't!</strong> Will + not does not follow the normal pattern. The spelling changes: will → won't. This is the one big exception.`
+  },
+  questions:[
+    {stem:"Which contraction replaces the underlined words?",passage:"I <u>do not</u> want to miss the school play tonight.",choices:["A) do'nt","B) don't","C) don'ot","D) do'not"],answer:"B",explanation:"Don't replaces do not — the apostrophe takes the place of the o in not."},
+    {stem:"Which contraction replaces the underlined words?",passage:"<u>I am</u> so excited for the field trip tomorrow.",choices:["A) Im'","B) I'am","C) I'm","D) Iam"],answer:"C",explanation:"I'm is the correct contraction for I am — the apostrophe replaces the a."},
+    {stem:"Which contraction replaces the underlined words?",passage:"We <u>will not</u> be able to play outside if it rains.",choices:["A) willn't","B) will'nt","C) wont","D) won't"],answer:"D",explanation:"Won't is the irregular contraction for will not — the spelling changes and an apostrophe is added."},
+    {stem:"Which contraction replaces the underlined words?",passage:"My best friend said <u>she will</u> save me a seat on the bus.",choices:["A) she'l","B) she'll","C) shel'l","D) she'will"],answer:"B",explanation:"She'll is the correct contraction for she will — the apostrophe replaces wi from will."},
+    {stem:"Which sentence uses a contraction correctly?",choices:["A) We'have been best friends since kindergarten.","B) We've been best friends since kindergarten.","C) We've' been best friends since kindergarten.","D) We'v been best friends since kindergarten."],answer:"B",explanation:"We've is the correct contraction for we have — the apostrophe replaces ha from have."},
+    {stem:"Read the sentence. Which contraction is correct, and where does the apostrophe go?",passage:"The coach said the team <u>could not</u> practice today because of the rain.",choices:["A) couldn't — the apostrophe replaces the o in not and goes between n and t","B) could'nt — the apostrophe goes between d and n","C) couldnt' — the apostrophe goes at the end","D) couldn't — the apostrophe goes between l and d"],answer:"A",explanation:"Couldn't replaces could not — the o in not is removed and the apostrophe goes between n and t."}
+  ]
+},
+
+"5-2":{
+  week:5,day:2,weekTitle:"Apostrophes & Contractions",dayTitle:"it's vs. its",skill:"it's vs. its",
+  miniLesson:{
+    rule:`<strong>it's</strong> (with an apostrophe) = <strong>it is</strong> or <strong>it has</strong> — a contraction.<br><strong>its</strong> (no apostrophe) = <strong>belonging to it</strong> — a possessive pronoun.<br>This is one of the most common writing mistakes!`,
+    chart:{headers:["Word","Meaning","Test It"],rows:[
+      ["it's","it is / it has","Substitute 'it is' — does the sentence still make sense?"],
+      ["its","belonging to it","Would NOT make sense if you said 'it is' instead"]
+    ]},
+    examples:[
+      {label:"✓",wrong:"",right:"It's raining outside. → It IS raining outside. ✓ Use it's.",plain:""},
+      {label:"✓",wrong:"",right:"The dog wagged its tail. → The dog wagged IT IS tail. ✗ Use its (possessive).",plain:""}
+    ],
+    tip:`<strong>The substitution test:</strong> Replace the word with <em>it is</em>. If the sentence still makes sense, use <strong>it's</strong>. If it sounds wrong, use <strong>its</strong> (no apostrophe).`
+  },
+  questions:[
+    {stem:"Which word correctly fills in the blank?",passage:"_____ snowing outside — school might be canceled!",choices:["A) Its","B) It's","C) Its'","D) It is'"],answer:"B",explanation:"It's = it is. It is snowing outside makes sense — use it's."},
+    {stem:"Which word correctly fills in the blank?",passage:"The old dog slowly wagged _____ tail when it heard its owner's voice.",choices:["A) it's","B) its'","C) its","D) it is"],answer:"C",explanation:"Its (no apostrophe) is the possessive — the tail belongs to the dog. Substituting it is (it is tail) doesn't make sense."},
+    {stem:"Which sentence uses it's or its correctly?",choices:["A) The bird flapped it's wings and flew away.","B) Its a beautiful day to go for a walk.","C) The turtle hid inside its shell when we got too close.","D) The team lost it's best player to an injury."],answer:"C",explanation:"Its shell uses its correctly as a possessive (belonging to the turtle). Substituting it is (it is shell) does not make sense."},
+    {stem:"Which sentence has an error with it's or its?",choices:["A) It's the last day of school — everyone is so excited!","B) The puppy couldn't find it's favorite toy anywhere.","C) The fish swam in circles inside its bowl.","D) It's been raining for three days straight."],answer:"B",explanation:"It's means it is — it is favorite toy doesn't make sense. The possessive its (no apostrophe) is needed here."},
+    {stem:"Read the two sentences. Which one uses it's and its both correctly?",choices:["A) Its going to be cold tonight; the tree lost it's leaves already.","B) It's going to be cold tonight; the tree lost its leaves already.","C) It's going to be cold tonight; the tree lost it's leaves already.","D) Its going to be cold tonight; the tree lost its leaves already."],answer:"B",explanation:"It's (it is) going to be cold — correct. The tree lost its (possessive) leaves — correct."},
+    {stem:"Read the sentence. Choose the correct word and explain why.",passage:"The old lighthouse has lost _____ light because _____ been closed for many years.",choices:["A) its / it's — its = belonging to the lighthouse; it's = it has been closed","B) it's / its — both are contractions in this sentence","C) its / its — both are possessives in this sentence","D) it's / it's — both mean it is"],answer:"A",explanation:"Its light = the light belonging to the lighthouse (possessive, no apostrophe). It's been closed = it has been closed (contraction, needs apostrophe)."}
+  ]
+},
+
+"5-3":{
+  week:5,day:3,weekTitle:"Apostrophes & Contractions",dayTitle:"you're & they're",skill:"you're/your and they're/their/there",
+  miniLesson:{
+    rule:`Just like it's/its, these words sound the same but mean different things. Always use the <strong>substitution test</strong>: can you replace the word with the full two words?`,
+    chart:{headers:["Contraction","Means","Look-alike","Means"],rows:[
+      ["you're","you are","your","belonging to you"],
+      ["they're","they are","their","belonging to them"],
+      ["they're","they are","there","a place or general word"]
+    ]},
+    examples:[
+      {label:"✓ Test:",wrong:"",right:"You're going to love this book. → You ARE going to love this book. ✓ Use you're.",plain:""},
+      {label:"✓ Test:",wrong:"",right:"This is your book. → This is YOU ARE book. ✗ Use your (possessive).",plain:""}
+    ],
+    tip:`<strong>Quick checks:</strong> you're = you are. your = belongs to you. they're = they are. their = belongs to them. there = a place (like here and there both end in -ere).`
+  },
+  questions:[
+    {stem:"Which word correctly fills in the blank?",passage:"_____ going to need to bring your lunch tomorrow — no hot lunch is available.",choices:["A) Your","B) You're","C) Youre","D) You're'"],answer:"B",explanation:"You're = you are. You are going to need to bring your lunch makes sense — use you're."},
+    {stem:"Which word correctly fills in the blank?",passage:"Please put _____ backpack on the hook by the door.",choices:["A) you're","B) your","C) youre","D) you are"],answer:"B",explanation:"Your (no apostrophe) is the possessive — the backpack belongs to you. You are backpack doesn't make sense."},
+    {stem:"Which word correctly fills in the blank?",passage:"_____ planning a surprise birthday party for Mom this weekend.",choices:["A) Their","B) There","C) They're","D) Theyre"],answer:"C",explanation:"They're = they are. They are planning a surprise party makes sense — use they're."},
+    {stem:"Which sentence uses <strong>your</strong> and <strong>you're</strong> correctly?",choices:["A) Your going to love you're new teacher!","B) You're going to love your new teacher!","C) You're going to love you're new teacher!","D) Your going to love your new teacher!"],answer:"B",explanation:"You're (you are) going to love — contraction needed. Your new teacher — possessive needed."},
+    {stem:"Which sentence has a word used incorrectly?",choices:["A) They're the best team in the whole league.","B) We put their backpacks by the door for them.","C) Their is a great new playground near my house.","D) The players celebrated their win with their families."],answer:"C",explanation:"Their in Their is a great new playground is wrong — it should be There (indicating a place, not a possessive)."},
+    {stem:"Read the sentence. Find ALL errors and choose the correction.",passage:"<u>Your</u> going to love the new park — <u>its</u> been rebuilt, and <u>there</u> swings are brand new!",choices:["A) Your → You're; its → it's; there → their","B) Your is correct; its → it's; there → they're","C) Your → You're; its is correct; there → their","D) No errors exist in this sentence."],answer:"A",explanation:"Your → You're (you are going). Its → it's (it has been rebuilt). There → their (the swings belonging to them/the park)."}
+  ]
+},
+
+"5-4":{
+  week:5,day:4,weekTitle:"Apostrophes & Contractions",dayTitle:"Mixed Review",skill:"Apostrophes & Contractions — Mixed Review",
+  miniLesson:{
+    rule:`Today you will use all your contraction and apostrophe skills together: forming contractions, choosing between homophones, and finding errors.`,
+    chart:{headers:["Pair","Contraction (with apostrophe)","Possessive or Other (no apostrophe)"],rows:[
+      ["it's / its","it's = it is or it has","its = belonging to it"],
+      ["you're / your","you're = you are","your = belonging to you"],
+      ["they're / their / there","they're = they are","their = belonging to them; there = a place"],
+      ["we're / were","we're = we are","were = past tense of be"]
+    ]},
+    examples:[],
+    tip:`<strong>Final tip:</strong> When you see an apostrophe in one of these words, always try substituting the two full words. If it makes sense → keep the contraction. If it doesn't → remove the apostrophe.`
+  },
+  questions:[
+    {stem:"Which contraction replaces the underlined words?",passage:"The librarian said she <u>has not</u> received the new books yet.",choices:["A) has'nt","B) hasn't","C) hav'nt","D) havent'"],answer:"B",explanation:"Hasn't is the correct contraction for has not — the apostrophe replaces the o in not."},
+    {stem:"Which word correctly fills in the blank?",passage:"_____ no school tomorrow because of the teachers' meeting.",choices:["A) Their","B) There","C) There's","D) Theirs"],answer:"C",explanation:"There's = there is. There is no school tomorrow makes sense — use there's."},
+    {stem:"Which sentence has an apostrophe error?",choices:["A) We're all going to the fall festival this weekend.","B) She doesn't know the answer to that question.","C) The kitten lost it's favorite toy under the couch.","D) They haven't finished painting the mural yet."],answer:"C",explanation:"It's means it is — but here the possessive its is needed (the toy belonging to the kitten)."},
+    {stem:"Which sentence uses all underlined words correctly?",choices:["A) <u>Your</u> going to need <u>you're</u> umbrella today — <u>its</u> raining!","B) <u>You're</u> going to need <u>your</u> umbrella today — <u>it's</u> raining!","C) <u>You're</u> going to need <u>your</u> umbrella today — <u>its</u> raining!","D) <u>Your</u> going to need <u>your</u> umbrella today — <u>it's</u> raining!"],answer:"B",explanation:"You're (you are) + your (possessive) + it's (it is) are all correctly used."},
+    {stem:"Read the sentence. Find the error and choose the correct fix.",passage:"The principal said the school won't be having a snow day — were going to make up the missed time in June.",choices:["A) won't → wont; were is correct","B) won't is correct; were → we're (we are)","C) won't → will not; were → we're","D) No errors exist in this sentence."],answer:"B",explanation:"Won't is already the correct contraction for will not. Were → we're (we are going to make up the time)."},
+    {stem:"Read the whole paragraph. Find ALL errors and name every correction needed.",passage:"Its finally Friday, and were all excited about the weekend. Our class decided there going to finish the science project — its been a long week!",choices:["A) Its → It's; were → we're; there → they're; its → it's","B) Its → It's; were is correct; there → they're; its → it's","C) Its is correct; were → we're; there → their; its → it's","D) No errors — the paragraph is correct."],answer:"A",explanation:"Its (start) → It's (it is). Were → we're (we are). There → they're (they are). Its (end) → it's (it has been a long week)."}
+  ]
+},
+
+/* ══════════════════════════════════════
+   WEEK 6 — COMMAS & QUOTATION MARKS
+══════════════════════════════════════ */
+"6-1":{
+  week:6,day:1,weekTitle:"Commas & Quotation Marks",dayTitle:"Direct Speech",skill:"Commas & Quotation Marks for Direct Speech",
+  miniLesson:{
+    rule:`When you write exactly what someone says (direct speech), use <strong>quotation marks</strong> around those exact words. Use a <strong>comma</strong> to separate the speaker tag from the words spoken.`,
+    chart:{headers:["Pattern","Example"],rows:[
+      ["Speaker tag BEFORE quote","She said, \"Dinner is ready!\""],
+      ["Speaker tag AFTER quote","\"Dinner is ready!\" she called."],
+      ["Question in quote","\"Are you hungry?\" he asked."]
+    ]},
+    examples:[
+      {label:"✗",wrong:"The teacher said \"Open your books.\"",right:"The teacher said, \"Open your books.\"",plain:"(need a comma after said)"},
+      {label:"✗",wrong:"\"Let's go\" said Marcus.",right:"\"Let's go,\" said Marcus.",plain:"(comma goes INSIDE the closing quote mark)"}
+    ],
+    tip:`<strong>Key rule:</strong> The comma and period always go <em>inside</em> the closing quotation mark — never outside it!`
+  },
+  questions:[
+    {stem:"Which sentence correctly punctuates direct speech?",choices:["A) Mom said \"Wash your hands before dinner.\"","B) Mom said, \"Wash your hands before dinner.\"","C) Mom, said \"Wash your hands before dinner.\"","D) Mom said, Wash your hands before dinner."],answer:"B",explanation:"A comma follows the speaker tag (said), and quotation marks surround the spoken words."},
+    {stem:"Which sentence correctly punctuates direct speech?",choices:["A) \"The bus will be here soon\", announced the teacher.","B) \"The bus will be here soon\" announced the teacher.","C) \"The bus will be here soon,\" announced the teacher.","D) \"The bus will be here soon.\" announced the teacher."],answer:"C",explanation:"When the tag comes after the quote, the comma goes inside the closing quotation mark."},
+    {stem:"Which sentence has an error?",choices:["A) \"Watch out for the puddle!\" warned Dad.","B) She whispered, \"I have a surprise for you.\"","C) \"Where is my backpack\" asked Jamie?","D) \"Close the door, please,\" said the principal."],answer:"C",explanation:"The question mark belongs inside the closing quotation mark: \"Where is my backpack?\" asked Jamie."},
+    {stem:"Which sentence is punctuated correctly?",choices:["A) He shouted, \"Come and see what I found!\"","B) He shouted \"Come and see what I found!\"","C) He, shouted \"Come and see what I found!\"","D) He shouted, Come and see what I found!"],answer:"A",explanation:"A comma follows the speaker tag, and exclamation point + quotation marks are correctly placed."},
+    {stem:"Which sentence correctly punctuates a question in direct speech?",choices:["A) She asked, \"Can we go to the park after school\"?","B) She asked, \"Can we go to the park after school?\"","C) She asked \"Can we go to the park after school?\"","D) She asked, can we go to the park after school?"],answer:"B",explanation:"The question mark goes inside the closing quotation mark, and a comma follows the speaker tag."},
+    {stem:"Read the sentence with all errors. Choose the correctly punctuated version.",passage:["The coach said Great job today everyone you should be proud of yourselves"],choices:["A) The coach said, \"Great job today, everyone — you should be proud of yourselves!\"","B) The coach said \"Great job today everyone you should be proud of yourselves.\"","C) The coach said Great job today, \"everyone you should be proud of yourselves.\"","D) \"The coach said, great job today everyone, you should be proud of yourselves.\""],answer:"A",explanation:"A comma after said, quotation marks around all the spoken words, and an exclamation point inside the closing quotation mark."}
+  ]
+},
+
+"6-2":{
+  week:6,day:2,weekTitle:"Commas & Quotation Marks",dayTitle:"Compound Sentences",skill:"Commas in Compound Sentences",
+  miniLesson:{
+    rule:`A <strong>compound sentence</strong> has two complete thoughts joined by a <strong>coordinating conjunction</strong>. Always put a <strong>comma BEFORE</strong> the conjunction when both parts are complete sentences.`,
+    chart:{headers:["Conjunction","Meaning","Example"],rows:[
+      ["and","adds information","I like art, <em>and</em> my sister likes music."],
+      ["but","shows a difference","I wanted to go, <em>but</em> it was raining."],
+      ["so","shows a result","I was hungry, <em>so</em> I ate a snack."],
+      ["or","shows a choice","We can walk, <em>or</em> we can take the bus."],
+      ["yet","shows a surprise","She was tired, <em>yet</em> she kept studying."]
+    ]},
+    examples:[
+      {label:"✗",wrong:"The movie was funny but it was too long.",right:"The movie was funny, but it was too long.",plain:"(comma before but — two complete thoughts)"},
+      {label:"✗",wrong:"I like cats, and dogs.",right:"I like cats and dogs.",plain:"(no comma — and joins two nouns, not two sentences)"}
+    ],
+    tip:`<strong>Test before adding a comma:</strong> Cover the conjunction and the second half. Is the first half a complete sentence? Cover the first half. Is the second half a complete sentence? If both are YES, add a comma before the conjunction.`
+  },
+  questions:[
+    {stem:"Which sentence is a correctly punctuated compound sentence?",choices:["A) We wanted to go swimming, but the pool was closed.","B) We wanted to go swimming but, the pool was closed.","C) We wanted to go swimming, but, the pool was closed.","D) We wanted to go swimming but the pool was closed."],answer:"A",explanation:"A comma before but correctly joins the two complete thoughts."},
+    {stem:"Which sentence does <strong>NOT</strong> need a comma?",choices:["A) I finished my homework, so I went outside to play.","B) The dog barked loudly but nobody woke up.","C) She packed her lunch and her backpack for school.","D) We were late, yet we still made it to the movie."],answer:"C",explanation:"She packed her lunch and her backpack has only one subject (she) — and joins two nouns, not two complete sentences. No comma needed."},
+    {stem:"Which sentence is punctuated correctly?",choices:["A) It was cold outside so, I put on my winter coat.","B) It was cold outside, so I put on my winter coat.","C) It was cold outside, so, I put on my winter coat.","D) It was cold outside so I put on, my winter coat."],answer:"B",explanation:"A single comma before so correctly joins the two complete thoughts."},
+    {stem:"Which sentence has a comma error?",choices:["A) I wanted to read, but I was too tired to keep my eyes open.","B) She practiced every day, and she became a great singer.","C) He wanted to swim, or to go fishing at the lake.","D) The game was tied, yet our team never gave up."],answer:"C",explanation:"He wanted to swim or to go fishing is one subject with two choices — not two complete sentences. No comma is needed before or here."},
+    {stem:"Which sentence correctly uses a comma in a compound sentence with <em>and</em>?",choices:["A) The sun came out, and the puddles dried up quickly.","B) The sun came out and, the puddles dried up quickly.","C) The sun came out and the puddles, dried up quickly.","D) The sun came out, and, the puddles dried up quickly."],answer:"A",explanation:"A single comma before and correctly joins two complete sentences."},
+    {stem:"Read the sentence. Is the comma placed correctly? Choose the best answer.",passage:"She loves to draw, and paint in her free time.",choices:["A) Yes — the comma is correct because and joins two complete sentences.","B) No — the comma should be removed. And joins two activities (draw, paint) — not two complete sentences.","C) No — a second comma is needed after paint.","D) Yes — always put a comma before and."],answer:"B",explanation:"She loves to draw and paint has one subject (she) and two verbs in a list — not two complete sentences. The comma before and is incorrect and should be removed."}
+  ]
+},
+
+"6-3":{
+  week:6,day:3,weekTitle:"Commas & Quotation Marks",dayTitle:"More Direct Speech",skill:"More Practice: Direct Speech & Quotation Marks",
+  miniLesson:{
+    rule:`Today we practice more patterns for writing direct speech. When a quotation ends with a <strong>question mark or exclamation point</strong>, you do <em>not</em> also add a comma.`,
+    chart:{headers:["Pattern","Example","Key Rule"],rows:[
+      ["Tag before, statement","She said, \"I'm ready.\"","Comma after tag, period inside closing quote"],
+      ["Tag before, question","He asked, \"Are you ready?\"","Comma after tag, ? inside closing quote"],
+      ["Tag after, statement","\"I'm ready,\" she said.","Comma inside closing quote, before tag"],
+      ["Tag after, question","\"Are you ready?\" he asked.","? inside closing quote, NO comma after ?"]
+    ]},
+    examples:[
+      {label:"✗",wrong:"\"Are you okay?,\" she asked.",right:"\"Are you okay?\" she asked.",plain:"(? replaces the comma — don't use both)"},
+      {label:"✗",wrong:"\"Watch out!,\" he yelled.",right:"\"Watch out!\" he yelled.",plain:"(! replaces the comma — don't use both)"}
+    ],
+    tip:`<strong>Simple rule:</strong> If the quote already ends in ? or !, you do NOT add a comma. The ? or ! does the job of the comma.`
+  },
+  questions:[
+    {stem:"Which sentence is punctuated correctly?",choices:["A) \"Is your homework done?,\" asked Mom.","B) \"Is your homework done?\" asked Mom.","C) \"Is your homework done?\" asked, Mom.","D) \"Is your homework done\" asked Mom?"],answer:"B",explanation:"The question mark goes inside the closing quotation mark, and no comma is added after it."},
+    {stem:"Which sentence is punctuated correctly?",choices:["A) She shouted, \"Look out for that car!,\"","B) She shouted \"Look out for that car!\"","C) She shouted, \"Look out for that car!\"","D) She shouted, \"look out for that car!\""],answer:"C",explanation:"A comma after the tag, an exclamation point inside the closing quotation mark. The first word of the spoken sentence is capitalized."},
+    {stem:"Which sentence has an error?",choices:["A) \"The library opens at nine,\" said the librarian.","B) Dad called, \"Time to eat dinner!\"","C) \"Have you seen my scissors?\" she asked.","D) \"I love science class,\" she exclaimed!"],answer:"D",explanation:"The exclamation point belongs inside the closing quotation mark, not after the speaker tag. Correct: \"I love science class!\" she exclaimed."},
+    {stem:"Which sentence correctly places the comma?",choices:["A) \"We won the game\" she shouted happily.","B) \"We won the game,\" she shouted happily.","C) \"We won the game\", she shouted happily.","D) \"We won the game,\" she, shouted happily."],answer:"B",explanation:"The comma goes inside the closing quotation mark, before the speaker tag."},
+    {stem:"Read the sentence. Choose the option that corrects ALL punctuation errors.",passage:["My teacher said I am so proud of all of you for working so hard this year"],choices:["A) My teacher said, \"I am so proud of all of you for working so hard this year.\"","B) My teacher said \"I am so proud of all of you for working so hard this year.\"","C) My teacher said, I am so proud of all of you for working so hard this year.","D) \"My teacher said, I am so proud of all of you for working so hard this year.\""],answer:"A",explanation:"A comma after said, opening quotation mark, the spoken words, a period inside the closing quotation mark."},
+    {stem:"Read both sentences. Which punctuation rule explains why each sentence is correct?",passage:"Sentence A: \"Can I come with you?\" she asked.\nSentence B: \"I'd love some company,\" he replied.",choices:["A) Both sentences use commas after the closing quotation mark.","B) Sentence A: ? inside closing quote replaces the comma; Sentence B: comma inside closing quote before the tag.","C) Sentence A has an error — a comma is also needed after the ?.","D) Both sentences should have exclamation points."],answer:"B",explanation:"When the quote is a question, the ? goes inside the closing quote and replaces the comma. When the quote is a statement, a comma goes inside the closing quote before the speaker tag."}
+  ]
+},
+
+"6-4":{
+  week:6,day:4,weekTitle:"Commas & Quotation Marks",dayTitle:"Mixed Review",skill:"Direct Speech & Compound Sentences — Mixed Review",
+  miniLesson:{
+    rule:`Today you will use all your comma and quotation mark skills together: <strong>direct speech</strong> and <strong>compound sentences</strong>.`,
+    chart:{headers:["Skill","Key Rule","Example"],rows:[
+      ["Direct speech","Comma after tag; quotes around spoken words; punctuation inside closing quote","She said, \"Let's go.\""],
+      ["Tag after quote","Comma inside the closing quote mark","\"Let's go,\" she said."],
+      ["Compound sentence","Comma before FANBOYS joining 2 complete thoughts","I was tired, but I stayed."],
+      ["No comma needed","And/or joining two nouns or verbs — not two sentences","I like cats and dogs."]
+    ]},
+    examples:[],
+    tip:`<strong>Mixed review strategy:</strong> First ask — is someone speaking? Check direct speech rules. Are two complete thoughts joined? Check compound sentence rules.`
+  },
+  questions:[
+    {stem:"Which sentence is correctly punctuated?",choices:["A) \"I can't believe we won,\" cheered the whole team.","B) \"I can't believe we won\" cheered the whole team.","C) \"I can't believe we won,\" cheered, the whole team.","D) I can't believe we won, cheered the whole team."],answer:"A",explanation:"The comma is correctly placed inside the closing quotation mark, before the speaker tag."},
+    {stem:"Which sentence is a correctly punctuated compound sentence?",choices:["A) The rain finally stopped, so we went outside to play.","B) The rain finally stopped so, we went outside to play.","C) The rain finally stopped, so, we went outside to play.","D) The rain finally stopped so we went outside, to play."],answer:"A",explanation:"A single comma before so correctly joins the two complete thoughts."},
+    {stem:"Which sentence has a punctuation error?",choices:["A) Dad asked, \"Did you finish all of your dinner?\"","B) \"I'll be ready in five minutes,\" she called from upstairs.","C) \"That was the best birthday ever!,\" he exclaimed.","D) The teacher smiled and said, \"I'm very proud of all of you.\""],answer:"C",explanation:"An exclamation point already ends the quote — no comma is needed after it. Correct: \"That was the best birthday ever!\" he exclaimed."},
+    {stem:"Which sentence does NOT need a comma before the conjunction?",choices:["A) The soup was hot, but I ate it anyway.","B) She studied hard, so she felt ready for the test.","C) I packed my pencils and my crayons for art class.","D) The dog barked loudly, yet no one woke up."],answer:"C",explanation:"I packed my pencils and my crayons has one subject and joins two nouns — not two complete sentences. No comma is needed."},
+    {stem:"Which sentence correctly uses commas and quotation marks?",choices:["A) \"Let me help you,\" offered my older brother.","B) \"Let me help you\" offered my older brother.","C) \"Let me help you,\" offered, my older brother.","D) Let me help you, offered my older brother."],answer:"A",explanation:"The comma is inside the closing quotation mark, before the speaker tag — correctly punctuated."},
+    {stem:"Read the paragraph. Find ALL punctuation errors and name every correction needed.",passage:"\"I can't find my library book she said nervously. I've looked everywhere. Mom said, don't worry, we'll find it and smiled.",choices:["A) Add a closing quote mark after book; add a comma after she said; add quotation marks around 'don't worry, we'll find it'; add closing quote mark after find it","B) Add a comma after book; the rest of the punctuation is correct","C) Replace the period after book with a question mark; no other changes needed","D) The paragraph is punctuated correctly — no changes are needed"],answer:"A",explanation:"She said needs to come after the closing quote mark for her speech. Mom's dialogue needs to be enclosed in quotation marks. Multiple corrections are needed throughout."}
+  ]
+}
+
+}; // end DATA
+
+/* ═══════════════════════ RENDER ═══════════════════════ */
+function show(week, day) {
+  const key = week + '-' + day;
+  const d = DATA[key];
+  if (!d) return;
+
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+  const allBtns = document.querySelectorAll('.day-btn');
+  const idx = (week - 1) * 4 + (day - 1);
+  if (allBtns[idx]) allBtns[idx].classList.add('active');
+
+  const ml = d.miniLesson;
+  const days = ['Day 1','Day 2','Day 3','Day 4'];
+  let pillsHtml = days.map((lbl,i) =>
+    `<span class="day-pill${i+1===day?' active-pill':''}">${lbl}</span>`
+  ).join('');
+
+  let mlHtml = `<div class="mini-lesson">
+    <div class="ml-header">
+      <span class="ml-icon">📖</span>
+      <span class="ml-title">Mini Lesson — ${d.skill}</span>
+      <span class="ml-day-label">Day ${day} of 4</span>
+    </div>
+    <div class="ml-body">
+      <div class="ml-rule"><strong>Rule</strong>${ml.rule}</div>`;
+
+  if (ml.chart) {
+    mlHtml += `<div class="ml-examples"><strong>Quick Reference Chart</strong></div>
+    <div class="ml-chart"><table>
+      <thead><tr>${ml.chart.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>${ml.chart.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  if (ml.examples && ml.examples.length > 0) {
+    mlHtml += `<div class="ml-examples"><strong>Examples</strong>`;
+    ml.examples.forEach(ex => {
+      mlHtml += `<div class="example-row"><span class="ex-label">${ex.label}</span>`;
+      if (ex.wrong) mlHtml += `<span class="ex-wrong">${ex.wrong}</span>→ `;
+      mlHtml += `<span class="ex-right">${ex.right}</span>`;
+      if (ex.plain) mlHtml += `<span style="color:var(--text3);font-size:12px;margin-left:4px;">${ex.plain}</span>`;
+      mlHtml += `</div>`;
+    });
+    mlHtml += `</div>`;
+  }
+
+  mlHtml += `<div class="ml-tip"><strong>⚠ Watch Out</strong>${ml.tip}</div>`;
+  mlHtml += `</div></div>`;
+
+  let qHtml = `<div class="ws-questions"><div class="qs-label">Practice Questions</div>`;
+  const answerKey = [];
+
+  d.questions.forEach((q, i) => {
+    const n = i + 1;
+    qHtml += `<div class="question"><div class="q-stem"><span class="q-num">${n}.</span>${q.stem}</div>`;
+    if (q.passage && typeof q.passage === 'string') qHtml += `<div class="q-passage">${q.passage}</div>`;
+    if (q.passage2) qHtml += `<div class="q-passage">${q.passage2}</div>`;
+    qHtml += `<div class="q-choices">`;
+    q.choices.forEach(c => {
+      qHtml += `<div class="choice"><span class="choice-letter">${c.charAt(0)})</span><span>${c.slice(3)}</span></div>`;
+    });
+    qHtml += `</div></div>`;
+    answerKey.push({num:n, ans:q.answer, exp:q.explanation});
+  });
+  qHtml += `</div>`;
+
+  let akHtml = `<details class="answer-key-wrap">
+    <summary>Show Answer Key</summary>
+    <div class="ak-grid">`;
+  answerKey.forEach(item => {
+    akHtml += `<div class="ak-item"><span class="ak-num">${item.num}.</span><span class="ak-ans">${item.ans}</span>${item.exp}</div>`;
+  });
+  akHtml += `</div></details>`;
+
+  const html = `<div class="worksheet">
+    <div class="ws-topbar">
+      <div>
+        <div class="ws-topbar-title">Week ${week}: ${d.weekTitle} · ${d.dayTitle}</div>
+        <div class="ws-topbar-meta">Indiana ILEARN ELA · Grade 4 · Approaching Proficiency</div>
+      </div>
+      <div class="day-pills">${pillsHtml}</div>
+    </div>
+    <div class="ws-fields">
+      <div class="ws-field"><strong>Name:</strong><span class="field-line">&nbsp;</span></div>
+      <div class="ws-field"><strong>Date:</strong><span class="field-line" style="width:90px">&nbsp;</span></div>
+      <div class="ws-field"><strong>Score:</strong><span class="field-line" style="width:60px">&nbsp;</span></div>
+    </div>
+    ${mlHtml}${qHtml}${akHtml}
+    <div class="ws-actions">
+      <button class="ws-action-btn" onclick="window.print()">Print / Save as PDF</button>
+      <button class="ws-action-btn" onclick="copyText('${key}')">Copy plain text</button>
+    </div>
+  </div>`;
+
+  document.getElementById('rightPanel').innerHTML = html;
+}
+
+function copyText(key) {
+  const d = DATA[key];
+  if (!d) return;
+  let out = `ELA Daily Worksheet — Week ${d.week}, Day ${d.day}: ${d.skill}\nGrade 4 · Indiana ILEARN\nName: _________________________  Date: _____________\n\n`;
+  out += `MINI LESSON: ${d.skill}\n`;
+  out += d.miniLesson.rule.replace(/<[^>]+>/g,'') + '\n\n';
+  if (d.miniLesson.tip) out += `Watch Out: ${d.miniLesson.tip.replace(/<[^>]+>/g,'')}\n\n`;
+  out += `PRACTICE QUESTIONS\n\n`;
+  d.questions.forEach((q,i) => {
+    out += `${i+1}. ${q.stem.replace(/<[^>]+>/g,'')}\n`;
+    if (q.passage && typeof q.passage === 'string') out += `   ${q.passage.replace(/<[^>]+>/g,'')}\n`;
+    q.choices.forEach(c => out += `   ${c}\n`);
+    out += '\n';
+  });
+  out += `ANSWER KEY\n`;
+  d.questions.forEach((q,i) => out += `${i+1}. ${q.answer} — ${q.explanation}\n`);
+  navigator.clipboard.writeText(out).then(() => alert('Copied!')).catch(() => alert('Copy failed.'));
+}
+</script>
+</body>
+</html>
