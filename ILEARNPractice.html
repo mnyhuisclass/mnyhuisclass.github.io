@@ -86,6 +86,7 @@ body {
 .domain-chip.on-science { background:#F4ECF7; border-color:#9B59B6; color:#7d3f99; }
 .domain-chip.on-science .chip-dot { background: #9B59B6; }
 
+
 .domain-note {
   font-size: 0.78rem; color: #e67e22; background: #fef9f0;
   border: 1.5px solid #f5cba7; border-radius: 8px;
@@ -375,7 +376,7 @@ body {
     <div class="form-row">
       <div class="form-group">
         <label>Teacher Name</label>
-        <input type="text" id="teacher-name" placeholder="Teacher">
+        <input type="text" id="teacher-name" placeholder="Mrs. Smith">
       </div>
       <div class="form-group">
         <label>Week / Date</label>
@@ -422,6 +423,7 @@ const DOMAINS = {
     { id:"nf",  label:"Number & Operations — Fractions" },
     { id:"md",  label:"Measurement & Data" },
     { id:"geo", label:"Geometry" },
+    { id:"da",  label:"Data Analysis" },
   ],
   reading: [
     { id:"lit",  label:"Literature" },
@@ -881,6 +883,36 @@ const QB = {
     { domain:"geo", q:"Cylinder: how many faces?", choices:["1", "2", "3", "4"], correctIdx:2, explain:"Cylinder: 2 circular faces + 1 curved surface = 3 faces.", _id:438 },
     { domain:"geo", q:"How many edges does a cube have?", choices:["6", "8", "10", "12"], correctIdx:3, explain:"Cube: 12 edges.", _id:439 },
     { domain:"geo", q:"Rectangle area: 12 cm \u00d7 5 cm?", choices:["34 sq cm", "60 sq cm", "70 sq cm", "85 sq cm"], correctIdx:1, explain:"12 \u00d7 5 = 60 sq cm.", _id:440 },
+    { domain:"da", q:"A bar graph shows Monday=12, Tuesday=8, Wednesday=15, Thursday=10, Friday=5 books read. On which day were the most books read?", choices:["Monday", "Tuesday", "Wednesday", "Friday"], correctIdx:2, explain:"Wednesday has the tallest bar at 15 books \u2014 the highest value.", _id:609 },
+    { domain:"da", q:"A line graph shows a plant's height over 5 weeks: Week 1=2 cm, Week 2=4 cm, Week 3=7 cm, Week 4=7 cm, Week 5=10 cm. Between which weeks did the plant NOT grow?", choices:["Weeks 1-2", "Weeks 2-3", "Weeks 3-4", "Weeks 4-5"], correctIdx:2, explain:"The height stayed at 7 cm from Week 3 to Week 4 \u2014 no growth occurred.", _id:610 },
+    { domain:"da", q:"A pictograph uses \u2606 = 4 students. The row for red shows \u2606\u2606\u2606. How many students chose red?", choices:["3", "6", "12", "16"], correctIdx:2, explain:"3 stars \u00d7 4 students per star = 12 students.", _id:611 },
+    { domain:"da", q:"A frequency table shows test scores: 70-79: 4 students, 80-89: 9 students, 90-100: 7 students. How many students scored 80 or above?", choices:["7", "9", "14", "16"], correctIdx:3, explain:"80-89: 9 students + 90-100: 7 students = 16 students scored 80 or above.", _id:612 },
+    { domain:"da", q:"A line plot shows the number of pets students have: 0 pets: \u00d74, 1 pet: \u00d76, 2 pets: \u00d73, 3 pets: \u00d71. What is the most common number of pets?", choices:["0", "1", "2", "3"], correctIdx:1, explain:"1 pet has the most X marks (6) \u2014 it is the mode.", _id:613 },
+    { domain:"da", q:"A bar graph shows students' favorite colors: Blue=14, Red=9, Green=6, Yellow=3. How many more students chose Blue than Red?", choices:["3", "5", "6", "9"], correctIdx:1, explain:"14 \u2212 9 = 5 more students chose Blue than Red.", _id:614 },
+    { domain:"da", q:"A line graph shows temperatures over 4 days: Mon=60\u00b0F, Tue=65\u00b0F, Wed=58\u00b0F, Thu=70\u00b0F. What is the range of temperatures?", choices:["5\u00b0F", "10\u00b0F", "12\u00b0F", "15\u00b0F"], correctIdx:2, explain:"Range = highest \u2212 lowest = 70 \u2212 58 = 12\u00b0F.", _id:615 },
+    { domain:"da", q:"A table shows library books checked out: Fiction: 35, Non-fiction: 20, Biography: 15, Science: 10. What fraction of books were Fiction?", choices:["1/4", "7/16", "7/8", "1/2"], correctIdx:1, explain:"Total = 35+20+15+10 = 80. Fiction = 35/80 = 7/16.", _id:616 },
+    { domain:"da", q:"A line plot shows hours of homework: 0h: 2 students, 1h: 5 students, 2h: 4 students, 3h: 1 student. How many students were surveyed in total?", choices:["10", "12", "13", "14"], correctIdx:1, explain:"2 + 5 + 4 + 1 = 12 students total.", _id:617 },
+    { domain:"da", q:"A bar graph shows rainfall in inches: Jan=3, Feb=2, Mar=5, Apr=4. What is the total rainfall over all 4 months?", choices:["12", "13", "14", "15"], correctIdx:2, explain:"3 + 2 + 5 + 4 = 14 inches total.", _id:618 },
+    { domain:"da", q:"A pictograph uses \u25cf = 5 cars. The row for red cars shows \u25cf\u25cf\u25cf\u25cf. How many red cars are there?", choices:["4", "5", "15", "20"], correctIdx:3, explain:"4 symbols \u00d7 5 cars each = 20 cars.", _id:619 },
+    { domain:"da", q:"A line graph goes up steeply from January to March, then levels off from March to May. What best describes the data from March to May?", choices:["The value increased rapidly.", "The value decreased rapidly.", "The value stayed about the same.", "The value dropped to zero."], correctIdx:2, explain:"A flat (horizontal) line on a line graph means the value stayed about the same \u2014 no significant change.", _id:620 },
+    { domain:"da", q:"A frequency table shows shoe sizes of 20 students. Size 4: 2, Size 5: 7, Size 6: 8, Size 7: 3. Which shoe size is most common?", choices:["Size 4", "Size 5", "Size 6", "Size 7"], correctIdx:2, explain:"Size 6 appears 8 times \u2014 the highest frequency, so it is the mode.", _id:621 },
+    { domain:"da", q:"A bar graph compares two teams' scores over 3 games. Team A: 15, 20, 10. Team B: 12, 18, 14. What is Team A's total score?", choices:["40", "44", "45", "50"], correctIdx:2, explain:"Team A: 15 + 20 + 10 = 45 total points.", _id:622 },
+    { domain:"da", q:"A line plot shows the lengths of pencils in inches: 4: \u00d71, 5: \u00d73, 6: \u00d74, 7: \u00d72. What is the difference between the longest and shortest pencil recorded?", choices:["1 in", "2 in", "3 in", "4 in"], correctIdx:2, explain:"Longest = 7 inches; shortest = 4 inches. 7 \u2212 4 = 3 inches.", _id:623 },
+    { domain:"da", q:"A pictograph uses \u2666 = 10 votes. Pizza shows \u2666\u2666\u2666\u2666, Tacos shows \u2666\u2666\u2666, Burgers shows \u2666\u2666. How many total votes were cast?", choices:["9", "60", "80", "90"], correctIdx:3, explain:"4+3+2 = 9 symbols \u00d7 10 votes = 90 total votes.", _id:624 },
+    { domain:"da", q:"A table shows: Students who like both math AND science: 8, only math: 5, only science: 7, neither: 3. How many students like math?", choices:["5", "8", "13", "23"], correctIdx:2, explain:"Students who like math = only math (5) + both math and science (8) = 13.", _id:625 },
+    { domain:"da", q:"A bar graph shows test scores for 4 classes. Class A=78, Class B=85, Class C=92, Class D=80. Which class scored highest?", choices:["Class A", "Class B", "Class C", "Class D"], correctIdx:2, explain:"92 is the highest value \u2014 Class C scored highest.", _id:626 },
+    { domain:"da", q:"A line plot shows data: 10: \u00d72, 20: \u00d75, 30: \u00d73. What is the total of all values?", choices:["150", "200", "210", "250"], correctIdx:2, explain:"(10\u00d72) + (20\u00d75) + (30\u00d73) = 20 + 100 + 90 = 210.", _id:627 },
+    { domain:"da", q:"A frequency table shows how students get to school: Walk: 10, Bus: 15, Car: 8, Bike: 7. What percentage of students ride the bus? (Total = 40)", choices:["25%", "37.5%", "40%", "50%"], correctIdx:1, explain:"15 out of 40 students = 15/40 = 3/8 = 37.5%.", _id:628 },
+    { domain:"da", q:"A line graph shows sales going up from Monday to Wednesday, then down from Wednesday to Friday. What does this pattern suggest?", choices:["Sales were highest on Monday.", "Sales were highest in the middle of the week.", "Sales were lowest on Wednesday.", "Sales increased throughout the week."], correctIdx:1, explain:"The graph peaks at Wednesday (middle of the week) before falling \u2014 showing the highest sales mid-week.", _id:629 },
+    { domain:"da", q:"A bar graph shows animals at a shelter: Dogs=24, Cats=18, Rabbits=6, Birds=12. What fraction of animals are cats?", choices:["1/4", "1/3", "3/10", "3/5"], correctIdx:2, explain:"Total = 24+18+6+12 = 60. Cats = 18/60 = 3/10.", _id:630 },
+    { domain:"da", q:"A line plot shows distances students walked: 1 mile \u00d73, 2 miles \u00d75, 3 miles \u00d72. What is the most common distance walked?", choices:["1 mile", "2 miles", "3 miles", "4 miles"], correctIdx:1, explain:"2 miles has 5 marks \u2014 the most frequent value (mode).", _id:631 },
+    { domain:"da", q:"A bar graph shows books read per month: Jan=10, Feb=8, Mar=12, Apr=10. What is the mean (average) number of books per month?", choices:["9", "10", "11", "12"], correctIdx:1, explain:"Mean = (10+8+12+10) \u00f7 4 = 40 \u00f7 4 = 10.", _id:632 },
+    { domain:"da", q:"A table shows: Red marbles: 6, Blue: 9, Green: 3, Yellow: 2. What is the total number of marbles?", choices:["18", "20", "22", "24"], correctIdx:1, explain:"6 + 9 + 3 + 2 = 20 marbles.", _id:633 },
+    { domain:"da", q:"A line graph shows a temperature rising from 50\u00b0F to 80\u00b0F over 6 hours. About what was the temperature after 3 hours?", choices:["50\u00b0F", "60\u00b0F", "65\u00b0F", "80\u00b0F"], correctIdx:2, explain:"Midway between 50\u00b0F and 80\u00b0F is 65\u00b0F \u2014 after half the time (3 hours), the temperature is approximately halfway between the two extremes.", _id:634 },
+    { domain:"da", q:"A pictograph uses \u2605 = 6 students. Art shows \u2605\u2605, Music shows \u2605\u2605\u2605\u2605, PE shows \u2605\u2605\u2605. How many more students chose Music than Art?", choices:["6", "8", "12", "18"], correctIdx:2, explain:"Music: 4\u00d76=24; Art: 2\u00d76=12. 24 \u2212 12 = 12 more students chose Music.", _id:635 },
+    { domain:"da", q:"A frequency table shows 30 students' favorite seasons: Spring: 8, Summer: 12, Fall: 6, Winter: 4. Which conclusion is supported?", choices:["More students prefer Fall than Spring.", "Summer is the most popular season.", "Winter and Fall together are more popular than Summer.", "An equal number like Spring and Summer."], correctIdx:1, explain:"Summer has the highest frequency (12) \u2014 it is the most popular season among these 30 students.", _id:636 },
+    { domain:"da", q:"A bar graph shows that in Week 1, 20 students completed their homework; in Week 2, 25 students; in Week 3, 22 students. What is the mean number of students completing homework per week?", choices:["20", "22", "23", "25"], correctIdx:2, explain:"Mean = (20+25+22) \u00f7 3 = 67 \u00f7 3 \u2248 22.3, which rounds to approximately 22.", _id:637 },
+    { domain:"da", q:"A line plot shows quiz scores: 7: \u00d72, 8: \u00d74, 9: \u00d73, 10: \u00d71. What is the mode of the quiz scores?", choices:["7", "8", "9", "10"], correctIdx:1, explain:"8 appears 4 times \u2014 more than any other score, making it the mode.", _id:638 },
   ],
 
   reading: [
@@ -1109,7 +1141,7 @@ function renderChips() {
     lbl.innerHTML = `<input type="checkbox" checked><span class="chip-dot"></span>${d.label}`;
     lbl.querySelector('input').addEventListener('change', e => {
       if (e.target.checked) { checked.add(d.id); lbl.classList.add(`on-${subject}`); }
-      else { checked.delete(d.id); lbl.classList.remove('on-math','on-reading','on-science'); }
+      else { checked.delete(d.id); lbl.classList.remove('on-math','on-reading','on-science','on-da'); }
       warnCheck();
     });
     wrap.appendChild(lbl);
@@ -1125,7 +1157,7 @@ function toggleAll() {
     const inp = lbl.querySelector('input');
     inp.checked = !allOn;
     if (!allOn) { checked.add(all[i].id); lbl.classList.add(`on-${subject}`); }
-    else         { lbl.classList.remove('on-math','on-reading','on-science'); }
+    else         { lbl.classList.remove('on-math','on-reading','on-science','on-da'); }
   });
   warnCheck();
 }
@@ -1229,21 +1261,21 @@ function generate() {
     questions = questions.slice(0, qCount);
 
   } else {
-    // Math / Science: pick individual questions with no-repeat logic
-    // Try to fill from in-domain first, then supplement from out-of-domain
-    const inUnseen  = inPool.filter(q => !used.has(q._id));
-    const outUnseen = outPool.filter(q => !used.has(q._id));
-    const totalUnseen = [...inUnseen, ...outUnseen];
+    // Math / Science: always fill from selected domains first, supplement with
+    // out-of-domain only when the selected pool is exhausted.
 
-    if (totalUnseen.length < qCount) {
-      // Not enough unseen in eligible pool — reset and use full pool
-      used.clear();
+    // If unseen in-domain questions are fewer than needed, reset the used tracker
+    // so in-domain questions recycle before we ever dip into out-of-domain.
+    const inUnseen = inPool.filter(q => !used.has(q._id));
+    if (inUnseen.length < qCount) {
+      // Wipe only the in-domain ids from used so out-of-domain history is preserved
+      inPool.forEach(q => used.delete(q._id));
     }
 
-    const freshIn  = inPool.filter(q => !used.has(q._id));
-    const freshOut = outPool.filter(q => !used.has(q._id));
-    const combined = shuffle([...freshIn, ...freshOut]);
-    questions = combined.slice(0, qCount);
+    const freshIn  = shuffle(inPool.filter(q => !used.has(q._id)));
+    const needed   = qCount - freshIn.length;
+    const freshOut = needed > 0 ? shuffle(outPool.filter(q => !used.has(q._id))).slice(0, needed) : [];
+    questions = [...freshIn, ...freshOut].slice(0, qCount);
     questions.forEach(q => used.add(q._id));
   }
 
