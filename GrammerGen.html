@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.W.6 Grammar Worksheet Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple-50: #EEEDFE; --purple-200: #AFA9EC; --purple-600: #534AB7; --purple-800: #3C3489;
+    --teal-50: #E1F5EE; --teal-600: #0F6E56; --teal-800: #085041;
+    --amber-50: #FAEEDA; --amber-600: #854F0B; --amber-800: #633806;
+    --blue-50: #E6F1FB; --blue-600: #185FA5; --blue-800: #0C447C;
+    --pink-50: #FBEAF0; --pink-600: #993556; --pink-800: #72243E;
+    --bg: #FAF9F7; --surface: #FFFFFF; --border: #E2DDD6; --text: #1A1714; --muted: #6B6560;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── SCREEN LAYOUT ── */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .app-header h1 {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .app-header .badge {
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--purple-50);
+    color: var(--purple-800);
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: .03em;
+  }
+
+  .app-body {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .sidebar-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .sidebar-group input[type=text],
+  .sidebar-group select {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: 'Source Sans 3', sans-serif;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .sidebar-group input[type=text]:focus,
+  .sidebar-group select:focus {
+    border-color: var(--purple-600);
+  }
+
+  .section-list { display: flex; flex-direction: column; gap: 6px; }
+  .section-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--bg);
+    transition: all .15s;
+    user-select: none;
+  }
+  .section-toggle:hover { border-color: var(--purple-200); }
+  .section-toggle.active {
+    background: var(--purple-50);
+    border-color: var(--purple-200);
+  }
+  .toggle-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    transition: all .15s;
+  }
+  .section-toggle.active .toggle-dot {
+    background: var(--purple-600);
+    border-color: var(--purple-600);
+  }
+  .toggle-label { font-size: 13px; font-weight: 500; }
+  .section-toggle.active .toggle-label { color: var(--purple-800); }
+
+  .generate-btn {
+    width: 100%;
+    padding: 12px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--purple-600);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    margin-top: auto;
+  }
+  .generate-btn:hover { background: var(--purple-800); }
+  .generate-btn:active { transform: scale(0.98); }
+
+  .print-btn {
+    width: 100%;
+    padding: 10px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--purple-800);
+    background: var(--purple-50);
+    border: 1px solid var(--purple-200);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s;
+    display: none;
+  }
+  .print-btn:hover { background: var(--purple-200); }
+
+  /* ── PREVIEW PANEL ── */
+  .preview {
+    padding: 32px;
+    overflow-y: auto;
+  }
+
+  .empty-state {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .empty-icon {
+    font-size: 48px;
+    opacity: .4;
+  }
+  .empty-state p { font-size: 15px; }
+
+  /* ── WORKSHEET ── */
+  #worksheet { display: none; max-width: 720px; }
+
+  .ws-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px 40px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+
+  .ws-head {
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 14px;
+    margin-bottom: 28px;
+  }
+  .ws-head-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .ws-title {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .ws-diff-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--purple-50);
+    color: var(--purple-800);
+  }
+  .ws-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 12px;
+  }
+  .ws-meta-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ws-meta-field span {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .ws-meta-line {
+    width: 160px;
+    border-bottom: 1px solid #aaa;
+    height: 18px;
+  }
+
+  .ws-section { margin-bottom: 28px; }
+  .ws-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .ws-section-bar {
+    width: 4px;
+    height: 20px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .ws-section-title {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .question {
+    margin-bottom: 18px;
+    padding-left: 16px;
+  }
+  .q-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .q-text {
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 6px;
+  }
+  .q-text .blank {
+    display: inline-block;
+    width: 90px;
+    border-bottom: 1px solid #888;
+    vertical-align: bottom;
+  }
+  .q-hint {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+  .q-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+  .answer-line {
+    border-bottom: 1px solid #D0CBC4;
+    height: 24px;
+    margin-bottom: 4px;
+  }
+
+  .ws-footer {
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ws-footer span { font-size: 12px; color: var(--muted); }
+  .ws-score-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .ws-score-box .score-blank {
+    width: 50px;
+    border-bottom: 1px solid #aaa;
+    display: inline-block;
+    height: 16px;
+  }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    .app-header, .sidebar { display: none !important; }
+    .app-body { display: block; }
+    .preview { padding: 0; }
+    #worksheet { display: block !important; max-width: 100%; }
+    .ws-card {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+    }
+    .empty-state { display: none; }
+    body { background: white; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>Grammar Worksheet Generator</h1>
+  <span class="badge">4.W.6</span>
+</header>
+
+<div class="app-body">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-group">
+      <label>Class / Teacher Label</label>
+      <input type="text" id="classLabel" placeholder="e.g., Period 3 · Mrs. Harper" />
+    </div>
+
+    <div class="sidebar-group">
+      <label>Difficulty Level</label>
+      <select id="difficulty">
+        <option value="guided">Guided — word banks &amp; hints</option>
+        <option value="standard" selected>Standard</option>
+        <option value="challenge">Challenge — open-ended</option>
+      </select>
+    </div>
+
+    <div class="sidebar-group">
+      <label>Sections to Include</label>
+      <div class="section-list">
+        <div class="section-toggle active" data-key="pronouns" onclick="toggleSection(this)">
+          <div class="toggle-dot"></div>
+          <span class="toggle-label">Nouns &amp; Pronouns</span>
+        </div>
+        <div class="section-toggle active" data-key="verbs" onclick="toggleSection(this)">
+          <div class="toggle-dot"></div>
+          <span class="toggle-label">Verbs</span>
+        </div>
+        <div class="section-toggle active" data-key="adjadv" onclick="toggleSection(this)">
+          <div class="toggle-dot"></div>
+          <span class="toggle-label">Adjectives &amp; Adverbs</span>
+        </div>
+        <div class="section-toggle active" data-key="prep" onclick="toggleSection(this)">
+          <div class="toggle-dot"></div>
+          <span class="toggle-label">Prepositions</span>
+        </div>
+        <div class="section-toggle active" data-key="usage" onclick="toggleSection(this)">
+          <div class="toggle-dot"></div>
+          <span class="toggle-label">Sentence Usage</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="generate-btn" onclick="generate()">Generate Worksheet</button>
+    <button class="print-btn" id="printBtn" onclick="window.print()">Print / Save as PDF</button>
+  </aside>
+
+  <!-- PREVIEW -->
+  <main class="preview">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">📄</div>
+      <p>Configure your worksheet on the left,<br>then click <strong>Generate Worksheet</strong>.</p>
+    </div>
+
+    <div id="worksheet">
+      <div class="ws-card">
+        <div class="ws-head">
+          <div class="ws-head-top">
+            <div class="ws-title" id="wsTitle">4.W.6 Grammar Practice</div>
+            <div class="ws-diff-badge" id="wsDiff">Standard</div>
+          </div>
+          <div class="ws-meta">
+            <div class="ws-meta-field">
+              <span>Name</span>
+              <div class="ws-meta-line"></div>
+            </div>
+            <div class="ws-meta-field">
+              <span>Date</span>
+              <div class="ws-meta-line"></div>
+            </div>
+            <div class="ws-meta-field" id="classField" style="display:none">
+              <span>Class</span>
+              <div style="font-size:14px;font-weight:500;padding-top:2px" id="classDisplay"></div>
+            </div>
+          </div>
+        </div>
+        <div id="wsBody"></div>
+        <div class="ws-footer">
+          <span>Standard 4.W.6 — English Grammar &amp; Usage</span>
+          <div class="ws-score-box">Score: <div class="score-blank"></div> / <span id="totalQ">0</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function toggleSection(el) {
+  el.classList.toggle('active');
+}
+
+const sections = {
+  pronouns: {
+    label: "Part A: Nouns & Pronouns",
+    bar: "#534AB7",
+    standard: [
+      { q: "Write a sentence using the relative pronoun <em>who</em>.", hint: "", sub: "Explain the function of <em>who</em> in your sentence:", lines: 2 },
+      { q: "Write a sentence using the relative pronoun <em>which</em>.", hint: "", sub: "Circle the word <em>which</em> introduces in your sentence.", lines: 2 },
+      { q: "Fill in the blank with the correct reflexive pronoun: Sarah made the birthday card <span class='blank'></span>.", hint: "", sub: "", lines: 1 },
+      { q: "Write a sentence using the reflexive pronoun <em>ourselves</em>.", hint: "", sub: "Underline the reflexive pronoun and draw an arrow to the noun it refers back to.", lines: 2 },
+    ],
+    guided: [
+      { q: "A relative pronoun connects a describing clause to a noun. Use <em>who</em> to write a sentence about someone at school.", hint: "Word bank: who, which, whose — example: 'The teacher who ...'", sub: "Explain: who does <em>who</em> refer to in your sentence?", lines: 2 },
+      { q: "Reflexive pronouns end in <em>-self</em> or <em>-selves</em>. Fill in the blank: He hurt <span class='blank'></span> during practice.", hint: "(himself / herself / myself)", sub: "", lines: 1 },
+      { q: "Choose the correct relative pronoun and write a sentence: The book <span class='blank'></span> I borrowed was long.", hint: "(who / which / where)", sub: "", lines: 2 },
+      { q: "Write a sentence using <em>themselves</em>. What does it refer back to?", hint: "Example: The players cheered for themselves.", sub: "", lines: 2 },
+    ],
+    challenge: [
+      { q: "Write two sentences — one using a relative pronoun and one using a reflexive pronoun. Then write a paragraph explaining the difference in their functions.", hint: "", sub: "", lines: 4 },
+      { q: "Identify and correct the error: 'The dog who bowl was empty barked loudly.'", hint: "", sub: "Write the corrected sentence and explain the mistake:", lines: 3 },
+      { q: "Create your own sentence that uses both a relative pronoun and a reflexive pronoun.", hint: "", sub: "Label each pronoun and explain its function.", lines: 3 },
+      { q: "Compare relative pronouns and reflexive pronouns. When do you use each? Give an original example of each.", hint: "", sub: "", lines: 4 },
+    ]
+  },
+  verbs: {
+    label: "Part B: Verbs",
+    bar: "#0F6E56",
+    standard: [
+      { q: "Rewrite this sentence using the <em>past progressive</em> tense: She reads a book.", hint: "Past progressive = was/were + verb-ing", sub: "", lines: 2 },
+      { q: "Write an original sentence using the <em>present progressive</em> tense.", hint: "", sub: "", lines: 2 },
+      { q: "Write a sentence using the modal auxiliary <em>must</em>.", hint: "", sub: "What does <em>must</em> tell the reader about the action?", lines: 2 },
+      { q: "Identify the tense shift error and rewrite the sentence correctly: Yesterday she runs to school and picked up her bag.", hint: "", sub: "", lines: 2 },
+      { q: "Write a sentence using the modal auxiliary <em>may</em>. Then write one using <em>can</em>.", hint: "", sub: "How do the meanings differ?", lines: 3 },
+    ],
+    guided: [
+      { q: "Progressive tenses show ongoing action. Circle the progressive verb phrase: <em>The dog was barking all night.</em>", hint: "", sub: "Now write your own sentence using <em>was/were + verb-ing</em>:", lines: 2 },
+      { q: "Fix the tense shift: Today I walk to school and yesterday I ride my bike.", hint: "Choose ONE tense and stay with it.", sub: "Corrected sentence:", lines: 2 },
+      { q: "Modal auxiliaries show possibility or necessity. Write a sentence using <em>must</em>.", hint: "Example: You must finish your homework.", sub: "", lines: 2 },
+      { q: "Write a sentence using <em>will be going</em> (future progressive).", hint: "", sub: "", lines: 2 },
+    ],
+    challenge: [
+      { q: "Write a short paragraph (3–4 sentences) about a school event using at least one past progressive, one present progressive, and one future progressive tense.", hint: "", sub: "Label each tense in the margin.", lines: 5 },
+      { q: "Rewrite the following passage correcting ALL tense shifts: 'We are walking to the park when suddenly it rains. Everyone grabbed their bags and runs home.'", hint: "", sub: "", lines: 4 },
+      { q: "Explain the difference between <em>can</em>, <em>may</em>, and <em>must</em>. Use an original sentence for each and describe when you would choose each modal.", hint: "", sub: "", lines: 4 },
+      { q: "Write three sentences — one with <em>was singing</em>, one with <em>is singing</em>, one with <em>will be singing</em>. What changes? What stays the same?", hint: "", sub: "", lines: 4 },
+    ]
+  },
+  adjadv: {
+    label: "Part C: Adjectives & Adverbs",
+    bar: "#854F0B",
+    standard: [
+      { q: "Write a sentence using the relative adverb <em>where</em>.", hint: "", sub: "Explain the function of <em>where</em> in your sentence:", lines: 2 },
+      { q: "Write a sentence using the relative adverb <em>when</em>.", hint: "", sub: "What does <em>when</em> connect or describe?", lines: 2 },
+      { q: "Fill in the blank with <em>where</em> or <em>when</em>: Summer is the season <span class='blank'></span> we go to the lake.", hint: "", sub: "", lines: 1 },
+      { q: "Write a sentence that uses <em>why</em> as a relative adverb.", hint: "Example: That is the reason why I stayed.", sub: "", lines: 2 },
+    ],
+    guided: [
+      { q: "Relative adverbs tell <em>where</em>, <em>when</em>, or <em>why</em>. Underline the relative adverb: <em>This is the place where we first met.</em>", hint: "", sub: "Write your own sentence using <em>where</em>:", lines: 2 },
+      { q: "Fill in: This is the day <span class='blank'></span> school starts.", hint: "(where / when / why)", sub: "", lines: 1 },
+      { q: "Write a sentence about a classroom or school using the relative adverb <em>when</em>.", hint: "Example: I remember the day when we got a new student.", sub: "", lines: 2 },
+      { q: "What is the function of the relative adverb in this sentence? 'The café where we study stays open late.'", hint: "", sub: "", lines: 2 },
+    ],
+    challenge: [
+      { q: "Write three sentences — one using <em>where</em>, one using <em>when</em>, and one using <em>why</em> as relative adverbs. For each, explain what the adverb connects or modifies.", hint: "", sub: "", lines: 5 },
+      { q: "Identify and explain the relative adverb: 'Do you remember the summer when we built the fort?'", hint: "", sub: "Could you replace it with a different relative adverb and keep a similar meaning? Try it:", lines: 3 },
+      { q: "Write a descriptive paragraph about a favorite place using at least two relative adverbs. Circle and label each one.", hint: "", sub: "", lines: 5 },
+    ]
+  },
+  prep: {
+    label: "Part D: Prepositions",
+    bar: "#185FA5",
+    standard: [
+      { q: "Write a sentence that includes a prepositional phrase telling <em>where</em> something is located.", hint: "Example: The cat sat on the windowsill.", sub: "Underline the prepositional phrase.", lines: 2 },
+      { q: "Write a sentence that includes a prepositional phrase telling <em>when</em> something happened.", hint: "", sub: "Circle the preposition.", lines: 2 },
+      { q: "Fill in the blank with the correct preposition: We arrived <span class='blank'></span> the airport two hours early.", hint: "(at / in / on / by)", sub: "", lines: 1 },
+      { q: "Write one sentence using the preposition <em>between</em> and one using <em>among</em>.", hint: "", sub: "What is the difference between the two?", lines: 3 },
+    ],
+    guided: [
+      { q: "A preposition shows relationships like location, direction, or time. Circle the preposition: <em>She left the book under the desk.</em>", hint: "", sub: "Write your own sentence with a preposition that shows location:", lines: 2 },
+      { q: "Fill in the blank with a preposition: The students walked <span class='blank'></span> the hallway.", hint: "(through / across / around / along)", sub: "", lines: 1 },
+      { q: "Write a sentence using <em>before</em> or <em>after</em> as a preposition.", hint: "Example: We ate dinner before the movie.", sub: "", lines: 2 },
+      { q: "Underline the prepositional phrase in this sentence and explain its function: 'The dog ran through the park.'", hint: "", sub: "", lines: 2 },
+    ],
+    challenge: [
+      { q: "Write a sentence for each of these prepositions: <em>beneath</em>, <em>throughout</em>, <em>despite</em>. After each, explain what relationship the preposition creates.", hint: "", sub: "", lines: 5 },
+      { q: "Rewrite this sentence three different ways by changing only the prepositional phrase: 'She placed the trophy ___.'", hint: "", sub: "", lines: 4 },
+      { q: "Find a preposition in a book or passage you're reading. Write the sentence, identify the preposition, and explain its function.", hint: "", sub: "", lines: 3 },
+    ]
+  },
+  usage: {
+    label: "Part E: Sentence Usage",
+    bar: "#993556",
+    standard: [
+      { q: "Write a compound sentence using the coordinating conjunction <em>yet</em>.", hint: "Compound = two independent clauses joined by a coordinating conjunction.", sub: "", lines: 2 },
+      { q: "Write a complex sentence using the subordinating conjunction <em>although</em>.", hint: "Complex = independent clause + dependent clause.", sub: "Underline the dependent clause.", lines: 2 },
+      { q: "Write one example each: a declarative sentence, an interrogative sentence, an imperative sentence, and an exclamatory sentence.", hint: "", sub: "", lines: 4 },
+      { q: "Write a sentence using the coordinating conjunction <em>nor</em>.", hint: "Remember: nor is often paired with neither.", sub: "", lines: 2 },
+      { q: "Combine these two sentences into one compound sentence: <em>She wanted to go to the park. It was raining.</em>", hint: "Use one of these: for, and, nor, but, or, yet, so", sub: "", lines: 2 },
+    ],
+    guided: [
+      { q: "A declarative sentence states a fact and ends with a period. Write one declarative sentence and one interrogative (question) sentence on the same topic.", hint: "Declarative: 'The sun rises in the east.' / Interrogative: 'Does the sun rise in the east?'", sub: "", lines: 2 },
+      { q: "Coordinating conjunctions join equal parts. Use <em>so</em> to combine these two sentences into one: <em>It was hot. We went swimming.</em>", hint: "", sub: "", lines: 2 },
+      { q: "A complex sentence has a main clause and a dependent clause. Underline the dependent clause: <em>Because she studied hard, she passed the test.</em>", hint: "", sub: "Write your own complex sentence using <em>because</em>:", lines: 2 },
+      { q: "Write an imperative sentence (a command) and an exclamatory sentence (strong feeling).", hint: "Imperative ends in period or !  /  Exclamatory ends in !", sub: "", lines: 2 },
+      { q: "Use <em>nor</em> or <em>yet</em> to write a compound sentence.", hint: "", sub: "", lines: 2 },
+    ],
+    challenge: [
+      { q: "Write one of each sentence type: simple, compound, complex. Use the topic of 'a school project.' Label each type.", hint: "", sub: "", lines: 4 },
+      { q: "Write a paragraph of 4–5 sentences about a topic of your choice. Include at least one coordinating conjunction and one subordinating conjunction. Underline and label each.", hint: "", sub: "", lines: 6 },
+      { q: "Correct these run-on sentences by rewriting them as compound or complex sentences: 'She was tired she kept working the deadline was tomorrow.'", hint: "", sub: "", lines: 3 },
+      { q: "Write an interrogative, imperative, declarative, and exclamatory sentence about the same topic. Explain what makes each type different.", hint: "", sub: "", lines: 5 },
+    ]
+  }
+};
+
+function generate() {
+  const label = document.getElementById('classLabel').value.trim();
+  const diff = document.getElementById('difficulty').value;
+  const active = [...document.querySelectorAll('.section-toggle.active')].map(el => el.dataset.key);
+
+  if (active.length === 0) { alert('Please select at least one section.'); return; }
+
+  const diffLabels = { guided: 'Guided', standard: 'Standard', challenge: 'Challenge' };
+  document.getElementById('wsTitle').textContent = '4.W.6 Grammar Practice';
+  document.getElementById('wsDiff').textContent = diffLabels[diff];
+
+  if (label) {
+    document.getElementById('classField').style.display = '';
+    document.getElementById('classDisplay').textContent = label;
+  } else {
+    document.getElementById('classField').style.display = 'none';
+  }
+
+  let html = '';
+  let qNum = 1;
+
+  active.forEach(key => {
+    const sec = sections[key];
+    const qs = sec[diff] || sec.standard;
+    html += `<div class="ws-section">
+      <div class="ws-section-header">
+        <div class="ws-section-bar" style="background:${sec.bar}"></div>
+        <div class="ws-section-title">${sec.label}</div>
+      </div>`;
+
+    qs.forEach(item => {
+      const linesHtml = Array.from({length: item.lines || 2}, () => `<div class="answer-line"></div>`).join('');
+      html += `<div class="question">
+        <div class="q-label">Question ${qNum++}</div>
+        <div class="q-text">${item.q}</div>`;
+      if (item.hint && diff !== 'challenge') {
+        html += `<div class="q-hint">${item.hint}</div>`;
+      }
+      html += linesHtml;
+      if (item.sub) {
+        html += `<div class="q-sub">${item.sub}</div><div class="answer-line"></div>`;
+      }
+      html += `</div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  document.getElementById('wsBody').innerHTML = html;
+  document.getElementById('totalQ').textContent = qNum - 1;
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('worksheet').style.display = 'block';
+  document.getElementById('printBtn').style.display = 'block';
+}
+</script>
+</body>
+</html>
