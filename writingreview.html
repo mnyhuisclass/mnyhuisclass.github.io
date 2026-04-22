@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Pro: Training Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'research-lab-4th-grade';
+
+        // State Management
+        let user = null;
+        let unsubscribeSubmissions = null;
+        const TEACHER_PASSWORD = "admin";
+
+        // UI Elements
+        const studentNameInput = document.getElementById('student-name');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusMsg = document.getElementById('status-msg');
+        const teacherSection = document.getElementById('teacher-section');
+        const submissionList = document.getElementById('submission-list');
+        const passwordModal = document.getElementById('password-modal');
+        const passwordInput = document.getElementById('admin-password');
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+            }
+        }
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user) {
+                setupListeners();
+            } else {
+                if (unsubscribeSubmissions) unsubscribeSubmissions();
+            }
+        });
+
+        function setupListeners() {
+            if (!user) return;
+            const submissionsCol = collection(db, 'artifacts', appId, 'public', 'data', 'submissions');
+            unsubscribeSubmissions = onSnapshot(submissionsCol, (snapshot) => {
+                submissionList.innerHTML = '';
+                const items = [];
+                snapshot.forEach((doc) => {
+                    items.push({ id: doc.id, ...doc.data() });
+                });
+                items.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                if (items.length === 0) {
+                    submissionList.innerHTML = '<p class="text-gray-400 italic">No submissions yet.</p>';
+                    return;
+                }
+                items.forEach((data) => {
+                    const card = document.createElement('div');
+                    card.className = "p-4 bg-white rounded-lg shadow border-l-4 border-blue-500 mb-4 text-gray-900";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <p class="font-bold text-blue-700">${data.studentName || 'Anonymous'}</p>
+                            <p class="text-[10px] text-gray-400 font-mono">${data.userId}</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2 italic">Submitted: ${data.timestamp?.toDate() ? data.timestamp.toDate().toLocaleTimeString() : 'Just now'}</p>
+                        <div class="space-y-2 text-sm">
+                            <p><strong>Q1:</strong> ${data.q1}</p>
+                            <p><strong>Q2:</strong> ${data.q2}</p>
+                        </div>
+                    `;
+                    submissionList.appendChild(card);
+                });
+            }, (error) => console.error(error));
+        }
+
+        window.submitWork = async () => {
+            if (!user) return;
+            const name = studentNameInput.value.trim();
+            const q1 = document.getElementById('q1-response').value.trim();
+            const q2 = document.getElementById('q2-response').value.trim();
+            if (!name || !q1 || !q2) {
+                alert("Please fill in your name and both answers!");
+                return;
+            }
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Sending to Teacher...";
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', user.uid);
+                await setDoc(docRef, { studentName: name, q1: q1, q2: q2, timestamp: serverTimestamp(), userId: user.uid });
+                statusMsg.innerHTML = "✅ Work submitted! Great job, Researcher!";
+                statusMsg.classList.remove('hidden');
+                submitBtn.innerText = "Update My Submission";
+                submitBtn.disabled = false;
+            } catch (e) {
+                console.error(e);
+                submitBtn.disabled = false;
+            }
+        };
+
+        window.openTeacherMode = () => {
+            passwordModal.classList.remove('hidden');
+            passwordModal.classList.add('flex');
+            passwordInput.focus();
+        };
+
+        window.closePasswordModal = () => {
+            passwordModal.classList.add('hidden');
+            passwordModal.classList.remove('flex');
+            passwordInput.value = '';
+        };
+
+        window.checkPassword = () => {
+            if (passwordInput.value === TEACHER_PASSWORD) {
+                teacherSection.classList.remove('hidden');
+                closePasswordModal();
+                teacherSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert("Incorrect password.");
+                passwordInput.value = '';
+            }
+        };
+
+        window.hideTeacherMode = () => teacherSection.classList.add('hidden');
+        passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
+
+        initAuth();
+    </script>
+    <style>
+        .source-box { max-height: 500px; overflow-y: auto; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #bfdbfe; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 min-h-screen pb-20">
+
+    <header class="bg-blue-600 text-white p-6 shadow-md mb-8">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold italic">Research Pro Lab</h1>
+                <p class="opacity-90">Practice your skills for tomorrow's big task!</p>
+            </div>
+            <button onclick="openTeacherMode()" class="text-xs bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded transition-colors flex items-center">
+                <span class="mr-1">🔒</span> Teacher Mode
+            </button>
+        </div>
+    </header>
+
+    <div id="password-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
+            <h3 class="text-lg font-bold mb-4">Enter Teacher Password</h3>
+            <input type="password" id="admin-password" class="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 outline-none focus:border-blue-500">
+            <div class="flex space-x-2">
+                <button onclick="checkPassword()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">Unlock</button>
+                <button onclick="closePasswordModal()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-4xl mx-auto px-4 space-y-8">
+        
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <label class="block text-lg font-bold mb-2">First and Last Name:</label>
+            <input type="text" id="student-name" placeholder="Enter your name..." class="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 outline-none transition-all">
+        </section>
+
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-2xl font-bold mb-4 text-blue-600 flex items-center">
+                <span class="mr-2">📖</span> Source: Guardians of the Kelp Forest
+            </h2>
+            <div class="source-box bg-blue-50 p-6 rounded-lg border border-blue-100 italic leading-relaxed text-lg">
+                <p class="mb-4"><strong>Paragraph 1:</strong> Sea otters are marine mammals that live in the North Pacific Ocean. While most marine mammals like whales and seals have a thick layer of fat called blubber to keep them warm, the sea otter is different. It relies entirely on its unique fur to survive in the freezing water.</p>
+                
+                <p class="mb-4"><strong>Paragraph 2:</strong> This fur is the densest in the animal kingdom. A sea otter has about one million hairs per square inch! To put that in perspective, a human only has about 100,000 hairs on their entire head. This thick coat traps a thin layer of air right next to the otter's skin, acting like a waterproof diving suit.</p>
+                
+                <p class="mb-4"><strong>Paragraph 3:</strong> Because their fur is so important for warmth, otters spend many hours every day grooming. They use their paws and teeth to clean their fur and blow air bubbles back into it. If the fur gets dirty or matted, it can no longer trap air, and the otter could quickly freeze to death.</p>
+                
+                <p class="mb-4"><strong>Paragraph 4:</strong> Sea otters are also famous for being one of the few animals that use tools. They are clever hunters that dive to the ocean floor to find food. Since many of their favorite snacks are hidden inside hard shells, they have developed a special way to get to the meat inside.</p>
+                
+                <p class="mb-4"><strong>Paragraph 5:</strong> When an otter finds a clam or a crab, it also looks for a flat, sturdy rock. It tucks the rock and the food into a loose flap of skin under its front leg, which acts like a built-in pocket. Once it returns to the surface, the otter floats on its back and places the rock on its chest.</p>
+                
+                <p class="mb-4"><strong>Paragraph 6:</strong> Floating comfortably, the otter holds the shellfish with both paws and smashes it against the rock. This repetitive pounding breaks the hard shell, allowing the otter to reach its meal. Scientists believe this behavior is passed down from mothers to their pups through careful teaching.</p>
+                
+                <p class="mb-4"><strong>Paragraph 7:</strong> Keeping warm and active requires an incredible amount of energy. To maintain their body temperature, sea otters have a very high metabolism. This means their bodies burn through fuel very quickly, much like a race car burns through gasoline during a long race.</p>
+                
+                <p class="mb-4"><strong>Paragraph 8:</strong> Due to this high energy need, an adult sea otter must eat a huge amount of food. In a single day, an otter can eat up to 25% of its own body weight! For a human, that would be like eating 50 hamburgers in one afternoon. They hunt for sea urchins, abalone, and various types of fish.</p>
+                
+                <p class="mb-4"><strong>Paragraph 9:</strong> Sea otters are known as a "keystone species." This means they play a vital role in keeping their environment healthy. They love to eat sea urchins, which eat kelp. If there were no otters, the urchins would eat all the kelp, and the underwater "forest" where many fish live would disappear.</p>
+                
+                <p class="mb-4"><strong>Paragraph 10:</strong> Today, sea otters face many challenges, such as ocean pollution and oil spills. However, because they are protected by law, their populations are slowly growing again. By studying these intelligent creatures, researchers hope to learn more about how to protect our oceans for the future.</p>
+            </div>
+            <p class="mt-4 text-sm text-gray-600 italic">💡 Practice Skill: Use the scroll bar to find the paragraphs that answer the questions below!</p>
+        </section>
+
+        <section class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-xl font-bold mb-2">Question 1: In 1-2 paragraphs, explain how sea otters stay warm without blubber.</h3>
+                <p class="text-sm text-blue-600 font-semibold mb-4 italic">💡 Tip: Look at Paragraphs 1, 2, and 3 for evidence. Remember R.A.P.!</p>
+                <textarea id="q1-response" rows="8" placeholder="Start with: Sea otters stay warm by..." class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"></textarea>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-xl font-bold mb-2">Question 2: In 1-2 paragraphs, describe why sea otters use rocks and how it helps them survive.</h3>
+                <p class="text-sm text-purple-600 font-semibold mb-4 italic">💡 Tip: Look at Paragraphs 5, 6, and 8. Use a 'Bridge Phrase' to explain why the rock is important.</p>
+                <textarea id="q2-response" rows="8" placeholder="Explain how they use the tool and how it helps them get the energy they need." class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-purple-500 outline-none transition-all"></textarea>
+            </div>
+        </section>
+
+        <section class="text-center py-8">
+            <button id="submit-btn" onclick="submitWork()" class="bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transition-transform active:scale-95">
+                🚀 Submit My Research!
+            </button>
+            <p id="status-msg" class="hidden mt-4 text-green-700 font-bold bg-green-50 py-2 px-4 rounded-lg inline-block"></p>
+        </section>
+
+        <section id="teacher-section" class="hidden bg-gray-900 text-white p-6 rounded-xl shadow-2xl border-t-4 border-blue-500">
+            <h2 class="text-2xl font-bold mb-4 flex justify-between items-center">
+                <span class="flex items-center"><span class="mr-2">🍎</span> Student Submissions</span>
+                <button onclick="hideTeacherMode()" class="text-sm bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-white">Hide Dashboard</button>
+            </h2>
+            <div id="submission-list" class="space-y-4 max-h-96 overflow-y-auto p-2 bg-gray-800 rounded-lg">
+                <p class="text-gray-400 italic">Connecting to classroom data...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center text-gray-500 text-sm mt-10">
+        &copy; Research Pro Training Lab - Grade 4 Performance Task Prep
+    </footer>
+
+</body>
+</html>
