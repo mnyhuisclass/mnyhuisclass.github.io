@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battleship — Fleet Command</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:    #05111f;
+      --deep:    #081c30;
+      --ocean:   #0a2540;
+      --wave:    #0d3a6e;
+      --sonar:   #00e5ff;
+      --grid-ln: #1a4a7a;
+      --label:   #2979b5;
+      --glow:    0 0 12px #00e5ff88, 0 0 30px #00e5ff33;
+      
+      /* State Colors */
+      --placement: #64748b; /* Grey for placing ships */
+      --miss:      #ffffff; /* White for miss */
+      --hit:       #ff3b3b; /* Red for hit */
+      
+      --miss-glow: 0 0 15px rgba(255, 255, 255, 0.5);
+      --hit-glow:  0 0 15px rgba(255, 59, 59, 0.6);
+      --ship-glow: 0 0 15px rgba(100, 116, 139, 0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--navy);
+      min-height: 100vh;
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--sonar);
+      overflow-x: hidden;
+      padding: 32px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,229,255,0.015) 3px,
+        rgba(0,229,255,0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--sonar);
+      text-shadow: var(--glow);
+    }
+    header p {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      letter-spacing: 0.25em;
+      color: var(--label);
+      text-transform: uppercase;
+    }
+
+    .board-card {
+      background: var(--deep);
+      border: 1px solid var(--wave);
+      border-radius: 4px;
+      padding: 32px;
+      position: relative;
+      box-shadow: 0 0 0 1px var(--grid-ln), 0 8px 40px #00000088;
+      animation: fadeIn 0.6s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .board-card::before,
+    .board-card::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border-color: var(--sonar);
+      border-style: solid;
+      opacity: 0.6;
+    }
+    .board-card::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+    .board-card::after  { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+
+    .board-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--sonar);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .grid-wrap {
+      display: grid;
+      grid-template-columns: 30px repeat(10, 40px);
+      grid-template-rows:    30px repeat(10, 40px);
+      gap: 3px;
+    }
+
+    .col-label, .row-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--label);
+      font-weight: bold;
+    }
+
+    .cell {
+      width: 40px; height: 40px;
+      background: var(--ocean);
+      border: 1px solid var(--grid-ln);
+      border-radius: 3px;
+      cursor: crosshair;
+      transition: all 0.2s ease;
+    }
+    
+    .cell:hover {
+      border-color: var(--sonar);
+      background-color: var(--wave);
+      z-index: 2;
+    }
+    
+    /* State: Ship Placement (Grey) */
+    .cell.state-ship {
+      background-color: var(--placement);
+      box-shadow: var(--ship-glow);
+      border-color: #94a3b8;
+    }
+
+    /* State: Miss (White) */
+    .cell.state-miss {
+      background-color: var(--miss);
+      box-shadow: var(--miss-glow);
+      border-color: #fff;
+    }
+
+    /* State: Hit (Red) */
+    .cell.state-hit {
+      background-color: var(--hit);
+      box-shadow: var(--hit-glow);
+      border-color: #ff0000;
+      animation: hitPulse 1.5s infinite;
+    }
+
+    @keyframes hitPulse {
+      0%   { box-shadow: 0 0 5px var(--hit); }
+      50%  { box-shadow: 0 0 20px var(--hit); }
+      100% { box-shadow: 0 0 5px var(--hit); }
+    }
+
+    .controls-hint {
+      margin-top: 30px;
+      text-align: center;
+      color: var(--label);
+      font-size: 0.75rem;
+      line-height: 1.6;
+      max-width: 400px;
+    }
+
+    .hint-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+    footer {
+      text-align: center;
+      margin-top: auto;
+      padding: 40px 0;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--label);
+      opacity: 0.5;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚓ Fleet Command</h1>
+  <p>Ship Placement & Tactical Grid</p>
+</header>
+
+<div class="board-card">
+  <div class="board-title">Primary Deployment Zone</div>
+  <div class="grid-wrap" id="main-grid"></div>
+</div>
+
+<div class="controls-hint">
+  <div class="hint-item"><div class="swatch" style="background: var(--placement)"></div> 1 Click: Ship Placement</div>
+  <div class="hint-item"><div class="swatch" style="background: var(--miss)"></div> 2 Clicks: Recorded Miss</div>
+  <div class="hint-item"><div class="swatch" style="background: var(--hit)"></div> 3 Clicks: Confirmed Hit</div>
+  <div class="hint-item"><div class="swatch" style="background: var(--ocean)"></div> 4 Clicks: Reset Cell</div>
+</div>
+
+<footer>Naval Combat System · Instruction Mode · 10×10 Grid</footer>
+
+<script>
+  const COLS = ['A','B','C','D','E','F','G','H','I','J'];
+  const ROWS = [1,2,3,4,5,6,7,8,9,10];
+
+  function handleCellClick(e) {
+    const cell = e.currentTarget;
+    let count = parseInt(cell.getAttribute('data-state') || '0');
+    
+    // Cycle: 0 (Ocean) -> 1 (Ship) -> 2 (Miss) -> 3 (Hit) -> 0
+    count = (count + 1) % 4;
+    cell.setAttribute('data-state', count);
+
+    cell.classList.remove('state-ship', 'state-miss', 'state-hit');
+
+    if (count === 1) cell.classList.add('state-ship');
+    else if (count === 2) cell.classList.add('state-miss');
+    else if (count === 3) cell.classList.add('state-hit');
+  }
+
+  function initGrid() {
+    const wrap = document.getElementById('main-grid');
+
+    // Top-left corner spacer
+    wrap.appendChild(document.createElement('div'));
+
+    // Column labels
+    COLS.forEach(col => {
+      const lbl = document.createElement('div');
+      lbl.className = 'col-label';
+      lbl.textContent = col;
+      wrap.appendChild(lbl);
+    });
+
+    // Rows
+    ROWS.forEach(row => {
+      const rowLbl = document.createElement('div');
+      rowLbl.className = 'row-label';
+      rowLbl.textContent = row;
+      wrap.appendChild(rowLbl);
+
+      COLS.forEach(() => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.setAttribute('data-state', '0');
+        cell.addEventListener('click', handleCellClick);
+        wrap.appendChild(cell);
+      });
+    });
+  }
+
+  initGrid();
+</script>
+</body>
+</html>
