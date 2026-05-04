@@ -28,6 +28,69 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Password Overlay Styling */
+  #password-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #password-overlay h2 {
+    font-family: 'Fredoka One', cursive;
+    margin-bottom: 20px;
+  }
+
+  .pw-input-group {
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  #pw-field {
+    border: none;
+    padding: 10px;
+    font-size: 1.1rem;
+    outline: none;
+    border-radius: 8px;
+    width: 200px;
+  }
+
+  #pw-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  #pw-error {
+    color: var(--accent);
+    margin-top: 15px;
+    font-weight: 700;
+    display: none;
+  }
+
+  /* Main Content (Hidden initially) */
+  #main-content {
+    display: none;
+  }
+
   .header {
     background: linear-gradient(135deg, var(--primary), #1B4D4F);
     color: white;
@@ -88,12 +151,6 @@
     padding: 15px;
     border-radius: 8px;
     margin: 15px 0;
-  }
-
-  .phenomenon-box h3 {
-    margin-top: 0;
-    color: #2C7A7B;
-    font-size: 1.1rem;
   }
 
   .print-btn {
@@ -177,138 +234,188 @@
   }
 
   @media print {
-    body { background: white; }
-    .header, .print-btn, .btn-save, .sim-link p:last-child { display: none !important; }
+    body { background: white !important; }
+    #password-overlay, .header, .print-btn, .btn-save, .sim-link p:last-child { display: none !important; }
+    #main-content { display: block !important; }
     .container { max-width: 100%; padding: 0; }
-    .lesson-card { box-shadow: none; border: none; margin: 0; padding: 0; display: none; }
-    .lesson-card.print-active { display: block !important; }
+    .lesson-card { 
+      box-shadow: none; 
+      border: none; 
+      margin: 0; 
+      padding: 0; 
+      display: none; 
+    }
+    .lesson-card.print-active { 
+      display: block !important; 
+    }
     textarea { border: 1px solid #ccc; height: 100px; }
+    input { border: 1px solid #ccc; }
   }
 
   @media (max-width: 600px) {
     .causal-chain { flex-direction: column; }
-    .print-btn { position: relative; top: 0; right: 0; margin-bottom: 10px; }
+    .print-btn { position: relative; top: 0; right: 0; margin-bottom: 10px; width: fit-content; }
+    .pw-input-group { flex-direction: column; width: 100%; }
+    #pw-field { width: 100%; box-sizing: border-box; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Science Discovery Guide</h1>
-  <p>Unit 1: Energy Transfer • Week 2</p>
+<!-- Password Screen -->
+<div id="password-overlay">
+  <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
+  <h2>Teacher Access Required</h2>
+  <p style="margin-bottom: 25px; opacity: 0.9;">Please enter the password to unlock the Unit 1 Week 2 Guide.</p>
+  <div class="pw-input-group">
+    <input type="password" id="pw-field" placeholder="Password" onkeypress="handleKeyPress(event)">
+    <button id="pw-btn" onclick="checkPassword()">Unlock Guide</button>
+  </div>
+  <p id="pw-error">Incorrect password. Please try again.</p>
 </div>
 
-<div class="container">
-
-  <!-- DAY 1 -->
-  <div class="lesson-card" id="day1">
-    <button class="print-btn" onclick="printDay('day1')">🖨️ Print Day 1</button>
-    <div class="day-badge">Day 1: Phenomenon</div>
-    <h2>The Dancing Rice Challenge</h2>
-    
-    <div class="phenomenon-box">
-      <h3>🔍 Look Closely</h3>
-      <p>Watch the plastic wrap stretched over the bowl with rice on top. When the speaker plays a loud sound nearby, what happens to the rice?</p>
-    </div>
-
-    <div class="input-group">
-      <label>I Notice...</label>
-      <textarea placeholder="Describe how the rice moves when the sound starts."></textarea>
-    </div>
-
-    <div class="input-group">
-      <label>I Wonder...</label>
-      <textarea placeholder="How is the speaker touching the rice if they aren't connected?"></textarea>
-    </div>
+<!-- Protected Content -->
+<div id="main-content">
+  <div class="header">
+    <h1>Science Discovery Guide</h1>
+    <p>Unit 1: Energy Transfer • Week 2</p>
   </div>
 
-  <!-- DAY 2 -->
-  <div class="lesson-card" id="day2">
-    <button class="print-btn" onclick="printDay('day2')">🖨️ Print Day 2</button>
-    <div class="day-badge">Day 2: Investigation</div>
-    <h2>Vibration Station</h2>
-    <p>Gently pluck a rubber band and watch it closely. Then, touch a vibrating tuning fork to the surface of a cup of water.</p>
+  <div class="container">
 
-    <div class="input-group">
-      <label>What causes sound?</label>
-      <p style="font-size: 0.9rem; color: var(--text-muted);">Evidence 1: The Rubber Band</p>
-      <textarea placeholder="What did you see the rubber band doing while it made sound?"></textarea>
+    <!-- DAY 1 -->
+    <div class="lesson-card" id="day1">
+      <button class="print-btn" onclick="printDay('day1')">🖨️ Print Day 1</button>
+      <div class="day-badge">Day 1: Phenomenon</div>
+      <h2>The Dancing Rice Challenge</h2>
+      
+      <div class="phenomenon-box">
+        <h3>🔍 Look Closely</h3>
+        <p>Watch the plastic wrap stretched over the bowl with rice on top. When the speaker plays a loud sound nearby, what happens to the rice?</p>
+      </div>
+
+      <div class="input-group">
+        <label>I Notice...</label>
+        <textarea placeholder="Describe how the rice moves when the sound starts."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>I Wonder...</label>
+        <textarea placeholder="How is the speaker touching the rice if they aren't connected?"></textarea>
+      </div>
     </div>
 
-    <div class="input-group">
-      <label>Energy Transfer Evidence:</label>
-      <p style="font-size: 0.9rem; color: var(--text-muted);">Evidence 2: The Tuning Fork & Water</p>
-      <textarea placeholder="What happened to the water? Where did the energy come from?"></textarea>
+    <!-- DAY 2 -->
+    <div class="lesson-card" id="day2">
+      <button class="print-btn" onclick="printDay('day2')">🖨️ Print Day 2</button>
+      <div class="day-badge">Day 2: Investigation</div>
+      <h2>Vibration Station</h2>
+      <p>Gently pluck a rubber band and watch it closely. Then, touch a vibrating tuning fork to the surface of a cup of water.</p>
+
+      <div class="input-group">
+        <label>Evidence 1: The Rubber Band</label>
+        <textarea placeholder="What did you see the rubber band doing while it made sound?"></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>Evidence 2: The Tuning Fork & Water</label>
+        <textarea placeholder="What happened to the water? Where did the energy come from?"></textarea>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="lesson-card" id="day3">
+      <button class="print-btn" onclick="printDay('day3')">🖨️ Print Day 3</button>
+      <div class="day-badge">Day 3: Simulation</div>
+      <h2>Wave Patterns</h2>
+      
+      <a href="https://phet.colorado.edu/sims/html/wave-on-a-string/latest/wave-on-a-string_all.html" target="_blank" class="sim-link">
+        🌊 Click to Launch PhET Wave on a String
+        <p style="font-size: 0.8rem; font-weight: normal; margin-top: 5px;">(Requires Internet Connection)</p>
+      </a>
+      
+      <div class="input-group">
+        <label>Simulation Task:</label>
+        <p>Set the simulation to "Oscillate." Change the <strong>Amplitude</strong> (height) and the <strong>Frequency</strong> (speed).</p>
+        <p><strong>Question:</strong> Which setting creates a wave with the MOST energy? Look at the movement of the beads!</p>
+        <textarea placeholder="A wave with a high amplitude has..."></textarea>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="lesson-card" id="day4">
+      <button class="print-btn" onclick="printDay('day4')">🖨️ Print Day 4</button>
+      <div class="day-badge">Day 4: Application</div>
+      <h2>Communication Through Waves</h2>
+      <p>How can we use sound to send a message across the room? Think about your "Cup Phone" experiment.</p>
+      
+      <div class="input-group">
+        <label>The String Telephone:</label>
+        <textarea placeholder="How does the sound travel from one cup to the other? What is vibrating?"></textarea>
+      </div>
+
+      <div class="phenomenon-box">
+        <h3>💡 Big Idea: Mediums</h3>
+        <p>Sound energy needs a <strong>medium</strong> (like string, air, or water) to travel. The energy moves by making the tiny particles in the medium vibrate!</p>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="lesson-card" id="day5">
+      <button class="print-btn" onclick="printDay('day5')">🖨️ Print Day 5</button>
+      <div class="day-badge">Day 5: Review</div>
+      <h2>Sound Causal Chain</h2>
+      <p>Complete the scientific chain of logic for sound energy:</p>
+      
+      <div class="causal-chain">
+        <div class="chain-link">Object Vibrates</div>
+        <span>➡️</span>
+        <div class="chain-link">Energy Moves Through Medium</div>
+        <span>➡️</span>
+        <div class="chain-link"><input type="text" style="border:none; text-align:center; padding:0; width:100%;" placeholder="We hear SOUND"></div>
+      </div>
+
+      <div class="input-group">
+        <label>Final Week 2 Claim:</label>
+        <textarea rows="4" placeholder="Explain how the 'Dancing Rice' on Day 1 proved that sound is a form of energy."></textarea>
+      </div>
+      
+      <button class="btn-save" onclick="this.innerText='Week 2 Complete! ✓'; this.style.backgroundColor='var(--success)'">Save Weekly Progress</button>
     </div>
   </div>
-
-  <!-- DAY 3 -->
-  <div class="lesson-card" id="day3">
-    <button class="print-btn" onclick="printDay('day3')">🖨️ Print Day 3</button>
-    <div class="day-badge">Day 3: Simulation</div>
-    <h2>Wave Patterns</h2>
-    
-    <a href="https://phet.colorado.edu/sims/html/wave-on-a-string/latest/wave-on-a-string_all.html" target="_blank" class="sim-link">
-      🌊 Click to Launch PhET Wave on a String
-    </a>
-    
-    <div class="input-group">
-      <label>Simulation Task:</label>
-      <p>Set the simulation to "Oscillate." Change the **Amplitude** (height) and the **Frequency** (speed).</p>
-      <p><strong>Question:</strong> Which setting creates a wave with the MOST energy? (Look at the movement of the beads!)</p>
-      <textarea placeholder="A wave with a high amplitude has..."></textarea>
-    </div>
-  </div>
-
-  <!-- DAY 4 -->
-  <div class="lesson-card" id="day4">
-    <button class="print-btn" onclick="printDay('day4')">🖨️ Print Day 4</button>
-    <div class="day-badge">Day 4: Application</div>
-    <h2>Communication Through Waves</h2>
-    <p>How can we use sound to send a message across the room? Think about your "Cup Phone" experiment.</p>
-    
-    <div class="input-group">
-      <label>The String Telephone:</label>
-      <textarea placeholder="How does the sound travel from one cup to the other? What is vibrating?"></textarea>
-    </div>
-
-    <div class="phenomenon-box">
-      <h3>💡 Big Idea: Mediums</h3>
-      <p>Sound energy needs a <strong>medium</strong> (like string, air, or water) to travel. The energy moves by making the tiny particles in the medium vibrate!</p>
-    </div>
-  </div>
-
-  <!-- DAY 5 -->
-  <div class="lesson-card" id="day5" style="border: 2px solid var(--primary); background: #f0fdfa;">
-    <button class="print-btn" onclick="printDay('day5')">🖨️ Print Day 5</button>
-    <div class="day-badge" style="background: var(--primary);">Day 5: Review</div>
-    <h2>Sound Causal Chain</h2>
-    <p>Connect the ideas of sound energy:</p>
-    
-    <div class="causal-chain">
-      <div class="chain-link">Object Vibrates</div>
-      <span>➡️</span>
-      <div class="chain-link">Energy Moves Through Air</div>
-      <span>➡️</span>
-      <div class="chain-link"><input type="text" style="border:none; text-align:center; padding:0; width:100%;" placeholder="We hear SOUND"></div>
-    </div>
-
-    <div class="input-group">
-      <label>Final Week 2 Claim:</label>
-      <textarea rows="4" placeholder="Explain how the 'Dancing Rice' on Day 1 proved that sound is a form of energy."></textarea>
-    </div>
-    
-    <button class="btn-save" onclick="this.innerText='Week 2 Complete! ✓'; this.style.backgroundColor='var(--success)'">Save Weekly Progress</button>
-  </div>
-
 </div>
 
 <script>
+  const CORRECT_PASSWORD = "Science2025";
+
+  function checkPassword() {
+    const entered = document.getElementById('pw-field').value;
+    const overlay = document.getElementById('password-overlay');
+    const content = document.getElementById('main-content');
+    const error = document.getElementById('pw-error');
+
+    if (entered === CORRECT_PASSWORD) {
+      overlay.style.display = 'none';
+      content.style.display = 'block';
+    } else {
+      error.style.display = 'block';
+      document.getElementById('pw-field').value = '';
+    }
+  }
+
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      checkPassword();
+    }
+  }
+
   function printDay(dayId) {
     const cards = document.querySelectorAll('.lesson-card');
     cards.forEach(card => card.classList.remove('print-active'));
+    
     const target = document.getElementById(dayId);
     target.classList.add('print-active');
+    
     window.print();
   }
 </script>
