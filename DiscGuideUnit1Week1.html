@@ -3,1464 +3,349 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Unit 1, Week 1 — What Is Energy? | Science Thursday</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<title>4th Grade Science | Unit 1 Week 1 Discovery Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #1B3A6B;
-    --teal: #2E7D82;
-    --teal-light: #4AABAA;
-    --green: #3A7D44;
-    --orange: #C75B2A;
-    --yellow: #F4C430;
-    --bg: #F7F9FC;
-    --white: #FFFFFF;
-    --ink: #1A1A2E;
-    --muted: #6B7280;
-    --rule: #E2E8F0;
-    --teacher-bg: #FFF8E1;
-    --teacher-border: #F4C430;
-    --teacher-text: #7A5C00;
-    --answer-bg: #E8F5E9;
-    --answer-border: #3A7D44;
-    --answer-text: #1B5E20;
-    --card-shadow: 0 4px 20px rgba(27,58,107,0.10);
-    --radius: 16px;
-    --radius-sm: 10px;
+    --primary: #1B3A6B;
+    --secondary: #C75B2A;
+    --accent: #F4C430;
+    --bg-light: #F7F9FC;
+    --card-bg: #FFFFFF;
+    --text-main: #1A1A2E;
+    --text-muted: #5E6C84;
+    --border: #E2E8F0;
+    --success: #38A169;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: 'Nunito', sans-serif;
-    background: var(--bg);
-    color: var(--ink);
-    min-height: 100vh;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* ============ TOP BAR ============ */
-  .top-bar {
-    background: var(--navy);
+  .header {
+    background: linear-gradient(135deg, var(--primary), #2C5282);
     color: white;
-    padding: 12px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 5px solid var(--accent);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
   }
 
-  .top-bar-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .logo-circle {
-    width: 40px; height: 40px;
-    background: var(--teal);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  .top-bar-brand span {
+  .header h1 {
     font-family: 'Fredoka One', cursive;
-    font-size: 18px;
-    letter-spacing: 0.5px;
-    color: white;
-  }
-
-  .top-bar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .mode-label {
-    font-size: 13px;
-    font-weight: 700;
+    margin: 0;
+    font-size: 1.6rem;
     letter-spacing: 1px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.7);
   }
 
-  /* Teacher toggle switch */
-  .toggle-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255,255,255,0.12);
-    border-radius: 50px;
-    padding: 6px 14px;
-    cursor: pointer;
-    transition: background 0.2s;
-    border: 2px solid transparent;
-  }
-  .toggle-wrap:hover { background: rgba(255,255,255,0.2); }
-  .toggle-wrap.active { background: rgba(244,196,48,0.25); border-color: var(--yellow); }
-
-  .toggle-icon { font-size: 18px; }
-  .toggle-text {
-    font-size: 13px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: white;
-  }
-
-  .switch {
-    width: 42px; height: 22px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 11px;
-    position: relative;
-    transition: background 0.3s;
-    flex-shrink: 0;
-  }
-  .switch::after {
-    content: '';
-    width: 16px; height: 16px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 3px; left: 3px;
-    transition: transform 0.3s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-  }
-  .teacher-mode .switch { background: var(--yellow); }
-  .teacher-mode .switch::after { transform: translateX(20px); }
-
-  /* ============ HERO ============ */
-  .hero {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
-    color: white;
-    padding: 48px 32px 56px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
-    top: -100px; right: -80px;
-    border-radius: 50%;
-  }
-  .hero::after {
-    content: '⚡';
-    position: absolute;
-    font-size: 180px;
-    right: 40px;
-    bottom: -20px;
-    opacity: 0.07;
-    line-height: 1;
-  }
-
-  .hero-meta {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-  }
-
-  .badge {
-    background: rgba(255,255,255,0.18);
-    border: 1.5px solid rgba(255,255,255,0.3);
-    border-radius: 50px;
-    padding: 4px 14px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-  }
-  .badge.highlight {
-    background: var(--yellow);
-    border-color: var(--yellow);
-    color: var(--navy);
-  }
-
-  .hero h1 {
-    font-family: 'Fredoka One', cursive;
-    font-size: clamp(32px, 5vw, 52px);
-    line-height: 1.15;
-    margin-bottom: 10px;
-    max-width: 600px;
-  }
-
-  .hero-sub {
-    font-size: 18px;
-    font-weight: 600;
-    opacity: 0.85;
-    max-width: 520px;
-    line-height: 1.5;
-    margin-bottom: 24px;
-  }
-
-  .standards-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .standard-chip {
-    background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.35);
-    border-radius: 8px;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: 'Source Serif 4', serif;
-    letter-spacing: 0.3px;
-  }
-  .standard-chip.essential {
-    background: rgba(244,196,48,0.25);
-    border-color: var(--yellow);
-    color: var(--yellow);
-  }
-
-  /* ============ MAIN LAYOUT ============ */
-  .main {
-    max-width: 860px;
+  .container {
+    max-width: 850px;
     margin: 0 auto;
-    padding: 40px 24px 80px;
+    padding: 20px;
   }
 
-  /* ============ TEACHER BANNER ============ */
-  .teacher-banner {
-    display: none;
-    background: var(--teacher-bg);
-    border: 2px solid var(--teacher-border);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-bottom: 28px;
-    align-items: flex-start;
-    gap: 14px;
-  }
-  .teacher-mode .teacher-banner { display: flex; }
-
-  .teacher-banner-icon { font-size: 28px; flex-shrink: 0; }
-  .teacher-banner-text h3 {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--teacher-text);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .teacher-banner-text p {
-    font-size: 13px;
-    color: var(--teacher-text);
-    line-height: 1.5;
-  }
-
-  /* ============ SECTION HEADERS ============ */
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin: 40px 0 20px;
-  }
-
-  .section-icon {
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-
-  .section-header h2 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 26px;
-    color: var(--navy);
-    line-height: 1.2;
-  }
-  .section-header .section-tag {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    display: block;
-  }
-
-  /* ============ CARDS ============ */
-  .card {
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--card-shadow);
-    margin-bottom: 20px;
-    border: 1.5px solid var(--rule);
-    position: relative;
-  }
-
-  .card-accent {
-    border-left: 5px solid var(--teal);
-  }
-  .card-accent-orange { border-left: 5px solid var(--orange); }
-  .card-accent-green { border-left: 5px solid var(--green); }
-  .card-accent-navy { border-left: 5px solid var(--navy); }
-
-  /* ============ VOCAB GRID ============ */
-  .vocab-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 14px;
-    margin-top: 4px;
-  }
-
-  .vocab-card {
-    background: linear-gradient(135deg, #EBF8FF 0%, #F0FFF4 100%);
-    border: 1.5px solid #B2EBF2;
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-    position: relative;
-    overflow: hidden;
-  }
-  .vocab-card::before {
-    content: '';
-    position: absolute;
-    width: 60px; height: 60px;
-    background: rgba(46,125,130,0.08);
-    border-radius: 50%;
-    top: -20px; right: -15px;
-  }
-  .vocab-word {
-    font-weight: 900;
-    font-size: 15px;
-    color: var(--navy);
-    margin-bottom: 4px;
-  }
-  .vocab-def {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.45;
-    font-weight: 600;
-  }
-
-  /* ============ ANSWER REVEAL ============ */
-  .answer-box {
-    display: none;
-    background: var(--answer-bg);
-    border: 2px solid var(--answer-border);
-    border-radius: var(--radius-sm);
-    padding: 14px 18px;
-    margin-top: 10px;
-    position: relative;
-  }
-  .answer-box::before {
-    content: '✓ Answer Key';
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--answer-border);
-    margin-bottom: 6px;
-  }
-  .answer-box p, .answer-box li {
-    font-size: 14px;
-    color: var(--answer-text);
-    font-weight: 600;
-    line-height: 1.55;
-  }
-  .answer-box ul { padding-left: 18px; }
-  .teacher-mode .answer-box { display: block; }
-
-  /* ============ TEACHER NOTES ============ */
-  .teacher-note {
-    display: none;
-    background: var(--teacher-bg);
-    border: 1.5px dashed var(--teacher-border);
-    border-radius: var(--radius-sm);
-    padding: 14px 18px;
-    margin-top: 10px;
-  }
-  .teacher-note::before {
-    content: '👩‍🏫 Teacher Note';
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--teacher-text);
-    margin-bottom: 6px;
-  }
-  .teacher-note p, .teacher-note li {
-    font-size: 13px;
-    color: var(--teacher-text);
-    font-weight: 600;
-    line-height: 1.55;
-  }
-  .teacher-note ul { padding-left: 18px; }
-  .teacher-mode .teacher-note { display: block; }
-
-  /* ============ ENHANCEMENT BOX ============ */
-  .enhancement-box {
-    display: none;
-    background: #F3E8FF;
-    border: 1.5px solid #9C6FD6;
-    border-radius: var(--radius-sm);
-    padding: 14px 18px;
-    margin-top: 10px;
-  }
-  .enhancement-box::before {
-    content: '🚀 Enhancement Ideas';
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #5B21B6;
-    margin-bottom: 6px;
-  }
-  .enhancement-box p, .enhancement-box li {
-    font-size: 13px;
-    color: #4C1D95;
-    font-weight: 600;
-    line-height: 1.55;
-  }
-  .enhancement-box ul { padding-left: 18px; }
-  .teacher-mode .enhancement-box { display: block; }
-
-  /* ============ WRITING LINES ============ */
-  .write-area {
-    margin-top: 12px;
-  }
-  .write-label {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-  }
-  .write-lines {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .write-line {
-    border: none;
-    border-bottom: 2px solid #CBD5E0;
-    border-radius: 0;
-    width: 100%;
-    padding: 6px 4px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 15px;
-    background: transparent;
-    outline: none;
-    color: var(--ink);
-    transition: border-color 0.2s;
-  }
-  .write-line:focus { border-bottom-color: var(--teal); }
-  .write-line::placeholder { color: #CBD5E0; }
-
-  /* ============ PHENOMENON BOX ============ */
-  .phenomenon-box {
-    background: linear-gradient(135deg, #1B3A6B 0%, #2E7D82 100%);
-    color: white;
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .phenomenon-box::after {
-    content: '🔍';
-    position: absolute;
-    font-size: 80px;
-    right: 20px;
-    bottom: -10px;
-    opacity: 0.15;
-  }
-  .phenomenon-label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    opacity: 0.7;
-    margin-bottom: 8px;
-  }
-  .phenomenon-box h3 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 22px;
-    margin-bottom: 12px;
-    line-height: 1.3;
-  }
-  .phenomenon-box p {
-    font-size: 15px;
-    line-height: 1.6;
-    opacity: 0.9;
-    font-weight: 600;
-    max-width: 620px;
-  }
-
-  /* ============ QUESTION PROMPTS ============ */
-  .wonder-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 16px;
-  }
-  @media (max-width: 600px) { .wonder-grid { grid-template-columns: 1fr; } }
-
-  .wonder-card {
-    background: rgba(255,255,255,0.12);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-  }
-  .wonder-card-label {
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.7;
-    margin-bottom: 6px;
-  }
-  .wonder-card textarea {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1.5px solid rgba(255,255,255,0.4);
-    color: white;
-    font-family: 'Nunito', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    outline: none;
-    resize: none;
-    min-height: 50px;
-    padding: 4px 0;
-  }
-  .wonder-card textarea::placeholder { color: rgba(255,255,255,0.4); }
-
-  /* ============ DATA TABLE ============ */
-  .data-table-wrap { overflow-x: auto; margin-top: 12px; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-  th {
-    background: var(--navy);
-    color: white;
-    padding: 10px 14px;
-    text-align: left;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.3px;
-  }
-  th:first-child { border-radius: 8px 0 0 0; }
-  th:last-child { border-radius: 0 8px 0 0; }
-  td {
-    border-bottom: 1.5px solid var(--rule);
-    padding: 10px 14px;
-    font-weight: 600;
-    vertical-align: top;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:nth-child(even) td { background: #F8FAFC; }
-
-  td input[type="text"], td textarea.td-input {
-    width: 100%;
-    border: none;
-    border-bottom: 1.5px solid #CBD5E0;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    background: transparent;
-    outline: none;
-    padding: 2px 0;
-    color: var(--ink);
-    resize: none;
-  }
-  td input[type="text"]:focus, td textarea.td-input:focus { border-bottom-color: var(--teal); }
-
-  /* ============ EXPERIMENT STEPS ============ */
-  .steps-list {
-    list-style: none;
-    padding: 0;
-    counter-reset: steps;
-  }
-  .steps-list li {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    padding: 14px 0;
-    border-bottom: 1.5px solid var(--rule);
-    counter-increment: steps;
-  }
-  .steps-list li:last-child { border-bottom: none; }
-  .step-num {
-    width: 32px; height: 32px;
-    background: var(--teal);
-    color: white;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900;
-    font-size: 15px;
-    flex-shrink: 0;
-  }
-  .step-content { flex: 1; }
-  .step-content strong {
-    display: block;
-    font-size: 15px;
-    color: var(--navy);
-    margin-bottom: 3px;
-  }
-  .step-content p {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.55;
-    font-weight: 600;
-  }
-
-  /* ============ EXPLANATION FRAME ============ */
-  .frame-box {
-    background: linear-gradient(135deg, #EBF8FF 0%, #F0F4FF 100%);
-    border: 2px solid #90CDF4;
-    border-radius: var(--radius);
-    padding: 22px;
-    margin-top: 12px;
-  }
-  .frame-box h4 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 18px;
-    color: var(--navy);
-    margin-bottom: 14px;
-  }
-  .sentence-frame {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--navy);
-    line-height: 2.2;
-    margin-bottom: 12px;
-  }
-  .blank {
+  .day-badge {
     display: inline-block;
-    border-bottom: 2.5px solid var(--teal);
-    min-width: 160px;
-    margin: 0 4px;
-    vertical-align: bottom;
-  }
-  .blank input {
-    border: none;
-    background: transparent;
-    outline: none;
-    font-family: 'Nunito', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--teal);
-    width: 100%;
-    padding: 0 4px;
+    background: var(--secondary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 10px;
   }
 
-  /* ============ EXIT TICKET ============ */
-  .exit-ticket {
-    background: linear-gradient(135deg, #1B3A6B 0%, #1e4080 100%);
-    border-radius: var(--radius);
-    padding: 28px;
-    color: white;
+  .lesson-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
     position: relative;
-    overflow: hidden;
+    page-break-after: always;
   }
-  .exit-ticket::before {
-    content: '🎫';
+
+  .lesson-card h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+  }
+
+  .phenomenon-box {
+    background-color: #EBF8FF;
+    border-left: 5px solid #4299E1;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+  }
+
+  .print-btn {
     position: absolute;
-    font-size: 100px;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.1;
-  }
-  .exit-label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--yellow);
-    margin-bottom: 10px;
+    top: 20px;
+    right: 20px;
+    background: #EDF2F7;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-  }
-  .exit-ticket h3 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 20px;
-    margin-bottom: 16px;
-    line-height: 1.3;
-    max-width: 580px;
-  }
-  .exit-ticket .write-area { color: white; }
-  .exit-ticket .write-label { color: rgba(255,255,255,0.6); }
-  .exit-ticket .write-line {
-    border-bottom-color: rgba(255,255,255,0.35);
-    color: white;
-  }
-  .exit-ticket .write-line:focus { border-bottom-color: var(--yellow); }
-
-  /* ============ STANDARD BREAKDOWN ============ */
-  .standard-breakdown {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-top: 12px;
-  }
-  .dim-card {
-    flex: 1;
-    min-width: 160px;
-    background: var(--white);
-    border: 1.5px solid var(--rule);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-  }
-  .dim-label {
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .dim-value {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--navy);
-    line-height: 1.4;
+    gap: 5px;
+    transition: background 0.2s;
   }
 
-  /* ============ READING PASSAGE ============ */
-  .passage-box {
-    background: #FFFDF5;
-    border: 1.5px solid #F4E08A;
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-top: 12px;
-  }
-  .passage-title {
-    font-family: 'Source Serif 4', serif;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--navy);
-    margin-bottom: 4px;
-  }
-  .passage-byline {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 600;
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .passage-box p {
-    font-family: 'Source Serif 4', serif;
-    font-size: 15px;
-    line-height: 1.75;
-    color: var(--ink);
-    margin-bottom: 12px;
-  }
-  .passage-box p:last-child { margin-bottom: 0; }
+  .print-btn:hover { background: #E2E8F0; }
 
-  /* ============ WEEK OVERVIEW STRIP ============ */
-  .week-strip {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 28px;
-  }
-  .day-chip {
-    flex-shrink: 0;
-    background: var(--white);
-    border: 2px solid var(--rule);
+  .input-group { margin: 15px 0; }
+  label { display: block; font-weight: 700; margin-bottom: 8px; }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border);
     border-radius: 10px;
-    padding: 8px 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  .table-container { overflow-x: auto; margin: 15px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid var(--border); padding: 12px; text-align: center; }
+  th { background-color: #EDF2F7; color: var(--primary); }
+
+  .sim-link {
+    display: block;
+    background: #2D3748;
+    color: white;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 12px;
     text-align: center;
-    font-size: 12px;
+    margin: 15px 0;
     font-weight: 700;
-    color: var(--muted);
-    min-width: 90px;
-    transition: all 0.2s;
+    transition: transform 0.2s;
   }
-  .day-chip.current {
-    border-color: var(--teal);
-    color: var(--teal);
-    background: #EBF8FF;
-  }
-  .day-chip .day-name { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; }
-  .day-chip .day-topic { font-size: 11px; margin-top: 2px; line-height: 1.3; }
 
-  /* ============ PRINT STYLES ============ */
+  .sim-link:active { transform: scale(0.98); }
+
+  .causal-chain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #FFF5F5;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px dashed #FEB2B2;
+    margin: 20px 0;
+  }
+
+  .chain-link {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #FC8181;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: center;
+    flex: 1;
+  }
+
+  .btn-save {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+  }
+
   @media print {
-    .top-bar { display: none; }
-    .teacher-note, .answer-box, .enhancement-box { display: block !important; border: 1.5px solid #ccc; }
     body { background: white; }
-    .hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .header, .print-btn, .btn-save, .sim-link p:last-child { display: none !important; }
+    .container { max-width: 100%; padding: 0; }
+    .lesson-card { 
+      box-shadow: none; 
+      border: none; 
+      margin: 0; 
+      padding: 0; 
+      display: none; 
+    }
+    /* The class 'print-active' is added via JS to show only the selected day */
+    .lesson-card.print-active { 
+      display: block !important; 
+    }
+    textarea { border: 1px solid #ccc; height: 100px; }
+    input { border: 1px solid #ccc; }
   }
 
-  /* ============ SCROLLBAR ============ */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--teal); }
-
-  /* ============ ANIMATIONS ============ */
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .card, .phenomenon-box, .exit-ticket { animation: fadeSlideIn 0.4s ease both; }
-
-  .teacher-mode .teacher-note,
-  .teacher-mode .answer-box,
-  .teacher-mode .enhancement-box {
-    animation: fadeSlideIn 0.3s ease both;
-  }
-
-  /* ============ RESPONSIVE ============ */
   @media (max-width: 600px) {
-    .top-bar { padding: 10px 16px; }
-    .hero { padding: 32px 16px 44px; }
-    .main { padding: 24px 14px 60px; }
-    .wonder-grid { grid-template-columns: 1fr; }
+    .causal-chain { flex-direction: column; }
+    .print-btn { position: relative; top: 0; right: 0; margin-bottom: 10px; width: fit-content; }
   }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="top-bar" id="topBar">
-  <div class="top-bar-brand">
-    <div class="logo-circle">🔬</div>
-    <span>Science Thursday</span>
-  </div>
-  <div class="top-bar-right">
-    <span class="mode-label" id="modeLabel">Student Edition</span>
-    <div class="toggle-wrap" id="teacherToggle" onclick="toggleMode()">
-      <span class="toggle-icon">👩‍🏫</span>
-      <span class="toggle-text">Teacher Edition</span>
-      <div class="switch"></div>
-    </div>
-  </div>
+<div class="header">
+  <h1>Science Discovery Guide</h1>
+  <p>Unit 1: Energy in Motion • Week 1</p>
 </div>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-meta">
-    <span class="badge">Unit 1</span>
-    <span class="badge">Week 1</span>
-    <span class="badge highlight">⭐ Essential Standards</span>
-    <span class="badge">Physical Science</span>
-  </div>
-  <h1>What Is Energy?<br>Speed & Energy</h1>
-  <p class="hero-sub">Discover how an object's speed is connected to the amount of energy it carries — and test your ideas with real experiments!</p>
-  <div class="standards-row">
-    <span class="standard-chip essential">4-PS3-1 ★ Essential</span>
-    <span class="standard-chip">Practice: Constructing Explanations</span>
-    <span class="standard-chip">CCC: Energy & Matter</span>
-  </div>
-</div>
+<div class="container">
 
-<!-- MAIN CONTENT -->
-<div class="main">
+  <!-- DAY 1 -->
+  <div class="lesson-card" id="day1">
+    <button class="print-btn" onclick="printDay('day1')">🖨️ Print Day 1</button>
+    <div class="day-badge">Day 1: Phenomenon</div>
+    <h2>The Crash Test Challenge</h2>
+    
+    <div class="phenomenon-box">
+      <h3>🔍 Look Closely</h3>
+      <p>Watch the video of the two cars. One rolls slowly, and the other moves fast. They both hit a block of clay. What happened?</p>
+    </div>
 
-  <!-- TEACHER BANNER -->
-  <div class="teacher-banner">
-    <span class="teacher-banner-icon">👩‍🏫</span>
-    <div class="teacher-banner-text">
-      <h3>Teacher Edition is Active</h3>
-      <p>Answer keys, teacher notes, and enhancement ideas are now visible in green, yellow, and purple boxes throughout this guide. Toggle off to preview the student view. All student input fields remain functional in both modes.</p>
+    <div class="input-group">
+      <label>I Notice...</label>
+      <textarea placeholder="Describe the damage to the clay..."></textarea>
+    </div>
+
+    <div class="input-group">
+      <label>I Wonder...</label>
+      <textarea placeholder="What scientific questions do you have?"></textarea>
     </div>
   </div>
 
-  <!-- WEEK AT A GLANCE -->
-  <div class="week-strip">
-    <div class="day-chip current">
-      <div class="day-name">Day 1</div>
-      <div class="day-topic">Phenomenon & Observations</div>
-    </div>
-    <div class="day-chip current">
-      <div class="day-name">Day 2</div>
-      <div class="day-topic">Car Ramp Investigation</div>
-    </div>
-    <div class="day-chip current">
-      <div class="day-name">Day 3</div>
-      <div class="day-topic">Anchor Chart</div>
-    </div>
-    <div class="day-chip current">
-      <div class="day-name">Day 4</div>
-      <div class="day-topic">PhET Simulation</div>
-    </div>
-    <div class="day-chip current">
-      <div class="day-name">Day 5</div>
-      <div class="day-topic">Reading & Organizer</div>
-    </div>
-  </div>
+  <!-- DAY 2 -->
+  <div class="lesson-card" id="day2">
+    <button class="print-btn" onclick="printDay('day2')">🖨️ Print Day 2</button>
+    <div class="day-badge">Day 2: Investigation</div>
+    <h2>Toy Car Data</h2>
+    <p>Measure the "damage" (the dent in the clay) at two different heights.</p>
 
-  <!-- VOCABULARY -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#EBF8FF;">📚</div>
-    <div>
-      <span class="section-tag">Before We Begin</span>
-      <h2>Key Vocabulary</h2>
-    </div>
-  </div>
-
-  <div class="card">
-    <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:16px;">Learn these words — they will appear on ILEARN! You will use them all week.</p>
-    <div class="vocab-grid">
-      <div class="vocab-card">
-        <div class="vocab-word">Energy</div>
-        <div class="vocab-def">The ability to cause change or do work</div>
-      </div>
-      <div class="vocab-card">
-        <div class="vocab-word">Stored Energy</div>
-        <div class="vocab-def">Energy held in an object that hasn't been released yet</div>
-      </div>
-      <div class="vocab-card">
-        <div class="vocab-word">Energy Transfer</div>
-        <div class="vocab-def">When energy moves from one object to another</div>
-      </div>
-      <div class="vocab-card">
-        <div class="vocab-word">Collision</div>
-        <div class="vocab-def">When two objects hit or crash into each other</div>
-      </div>
-      <div class="vocab-card">
-        <div class="vocab-word">Speed</div>
-        <div class="vocab-def">How fast an object is moving</div>
-      </div>
-      <div class="vocab-card">
-        <div class="vocab-word">Motion Energy</div>
-        <div class="vocab-def">Energy that a moving object has</div>
-      </div>
-    </div>
-
-    <div class="teacher-note">
-      <p>Pre-teach vocabulary on Day 1 before the phenomenon. Post vocabulary on a word wall and refer to it throughout the week. For ELL students, pair each word with a visual or gesture. Encourage students to use these words during class discussions — specifically during sense-making conversations.</p>
-    </div>
-  </div>
-
-  <!-- ===== DAY 1 ===== -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#FFF3E0;">🎬</div>
-    <div>
-      <span class="section-tag">Day 1 — 30 Minutes</span>
-      <h2>The Phenomenon: Crash!</h2>
-    </div>
-  </div>
-
-  <div class="phenomenon-box">
-    <div class="phenomenon-label">🔍 Today's Phenomenon</div>
-    <h3>Why does a faster car cause more damage in a crash?</h3>
-    <p>Watch the crash test video your teacher shows you. Pay close attention to what happens to the car and the crash test dummy. Think like a scientist — what do you notice? What questions pop into your head?</p>
-    <div class="wonder-grid">
-      <div class="wonder-card">
-        <div class="wonder-card-label">👁 I Notice...</div>
-        <textarea rows="3" placeholder="Write what you observe happening in the video..."></textarea>
-      </div>
-      <div class="wonder-card">
-        <div class="wonder-card-label">❓ I Wonder...</div>
-        <textarea rows="3" placeholder="Write questions the video makes you think about..."></textarea>
-      </div>
-    </div>
-  </div>
-
-  <div class="answer-box">
-    <p><strong>Sample student observations:</strong> The car crumbles at the front. The dummy gets thrown forward. The faster crash makes a bigger dent than the slow crash.</p>
-    <p style="margin-top:8px;"><strong>Sample student wonders:</strong> Why does going faster cause more damage? Does a heavier car cause more damage too? What protects the people inside?</p>
-    <p style="margin-top:8px;"><em>Accept any reasonable, observable statements. Look for students connecting the speed of the car to the amount of damage — this is the core concept for 4-PS3-1.</em></p>
-  </div>
-
-  <div class="teacher-note">
-    <p><strong>Video suggestions (free):</strong> Search "IIHS slow vs fast car crash" on YouTube — the Insurance Institute for Highway Safety has excellent side-by-side crash comparisons at 25 mph vs 40 mph that make the speed-energy relationship immediately visible.</p>
-    <p style="margin-top:6px;"><strong>Facilitation tip:</strong> After watching, give 2 minutes of quiet think time before partners share. Cold call 3–4 students. Anchor the discussion with: <em>"What changed between the slow crash and the fast crash?"</em></p>
-    <p style="margin-top:6px;"><strong>ILEARN connection:</strong> The ILEARN item format starts with a phenomenon exactly like this. Students need practice making observations and generating testable questions — don't skip this step!</p>
-  </div>
-
-  <div class="enhancement-box">
-    <ul>
-      <li><strong>Extension:</strong> Show a second phenomenon — a bowling ball slowly rolling into pins vs. a fast throw. Ask: "Is this the same pattern?"</li>
-      <li><strong>Discussion Prompt:</strong> "If speed and energy are connected, how could engineers use that knowledge to make cars safer?"</li>
-      <li><strong>Cross-curricular:</strong> Connect to ELA — informational text structures. The "Notice/Wonder" frame mirrors good reading comprehension habits.</li>
-    </ul>
-  </div>
-
-  <div class="card card-accent" style="margin-top:8px;">
-    <p style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px;">💬 Discuss with your class:</p>
-    <p style="font-size:15px;font-weight:600;color:var(--ink);">Do you think a <em>faster</em> car causes more damage or a <em>slower</em> car? How could we test that idea in the classroom?</p>
-    <div class="write-area">
-      <div class="write-label">My Prediction</div>
-      <div class="write-lines">
-        <input class="write-line" type="text" placeholder="I think...">
-        <input class="write-line" type="text" placeholder="because...">
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== DAY 2 ===== -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#E8F5E9;">🚗</div>
-    <div>
-      <span class="section-tag">Day 2 — 30 Minutes</span>
-      <h2>The Car Ramp Investigation</h2>
-    </div>
-  </div>
-
-  <div class="teacher-note">
-    <p><strong>Materials per group:</strong> 2 toy cars (same car, different release heights), 1 ramp (ruler + 2–3 books), 1 lump of air-dry clay (golf ball size), 1 ruler, 1 recording sheet (this page). Set up ramps before class to save time.</p>
-    <p style="margin-top:6px;"><strong>Management tip:</strong> Assign clear roles — Materials Manager, Roller, Observer, Recorder. Rotate roles between trials.</p>
-  </div>
-
-  <div class="card card-accent-orange">
-    <h3 style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--orange);margin-bottom:14px;">🧪 Our Question</h3>
-    <p style="font-size:16px;font-weight:700;color:var(--navy);line-height:1.5;">How does the <span style="color:var(--orange);">speed</span> of a toy car affect the <span style="color:var(--orange);">size of the dent</span> it makes in clay?</p>
-    <div class="write-area" style="margin-top:14px;">
-      <div class="write-label">My Hypothesis (What I think will happen)</div>
-      <div class="write-lines">
-        <input class="write-line" type="text" placeholder="If the car moves faster, then the dent will be...">
-        <input class="write-line" type="text" placeholder="because...">
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3 style="font-size:17px;font-weight:800;color:var(--navy);margin-bottom:14px;">📋 Materials Checklist</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <label style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Toy car (2)</label>
-      <label style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Ramp (ruler + books)</label>
-      <label style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Clay lump</label>
-      <label style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Ruler</label>
-      <label style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Recording sheet</label>
-      <label style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Pencil</label>
-    </div>
-  </div>
-
-  <div class="card card-accent-green">
-    <h3 style="font-size:17px;font-weight:800;color:var(--green);margin-bottom:16px;">🔢 Procedure — Follow These Steps</h3>
-    <ul class="steps-list">
-      <li>
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <strong>Set up your ramp low (slow speed).</strong>
-          <p>Stack 1 book under the end of your ruler. Place the clay flat at the bottom of the ramp, about 4 inches from the end.</p>
-        </div>
-      </li>
-      <li>
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <strong>Release the car — don't push it!</strong>
-          <p>Let go of the car from the top of the ramp. Watch carefully. Does it hit the clay?</p>
-        </div>
-      </li>
-      <li>
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <strong>Measure the dent.</strong>
-          <p>Use your finger to gently feel how deep the dent is. Describe it in words: small, medium, or large. Smooth out the clay for the next trial.</p>
-        </div>
-      </li>
-      <li>
-        <div class="step-num">4</div>
-        <div class="step-content">
-          <strong>Raise the ramp high (fast speed).</strong>
-          <p>Stack 3 books under the ruler. Place the clay in the same spot. Release the car from the top.</p>
-        </div>
-      </li>
-      <li>
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <strong>Measure and compare the dent.</strong>
-          <p>How does the second dent compare to the first? Record your observations in the data table below.</p>
-        </div>
-      </li>
-      <li>
-        <div class="step-num">6</div>
-        <div class="step-content">
-          <strong>Repeat both trials.</strong>
-          <p>Do each ramp height 2 times. Record all results in your data table.</p>
-        </div>
-      </li>
-    </ul>
-
-    <div class="teacher-note">
-      <p><strong>Safety:</strong> Remind students to never push the car — gravity only. Make sure clay is flat and stable. Have students hold the ramp base so it doesn't slide.</p>
-      <p style="margin-top:6px;"><strong>What to look for:</strong> Groups where the high-ramp dent is NOT larger may have placed the clay too far away or pushed the car. Help them troubleshoot — this is good scientific practice!</p>
-      <p style="margin-top:6px;"><strong>Variable control:</strong> Ask students: "What things did we keep the SAME in both trials?" (same car, same clay spot, same release method). This prepares them for ILEARN questions about controlled variables.</p>
-    </div>
-    <div class="enhancement-box">
-      <ul>
-        <li><strong>Extend the investigation:</strong> Add a third ramp height (medium). Does the dent size increase predictably?</li>
-        <li><strong>Advanced question:</strong> "What if we used a heavier car at the same height? Would the dent be different? Why?" (connects mass to energy — a preview of future learning)</li>
-        <li><strong>Graphing extension:</strong> Have students sketch a bar graph: ramp height on the x-axis, dent size on the y-axis. This connects to CS standards (3-5.DI.2).</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card card-accent-navy">
-    <h3 style="font-size:17px;font-weight:800;color:var(--navy);margin-bottom:14px;">📊 Data Table — Record Your Results</h3>
-    <div class="data-table-wrap">
+    <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>Trial</th>
-            <th>Ramp Height</th>
-            <th>Car Speed</th>
-            <th>Dent Size (Small/Medium/Large)</th>
-            <th>Other Observations</th>
+            <th>Test</th>
+            <th>Height</th>
+            <th>Dent Depth (mm)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="font-weight:800;color:var(--teal);">1A</td>
-            <td>Low (1 book)</td>
-            <td>Slow</td>
-            <td><input type="text" placeholder="e.g. small"></td>
-            <td><input type="text" placeholder=""></td>
+            <td>Slow Speed</td>
+            <td>1 Book High</td>
+            <td><input type="text" placeholder="-- mm"></td>
           </tr>
           <tr>
-            <td style="font-weight:800;color:var(--teal);">1B</td>
-            <td>Low (1 book)</td>
-            <td>Slow</td>
-            <td><input type="text" placeholder="e.g. small"></td>
-            <td><input type="text" placeholder=""></td>
-          </tr>
-          <tr>
-            <td style="font-weight:800;color:var(--orange);">2A</td>
-            <td>High (3 books)</td>
-            <td>Fast</td>
-            <td><input type="text" placeholder="e.g. large"></td>
-            <td><input type="text" placeholder=""></td>
-          </tr>
-          <tr>
-            <td style="font-weight:800;color:var(--orange);">2B</td>
-            <td>High (3 books)</td>
-            <td>Fast</td>
-            <td><input type="text" placeholder="e.g. large"></td>
-            <td><input type="text" placeholder=""></td>
+            <td>Fast Speed</td>
+            <td>3 Books High</td>
+            <td><input type="text" placeholder="-- mm"></td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="answer-box">
-      <p><strong>Expected results:</strong></p>
-      <ul>
-        <li>Trials 1A & 1B (slow): Small dent — the car has less energy and transfers less force to the clay</li>
-        <li>Trials 2A & 2B (fast): Large dent — the car has more energy and transfers more force to the clay</li>
-        <li>Both trials within the same ramp height should produce similar (consistent) results</li>
-      </ul>
-      <p style="margin-top:8px;"><em>If results are inconsistent between repeats, prompt students to identify what might have varied (release point, clay position, etc.) — this is productive scientific reasoning.</em></p>
-    </div>
-
-    <div style="margin-top:16px;">
-      <div class="write-label">What pattern do you see in your data?</div>
-      <div class="write-lines">
-        <input class="write-line" type="text" placeholder="When the car goes faster, the dent is...">
-        <input class="write-line" type="text" placeholder="When the car goes slower, the dent is...">
-      </div>
-    </div>
-    <div class="answer-box">
-      <p>When the car goes faster, the dent is <strong>larger</strong>. When the car goes slower, the dent is <strong>smaller</strong>. This pattern shows that faster-moving objects have MORE energy.</p>
+    <div class="input-group">
+      <label>My Evidence:</label>
+      <textarea placeholder="Write a sentence explaining how the speed changed the dent."></textarea>
     </div>
   </div>
 
-  <!-- ===== DAY 3 ===== -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#F3E8FF;">📝</div>
-    <div>
-      <span class="section-tag">Day 3 — 30 Minutes</span>
-      <h2>Making Sense of It: Anchor Chart</h2>
+  <!-- DAY 3 -->
+  <div class="lesson-card" id="day3">
+    <button class="print-btn" onclick="printDay('day3')">🖨️ Print Day 3</button>
+    <div class="day-badge">Day 3: Simulation</div>
+    <h2>Virtual Energy Lab</h2>
+    
+    <a href="https://phet.colorado.edu/sims/html/energy-skate-park/latest/energy-skate-park_all.html" target="_blank" class="sim-link">
+      🚀 Click to Launch PhET Energy Skate Park
+      <p style="font-size: 0.8rem; font-weight: normal; margin-top: 5px;">(Requires Internet Connection)</p>
+    </a>
+    
+    <div class="input-group">
+      <label>Simulation Task:</label>
+      <p>Watch the green "Kinetic Energy" bar as the skater gets faster at the bottom of the ramp.</p>
+      <p><strong>Question:</strong> What is the relationship between speed and energy in the bar graph?</p>
+      <textarea placeholder="As speed increases, the energy bar..."></textarea>
     </div>
   </div>
 
-  <div class="card">
-    <p style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:16px;">Today your class will build an anchor chart together to explain the pattern you found. Use the questions below to guide your thinking and notes.</p>
-
-    <div class="teacher-note">
-      <p><strong>Anchor chart structure (build on whiteboard/chart paper):</strong></p>
-      <ul>
-        <li><strong>Top:</strong> "Big Idea — Speed and Energy are Connected"</li>
-        <li><strong>Middle:</strong> Diagram with two cars — slow car (less energy, small dent) and fast car (more energy, large dent). Use arrows to show energy transfer.</li>
-        <li><strong>Bottom:</strong> Class evidence statement from Day 2 data. Key vocabulary highlighted.</li>
-      </ul>
-      <p style="margin-top:8px;"><strong>Facilitation:</strong> Ask students to contribute ideas from their data tables. Prompt: "What did we observe that gives us EVIDENCE for our explanation?" This explicitly practices the constructing explanations science practice for 4-PS3-1.</p>
+  <!-- DAY 4 -->
+  <div class="lesson-card" id="day4">
+    <button class="print-btn" onclick="printDay('day4')">🖨️ Print Day 4</button>
+    <div class="day-badge">Day 4: Application</div>
+    <h2>Energy Collisions</h2>
+    <p>When a moving car hits a stopped car, what happens to the energy?</p>
+    
+    <div class="input-group">
+      <label>Observation:</label>
+      <textarea placeholder="Describe the sound and movement when the cars hit."></textarea>
     </div>
 
-    <h3 style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:12px;">✏️ The Big Idea — Fill in the blanks:</h3>
-    <div class="frame-box">
-      <div class="sentence-frame">
-        The <span class="blank"><input type="text" placeholder="faster / slower"></span> an object moves, the <span class="blank"><input type="text" placeholder="more / less"></span> energy it has.
-      </div>
-      <div class="sentence-frame">
-        We know this because when our car was going <span class="blank"><input type="text" placeholder="fast / slow"></span>, the dent in the clay was <span class="blank"><input type="text" placeholder="larger / smaller"></span>.
-      </div>
-    </div>
-    <div class="answer-box">
-      <p>The <strong>faster</strong> an object moves, the <strong>more</strong> energy it has. We know this because when our car was going <strong>fast</strong>, the dent in the clay was <strong>larger</strong>.</p>
-    </div>
-
-    <div style="margin-top:18px;">
-      <h3 style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:12px;">🖼 Draw and label a diagram below:</h3>
-      <p style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px;">Draw two cars on ramps — one slow, one fast. Show the dent each makes. Label: speed, energy, dent size.</p>
-      <div style="border:2px dashed #CBD5E0;border-radius:12px;min-height:160px;background:#FAFAFA;display:flex;align-items:center;justify-content:center;color:#CBD5E0;font-weight:700;font-size:14px;">
-        [ Drawing Space ]
-      </div>
-      <div class="teacher-note" style="margin-top:10px;">
-        <p><strong>Look for:</strong> Two ramps at different heights, labels indicating "slow/less energy/small dent" and "fast/more energy/large dent." Students should be drawing arrows to show direction of energy transfer. Collect these as a formative check.</p>
-      </div>
+    <div class="phenomenon-box" style="background:#FFFBEB; border-left-color:var(--accent);">
+      <h3>💡 Energy Transfer</h3>
+      <p>Energy can move from one object to another! When the cars collide, the moving car transfers energy to the stopped car and the air (sound).</p>
     </div>
   </div>
 
-  <!-- ===== DAY 4 ===== -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#EBF8FF;">💻</div>
-    <div>
-      <span class="section-tag">Day 4 — 30 Minutes</span>
-      <h2>PhET Simulation: Energy Skate Park</h2>
+  <!-- DAY 5 -->
+  <div class="lesson-card" id="day5">
+    <button class="print-btn" onclick="printDay('day5')">🖨️ Print Day 5</button>
+    <div class="day-badge">Day 5: Review</div>
+    <h2>The ILEARN Causal Chain</h2>
+    <p>Complete the scientific chain of logic:</p>
+    
+    <div class="causal-chain">
+      <div class="chain-link">Faster Speed</div>
+      <span>➡️</span>
+      <div class="chain-link"><input type="text" style="border:none; text-align:center; padding:0;" placeholder="More Energy"></div>
+      <span>➡️</span>
+      <div class="chain-link">More Change/Damage</div>
     </div>
+
+    <div class="input-group">
+      <label>Final Week 1 Claim:</label>
+      <textarea rows="4" placeholder="How do you know that speed and energy are related? Use your data from Day 2 and Day 3."></textarea>
+    </div>
+    
+    <button class="btn-save" onclick="this.innerText='Week 1 Complete! ✓'; this.style.backgroundColor='var(--success)'">Save Weekly Progress</button>
   </div>
 
-  <div class="card card-accent">
-    <p style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:6px;">🌐 Go to: <span style="color:var(--teal);font-size:15px;">phet.colorado.edu</span> → Search "Energy Skate Park" → Click "Basics"</p>
-
-    <div class="teacher-note">
-      <p><strong>Setup:</strong> Pre-load the URL on student tablets before class. Use the "Basics" version (not the full simulation) — it's more accessible for 4th grade. Have students work in pairs — one controls, one records.</p>
-      <p style="margin-top:6px;"><strong>Teacher demo (first 5 min):</strong> Project on the board. Show how to release the skater from different heights. Ask: "What do you predict will happen to the skater's speed at the bottom when we release from higher up?"</p>
-      <p style="margin-top:6px;"><strong>Free account not required.</strong> Works in Chrome browser on most school tablets.</p>
-    </div>
-
-    <h3 style="font-size:16px;font-weight:800;color:var(--navy);margin:14px 0 12px;">🛹 Exploration Tasks</h3>
-    <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:14px;">Try each task and record what you observe:</p>
-
-    <div style="display:flex;flex-direction:column;gap:14px;">
-      <div style="background:#F8FAFC;border:1.5px solid var(--rule);border-radius:var(--radius-sm);padding:14px 16px;">
-        <div style="font-weight:800;color:var(--navy);font-size:14px;margin-bottom:6px;">Task 1: Release from LOW on the ramp</div>
-        <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px;">Release the skater from a LOW position. Watch the speed bar. How fast does the skater go at the bottom?</p>
-        <input class="write-line" type="text" placeholder="The skater moved...">
-      </div>
-      <div style="background:#F8FAFC;border:1.5px solid var(--rule);border-radius:var(--radius-sm);padding:14px 16px;">
-        <div style="font-weight:800;color:var(--navy);font-size:14px;margin-bottom:6px;">Task 2: Release from HIGH on the ramp</div>
-        <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px;">Now release from a HIGH position. What happens to the speed at the bottom? How is it different?</p>
-        <input class="write-line" type="text" placeholder="When released from higher, the skater...">
-      </div>
-      <div style="background:#F8FAFC;border:1.5px solid var(--rule);border-radius:var(--radius-sm);padding:14px 16px;">
-        <div style="font-weight:800;color:var(--navy);font-size:14px;margin-bottom:6px;">Task 3: Connect to our experiment</div>
-        <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px;">How is the skater simulation similar to our car ramp from Day 2? What is the same? What is different?</p>
-        <input class="write-line" type="text" placeholder="The simulation is similar because...">
-        <input class="write-line" type="text" placeholder="It is different because...">
-      </div>
-    </div>
-
-    <div class="answer-box">
-      <p><strong>Task 1:</strong> The skater moves slowly at the bottom — less stored energy means less speed.</p>
-      <p style="margin-top:6px;"><strong>Task 2:</strong> The skater moves much faster at the bottom — more stored energy (from being higher up) converts to more motion energy.</p>
-      <p style="margin-top:6px;"><strong>Task 3:</strong> Similar — both show that starting from higher means more speed/energy at the bottom. Different — the simulation shows the energy bar visually; our car experiment showed the energy through the size of the dent in clay.</p>
-    </div>
-
-    <div class="enhancement-box">
-      <ul>
-        <li><strong>Friction exploration:</strong> In the full version of PhET Energy Skate Park, students can turn friction on/off. Ask: "What happens to the skater's energy when friction is added?" (connects to energy transfer as heat)</li>
-        <li><strong>Science journal prompt:</strong> "Draw the energy bar at the top of the ramp vs. the bottom. Where is the energy stored? Where does it go?"</li>
-        <li><strong>CS connection (3-5.DI):</strong> The PhET simulation uses data to represent energy. Ask: "What data does the computer need to show us the skater's energy?"</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ===== DAY 5 ===== -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#FFF3E0;">📖</div>
-    <div>
-      <span class="section-tag">Day 5 — 30 Minutes</span>
-      <h2>Reading: Energy Is Everywhere!</h2>
-    </div>
-  </div>
-
-  <div class="passage-box">
-    <div class="passage-title">Energy Is Everywhere!</div>
-    <div class="passage-byline">Science Thursday Reading Passage • Grade 4 • Unit 1</div>
-    <p>Have you ever watched a bowling ball roll down a lane and crash into the pins? Or seen a roller coaster zoom down a steep hill? These exciting events all have something in common — <strong>energy</strong>.</p>
-    <p>Scientists define energy as the ability to cause change. Energy is all around us, and it comes in many forms: <em>sound</em>, <em>heat</em>, <em>light</em>, and <em>motion</em>. But what determines how much energy a moving object has?</p>
-    <p>The answer is <strong>speed</strong>. The faster an object moves, the more energy it carries. Think about two soccer balls: one rolling slowly across the grass and one kicked hard across the field. If both balls hit a stack of cups, which one will knock more cups over? The faster ball will — because it has more energy.</p>
-    <p>This is exactly why car crashes at high speeds cause more damage than low-speed crashes. Engineers who design cars use this knowledge to create safety features like crumple zones and airbags. These features absorb the energy during a crash so that less energy reaches the people inside.</p>
-    <p>Energy doesn't just disappear when objects collide. It gets <strong>transferred</strong> — passed from one object to another. When a fast-moving car crashes into clay, the clay receives the car's energy and changes shape. The more energy transferred, the bigger the change.</p>
-    <p>Understanding energy and speed is one of the most important ideas in physical science — and it's something scientists and engineers use every single day!</p>
-  </div>
-
-  <div class="teacher-note">
-    <p><strong>Reading strategy:</strong> Use a "close reading" approach — first read for understanding, second read to identify evidence. Ask students to underline the main claim and circle evidence words (because, so, which means, therefore).</p>
-    <p style="margin-top:6px;"><strong>ELA integration:</strong> This passage is written at approximately a Lexile 760 level. For struggling readers, pair with a partner. For advanced readers, ask them to identify the author's purpose and evaluate whether the evidence supports the claims.</p>
-    <p style="margin-top:6px;"><strong>Vocabulary check:</strong> Before reading, point out bold words: energy, speed, transferred. After reading, ask: "Which vocabulary word from Day 1 is most important in this passage? Why?"</p>
-  </div>
-
-  <div class="card" style="margin-top:16px;">
-    <h3 style="font-size:17px;font-weight:800;color:var(--navy);margin-bottom:16px;">📋 Reading Graphic Organizer</h3>
-
-    <div style="display:flex;flex-direction:column;gap:16px;">
-      <div>
-        <div class="write-label">1. What is the main idea of this passage?</div>
-        <div class="write-lines">
-          <input class="write-line" type="text" placeholder="The main idea is...">
-          <input class="write-line" type="text" placeholder="">
-        </div>
-        <div class="answer-box">
-          <p>The main idea is that the faster an object moves, the more energy it has, and this energy is transferred when objects collide.</p>
-        </div>
-      </div>
-      <div>
-        <div class="write-label">2. Find TWO pieces of evidence from the passage that support this main idea. Write them below.</div>
-        <div class="write-lines">
-          <input class="write-line" type="text" placeholder="Evidence 1:">
-          <input class="write-line" type="text" placeholder="Evidence 2:">
-        </div>
-        <div class="answer-box">
-          <ul>
-            <li><strong>Evidence 1:</strong> The faster soccer ball will knock more cups over because it has more energy.</li>
-            <li><strong>Evidence 2:</strong> Car crashes at high speeds cause more damage than low-speed crashes.</li>
-            <li><em>Accept any two pieces of text evidence that connect speed to energy or energy to damage/change.</em></li>
-          </ul>
-        </div>
-      </div>
-      <div>
-        <div class="write-label">3. How does the reading CONNECT to the car ramp experiment we did on Day 2?</div>
-        <div class="write-lines">
-          <input class="write-line" type="text" placeholder="The reading connects because...">
-          <input class="write-line" type="text" placeholder="">
-        </div>
-        <div class="answer-box">
-          <p>The reading connects because it explains why our fast car made a bigger dent — because it had more energy. When the fast car hit the clay, it transferred more energy, causing a bigger change (larger dent). This is the same as what engineers use to design safer cars.</p>
-        </div>
-      </div>
-      <div>
-        <div class="write-label">4. Circle one vocabulary word from the passage and write it in a new sentence:</div>
-        <div class="write-lines">
-          <input class="write-line" type="text" placeholder="Word: __________ My sentence: ...">
-        </div>
-        <div class="answer-box">
-          <p><em>Accept any sentence that uses a vocabulary word correctly in context (energy, speed, motion, transferred, collision). Look for evidence that the student understands the word's meaning, not just that they used it.</em></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="enhancement-box">
-      <ul>
-        <li><strong>Writing extension:</strong> Have students write a second paragraph that could be added to the passage — explaining what they discovered in their own car ramp experiment.</li>
-        <li><strong>Science-ELA connection:</strong> Ask students to identify the text structure of the passage (cause and effect). How does this text structure match the science concept?</li>
-        <li><strong>Research connection:</strong> "The passage mentions engineers use energy knowledge to design airbags. Use a tablet to find one more safety feature in cars and explain how it uses energy science."</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ===== EXIT TICKET ===== -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#EBF8FF;">🎫</div>
-    <div>
-      <span class="section-tag">End of Week — ILEARN Practice</span>
-      <h2>Exit Ticket</h2>
-    </div>
-  </div>
-
-  <div class="exit-ticket">
-    <div class="exit-label">⭐ ILEARN-Style Question</div>
-    <h3>A student rolls a bowling ball slowly down a lane. It hits one pin and knocks it over. Then the student rolls the ball much faster. What will most likely happen — and WHY?</h3>
-    <div class="write-area">
-      <div class="write-label">Use your data and vocabulary as evidence:</div>
-      <div class="write-lines">
-        <input class="write-line" type="text" placeholder="I predict...">
-        <input class="write-line" type="text" placeholder="This will happen because...">
-        <input class="write-line" type="text" placeholder="My evidence from our experiment is...">
-      </div>
-    </div>
-  </div>
-
-  <div class="answer-box" style="margin-top:8px;">
-    <p><strong>Full credit response:</strong> The faster bowling ball will knock down more pins (or all of them). This will happen because a faster-moving object has more energy. When the fast ball collides with the pins, it transfers more energy to them, causing greater change (more pins knocked over). Our data showed this same pattern — the fast car made a much larger dent in the clay than the slow car because it had more energy to transfer.</p>
-    <p style="margin-top:8px;"><strong>Scoring guide:</strong></p>
-    <ul>
-      <li>✓ Correct prediction (more pins knocked over) — 1 point</li>
-      <li>✓ Mentions speed and energy connection — 1 point</li>
-      <li>✓ Mentions energy transfer during collision — 1 point</li>
-      <li>✓ Cites evidence from experiment or reading — 1 point</li>
-    </ul>
-    <p style="margin-top:8px;"><em>Common misconception: Students may say "the heavier ball has more energy." Redirect: "In our experiment, we only changed the HEIGHT (speed). What variable was responsible for the change we saw?"</em></p>
-  </div>
-
-  <div class="teacher-note">
-    <p><strong>After collecting exit tickets:</strong> Sort into 3 piles — Got it, Getting there, Not yet. Use this data at your weekly co-planning session to decide who needs small group support before Week 2. Students who "Got it" can serve as peer partners in the first day of Week 2.</p>
-    <p style="margin-top:6px;"><strong>ILEARN task demand addressed:</strong> Task Demand 4 — "Use an explanation to predict how the expression of energy will change given a change in speed." This is exactly the type of question students will see in an ILEARN item cluster.</p>
-  </div>
-
-  <!-- STANDARD BREAKDOWN -->
-  <div class="section-header">
-    <div class="section-icon" style="background:#F0FFF4;">🎯</div>
-    <div>
-      <span class="section-tag">ILEARN Alignment</span>
-      <h2>Standard Breakdown</h2>
-    </div>
-  </div>
-
-  <div class="card">
-    <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:14px;">Standard <strong>4-PS3-1</strong> is an <strong>ESSENTIAL</strong> standard — every student will encounter at least one item cluster on this topic on the ILEARN test.</p>
-    <div class="standard-breakdown">
-      <div class="dim-card">
-        <div class="dim-label">📐 Science Practice</div>
-        <div class="dim-value">Constructing Explanations & Designing Solutions</div>
-      </div>
-      <div class="dim-card">
-        <div class="dim-label">🧬 Core Idea (DCI)</div>
-        <div class="dim-value">PS3.A — The faster a given object is moving, the more energy it possesses</div>
-      </div>
-      <div class="dim-card">
-        <div class="dim-label">🔗 Crosscutting Concept</div>
-        <div class="dim-value">Energy and Matter — Energy can be transferred in various ways and between objects</div>
-      </div>
-    </div>
-
-    <div style="margin-top:16px;background:#FFF8E1;border:1.5px solid var(--yellow);border-radius:var(--radius-sm);padding:14px 18px;">
-      <p style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#7A5C00;margin-bottom:6px;">⚠️ ILEARN Content Limits</p>
-      <ul style="font-size:13px;font-weight:600;color:#7A5C00;padding-left:18px;line-height:1.6;">
-        <li>Students do NOT need to calculate speed or energy numerically</li>
-        <li>Students do NOT need to know "kinetic energy" or "potential energy" — these terms are NOT expected</li>
-        <li>Questions will use qualitative/comparative language: faster/slower, more/less energy, larger/smaller change</li>
-        <li>Students ARE expected to know: energy, collision, speed, stored energy, energy transfer, forms of energy (sound, heat, light, motion)</li>
-      </ul>
-    </div>
-  </div>
-
-</div><!-- end .main -->
+</div>
 
 <script>
-  let teacherMode = false;
-
-  function toggleMode() {
-    teacherMode = !teacherMode;
-    const body = document.body;
-    const toggle = document.getElementById('teacherToggle');
-    const label = document.getElementById('modeLabel');
-
-    if (teacherMode) {
-      body.classList.add('teacher-mode');
-      toggle.classList.add('active');
-      label.textContent = 'Teacher Edition';
-      label.style.color = '#F4C430';
-    } else {
-      body.classList.remove('teacher-mode');
-      toggle.classList.remove('active');
-      label.textContent = 'Student Edition';
-      label.style.color = 'rgba(255,255,255,0.7)';
-    }
+  function printDay(dayId) {
+    // Remove active class from all
+    const cards = document.querySelectorAll('.lesson-card');
+    cards.forEach(card => card.classList.remove('print-active'));
+    
+    // Add to specific card
+    const target = document.getElementById(dayId);
+    target.classList.add('print-active');
+    
+    // Trigger print
+    window.print();
   }
-
-  // Keyboard shortcut: Ctrl+Shift+T to toggle teacher mode
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'T') {
-      toggleMode();
-    }
-  });
 </script>
+
 </body>
 </html>
