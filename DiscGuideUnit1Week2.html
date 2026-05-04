@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4th Grade Science | Unit 1 Week 2 Discovery Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #2E7D82; /* Teal for Waves/Sound */
+    --secondary: #C75B2A;
+    --accent: #F4C430;
+    --bg-light: #F7F9FC;
+    --card-bg: #FFFFFF;
+    --text-main: #1A1A2E;
+    --text-muted: #5E6C84;
+    --border: #E2E8F0;
+    --success: #38A169;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary), #1B4D4F);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 5px solid var(--accent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    margin: 0;
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+  }
+
+  .container {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .day-badge {
+    display: inline-block;
+    background: var(--secondary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .lesson-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+    position: relative;
+    page-break-after: always;
+  }
+
+  .lesson-card h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+  }
+
+  .phenomenon-box {
+    background-color: #E6FFFA;
+    border-left: 5px solid #38B2AC;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+  }
+
+  .phenomenon-box h3 {
+    margin-top: 0;
+    color: #2C7A7B;
+    font-size: 1.1rem;
+  }
+
+  .print-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #EDF2F7;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s;
+  }
+
+  .print-btn:hover { background: #E2E8F0; }
+
+  .input-group { margin: 15px 0; }
+  label { display: block; font-weight: 700; margin-bottom: 8px; }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  .sim-link {
+    display: block;
+    background: #2D3748;
+    color: white;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin: 15px 0;
+    font-weight: 700;
+    transition: transform 0.2s;
+  }
+
+  .causal-chain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #EBF8FF;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px dashed #90CDF4;
+    margin: 20px 0;
+  }
+
+  .chain-link {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #4299E1;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: center;
+    flex: 1;
+  }
+
+  .btn-save {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  @media print {
+    body { background: white; }
+    .header, .print-btn, .btn-save, .sim-link p:last-child { display: none !important; }
+    .container { max-width: 100%; padding: 0; }
+    .lesson-card { box-shadow: none; border: none; margin: 0; padding: 0; display: none; }
+    .lesson-card.print-active { display: block !important; }
+    textarea { border: 1px solid #ccc; height: 100px; }
+  }
+
+  @media (max-width: 600px) {
+    .causal-chain { flex-direction: column; }
+    .print-btn { position: relative; top: 0; right: 0; margin-bottom: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Science Discovery Guide</h1>
+  <p>Unit 1: Energy Transfer • Week 2</p>
+</div>
+
+<div class="container">
+
+  <!-- DAY 1 -->
+  <div class="lesson-card" id="day1">
+    <button class="print-btn" onclick="printDay('day1')">🖨️ Print Day 1</button>
+    <div class="day-badge">Day 1: Phenomenon</div>
+    <h2>The Dancing Rice Challenge</h2>
+    
+    <div class="phenomenon-box">
+      <h3>🔍 Look Closely</h3>
+      <p>Watch the plastic wrap stretched over the bowl with rice on top. When the speaker plays a loud sound nearby, what happens to the rice?</p>
+    </div>
+
+    <div class="input-group">
+      <label>I Notice...</label>
+      <textarea placeholder="Describe how the rice moves when the sound starts."></textarea>
+    </div>
+
+    <div class="input-group">
+      <label>I Wonder...</label>
+      <textarea placeholder="How is the speaker touching the rice if they aren't connected?"></textarea>
+    </div>
+  </div>
+
+  <!-- DAY 2 -->
+  <div class="lesson-card" id="day2">
+    <button class="print-btn" onclick="printDay('day2')">🖨️ Print Day 2</button>
+    <div class="day-badge">Day 2: Investigation</div>
+    <h2>Vibration Station</h2>
+    <p>Gently pluck a rubber band and watch it closely. Then, touch a vibrating tuning fork to the surface of a cup of water.</p>
+
+    <div class="input-group">
+      <label>What causes sound?</label>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Evidence 1: The Rubber Band</p>
+      <textarea placeholder="What did you see the rubber band doing while it made sound?"></textarea>
+    </div>
+
+    <div class="input-group">
+      <label>Energy Transfer Evidence:</label>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Evidence 2: The Tuning Fork & Water</p>
+      <textarea placeholder="What happened to the water? Where did the energy come from?"></textarea>
+    </div>
+  </div>
+
+  <!-- DAY 3 -->
+  <div class="lesson-card" id="day3">
+    <button class="print-btn" onclick="printDay('day3')">🖨️ Print Day 3</button>
+    <div class="day-badge">Day 3: Simulation</div>
+    <h2>Wave Patterns</h2>
+    
+    <a href="https://phet.colorado.edu/sims/html/wave-on-a-string/latest/wave-on-a-string_all.html" target="_blank" class="sim-link">
+      🌊 Click to Launch PhET Wave on a String
+    </a>
+    
+    <div class="input-group">
+      <label>Simulation Task:</label>
+      <p>Set the simulation to "Oscillate." Change the **Amplitude** (height) and the **Frequency** (speed).</p>
+      <p><strong>Question:</strong> Which setting creates a wave with the MOST energy? (Look at the movement of the beads!)</p>
+      <textarea placeholder="A wave with a high amplitude has..."></textarea>
+    </div>
+  </div>
+
+  <!-- DAY 4 -->
+  <div class="lesson-card" id="day4">
+    <button class="print-btn" onclick="printDay('day4')">🖨️ Print Day 4</button>
+    <div class="day-badge">Day 4: Application</div>
+    <h2>Communication Through Waves</h2>
+    <p>How can we use sound to send a message across the room? Think about your "Cup Phone" experiment.</p>
+    
+    <div class="input-group">
+      <label>The String Telephone:</label>
+      <textarea placeholder="How does the sound travel from one cup to the other? What is vibrating?"></textarea>
+    </div>
+
+    <div class="phenomenon-box">
+      <h3>💡 Big Idea: Mediums</h3>
+      <p>Sound energy needs a <strong>medium</strong> (like string, air, or water) to travel. The energy moves by making the tiny particles in the medium vibrate!</p>
+    </div>
+  </div>
+
+  <!-- DAY 5 -->
+  <div class="lesson-card" id="day5" style="border: 2px solid var(--primary); background: #f0fdfa;">
+    <button class="print-btn" onclick="printDay('day5')">🖨️ Print Day 5</button>
+    <div class="day-badge" style="background: var(--primary);">Day 5: Review</div>
+    <h2>Sound Causal Chain</h2>
+    <p>Connect the ideas of sound energy:</p>
+    
+    <div class="causal-chain">
+      <div class="chain-link">Object Vibrates</div>
+      <span>➡️</span>
+      <div class="chain-link">Energy Moves Through Air</div>
+      <span>➡️</span>
+      <div class="chain-link"><input type="text" style="border:none; text-align:center; padding:0; width:100%;" placeholder="We hear SOUND"></div>
+    </div>
+
+    <div class="input-group">
+      <label>Final Week 2 Claim:</label>
+      <textarea rows="4" placeholder="Explain how the 'Dancing Rice' on Day 1 proved that sound is a form of energy."></textarea>
+    </div>
+    
+    <button class="btn-save" onclick="this.innerText='Week 2 Complete! ✓'; this.style.backgroundColor='var(--success)'">Save Weekly Progress</button>
+  </div>
+
+</div>
+
+<script>
+  function printDay(dayId) {
+    const cards = document.querySelectorAll('.lesson-card');
+    cards.forEach(card => card.classList.remove('print-active'));
+    const target = document.getElementById(dayId);
+    target.classList.add('print-active');
+    window.print();
+  }
+</script>
+
+</body>
+</html>
