@@ -28,6 +28,69 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Password Overlay Styling */
+  #password-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #password-overlay h2 {
+    font-family: 'Fredoka One', cursive;
+    margin-bottom: 20px;
+  }
+
+  .pw-input-group {
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  #pw-field {
+    border: none;
+    padding: 10px;
+    font-size: 1.1rem;
+    outline: none;
+    border-radius: 8px;
+    width: 200px;
+  }
+
+  #pw-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  #pw-error {
+    color: var(--accent);
+    margin-top: 15px;
+    font-weight: 700;
+    display: none;
+  }
+
+  /* Main Content (Hidden initially) */
+  #main-content {
+    display: none;
+  }
+
   .header {
     background: linear-gradient(135deg, var(--primary), #2C5282);
     color: white;
@@ -178,8 +241,9 @@
   }
 
   @media print {
-    body { background: white; }
-    .header, .print-btn, .btn-save, .sim-link p:last-child { display: none !important; }
+    body { background: white !important; }
+    #password-overlay, .header, .print-btn, .btn-save, .sim-link p:last-child { display: none !important; }
+    #main-content { display: block !important; }
     .container { max-width: 100%; padding: 0; }
     .lesson-card { 
       box-shadow: none; 
@@ -188,7 +252,6 @@
       padding: 0; 
       display: none; 
     }
-    /* The class 'print-active' is added via JS to show only the selected day */
     .lesson-card.print-active { 
       display: block !important; 
     }
@@ -199,150 +262,186 @@
   @media (max-width: 600px) {
     .causal-chain { flex-direction: column; }
     .print-btn { position: relative; top: 0; right: 0; margin-bottom: 10px; width: fit-content; }
+    .pw-input-group { flex-direction: column; width: 100%; }
+    #pw-field { width: 100%; box-sizing: border-box; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Science Discovery Guide</h1>
-  <p>Unit 1: Energy in Motion • Week 1</p>
+<!-- Password Screen -->
+<div id="password-overlay">
+  <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
+  <h2>Teacher Access Required</h2>
+  <p style="margin-bottom: 25px; opacity: 0.9;">Please enter the password to unlock the Unit 1 Discovery Guide.</p>
+  <div class="pw-input-group">
+    <input type="password" id="pw-field" placeholder="Password" onkeypress="handleKeyPress(event)">
+    <button id="pw-btn" onclick="checkPassword()">Unlock Guide</button>
+  </div>
+  <p id="pw-error">Incorrect password. Please try again.</p>
 </div>
 
-<div class="container">
-
-  <!-- DAY 1 -->
-  <div class="lesson-card" id="day1">
-    <button class="print-btn" onclick="printDay('day1')">🖨️ Print Day 1</button>
-    <div class="day-badge">Day 1: Phenomenon</div>
-    <h2>The Crash Test Challenge</h2>
-    
-    <div class="phenomenon-box">
-      <h3>🔍 Look Closely</h3>
-      <p>Watch the video of the two cars. One rolls slowly, and the other moves fast. They both hit a block of clay. What happened?</p>
-    </div>
-
-    <div class="input-group">
-      <label>I Notice...</label>
-      <textarea placeholder="Describe the damage to the clay..."></textarea>
-    </div>
-
-    <div class="input-group">
-      <label>I Wonder...</label>
-      <textarea placeholder="What scientific questions do you have?"></textarea>
-    </div>
+<!-- Protected Content -->
+<div id="main-content">
+  <div class="header">
+    <h1>Science Discovery Guide</h1>
+    <p>Unit 1: Energy in Motion • Week 1</p>
   </div>
 
-  <!-- DAY 2 -->
-  <div class="lesson-card" id="day2">
-    <button class="print-btn" onclick="printDay('day2')">🖨️ Print Day 2</button>
-    <div class="day-badge">Day 2: Investigation</div>
-    <h2>Toy Car Data</h2>
-    <p>Measure the "damage" (the dent in the clay) at two different heights.</p>
+  <div class="container">
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Test</th>
-            <th>Height</th>
-            <th>Dent Depth (mm)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Slow Speed</td>
-            <td>1 Book High</td>
-            <td><input type="text" placeholder="-- mm"></td>
-          </tr>
-          <tr>
-            <td>Fast Speed</td>
-            <td>3 Books High</td>
-            <td><input type="text" placeholder="-- mm"></td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- DAY 1 -->
+    <div class="lesson-card" id="day1">
+      <button class="print-btn" onclick="printDay('day1')">🖨️ Print Day 1</button>
+      <div class="day-badge">Day 1: Phenomenon</div>
+      <h2>The Crash Test Challenge</h2>
+      
+      <div class="phenomenon-box">
+        <h3>🔍 Look Closely</h3>
+        <p>Watch the video of the two cars. One rolls slowly, and the other moves fast. They both hit a block of clay. What happened?</p>
+      </div>
+
+      <div class="input-group">
+        <label>I Notice...</label>
+        <textarea placeholder="Describe the damage to the clay..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>I Wonder...</label>
+        <textarea placeholder="What scientific questions do you have?"></textarea>
+      </div>
     </div>
 
-    <div class="input-group">
-      <label>My Evidence:</label>
-      <textarea placeholder="Write a sentence explaining how the speed changed the dent."></textarea>
+    <!-- DAY 2 -->
+    <div class="lesson-card" id="day2">
+      <button class="print-btn" onclick="printDay('day2')">🖨️ Print Day 2</button>
+      <div class="day-badge">Day 2: Investigation</div>
+      <h2>Toy Car Data</h2>
+      <p>Measure the "damage" (the dent in the clay) at two different heights.</p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Test</th>
+              <th>Height</th>
+              <th>Dent Depth (mm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Slow Speed</td>
+              <td>1 Book High</td>
+              <td><input type="text" placeholder="-- mm"></td>
+            </tr>
+            <tr>
+              <td>Fast Speed</td>
+              <td>3 Books High</td>
+              <td><input type="text" placeholder="-- mm"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="input-group">
+        <label>My Evidence:</label>
+        <textarea placeholder="Write a sentence explaining how the speed changed the dent."></textarea>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="lesson-card" id="day3">
+      <button class="print-btn" onclick="printDay('day3')">🖨️ Print Day 3</button>
+      <div class="day-badge">Day 3: Simulation</div>
+      <h2>Virtual Energy Lab</h2>
+      
+      <a href="https://phet.colorado.edu/sims/html/energy-skate-park/latest/energy-skate-park_all.html" target="_blank" class="sim-link">
+        🚀 Click to Launch PhET Energy Skate Park
+        <p style="font-size: 0.8rem; font-weight: normal; margin-top: 5px;">(Requires Internet Connection)</p>
+      </a>
+      
+      <div class="input-group">
+        <label>Simulation Task:</label>
+        <p>Watch the green "Kinetic Energy" bar as the skater gets faster at the bottom of the ramp.</p>
+        <p><strong>Question:</strong> What is the relationship between speed and energy in the bar graph?</p>
+        <textarea placeholder="As speed increases, the energy bar..."></textarea>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="lesson-card" id="day4">
+      <button class="print-btn" onclick="printDay('day4')">🖨️ Print Day 4</button>
+      <div class="day-badge">Day 4: Application</div>
+      <h2>Energy Collisions</h2>
+      <p>When a moving car hits a stopped car, what happens to the energy?</p>
+      
+      <div class="input-group">
+        <label>Observation:</label>
+        <textarea placeholder="Describe the sound and movement when the cars hit."></textarea>
+      </div>
+
+      <div class="phenomenon-box" style="background:#FFFBEB; border-left-color:var(--accent);">
+        <h3>💡 Energy Transfer</h3>
+        <p>Energy can move from one object to another! When the cars collide, the moving car transfers energy to the stopped car and the air (sound).</p>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="lesson-card" id="day5">
+      <button class="print-btn" onclick="printDay('day5')">🖨️ Print Day 5</button>
+      <div class="day-badge">Day 5: Review</div>
+      <h2>The ILEARN Causal Chain</h2>
+      <p>Complete the scientific chain of logic:</p>
+      
+      <div class="causal-chain">
+        <div class="chain-link">Faster Speed</div>
+        <span>➡️</span>
+        <div class="chain-link"><input type="text" style="border:none; text-align:center; padding:0;" placeholder="More Energy"></div>
+        <span>➡️</span>
+        <div class="chain-link">More Change/Damage</div>
+      </div>
+
+      <div class="input-group">
+        <label>Final Week 1 Claim:</label>
+        <textarea rows="4" placeholder="How do you know that speed and energy are related? Use your data from Day 2 and Day 3."></textarea>
+      </div>
+      
+      <button class="btn-save" onclick="this.innerText='Week 1 Complete! ✓'; this.style.backgroundColor='var(--success)'">Save Weekly Progress</button>
     </div>
   </div>
-
-  <!-- DAY 3 -->
-  <div class="lesson-card" id="day3">
-    <button class="print-btn" onclick="printDay('day3')">🖨️ Print Day 3</button>
-    <div class="day-badge">Day 3: Simulation</div>
-    <h2>Virtual Energy Lab</h2>
-    
-    <a href="https://phet.colorado.edu/sims/html/energy-skate-park/latest/energy-skate-park_all.html" target="_blank" class="sim-link">
-      🚀 Click to Launch PhET Energy Skate Park
-      <p style="font-size: 0.8rem; font-weight: normal; margin-top: 5px;">(Requires Internet Connection)</p>
-    </a>
-    
-    <div class="input-group">
-      <label>Simulation Task:</label>
-      <p>Watch the green "Kinetic Energy" bar as the skater gets faster at the bottom of the ramp.</p>
-      <p><strong>Question:</strong> What is the relationship between speed and energy in the bar graph?</p>
-      <textarea placeholder="As speed increases, the energy bar..."></textarea>
-    </div>
-  </div>
-
-  <!-- DAY 4 -->
-  <div class="lesson-card" id="day4">
-    <button class="print-btn" onclick="printDay('day4')">🖨️ Print Day 4</button>
-    <div class="day-badge">Day 4: Application</div>
-    <h2>Energy Collisions</h2>
-    <p>When a moving car hits a stopped car, what happens to the energy?</p>
-    
-    <div class="input-group">
-      <label>Observation:</label>
-      <textarea placeholder="Describe the sound and movement when the cars hit."></textarea>
-    </div>
-
-    <div class="phenomenon-box" style="background:#FFFBEB; border-left-color:var(--accent);">
-      <h3>💡 Energy Transfer</h3>
-      <p>Energy can move from one object to another! When the cars collide, the moving car transfers energy to the stopped car and the air (sound).</p>
-    </div>
-  </div>
-
-  <!-- DAY 5 -->
-  <div class="lesson-card" id="day5">
-    <button class="print-btn" onclick="printDay('day5')">🖨️ Print Day 5</button>
-    <div class="day-badge">Day 5: Review</div>
-    <h2>The ILEARN Causal Chain</h2>
-    <p>Complete the scientific chain of logic:</p>
-    
-    <div class="causal-chain">
-      <div class="chain-link">Faster Speed</div>
-      <span>➡️</span>
-      <div class="chain-link"><input type="text" style="border:none; text-align:center; padding:0;" placeholder="More Energy"></div>
-      <span>➡️</span>
-      <div class="chain-link">More Change/Damage</div>
-    </div>
-
-    <div class="input-group">
-      <label>Final Week 1 Claim:</label>
-      <textarea rows="4" placeholder="How do you know that speed and energy are related? Use your data from Day 2 and Day 3."></textarea>
-    </div>
-    
-    <button class="btn-save" onclick="this.innerText='Week 1 Complete! ✓'; this.style.backgroundColor='var(--success)'">Save Weekly Progress</button>
-  </div>
-
 </div>
 
 <script>
+  const CORRECT_PASSWORD = "Science2025";
+
+  function checkPassword() {
+    const entered = document.getElementById('pw-field').value;
+    const overlay = document.getElementById('password-overlay');
+    const content = document.getElementById('main-content');
+    const error = document.getElementById('pw-error');
+
+    if (entered === CORRECT_PASSWORD) {
+      overlay.style.display = 'none';
+      content.style.display = 'block';
+    } else {
+      error.style.display = 'block';
+      document.getElementById('pw-field').value = '';
+    }
+  }
+
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      checkPassword();
+    }
+  }
+
   function printDay(dayId) {
-    // Remove active class from all
     const cards = document.querySelectorAll('.lesson-card');
     cards.forEach(card => card.classList.remove('print-active'));
     
-    // Add to specific card
     const target = document.getElementById(dayId);
     target.classList.add('print-active');
     
-    // Trigger print
     window.print();
   }
 </script>
