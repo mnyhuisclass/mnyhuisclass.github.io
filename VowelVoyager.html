@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vowel Voyager: 5-Level Rescue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', Courier, monospace; touch-action: none; }
+        canvas { display: block; image-rendering: pixelated; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: white; padding: 20px; z-index: 10; }
+        .retro-text { text-shadow: 2px 2px #ff00ff, -2px -2px #00ffff; text-transform: uppercase; }
+        .health-bar { width: 200px; height: 15px; border: 2px solid #fff; background: #333; }
+        .health-fill { height: 100%; background: #00ff00; transition: width 0.3s ease; }
+        #start-screen, #game-over, #level-clear {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: auto; text-align: center; z-index: 100;
+        }
+        .btn {
+            background: #ff00ff; color: white; padding: 15px 40px; font-size: 1.5rem;
+            border: none; cursor: pointer; margin-top: 20px; box-shadow: 4px 4px 0px #00ffff;
+        }
+        .active-status { font-size: 0.7rem; margin-top: 5px; color: #00ffff; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui-layer">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="retro-text text-xl font-bold">Vowel Voyager</h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs">HULL:</span>
+                    <div class="health-bar"><div id="health-fill" class="health-fill"></div></div>
+                </div>
+                <div id="status-effects" class="flex flex-col gap-1 mt-2"></div>
+            </div>
+            <div class="text-right">
+                <p class="text-xl retro-text">LEVEL <span id="lvl-val">1</span>: <span id="score-val">0</span></p>
+                <p class="text-sm opacity-70">TARGET: Rescue Vowel '<span id="target-vowel">A</span>'</p>
+                <p class="text-xs opacity-50">PROGRESS: <span id="count-val">0</span>/250</p>
+                <p id="boss-warning" class="text-red-500 font-bold hidden animate-pulse uppercase mt-2">Vowel Trapped! Break the R-Cage!</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="start-screen">
+        <h1 class="text-6xl font-black retro-text mb-4">VOWEL VOYAGER</h1>
+        <p class="text-cyan-300 mb-4 max-w-md px-4 text-center">Clear 5 sectors to rescue all the Vowels from the Bossy R!</p>
+        <div class="grid grid-cols-2 gap-2 text-xs text-left mb-8 bg-white/5 p-4 rounded border border-white/10">
+            <div><b class="text-yellow-400">a:</b> Gun Upgrade</div>
+            <div><b class="text-blue-400">e:</b> Forcefield</div>
+            <div><b class="text-green-400">i:</b> Clone (Now collects vowels!)</div>
+            <div><b class="text-orange-400">o:</b> Fire Wave (Persistent for Level)</div>
+            <div><b class="text-purple-400">u:</b> Invincibility (30s)</div>
+        </div>
+        <button class="btn" onclick="startGame()">INITIALIZE MISSION</button>
+    </div>
+
+    <div id="level-clear" class="hidden">
+        <h1 class="text-5xl font-black text-green-400 mb-4 uppercase">Vowel Rescued!</h1>
+        <p class="text-2xl mb-8 text-white">Sector <span id="cleared-lvl">1</span> Complete</p>
+        <button class="btn" onclick="nextLevel()">PROCEED TO NEXT SECTOR</button>
+    </div>
+
+    <div id="game-over" class="hidden">
+        <h1 class="text-6xl font-black text-red-500 mb-4 uppercase">System Failure</h1>
+        <p class="text-4xl font-bold retro-text mb-8 text-white">SCORE: <span id="final-score">0</span></p>
+        <button class="btn" onclick="startGame()">REBOOT SYSTEM</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score-val');
+        const countEl = document.getElementById('count-val');
+        const lvlEl = document.getElementById('lvl-val');
+        const targetVowelEl = document.getElementById('target-vowel');
+        const healthEl = document.getElementById('health-fill');
+        const statusEl = document.getElementById('status-effects');
+        const finalScoreEl = document.getElementById('final-score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const levelClearScreen = document.getElementById('level-clear');
+        const bossWarning = document.getElementById('boss-warning');
+
+        let gameActive = false;
+        let currentLevel = 1;
+        let score = 0;
+        let health = 100;
+        let enemySpawnCount = 0;
+        let frameCount = 0;
+        let isBossActive = false;
+
+        // Player Power-ups
+        let weaponLevel = 1;
+        let hasForcefield = false;
+        let optionsCount = 0; 
+        let hasFireWeapon = false;
+        let invincibilityTimer = 0;
+
+        const VOWELS_UPPER = ['A', 'E', 'I', 'O', 'U'];
+        const VOWELS_LOWER = ['a', 'e', 'i', 'o', 'u'];
+        const CONSONANTS = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Z'];
+
+        const player = {
+            x: 100, y: 0, width: 45, height: 25, speed: 6,
+            bullets: [], lastShot: 0, shotDelay: 250
+        };
+
+        const enemies = [];
+        const particles = [];
+        const stars = [];
+        const keys = {};
+
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player.y = canvas.height / 2;
+            stars.length = 0;
+            for(let i=0; i<80; i++) stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2+1});
+        }
+
+        function createParticles(x, y, color, count=12) {
+            for(let i=0; i<count; i++) {
+                particles.push({x, y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, l: 1.0, c: color});
+            }
+        }
+
+        function spawnWave() {
+            if (isBossActive) return;
+            const type = Math.floor(Math.random() * 4);
+            const count = 4 + currentLevel; 
+            const baseY = Math.random() * (canvas.height - 200) + 100;
+            
+            for(let i=0; i<count; i++) {
+                let char = Math.random() > 0.2 ? CONSONANTS[Math.floor(Math.random()*CONSONANTS.length)] : VOWELS_UPPER[Math.floor(Math.random()*5)];
+                if (Math.random() > 0.9) char = VOWELS_LOWER[Math.floor(Math.random()*5)];
+
+                let xOffset = i * 45;
+                let yOffset = 0;
+                if (type === 1) yOffset = i * 35;
+                if (type === 2) yOffset = Math.sin(i) * 60;
+
+                enemies.push({
+                    x: canvas.width + xOffset,
+                    y: baseY + yOffset,
+                    char,
+                    isVowel: VOWELS_UPPER.includes(char) || VOWELS_LOWER.includes(char),
+                    isLower: VOWELS_LOWER.includes(char),
+                    hp: 1 + Math.floor(currentLevel/3),
+                    speed: (3 + (currentLevel * 0.5)) + (score/5000),
+                    size: 30
+                });
+                enemySpawnCount++;
+            }
+        }
+
+        function spawnBoss() {
+            isBossActive = true;
+            bossWarning.classList.remove('hidden');
+            const trappedVowel = VOWELS_UPPER[currentLevel - 1];
+            
+            enemies.push({
+                x: canvas.width + 300,
+                y: canvas.height / 2 - 100,
+                char: "R",
+                trappedVowel: trappedVowel,
+                isBoss: true,
+                hp: 100 + (currentLevel * 50),
+                maxHp: 100 + (currentLevel * 50),
+                speed: 1.5,
+                size: 200,
+                lastShot: 0
+            });
+        }
+
+        function applyPowerUp(type) {
+            switch(type) {
+                case 'a': weaponLevel = Math.min(3, weaponLevel + 1); break;
+                case 'e': hasForcefield = true; break;
+                case 'i': optionsCount = Math.min(4, optionsCount + 1); break;
+                case 'o': hasFireWeapon = true; break; // Removed timer logic
+                case 'u': invincibilityTimer = 1800; break;
+            }
+        }
+
+        function getOptionPos(index) {
+            const offsets = [
+                {x: -45, y: -60},
+                {x: -45, y: 60},
+                {x: -15, y: -110},
+                {x: -15, y: 110}
+            ];
+            return {
+                x: player.x + offsets[index].x,
+                y: player.y + offsets[index].y,
+                w: 30,
+                h: 25
+            };
+        }
+
+        function update() {
+            if(!gameActive) return;
+            frameCount++;
+            if(invincibilityTimer > 0) invincibilityTimer--;
+
+            // Player Movement
+            if(keys['ArrowUp'] || keys['KeyW']) player.y -= player.speed;
+            if(keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
+            if(keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
+            if(keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
+            player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
+
+            // Firing
+            const now = Date.now();
+            if(keys['Space'] && now - player.lastShot > player.shotDelay) {
+                const fire = (x, y) => {
+                    if(hasFireWeapon) {
+                        player.bullets.push({
+                            x, y, vx: 12, vy: 0, 
+                            type: 'fire', 
+                            w: 20, h: 120,
+                            pierce: true, 
+                            hits: [] 
+                        });
+                    } else if(weaponLevel === 1) {
+                        player.bullets.push({x, y, vx: 14, vy: 0, w: 16, h: 5});
+                    } else if(weaponLevel === 2) {
+                        player.bullets.push({x, y, vx: 14, vy: -1.5, w: 16, h: 5}, {x, y, vx: 14, vy: 1.5, w: 16, h: 5});
+                    } else {
+                        player.bullets.push({x, y, vx: 18, vy: 0, w: 16, h: 5}, {x, y, vx: 16, vy: -4, w: 16, h: 5}, {x, y, vx: 16, vy: 4, w: 16, h: 5});
+                    }
+                };
+                fire(player.x + player.width, player.y + player.height/2);
+                for(let i=0; i<optionsCount; i++) {
+                    const opt = getOptionPos(i);
+                    fire(opt.x + opt.w, opt.y + opt.h/2);
+                }
+                player.lastShot = now;
+            }
+
+            if(!isBossActive && frameCount % Math.max(60, 120 - (currentLevel*10)) === 0) {
+                if(enemySpawnCount >= 250) spawnBoss();
+                else spawnWave();
+            }
+
+            stars.forEach(s => { s.x -= s.s; if(s.x < 0) s.x = canvas.width; });
+            
+            player.bullets.forEach((b, i) => {
+                b.x += b.vx; b.y += b.vy;
+                if(b.x > canvas.width || b.x < 0) player.bullets.splice(i, 1);
+            });
+
+            for(let i=enemies.length-1; i>=0; i--) {
+                const e = enemies[i];
+                if(e.isBoss) {
+                    e.x = Math.max(canvas.width - 400, e.x - e.speed);
+                    e.y += Math.sin(frameCount * 0.03) * (3 + currentLevel*0.5);
+                    
+                    if(now - e.lastShot > Math.max(800, 1500 - currentLevel*150)) {
+                        const bulletCount = 8 + currentLevel*2;
+                        for(let j=0; j<bulletCount; j++) {
+                            const ang = (Math.PI*2/bulletCount)*j + (frameCount*0.01);
+                            enemies.push({x: e.x + 50, y: e.y + 100, vx: Math.cos(ang)*4, vy: Math.sin(ang)*4, char: 'r', size: 25, isProjectile: true});
+                        }
+                        e.lastShot = now;
+                    }
+                } else if(e.isProjectile) {
+                    e.x += e.vx; e.y += e.vy;
+                } else {
+                    e.x -= e.speed;
+                }
+
+                player.bullets.forEach((b, bi) => {
+                    const bw = b.w || 16;
+                    const bh = b.h || 5;
+                    const by = b.type === 'fire' ? b.y - bh/2 : b.y;
+
+                    if(b.x > e.x && b.x < e.x + e.size && by < e.y + e.size && by + bh > e.y) {
+                        if(e.isVowel) {
+                            if (!b.pierce) player.bullets.splice(bi, 1);
+                        } else {
+                            if (b.pierce) {
+                                if (!b.hits.includes(e)) {
+                                    e.hp -= 5;
+                                    b.hits.push(e);
+                                }
+                            } else {
+                                e.hp -= 1;
+                                player.bullets.splice(bi, 1);
+                            }
+
+                            if(e.hp <= 0) {
+                                createParticles(e.x + e.size/2, e.y + e.size/2, e.isBoss ? '#0ff' : '#f0f', e.isBoss ? 50 : 8);
+                                if(e.isBoss) {
+                                    score += (currentLevel * 5000);
+                                    handleLevelClear();
+                                } else {
+                                    score += 10;
+                                }
+                                enemies.splice(i, 1);
+                            }
+                        }
+                    }
+                });
+
+                const targets = [{x: player.x, y: player.y, w: player.width, h: player.height, main: true}];
+                for(let j=0; j<optionsCount; j++) {
+                    const opt = getOptionPos(j);
+                    targets.push({x: opt.x, y: opt.y, w: opt.w, h: opt.h, main: false});
+                }
+
+                targets.forEach(t => {
+                    if(e.x < t.x + t.w && e.x + e.size > t.x && e.y < t.y + t.h && e.y + e.size > t.y) {
+                        if(e.isVowel) {
+                            if(e.isLower) applyPowerUp(e.char);
+                            else health = Math.min(100, health + 15);
+                            score += 100;
+                            createParticles(e.x, e.y, '#0f0');
+                            enemies.splice(i, 1);
+                        } else {
+                            if(invincibilityTimer > 0) {
+                                if(!e.isBoss) enemies.splice(i, 1);
+                            } else if(hasForcefield && t.main) {
+                                hasForcefield = false;
+                                if(!e.isBoss) enemies.splice(i, 1);
+                                createParticles(player.x, player.y, '#0cf', 25);
+                            } else if(t.main || (!t.main && !e.isProjectile && !e.isBoss)) {
+                                if (t.main) {
+                                    health -= e.isBoss ? 100 : 25;
+                                    if(!e.isBoss) enemies.splice(i, 1);
+                                    if(health <= 0) endGame();
+                                } else if (!e.isBoss) {
+                                    createParticles(e.x, e.y, '#f0f', 8);
+                                    enemies.splice(i, 1);
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if(e.x < -300 || e.x > canvas.width + 500 || e.y < -200 || e.y > canvas.height + 200) enemies.splice(i, 1);
+            }
+
+            particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.l -= 0.025; if(p.l <= 0) particles.splice(i, 1); });
+
+            healthEl.style.width = health + '%';
+            scoreEl.innerText = score;
+            countEl.innerText = enemySpawnCount;
+            lvlEl.innerText = currentLevel;
+            targetVowelEl.innerText = VOWELS_UPPER[currentLevel-1];
+            updateStatusUI();
+        }
+
+        function updateStatusUI() {
+            let html = '';
+            if(invincibilityTimer > 0) html += `<div class="active-status">INVINCIBLE: ${Math.ceil(invincibilityTimer/60)}s</div>`;
+            if(hasForcefield) html += `<div class="active-status" style="color: #0cf">SHIELD ONLINE</div>`;
+            if(hasFireWeapon) html += `<div class="active-status" style="color: #f60">THERMAL WAVE ACTIVE</div>`;
+            if(optionsCount > 0) html += `<div class="active-status">CLONE SQUAD: ${optionsCount}</div>`;
+            statusEl.innerHTML = html;
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#fff';
+            stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
+
+            if(!gameActive) return;
+
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.4)';
+            for(let i=0; i<optionsCount; i++) {
+                const opt = getOptionPos(i);
+                ctx.beginPath(); ctx.moveTo(opt.x, opt.y); ctx.lineTo(opt.x+opt.w, opt.y+opt.h/2); ctx.lineTo(opt.x, opt.y+opt.h); ctx.fill();
+            }
+
+            if(invincibilityTimer === 0 || frameCount % 6 < 3) {
+                ctx.fillStyle = '#0ff';
+                ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(player.x+player.width, player.y+player.height/2); ctx.lineTo(player.x, player.y+player.height); ctx.fill();
+                if(hasForcefield) {
+                    ctx.strokeStyle = '#0cf'; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.arc(player.x + player.width/2, player.y + player.height/2, 45, 0, Math.PI*2); ctx.stroke();
+                }
+            }
+
+            player.bullets.forEach(b => {
+                if(b.type === 'fire') {
+                    const gradient = ctx.createLinearGradient(b.x, b.y - b.h/2, b.x, b.y + b.h/2);
+                    gradient.addColorStop(0, 'rgba(255, 0, 0, 0)');
+                    gradient.addColorStop(0.5, 'rgba(255, 200, 0, 1)');
+                    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                    ctx.fillStyle = gradient;
+                    const waveOff = Math.sin(frameCount * 0.5 + b.x * 0.1) * 15;
+                    ctx.beginPath();
+                    ctx.ellipse(b.x, b.y, b.w, b.h/2 + waveOff, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(b.x - 2, b.y - b.h/3, 4, b.h * 0.66);
+                } else {
+                    ctx.fillStyle = '#fff'; ctx.fillRect(b.x, b.y-2, b.w, b.h);
+                }
+            });
+
+            enemies.forEach(e => {
+                if(e.isBoss) {
+                    ctx.fillStyle = '#ff0055';
+                    ctx.font = 'bold 180px Arial';
+                    ctx.fillText(e.char, e.x, e.y + 150);
+                    ctx.fillStyle = '#00ff00';
+                    ctx.font = 'bold 60px Arial';
+                    const pulse = Math.abs(Math.sin(frameCount * 0.1)) * 20;
+                    ctx.fillText(e.trappedVowel, e.x + 50, e.y + 110 - pulse);
+                    ctx.strokeStyle = '#0ff'; ctx.lineWidth = 4;
+                    ctx.strokeRect(e.x + 30, e.y + 40, 100, 120);
+                    ctx.fillStyle = '#333'; ctx.fillRect(e.x, e.y - 40, e.size, 12);
+                    ctx.fillStyle = '#0ff'; ctx.fillRect(e.x, e.y - 40, (e.hp/e.maxHp)*e.size, 12);
+                } else {
+                    ctx.fillStyle = e.isVowel ? (e.isLower ? '#ff0' : '#0f0') : (e.isProjectile ? '#f44' : '#f0f');
+                    ctx.font = `bold ${e.size}px Arial`; 
+                    ctx.fillText(e.char, e.x, e.y + e.size);
+                }
+            });
+
+            particles.forEach(p => { ctx.globalAlpha = p.l; ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, 4, 4); });
+            ctx.globalAlpha = 1.0;
+
+            requestAnimationFrame(() => { if(gameActive) { update(); draw(); } });
+        }
+
+        function handleLevelClear() {
+            gameActive = false;
+            // Clear persistent power-ups on level transition
+            hasFireWeapon = false; 
+            hasForcefield = false;
+            invincibilityTimer = 0;
+            
+            if(currentLevel >= 5) {
+                endGame(true);
+            } else {
+                document.getElementById('cleared-lvl').innerText = currentLevel;
+                levelClearScreen.classList.remove('hidden');
+            }
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            levelClearScreen.classList.add('hidden');
+            resetForNewLevel();
+        }
+
+        function resetForNewLevel() {
+            gameActive = true;
+            isBossActive = false;
+            enemySpawnCount = 0;
+            enemies.length = 0;
+            player.bullets.length = 0;
+            bossWarning.classList.add('hidden');
+            draw();
+        }
+
+        function startGame() {
+            currentLevel = 1;
+            score = 0;
+            health = 100;
+            weaponLevel = 1;
+            hasForcefield = false;
+            optionsCount = 0;
+            hasFireWeapon = false;
+            invincibilityTimer = 0;
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            levelClearScreen.classList.add('hidden');
+            resetForNewLevel();
+        }
+
+        function endGame(win = false) {
+            gameActive = false;
+            finalScoreEl.innerText = score;
+            const title = gameOverScreen.querySelector('h1');
+            title.innerText = win ? "GALAXY RESCUED!" : "MISSION FAILED";
+            title.style.color = win ? "#00ff00" : "#ff0000";
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+    </script>
+</body>
+</html>
