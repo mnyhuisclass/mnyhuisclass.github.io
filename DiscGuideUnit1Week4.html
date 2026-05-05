@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4th Grade Science | Unit 1 Week 4 Discovery Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #27AE60; /* Green for Renewable Energy */
+    --secondary: #2980B9;
+    --accent: #F1C40F;
+    --bg-light: #F7F9FC;
+    --card-bg: #FFFFFF;
+    --text-main: #1A1A2E;
+    --text-muted: #5E6C84;
+    --border: #E2E8F0;
+    --success: #16A085;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Password Overlay Styling */
+  #password-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #password-overlay h2 {
+    font-family: 'Fredoka One', cursive;
+    margin-bottom: 20px;
+  }
+
+  .pw-input-group {
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  #pw-field {
+    border: none;
+    padding: 10px;
+    font-size: 1.1rem;
+    outline: none;
+    border-radius: 8px;
+    width: 200px;
+  }
+
+  #pw-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  #pw-error {
+    color: var(--accent);
+    margin-top: 15px;
+    font-weight: 700;
+    display: none;
+  }
+
+  /* Main Content */
+  #main-content {
+    display: none;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary), #1E8449);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 5px solid var(--accent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    margin: 0;
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+  }
+
+  .container {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .day-badge {
+    display: inline-block;
+    background: var(--secondary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .lesson-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+    position: relative;
+    page-break-after: always;
+  }
+
+  .lesson-card h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+  }
+
+  .phenomenon-box {
+    background-color: #F0FFF4;
+    border-left: 5px solid var(--primary);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+  }
+
+  .print-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #EDF2F7;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .input-group { margin: 15px 0; }
+  label { display: block; font-weight: 700; margin-bottom: 8px; }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  .sim-link {
+    display: block;
+    background: #2D3748;
+    color: white;
+    text-decoration: none;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin: 15px 0;
+    font-weight: 700;
+  }
+
+  .causal-chain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #F0F9FF;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px dashed var(--secondary);
+    margin: 20px 0;
+  }
+
+  .chain-link {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--primary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: center;
+    flex: 1;
+  }
+
+  .btn-save {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  @media print {
+    body { background: white !important; }
+    #password-overlay, .header, .print-btn, .btn-save { display: none !important; }
+    #main-content { display: block !important; }
+    .lesson-card { display: none; }
+    .lesson-card.print-active { display: block !important; border: none; box-shadow: none; }
+  }
+
+  @media (max-width: 600px) {
+    .causal-chain { flex-direction: column; }
+    .print-btn { position: relative; top: 0; right: 0; margin-bottom: 10px; width: fit-content; }
+  }
+</style>
+</head>
+<body>
+
+<div id="password-overlay">
+  <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
+  <h2>Teacher Access Required</h2>
+  <p style="margin-bottom: 25px; opacity: 0.9;">Please enter the password to unlock the Unit 1 Week 4 Guide.</p>
+  <div class="pw-input-group">
+    <input type="password" id="pw-field" placeholder="Password" onkeypress="handleKeyPress(event)">
+    <button id="pw-btn" onclick="checkPassword()">Unlock Guide</button>
+  </div>
+  <p id="pw-error">Incorrect password. Please try again.</p>
+</div>
+
+<div id="main-content">
+  <div class="header">
+    <h1>Science Discovery Guide</h1>
+    <p>Unit 1: Energy Transfer • Week 4</p>
+  </div>
+
+  <div class="container">
+
+    <!-- DAY 1 -->
+    <div class="lesson-card" id="day1">
+      <button class="print-btn" onclick="printDay('day1')">🖨️ Print Day 1</button>
+      <div class="day-badge">Day 1: Phenomenon</div>
+      <h2>Power from Above</h2>
+      
+      <div class="phenomenon-box">
+        <h3>🔍 Look Closely</h3>
+        <p>A small solar-powered toy grasshopper sits on a desk. When a bright flashlight shines on its back, it starts to buzz and jump. When the light is turned off, it stops immediately. What is moving the grasshopper?</p>
+      </div>
+
+      <div class="input-group">
+        <label>I Notice...</label>
+        <textarea placeholder="What happens when the light hits the solar panel?"></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>I Wonder...</label>
+        <textarea placeholder="Would this work with a desk lamp? What about a candle?"></textarea>
+      </div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="lesson-card" id="day2">
+      <button class="print-btn" onclick="printDay('day2')">🖨️ Print Day 2</button>
+      <div class="day-badge">Day 2: Investigation</div>
+      <h2>Wind Turbines</h2>
+      <p>Using a small pinwheel and a fan, observe how "wind" energy can be captured to do work.</p>
+
+      <div class="input-group">
+        <label>Capturing Motion:</label>
+        <textarea placeholder="Describe how the air molecules moving (wind) make the pinwheel spin."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>Evidence of Transfer:</label>
+        <textarea placeholder="If the pinwheel was attached to a string with a tiny weight, could it lift it? How?"></textarea>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="lesson-card" id="day3">
+      <button class="print-btn" onclick="printDay('day3')">🖨️ Print Day 3</button>
+      <div class="day-badge">Day 3: Simulation</div>
+      <h2>Energy Forms and Changes</h2>
+      
+      <a href="https://phet.colorado.edu/sims/html/energy-forms-and-changes/latest/energy-forms-and-changes_all.html" target="_blank" class="sim-link">
+        🌍 Click to Launch PhET Energy Lab (Intro Screen)
+        <p style="font-size: 0.8rem; font-weight: normal; margin-top: 5px;">(Check the "Energy Symbols" box!)</p>
+      </a>
+      
+      <div class="input-group">
+        <label>Simulation Task:</label>
+        <p>Switch to the "Systems" tab. Try the "Water Faucet" turning a "Generator" to light a "Bulb."</p>
+        <p><strong>Question:</strong> What happens to the energy when the water turns the wheel?</p>
+        <textarea placeholder="The mechanical energy from the water turns into..."></textarea>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="lesson-card" id="day4">
+      <button class="print-btn" onclick="printDay('day4')">🖨️ Print Day 4</button>
+      <div class="day-badge">Day 4: Engineering</div>
+      <h2>The Clean Energy Challenge</h2>
+      <p>Renewable resources like sun, wind, and water can be used forever without running out. Fossil fuels (like coal) are non-renewable.</p>
+      
+      <div class="input-group">
+        <label>Indiana Science Problem:</label>
+        <p>Imagine you are an engineer. Indiana has many flat fields. Which renewable energy source would be BEST for a farm in Indiana? Why?</p>
+        <textarea placeholder="I think wind/solar would be best because..."></textarea>
+      </div>
+
+      <div class="phenomenon-box" style="background:#EBF8FF; border-left-color:var(--secondary);">
+        <h3>💡 Human Impact</h3>
+        <p>Using renewable energy helps protect our environment because it doesn't release as much pollution into the air or water.</p>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="lesson-card" id="day5">
+      <button class="print-btn" onclick="printDay('day5')">🖨️ Print Day 5</button>
+      <div class="day-badge">Day 5: Review</div>
+      <h2>Renewable Causal Chain</h2>
+      <p>Complete the logic for a Hydroelectric Dam:</p>
+      
+      <div class="causal-chain">
+        <div class="chain-link">Falling Water (Motion)</div>
+        <span>➡️</span>
+        <div class="chain-link">Spinning Generator</div>
+        <span>➡️</span>
+        <div class="chain-link"><input type="text" style="border:none; text-align:center; padding:0; width:100%;" placeholder="Produces ELECTRICITY"></div>
+      </div>
+
+      <div class="input-group">
+        <label>Final Unit 1 Claim:</label>
+        <textarea rows="4" placeholder="Explain why solar panels are considered an energy 'transfer' device. (Where does the energy start and where does it go?)"></textarea>
+      </div>
+      
+      <button class="btn-save" onclick="this.innerText='Unit 1 Complete! Excellent Job! ✓'; this.style.backgroundColor='var(--success)'">Save Unit Progress</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CORRECT_PASSWORD = "Science2025";
+
+  function checkPassword() {
+    const entered = document.getElementById('pw-field').value;
+    const overlay = document.getElementById('password-overlay');
+    const content = document.getElementById('main-content');
+    const error = document.getElementById('pw-error');
+
+    if (entered === CORRECT_PASSWORD) {
+      overlay.style.display = 'none';
+      content.style.display = 'block';
+    } else {
+      error.style.display = 'block';
+      document.getElementById('pw-field').value = '';
+    }
+  }
+
+  function handleKeyPress(e) { if (e.key === 'Enter') checkPassword(); }
+
+  function printDay(dayId) {
+    const cards = document.querySelectorAll('.lesson-card');
+    cards.forEach(card => card.classList.remove('print-active'));
+    document.getElementById(dayId).classList.add('print-active');
+    window.print();
+  }
+</script>
+
+</body>
+</html>
