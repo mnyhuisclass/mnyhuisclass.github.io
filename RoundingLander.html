@@ -79,6 +79,16 @@
   .routine ol{margin:0;padding-left:20px;color:var(--dim);font-size:14px;line-height:1.7;}
   .routine b{color:var(--star);}
 
+  /* ---------- target place prompt ---------- */
+  .prompt{text-align:center;margin:10px 0 0;}
+  .prompt span{display:inline-block;font-size:clamp(13px,1.9vw,17px);font-weight:800;
+               letter-spacing:.2em;text-transform:uppercase;padding:8px 22px;border-radius:999px;
+               border:2px solid var(--teal);color:var(--teal);background:rgba(23,163,152,.10);
+               transition:color .2s,border-color .2s,background .2s;}
+  .prompt span.tens{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.12);}
+  .prompt span.thousands{border-color:var(--rose);color:var(--rose);background:rgba(228,112,92,.12);}
+  :fullscreen .prompt span{font-size:clamp(17px,2.2vw,23px);padding:11px 30px;}
+
   /* ---------- play stage ---------- */
   .stage{position:relative;flex:1;min-height:330px;margin-top:6px;}
 
@@ -87,7 +97,10 @@
   .comet .digits{font-family:var(--mono);font-weight:700;font-size:clamp(52px,9vw,92px);
                  letter-spacing:.06em;line-height:1;
                  text-shadow:0 0 26px rgba(23,163,152,.55);}
-  .comet .d-hundreds{color:var(--teal);border-bottom:5px solid var(--teal);}
+  .comet .d-target{color:var(--teal);border-bottom:5px solid var(--teal);}
+  .comet .d-comma{color:var(--dim);opacity:.65;}
+  .comet .digits.long{font-size:clamp(40px,7vw,74px);letter-spacing:.03em;}
+  :fullscreen .comet .digits.long{font-size:clamp(52px,8.5vw,104px);}
   .comet .d-decider{color:var(--gold);}
   .comet .d-rest{color:var(--dim);}
   .comet .tail{width:0;height:0;margin:8px auto 0;border-left:9px solid transparent;
@@ -251,8 +264,8 @@
   <!-- ================= START ================= -->
   <section class="screen on" id="screenStart">
     <div class="hero">
-      <h1>Land the comet on the <em>nearest hundred</em>.</h1>
-      <p>Every comet carries a three-digit number. Choose the hundred it belongs to — then watch it fly to its real spot on the number line and find out if you were right.</p>
+      <h1>Land the comet on the <em>nearest ten, hundred or thousand</em>.</h1>
+      <p>Every comet carries a three-digit number. Read which place you are rounding to, choose the pad it belongs on — then watch it fly to its real spot on the number line and find out if you were right.</p>
     </div>
 
     <div class="missions" id="missionList"></div>
@@ -260,16 +273,18 @@
     <div class="routine">
       <h4>Flight rules</h4>
       <ol>
-        <li>Find the <b>hundreds digit</b> — it is underlined in teal.</li>
+        <li>Read the banner: nearest <b>ten</b>, <b>hundred</b> or <b>thousand</b>?</li>
+        <li>Find the digit in <b>that place</b> — it is underlined in teal.</li>
         <li>Look at the <b>decider</b>, the digit to its right, glowing gold.</li>
-        <li>Decider is <b>0–4</b> → stay on the hundred you're on. Decider is <b>5–9</b> → climb to the next hundred.</li>
-        <li>Everything after the hundreds digit becomes <b>0</b>.</li>
+        <li>Decider is <b>0–4</b> → stay where you are. Decider is <b>5–9</b> → climb to the next one.</li>
+        <li>Every digit after the underlined one becomes <b>0</b>.</li>
       </ol>
     </div>
   </section>
 
   <!-- ================= PLAY ================= -->
   <section class="screen" id="screenPlay">
+    <div class="prompt" id="prompt"><span>Round to the nearest hundred</span></div>
     <div class="stage" id="stage">
       <div class="comet" id="comet">
         <div class="digits" id="digits"></div>
@@ -333,44 +348,62 @@
       blurb:"Only the two hundreds are labeled. You judge the halfway point yourself.",
       line:"bare", choices:2 },
     { id:"deep", name:"Deep Space",
-      blurb:"No number line at all — four possible landing pads. Read the question carefully.",
-      line:"none", choices:4 },
+      blurb:"No number line at all, four landing pads, and the target place switches between ten and hundred. Read the banner every time.",
+      line:"none", choices:4, places:[10,100], mixLabel:"tens and hundreds mixed" },
     { id:"nova", name:"Supernova Zone",
-      blurb:"The tricky ones: exact halfway numbers, rolling nines, and comets headed past 1,000.",
-      line:"none", choices:4 }
+      blurb:"Tens, hundreds and thousands all in one mission — exact halfways, rolling nines, and four-digit comets headed past 10,000.",
+      line:"none", choices:4, places:[10,100,1000], mixLabel:"tens, hundreds and thousands" }
   ];
 
-  var NOVA_POOL = [149,150,151,249,250,251,349,350,351,405,449,450,451,504,550,649,650,850,905,949,950,951,971,995,999,105,104,595,750,802];
+  // Supernova Zone pools — one per target place, all deliberately tricky
+  var NOVA_POOLS = {
+    10:   [105,115,145,195,235,295,305,345,395,405,449,451,495,595,645,695,795,845,895,905,945,951,971,995,999],
+    100:  [149,150,151,249,250,251,349,350,351,405,449,450,451,504,550,649,650,850,905,949,950,951,971,995,999,105,104,595,750,802],
+    1000: [1005,1050,1450,1499,1500,1501,2050,2500,2950,3499,3500,4500,4950,5500,6499,6500,7500,8950,9450,9499,9500,9501,9950,9999]
+  };
 
   var el = function(id){ return document.getElementById(id); };
   var state = null;
 
   /* ---------- math helpers ---------- */
+  function roundTo(n, place){ return Math.round(n/place)*place; }
   function roundHundred(n){ return Math.round(n/100)*100; }        // .5 rounds up for positives
   function roundTen(n){ return Math.round(n/10)*10; }
   function lowerHundred(n){ return Math.floor(n/100)*100; }
 
-  function randomNumber(){
+  function randomFor(place){
     var n;
-    do { n = 100 + Math.floor(Math.random()*900); } while (n % 100 === 0);
-    // 1 in 4 chance of forcing an exact-halfway number
-    if (Math.random() < 0.25) { n = lowerHundred(n) + 50; }
+    if (place === 100) {
+      do { n = 100 + Math.floor(Math.random()*900); } while (n % 100 === 0);
+      // 1 in 4 chance of forcing an exact-halfway number
+      if (Math.random() < 0.25) { n = lowerHundred(n) + 50; }
+    } else if (place === 10) {
+      do { n = 100 + Math.floor(Math.random()*900); } while (n % 10 === 0);
+      if (Math.random() < 0.25) { n = Math.floor(n/10)*10 + 5; }
+    } else {
+      do { n = 1000 + Math.floor(Math.random()*9000); } while (n % 1000 === 0);
+      if (Math.random() < 0.25) { n = Math.floor(n/1000)*1000 + 500; }
+    }
     return n;
   }
 
+  var PLACE_NAME = { 10:"ten", 100:"hundred", 1000:"thousand" };
+
   function makeQuestion(mission, seen){
+    var places = mission.places || [100];
+    var place = places[Math.floor(Math.random()*places.length)];
+    var pool = (mission.id === "nova") ? NOVA_POOLS[place] : null;
+
     var n, guard = 0;
     do {
-      n = (mission.id === "nova")
-        ? NOVA_POOL[Math.floor(Math.random()*NOVA_POOL.length)]
-        : randomNumber();
+      n = pool ? pool[Math.floor(Math.random()*pool.length)] : randomFor(place);
       guard++;
-    } while (seen && seen.indexOf(n) !== -1 && guard < 40);
-    if (seen) { seen.push(n); }
+    } while (seen && seen.indexOf(place + ":" + n) !== -1 && guard < 40);
+    if (seen) { seen.push(place + ":" + n); }
 
-    var low = lowerHundred(n);
-    var high = low + 100;
-    var answer = roundHundred(n);
+    var low = Math.floor(n / place) * place;
+    var high = low + place;
+    var answer = roundTo(n, place);
     var choices;
 
     if (mission.choices === 2) {
@@ -378,32 +411,57 @@
     } else {
       var set = [answer];
       var add = function(v){ if (v > 0 && set.indexOf(v) === -1) set.push(v); };
-      add(answer === low ? high : low);      // the other neighbor
-      add(roundTen(n));                       // rounded to the nearest ten instead
-      add(low);                               // always-round-down
-      add(high);                              // always-round-up
-      while (set.length < 4) { add(lowerHundred(n) + 100 * (1 + Math.floor(Math.random()*3))); }
+      add(answer === low ? high : low);                 // the other neighbor
+      if (place > 10) { add(roundTo(n, place/10)); }     // rounded one place too small
+      add(roundTo(n, place*10));                         // rounded one place too big
+      add(low);                                          // always-round-down
+      add(high);                                         // always-round-up
+      var spins = 0;
+      while (set.length < 4) {
+        add(low + place * (1 + Math.floor(Math.random()*3)));
+        if (++spins > 200) { add(low + place * (set.length + 1)); }
+      }
       choices = set.slice(0,4).sort(function(a,b){ return a-b; });
     }
 
-    return { n:n, low:low, high:high, answer:answer, choices:choices,
-             hundredsDigit:Math.floor(n/100), decider:Math.floor(n/10)%10 };
+    var digits = String(n);
+    var exponent = Math.round(Math.log(place) / Math.LN10);
+    var placeIndex = digits.length - 1 - exponent;
+
+    return { n:n, low:low, high:high, answer:answer, choices:choices, place:place,
+             placeName:PLACE_NAME[place],
+             placeIndex:placeIndex,
+             placeDigit:parseInt(digits[placeIndex], 10),
+             decider:parseInt(digits[placeIndex + 1], 10) };
   }
 
   /* ---------- rendering ---------- */
   function renderDigits(q){
-    var s = String(q.n);
-    el("digits").innerHTML =
-      '<span class="d-hundreds">' + s[0] + '</span>' +
-      '<span class="d-decider">' + s[1] + '</span>' +
-      '<span class="d-rest">' + s[2] + '</span>';
+    var d = String(q.n);
+    var out = "";
+    for (var i = 0; i < d.length; i++) {
+      if (i > 0 && (d.length - i) % 3 === 0) { out += '<span class="d-comma">,</span>'; }
+      var cls = (i === q.placeIndex) ? "d-target"
+              : (i === q.placeIndex + 1) ? "d-decider" : "d-rest";
+      out += '<span class="' + cls + '">' + d[i] + '</span>';
+    }
+    var box = el("digits");
+    box.className = "digits" + (d.length > 3 ? " long" : "");
+    box.innerHTML = out;
+  }
+
+  function setPrompt(q){
+    var box = el("prompt").firstElementChild;
+    box.textContent = "Round to the nearest " + q.placeName;
+    box.classList.toggle("tens", q.place === 10);
+    box.classList.toggle("thousands", q.place === 1000);
   }
 
   function buildLine(q, mission){
     el("labLeft").textContent = q.low.toLocaleString();
     el("labRight").textContent = q.high.toLocaleString();
     var beaconLabel = el("beaconLabel");
-    beaconLabel.textContent = (mission.line === "full") ? (q.low + 50).toLocaleString() : "";
+    beaconLabel.textContent = (mission.line === "full") ? (q.low + q.place/2).toLocaleString() : "";
 
     var rail = el("rail");
     var old = rail.querySelectorAll(".tick");
@@ -586,7 +644,7 @@
   function startMission(mission){
     state = { mission:mission, i:0, total:10, score:0, streak:0, best:0,
               right:0, results:[], q:null, locked:false, seen:[] };
-    el("missionTag").textContent = mission.name + " — nearest hundred";
+    el("missionTag").textContent = mission.name + " — " + (mission.mixLabel || "nearest hundred");
     show("screenPlay");
     buildDots();
     updateStats();
@@ -609,6 +667,7 @@
     state.locked = false;
     resetComet();
     renderDigits(state.q);
+    setPrompt(state.q);
     buildLine(state.q, state.mission);
     buildAnswers(state.q);
     el("feedback").innerHTML = '<div class="why">Press a landing pad, or use the number keys.</div>';
@@ -625,8 +684,8 @@
     // reveal the line for the no-line missions — this is the teaching moment
     el("numline").classList.add("show");
     el("beacon").classList.add("lit");
-    el("beaconLabel").textContent = (q.low + 50).toLocaleString();
-    var pct = ((q.n - q.low) / 100) * 100;
+    el("beaconLabel").textContent = (q.low + q.place/2).toLocaleString();
+    var pct = ((q.n - q.low) / q.place) * 100;
     el("marker").style.left = pct + "%";
     el("marker").classList.add("show");
 
@@ -663,7 +722,7 @@
     } else {
       state.streak = 0;
       dots[state.i].className = "dot miss";
-      state.results.push({ n:q.n, answer:q.answer, gave:value });
+      state.results.push({ n:q.n, answer:q.answer, gave:value, placeName:q.placeName });
     }
 
     var flightTime = reduced ? 60 : 980;
@@ -680,22 +739,30 @@
   }
 
   function explain(q, gave, correct){
-    var half = q.low + 50;
+    var half = q.low + q.place / 2;
     var side = (q.n === half)
       ? "sits <b>exactly on the halfway beacon</b>, and the rule says halfway climbs up"
       : (q.n > half ? "landed <b>past the halfway beacon</b>" : "landed <b>before the halfway beacon</b>");
 
+    var placeWord = { 10:"Tens", 100:"Hundreds", 1000:"Thousands" }[q.place];
     var why = "<b>" + q.n + "</b> " + side + " at " + half.toLocaleString() +
-              ", so it rounds to <b>" + q.answer.toLocaleString() + "</b>. " +
-              "Hundreds digit " + q.hundredsDigit + ", decider " + q.decider + ".";
+              ", so to the nearest " + q.placeName + " it rounds to <b>" + q.answer.toLocaleString() + "</b>. " +
+              placeWord + " digit " + q.placeDigit + ", decider " + q.decider + ".";
 
     if (correct) {
       return '<div class="verdict good">Clean landing.</div><div class="why">' + why + '</div>';
     }
 
     var diagnosis = "";
-    if (gave === roundTen(q.n) && gave !== q.answer) {
-      diagnosis = " You rounded to the nearest <b>ten</b> — the mission asked for the nearest <b>hundred</b>.";
+    var smaller = (q.place > 10) ? roundTo(q.n, q.place/10) : null;
+    var bigger = roundTo(q.n, q.place*10);
+    var biggerName = PLACE_NAME[q.place*10] || "ten thousand";
+    if (smaller !== null && gave === smaller && gave !== q.answer) {
+      diagnosis = " You rounded to the nearest <b>" + PLACE_NAME[q.place/10] +
+                  "</b> — the banner asked for the nearest <b>" + q.placeName + "</b>.";
+    } else if (gave === bigger && gave !== q.answer) {
+      diagnosis = " You rounded to the nearest <b>" + biggerName +
+                  "</b> — the banner asked for the nearest <b>" + q.placeName + "</b>.";
     } else if (gave === q.low && q.answer === q.high) {
       diagnosis = " You went down when the decider told you to climb.";
     } else if (gave === q.high && q.answer === q.low) {
@@ -732,7 +799,8 @@
       box.innerHTML = '<h4>Nothing missed</h4><ul><li class="ok">Every comet landed on the right hundred. Try the next mission up.</li></ul>';
     } else {
       var items = state.results.map(function(r){
-        return '<li><code>' + r.n + '</code> → you chose <code>' + r.gave.toLocaleString() +
+        return '<li><code>' + r.n + '</code> to the nearest ' + r.placeName +
+               ' → you chose <code>' + r.gave.toLocaleString() +
                '</code>, it lands on <code class="ok">' + r.answer.toLocaleString() + '</code></li>';
       }).join("");
       box.innerHTML = '<h4>Comets to fly again</h4><ul>' + items + '</ul>';
