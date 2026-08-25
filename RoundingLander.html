@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supernova Landing — Rounding to the Nearest Hundred</title>
+<style>
+  :root{
+    --space:#06201F;
+    --space2:#0A2927;
+    --panel:#0E3835;
+    --line:#1C5551;
+    --teal:#17A398;
+    --teal-deep:#0D6E6E;
+    --gold:#F0B429;
+    --gold-deep:#C8951F;
+    --star:#EAF6F4;
+    --dim:#8FBDB8;
+    --rose:#E4705C;
+    --mono:"Consolas","Menlo","DejaVu Sans Mono","Courier New",monospace;
+    --sans:system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;background:var(--space);color:var(--star);font-family:var(--sans);
+    display:flex;flex-direction:column;overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, #cfeeea 50%, transparent 51%),
+      radial-gradient(1px 1px at 78% 14%, #cfeeea 50%, transparent 51%),
+      radial-gradient(1px 1px at 34% 71%, #9fd6d0 50%, transparent 51%),
+      radial-gradient(1px 1px at 61% 45%, #cfeeea 50%, transparent 51%),
+      radial-gradient(1px 1px at 88% 66%, #9fd6d0 50%, transparent 51%),
+      radial-gradient(1px 1px at 22% 88%, #cfeeea 50%, transparent 51%),
+      radial-gradient(2px 2px at 47% 8%, #f0b429 50%, transparent 51%),
+      radial-gradient(1px 1px at 6% 55%, #9fd6d0 50%, transparent 51%),
+      radial-gradient(1px 1px at 93% 33%, #cfeeea 50%, transparent 51%);
+    opacity:.55;
+  }
+
+  /* ---------- shell ---------- */
+  .wrap{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;
+        max-width:1180px;width:100%;margin:0 auto;padding:14px 20px 20px;}
+
+  .topbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+          border-bottom:2px solid var(--line);padding-bottom:10px;}
+  .brand{font-weight:800;letter-spacing:.16em;font-size:15px;color:var(--teal);}
+  .brand span{color:var(--gold);}
+  .mission-tag{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);}
+  .stats{margin-left:auto;display:flex;gap:22px;align-items:baseline;}
+  .stat{text-align:right;}
+  .stat b{display:block;font-family:var(--mono);font-size:22px;line-height:1;color:var(--star);}
+  .stat i{font-style:normal;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
+
+  /* ---------- screens ---------- */
+  .screen{flex:1;display:none;flex-direction:column;}
+  .screen.on{display:flex;}
+
+  /* ---------- start ---------- */
+  .hero{text-align:center;padding:26px 0 8px;}
+  .hero h1{margin:0;font-size:clamp(34px,6vw,60px);line-height:.95;letter-spacing:-.02em;font-weight:800;}
+  .hero h1 em{font-style:normal;color:var(--gold);}
+  .hero p{margin:14px auto 0;max-width:640px;color:var(--dim);font-size:17px;line-height:1.5;}
+
+  .missions{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:26px;}
+  .mcard{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:18px;
+         text-align:left;color:var(--star);cursor:pointer;font:inherit;transition:transform .15s, border-color .15s;}
+  .mcard:hover{border-color:var(--teal);transform:translateY(-3px);}
+  .mcard:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .mcard .num{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--gold);}
+  .mcard h3{margin:6px 0 8px;font-size:20px;}
+  .mcard p{margin:0;font-size:14px;line-height:1.45;color:var(--dim);}
+
+  .routine{margin-top:24px;background:var(--space2);border:2px dashed var(--line);border-radius:14px;padding:16px 20px;}
+  .routine h4{margin:0 0 8px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);}
+  .routine ol{margin:0;padding-left:20px;color:var(--dim);font-size:14px;line-height:1.7;}
+  .routine b{color:var(--star);}
+
+  /* ---------- play stage ---------- */
+  .stage{position:relative;flex:1;min-height:330px;margin-top:6px;}
+
+  .comet{position:absolute;left:50%;top:6%;transform:translate(-50%,0);
+         text-align:center;transition:left .95s cubic-bezier(.3,.9,.3,1),top .95s cubic-bezier(.3,.9,.3,1);}
+  .comet .digits{font-family:var(--mono);font-weight:700;font-size:clamp(52px,9vw,92px);
+                 letter-spacing:.06em;line-height:1;
+                 text-shadow:0 0 26px rgba(23,163,152,.55);}
+  .comet .d-hundreds{color:var(--teal);border-bottom:5px solid var(--teal);}
+  .comet .d-decider{color:var(--gold);}
+  .comet .d-rest{color:var(--dim);}
+  .comet .tail{width:0;height:0;margin:8px auto 0;border-left:9px solid transparent;
+               border-right:9px solid transparent;border-top:14px solid var(--gold);opacity:0;transition:opacity .3s;}
+  .comet.landed .tail{opacity:1;}
+  .hint-key{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--dim);margin-top:6px;}
+
+  /* number line */
+  .numline{position:absolute;left:6%;right:6%;top:62%;opacity:0;transition:opacity .4s;}
+  .numline.show{opacity:1;}
+  .rail{position:relative;height:6px;background:var(--line);border-radius:3px;}
+  .endpoint{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;
+            background:var(--space);border:4px solid var(--teal);transform:translate(-50%,-50%);}
+  .endpoint.right{left:100%;} .endpoint.left{left:0;}
+  .endlabel{position:absolute;top:24px;font-family:var(--mono);font-size:clamp(18px,2.4vw,26px);
+            font-weight:700;color:var(--teal);transform:translateX(-50%);}
+  .endlabel.left{left:0;} .endlabel.right{left:100%;}
+  .beacon{position:absolute;left:50%;top:50%;width:4px;height:34px;background:var(--gold);
+          opacity:0;transition:opacity .35s;
+          transform:translate(-50%,-50%);border-radius:2px;box-shadow:0 0 14px rgba(240,180,41,.7);}
+  .beacon.lit{opacity:1;}
+  .beaconlabel{position:absolute;left:50%;top:-34px;transform:translateX(-50%);
+               font-family:var(--mono);font-size:13px;color:var(--gold);white-space:nowrap;}
+  .tick{position:absolute;top:50%;width:2px;height:14px;background:var(--line);transform:translate(-50%,-50%);}
+  .marker{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:var(--gold);
+          transform:translate(-50%,-50%) scale(0);box-shadow:0 0 18px rgba(240,180,41,.9);
+          transition:transform .5s .45s cubic-bezier(.2,1.6,.4,1);}
+  .marker.show{transform:translate(-50%,-50%) scale(1);}
+
+  /* ---------- answers ---------- */
+  .answers{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+  .answers.quad{max-width:620px;margin-left:auto;margin-right:auto;}
+  .pad{font-family:var(--mono);font-size:clamp(24px,3.4vw,34px);font-weight:700;color:var(--star);
+       background:var(--panel);border:3px solid var(--teal-deep);border-radius:14px;
+       padding:16px 34px;min-width:170px;cursor:pointer;transition:transform .12s,background .12s,border-color .12s;}
+  .pad small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.16em;
+             text-transform:uppercase;color:var(--dim);margin-bottom:4px;font-weight:600;}
+  .pad:hover:not(:disabled){background:var(--teal-deep);transform:translateY(-3px);}
+  .pad:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .pad:disabled{cursor:default;opacity:.45;}
+  .pad.correct{background:var(--teal);border-color:var(--gold);color:#04201E;opacity:1;}
+  .pad.correct small{color:#04201E;}
+  .pad.wrong{background:#4A1F1B;border-color:var(--rose);color:var(--rose);opacity:1;}
+  .pad.wrong small{color:var(--rose);}
+
+  /* ---------- feedback ---------- */
+  .feedback{min-height:74px;margin-top:14px;text-align:center;padding:0 10px;}
+  .verdict{font-size:20px;font-weight:800;letter-spacing:.02em;}
+  .verdict.good{color:var(--gold);}
+  .verdict.bad{color:var(--rose);}
+  .why{margin-top:6px;color:var(--dim);font-size:16px;line-height:1.45;}
+  .why b{color:var(--star);}
+
+  /* progress + charge */
+  .footer{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+          border-top:2px solid var(--line);padding-top:12px;margin-top:6px;}
+  .dots{display:flex;gap:7px;}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--line);}
+  .dot.hit{background:var(--teal);}
+  .dot.miss{background:var(--rose);}
+  .charge{flex:1;min-width:160px;}
+  .charge i{font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);}
+  .bar{height:9px;background:var(--space2);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-top:4px;}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .4s;}
+
+  .btn{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:.04em;
+       background:var(--gold);color:#062421;border:none;border-radius:10px;padding:13px 26px;cursor:pointer;}
+  .btn:hover{background:var(--gold-deep);}
+  .btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px;}
+  .btn.ghost{background:transparent;color:var(--dim);border:2px solid var(--line);}
+  .btn.ghost:hover{color:var(--star);border-color:var(--teal);}
+  .btn[hidden]{display:none;}
+
+  /* ---------- report ---------- */
+  .report{text-align:center;padding-top:20px;}
+  .report h2{font-size:clamp(28px,5vw,44px);margin:0 0 6px;}
+  .report .grade{font-family:var(--mono);font-size:clamp(52px,10vw,86px);color:var(--gold);line-height:1;margin:10px 0;}
+  .rgrid{display:flex;gap:30px;justify-content:center;flex-wrap:wrap;margin:16px 0 22px;}
+  .rgrid div{min-width:96px;}
+  .rgrid b{display:block;font-family:var(--mono);font-size:26px;}
+  .rgrid i{font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);}
+  .misses{max-width:720px;margin:0 auto;text-align:left;background:var(--panel);
+          border:2px solid var(--line);border-radius:14px;padding:16px 20px;}
+  .misses h4{margin:0 0 10px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);}
+  .misses ul{margin:0;padding-left:18px;color:var(--dim);font-size:15px;line-height:1.8;}
+  .misses code{font-family:var(--mono);color:var(--star);font-size:16px;}
+  .misses .ok{color:var(--gold);}
+  .actions{display:flex;gap:12px;justify-content:center;margin-top:22px;flex-wrap:wrap;}
+
+  .flare{position:fixed;inset:0;pointer-events:none;z-index:5;
+         background:radial-gradient(circle at 50% 45%,rgba(240,180,41,.32),transparent 62%);
+         opacity:0;transition:opacity .5s;}
+  .flare.on{opacity:1;}
+
+
+  /* ---------- explosion / landing effects ---------- */
+  .fxlayer{position:fixed;inset:0;pointer-events:none;z-index:6;overflow:hidden;}
+  .particle{position:absolute;width:12px;height:12px;border-radius:50%;will-change:transform,opacity;}
+  .shard{position:absolute;width:5px;height:18px;border-radius:2px;will-change:transform,opacity;}
+  .shockwave{position:absolute;border-radius:50%;border:4px solid var(--gold);will-change:transform,opacity;}
+  .crashflash{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;
+              background:radial-gradient(circle at 50% 60%,rgba(228,112,92,.42),transparent 65%);
+              transition:opacity .12s;}
+  .crashflash.on{opacity:1;}
+  .shaking{animation:shake .45s cubic-bezier(.36,.07,.19,.97);}
+  @keyframes shake{
+    10%,90%{transform:translate3d(-2px,1px,0);}
+    20%,80%{transform:translate3d(5px,-3px,0);}
+    30%,50%,70%{transform:translate3d(-8px,2px,0);}
+    40%,60%{transform:translate3d(8px,-2px,0);}
+  }
+  .comet.destroyed .digits{opacity:0;transition:opacity .18s;}
+  .comet.destroyed .tail{opacity:0;}
+
+  .soundbtn{background:transparent;border:2px solid var(--line);color:var(--dim);
+            border-radius:9px;padding:7px 12px;font:inherit;font-size:12px;font-weight:700;
+            letter-spacing:.1em;cursor:pointer;margin-left:14px;}
+  .soundbtn:hover{color:var(--star);border-color:var(--teal);}
+  .soundbtn:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .soundbtn.on{color:var(--gold);border-color:var(--gold-deep);}
+  .soundbtn + .soundbtn{margin-left:8px;}
+
+  /* projector mode: more room and bigger type once we take over the screen */
+  :fullscreen .wrap{max-width:1500px;padding:22px 40px 28px;}
+  :fullscreen .comet .digits{font-size:clamp(64px,11vw,132px);}
+  :fullscreen .pad{font-size:clamp(28px,4vw,44px);padding:20px 44px;min-width:210px;}
+  :fullscreen .why{font-size:19px;}
+  :fullscreen .verdict{font-size:24px;}
+  :-webkit-full-screen .wrap{max-width:1500px;padding:22px 40px 28px;}
+
+  @media (max-width:640px){
+    .wrap{padding:10px 12px 14px;}
+    .stats{gap:14px;width:100%;margin-left:0;justify-content:flex-start;}
+    .pad{min-width:130px;padding:14px 20px;}
+    .stage{min-height:280px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms !important;animation-duration:.01ms !important;}
+    .shaking{animation:none;}
+  }
+</style>
+</head>
+<body>
+<div class="flare" id="flare"></div>
+<div class="crashflash" id="crashflash"></div>
+<div class="fxlayer" id="fxlayer"></div>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">SUPERNOVA <span>LANDING</span></div>
+    <div class="mission-tag" id="missionTag">Rounding to the nearest hundred</div>
+    <div class="stats">
+      <div class="stat"><b id="sScore">0</b><i>Points</i></div>
+      <div class="stat"><b id="sStreak">0</b><i>Streak</i></div>
+      <div class="stat"><b id="sRound">0/10</b><i>Landing</i></div>
+    </div>
+    <button class="soundbtn" id="soundBtn" type="button" aria-pressed="false">SOUND OFF</button>
+    <button class="soundbtn" id="fsBtn" type="button" aria-pressed="false" title="Fullscreen (F)">FULLSCREEN</button>
+  </div>
+
+  <!-- ================= START ================= -->
+  <section class="screen on" id="screenStart">
+    <div class="hero">
+      <h1>Land the comet on the <em>nearest hundred</em>.</h1>
+      <p>Every comet carries a three-digit number. Choose the hundred it belongs to — then watch it fly to its real spot on the number line and find out if you were right.</p>
+    </div>
+
+    <div class="missions" id="missionList"></div>
+
+    <div class="routine">
+      <h4>Flight rules</h4>
+      <ol>
+        <li>Find the <b>hundreds digit</b> — it is underlined in teal.</li>
+        <li>Look at the <b>decider</b>, the digit to its right, glowing gold.</li>
+        <li>Decider is <b>0–4</b> → stay on the hundred you're on. Decider is <b>5–9</b> → climb to the next hundred.</li>
+        <li>Everything after the hundreds digit becomes <b>0</b>.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= PLAY ================= -->
+  <section class="screen" id="screenPlay">
+    <div class="stage" id="stage">
+      <div class="comet" id="comet">
+        <div class="digits" id="digits"></div>
+        <div class="tail"></div>
+      </div>
+      <div class="numline" id="numline">
+        <div class="rail" id="rail">
+          <div class="endpoint left"></div>
+          <div class="endpoint right"></div>
+          <div class="beacon" id="beacon"><div class="beaconlabel" id="beaconLabel"></div></div>
+          <div class="marker" id="marker"></div>
+          <div class="endlabel left" id="labLeft"></div>
+          <div class="endlabel right" id="labRight"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+
+    <div class="footer">
+      <div class="dots" id="dots"></div>
+      <div class="charge">
+        <i>Supernova charge</i>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+      </div>
+      <button class="btn" id="nextBtn" hidden>Next comet →</button>
+      <button class="btn ghost" id="quitBtn">Quit mission</button>
+    </div>
+  </section>
+
+  <!-- ================= REPORT ================= -->
+  <section class="screen" id="screenReport">
+    <div class="report">
+      <h2 id="rTitle">Mission complete</h2>
+      <div class="grade" id="rGrade">0%</div>
+      <div class="rgrid">
+        <div><b id="rScore">0</b><i>Points</i></div>
+        <div><b id="rBest">0</b><i>Best streak</i></div>
+        <div><b id="rRight">0/10</b><i>Landed</i></div>
+      </div>
+      <div class="misses" id="missBox"></div>
+      <div class="actions">
+        <button class="btn" id="againBtn">Fly this mission again</button>
+        <button class="btn ghost" id="homeBtn">Choose a new mission</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var MISSIONS = [
+    { id:"guided", name:"Guided Approach",
+      blurb:"The full number line is on screen, with the halfway beacon labeled. Best place to start.",
+      line:"full", choices:2 },
+    { id:"solo", name:"Solo Flight",
+      blurb:"Only the two hundreds are labeled. You judge the halfway point yourself.",
+      line:"bare", choices:2 },
+    { id:"deep", name:"Deep Space",
+      blurb:"No number line at all — four possible landing pads. Read the question carefully.",
+      line:"none", choices:4 },
+    { id:"nova", name:"Supernova Zone",
+      blurb:"The tricky ones: exact halfway numbers, rolling nines, and comets headed past 1,000.",
+      line:"none", choices:4 }
+  ];
+
+  var NOVA_POOL = [149,150,151,249,250,251,349,350,351,405,449,450,451,504,550,649,650,850,905,949,950,951,971,995,999,105,104,595,750,802];
+
+  var el = function(id){ return document.getElementById(id); };
+  var state = null;
+
+  /* ---------- math helpers ---------- */
+  function roundHundred(n){ return Math.round(n/100)*100; }        // .5 rounds up for positives
+  function roundTen(n){ return Math.round(n/10)*10; }
+  function lowerHundred(n){ return Math.floor(n/100)*100; }
+
+  function randomNumber(){
+    var n;
+    do { n = 100 + Math.floor(Math.random()*900); } while (n % 100 === 0);
+    // 1 in 4 chance of forcing an exact-halfway number
+    if (Math.random() < 0.25) { n = lowerHundred(n) + 50; }
+    return n;
+  }
+
+  function makeQuestion(mission, seen){
+    var n, guard = 0;
+    do {
+      n = (mission.id === "nova")
+        ? NOVA_POOL[Math.floor(Math.random()*NOVA_POOL.length)]
+        : randomNumber();
+      guard++;
+    } while (seen && seen.indexOf(n) !== -1 && guard < 40);
+    if (seen) { seen.push(n); }
+
+    var low = lowerHundred(n);
+    var high = low + 100;
+    var answer = roundHundred(n);
+    var choices;
+
+    if (mission.choices === 2) {
+      choices = [low, high];
+    } else {
+      var set = [answer];
+      var add = function(v){ if (v > 0 && set.indexOf(v) === -1) set.push(v); };
+      add(answer === low ? high : low);      // the other neighbor
+      add(roundTen(n));                       // rounded to the nearest ten instead
+      add(low);                               // always-round-down
+      add(high);                              // always-round-up
+      while (set.length < 4) { add(lowerHundred(n) + 100 * (1 + Math.floor(Math.random()*3))); }
+      choices = set.slice(0,4).sort(function(a,b){ return a-b; });
+    }
+
+    return { n:n, low:low, high:high, answer:answer, choices:choices,
+             hundredsDigit:Math.floor(n/100), decider:Math.floor(n/10)%10 };
+  }
+
+  /* ---------- rendering ---------- */
+  function renderDigits(q){
+    var s = String(q.n);
+    el("digits").innerHTML =
+      '<span class="d-hundreds">' + s[0] + '</span>' +
+      '<span class="d-decider">' + s[1] + '</span>' +
+      '<span class="d-rest">' + s[2] + '</span>';
+  }
+
+  function buildLine(q, mission){
+    el("labLeft").textContent = q.low.toLocaleString();
+    el("labRight").textContent = q.high.toLocaleString();
+    var beaconLabel = el("beaconLabel");
+    beaconLabel.textContent = (mission.line === "full") ? (q.low + 50).toLocaleString() : "";
+
+    var rail = el("rail");
+    var old = rail.querySelectorAll(".tick");
+    for (var i = 0; i < old.length; i++) { rail.removeChild(old[i]); }
+    if (mission.line === "full") {
+      for (var t = 1; t < 10; t++) {
+        if (t === 5) continue;
+        var tick = document.createElement("div");
+        tick.className = "tick";
+        tick.style.left = (t*10) + "%";
+        rail.appendChild(tick);
+      }
+    }
+    el("marker").classList.remove("show");
+    el("beacon").classList.toggle("lit", mission.line === "full");
+    el("numline").classList.toggle("show", mission.line !== "none");
+  }
+
+  function buildAnswers(q){
+    var box = el("answers");
+    box.innerHTML = "";
+    box.classList.toggle("quad", q.choices.length === 4);
+    q.choices.forEach(function(c, i){
+      var b = document.createElement("button");
+      b.className = "pad";
+      b.type = "button";
+      b.innerHTML = '<small>Pad ' + (i+1) + '</small>' + c.toLocaleString();
+      b.setAttribute("data-value", String(c));
+      b.addEventListener("click", function(){ answer(c, b); });
+      box.appendChild(b);
+    });
+  }
+
+  function resetComet(){
+    var c = el("comet");
+    c.classList.remove("landed");
+    c.classList.remove("destroyed");
+    c.style.left = "50%";
+    c.style.top = "6%";
+  }
+
+
+  /* ---------- effects ---------- */
+  var soundOn = false;
+  var audioCtx = null;
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function tone(type, freq, dur, vol, sweepTo){
+    if (!soundOn) { return; }
+    try {
+      if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      if (sweepTo) { o.frequency.exponentialRampToValueAtTime(sweepTo, audioCtx.currentTime + dur); }
+      g.gain.setValueAtTime(vol, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch (err) { /* audio is optional */ }
+  }
+
+  function noiseBoom(){
+    if (!soundOn) { return; }
+    try {
+      if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      var len = Math.floor(audioCtx.sampleRate * 0.5);
+      var buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.4);
+      }
+      var src = audioCtx.createBufferSource();
+      var filt = audioCtx.createBiquadFilter();
+      var g = audioCtx.createGain();
+      src.buffer = buf;
+      filt.type = "lowpass";
+      filt.frequency.setValueAtTime(1400, audioCtx.currentTime);
+      filt.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.45);
+      g.gain.setValueAtTime(0.35, audioCtx.currentTime);
+      src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+      src.start();
+    } catch (err) { /* audio is optional */ }
+  }
+
+  function spawn(node, x, y){
+    node.style.left = x + "px";
+    node.style.top = y + "px";
+    el("fxlayer").appendChild(node);
+    return node;
+  }
+
+  function burst(x, y, kind){
+    var layer = el("fxlayer");
+    var crash = (kind === "crash");
+    var colors = crash
+      ? ["#F0B429", "#E4705C", "#FFD874", "#C8951F", "#FFFFFF"]
+      : ["#17A398", "#F0B429", "#EAF6F4", "#7FE0D6"];
+    var count = reduced ? 8 : (crash ? 26 : 20);
+
+    // shockwave ring
+    var ring = spawn(document.createElement("div"), x, y);
+    ring.className = "shockwave";
+    ring.style.width = "20px";
+    ring.style.height = "20px";
+    ring.style.marginLeft = "-10px";
+    ring.style.marginTop = "-10px";
+    ring.style.borderColor = crash ? "#E4705C" : "#17A398";
+    ring.animate(
+      [{ transform: "scale(0.2)", opacity: 0.95 }, { transform: "scale(" + (crash ? 11 : 8) + ")", opacity: 0 }],
+      { duration: crash ? 620 : 520, easing: "cubic-bezier(.15,.8,.3,1)" }
+    ).onfinish = function(){ if (ring.parentNode) { layer.removeChild(ring); } };
+
+    // particles
+    for (var i = 0; i < count; i++) {
+      var isShard = crash && i % 3 === 0;
+      var pnode = document.createElement("div");
+      pnode.className = isShard ? "shard" : "particle";
+      var size = isShard ? 0 : (crash ? 6 + Math.random() * 12 : 5 + Math.random() * 9);
+      if (!isShard) {
+        pnode.style.width = size + "px";
+        pnode.style.height = size + "px";
+        pnode.style.marginLeft = (-size / 2) + "px";
+        pnode.style.marginTop = (-size / 2) + "px";
+      }
+      pnode.style.background = colors[i % colors.length];
+      pnode.style.boxShadow = "0 0 12px " + colors[i % colors.length];
+      spawn(pnode, x, y);
+
+      var angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
+      var dist = (crash ? 90 : 70) + Math.random() * (crash ? 190 : 120);
+      var dx = Math.cos(angle) * dist;
+      var dy = Math.sin(angle) * dist * 0.85;
+      var drop = crash ? 130 : 60;   // gravity pull at the end
+      var spin = (Math.random() - 0.5) * 720;
+      var life = (crash ? 780 : 620) + Math.random() * 320;
+
+      (function(el2, layerRef){
+        el2.animate([
+          { transform: "translate(0,0) rotate(0deg) scale(1)", opacity: 1 },
+          { transform: "translate(" + dx * 0.65 + "px," + dy * 0.65 + "px) rotate(" + spin * 0.6 + "deg) scale(1.05)", opacity: 0.9, offset: 0.45 },
+          { transform: "translate(" + dx + "px," + (dy + drop) + "px) rotate(" + spin + "deg) scale(0.25)", opacity: 0 }
+        ], { duration: life, easing: "cubic-bezier(.12,.7,.3,1)" }).onfinish = function(){
+          if (el2.parentNode) { layerRef.removeChild(el2); }
+        };
+      })(pnode, layer);
+    }
+  }
+
+  function cometCenter(){
+    var c = el("comet").getBoundingClientRect();
+    return { x: c.left + c.width / 2, y: c.top + c.height / 2 };
+  }
+
+  function crashSequence(){
+    var pt = cometCenter();
+    el("comet").classList.add("destroyed");
+    burst(pt.x, pt.y, "crash");
+    noiseBoom();
+    tone("sawtooth", 220, 0.34, 0.16, 55);
+    var flash = el("crashflash");
+    flash.classList.add("on");
+    setTimeout(function(){ flash.classList.remove("on"); }, 180);
+    if (!reduced) {
+      var w = document.querySelector(".wrap");
+      w.classList.add("shaking");
+      setTimeout(function(){ w.classList.remove("shaking"); }, 480);
+    }
+  }
+
+  function landSequence(){
+    var pt = cometCenter();
+    burst(pt.x, pt.y, "land");
+    tone("triangle", 660, 0.14, 0.13);
+    setTimeout(function(){ tone("triangle", 990, 0.22, 0.12); }, 110);
+  }
+
+  /* ---------- flow ---------- */
+  function startMission(mission){
+    state = { mission:mission, i:0, total:10, score:0, streak:0, best:0,
+              right:0, results:[], q:null, locked:false, seen:[] };
+    el("missionTag").textContent = mission.name + " — nearest hundred";
+    show("screenPlay");
+    buildDots();
+    updateStats();
+    nextQuestion();
+  }
+
+  function buildDots(){
+    var d = el("dots");
+    d.innerHTML = "";
+    for (var i = 0; i < state.total; i++) {
+      var s = document.createElement("div");
+      s.className = "dot";
+      d.appendChild(s);
+    }
+  }
+
+  function nextQuestion(){
+    if (state.i >= state.total) { return finish(); }
+    state.q = makeQuestion(state.mission, state.seen);
+    state.locked = false;
+    resetComet();
+    renderDigits(state.q);
+    buildLine(state.q, state.mission);
+    buildAnswers(state.q);
+    el("feedback").innerHTML = '<div class="why">Press a landing pad, or use the number keys.</div>';
+    el("nextBtn").hidden = true;
+    updateStats();
+  }
+
+  function answer(value, btn){
+    if (state.locked) { return; }
+    state.locked = true;
+    var q = state.q;
+    var correct = (value === q.answer);
+
+    // reveal the line for the no-line missions — this is the teaching moment
+    el("numline").classList.add("show");
+    el("beacon").classList.add("lit");
+    el("beaconLabel").textContent = (q.low + 50).toLocaleString();
+    var pct = ((q.n - q.low) / 100) * 100;
+    el("marker").style.left = pct + "%";
+    el("marker").classList.add("show");
+
+    // fly the comet to its true position on the rail
+    var stage = el("stage").getBoundingClientRect();
+    var railBox = el("rail").getBoundingClientRect();
+    var comet = el("comet");
+    comet.style.left = (((railBox.left - stage.left) + railBox.width * (pct/100)) / stage.width * 100) + "%";
+    var topPx = Math.max(0, (railBox.top - stage.top) - 118);
+    comet.style.top = (topPx / stage.height * 100) + "%";
+    comet.classList.add("landed");
+
+    // lock the pads
+    var pads = el("answers").querySelectorAll(".pad");
+    for (var i = 0; i < pads.length; i++) {
+      pads[i].disabled = true;
+      var v = parseInt(pads[i].getAttribute("data-value"), 10);
+      if (v === q.answer) { pads[i].classList.add("correct"); }
+      else if (v === value) { pads[i].classList.add("wrong"); }
+    }
+
+    // score
+    var dots = el("dots").children;
+    if (correct) {
+      state.streak++;
+      state.best = Math.max(state.best, state.streak);
+      state.right++;
+      var bonus = Math.min(state.streak, 5) * 10;
+      state.score += 100 + bonus;
+      dots[state.i].className = "dot hit";
+      if (state.streak > 0 && state.streak % 5 === 0) {
+        setTimeout(function(){ flare(); tone("triangle", 1320, 0.3, 0.11); }, reduced ? 80 : 1180);
+      }
+    } else {
+      state.streak = 0;
+      dots[state.i].className = "dot miss";
+      state.results.push({ n:q.n, answer:q.answer, gave:value });
+    }
+
+    var flightTime = reduced ? 60 : 980;
+    setTimeout(function(){
+      if (correct) { landSequence(); } else { crashSequence(); }
+    }, flightTime);
+
+    el("feedback").innerHTML = explain(q, value, correct);
+    state.i++;
+    updateStats();
+    el("nextBtn").hidden = false;
+    el("nextBtn").textContent = (state.i >= state.total) ? "See mission report →" : "Next comet →";
+    el("nextBtn").focus();
+  }
+
+  function explain(q, gave, correct){
+    var half = q.low + 50;
+    var side = (q.n === half)
+      ? "sits <b>exactly on the halfway beacon</b>, and the rule says halfway climbs up"
+      : (q.n > half ? "landed <b>past the halfway beacon</b>" : "landed <b>before the halfway beacon</b>");
+
+    var why = "<b>" + q.n + "</b> " + side + " at " + half.toLocaleString() +
+              ", so it rounds to <b>" + q.answer.toLocaleString() + "</b>. " +
+              "Hundreds digit " + q.hundredsDigit + ", decider " + q.decider + ".";
+
+    if (correct) {
+      return '<div class="verdict good">Clean landing.</div><div class="why">' + why + '</div>';
+    }
+
+    var diagnosis = "";
+    if (gave === roundTen(q.n) && gave !== q.answer) {
+      diagnosis = " You rounded to the nearest <b>ten</b> — the mission asked for the nearest <b>hundred</b>.";
+    } else if (gave === q.low && q.answer === q.high) {
+      diagnosis = " You went down when the decider told you to climb.";
+    } else if (gave === q.high && q.answer === q.low) {
+      diagnosis = " You climbed when the decider was under 5.";
+    }
+    return '<div class="verdict bad">Missed the pad.</div><div class="why">' + why + diagnosis + '</div>';
+  }
+
+  function updateStats(){
+    el("sScore").textContent = state.score;
+    el("sStreak").textContent = state.streak;
+    el("sRound").textContent = Math.min(state.i + (state.locked ? 0 : 1), state.total) + "/" + state.total;
+    el("fill").style.width = (Math.min(state.streak, 5) / 5 * 100) + "%";
+  }
+
+  function flare(){
+    var f = el("flare");
+    f.classList.add("on");
+    setTimeout(function(){ f.classList.remove("on"); }, 620);
+  }
+
+  function finish(){
+    var pct = Math.round(state.right / state.total * 100);
+    el("rGrade").textContent = pct + "%";
+    el("rScore").textContent = state.score;
+    el("rBest").textContent = state.best;
+    el("rRight").textContent = state.right + "/" + state.total;
+    el("rTitle").textContent = pct === 100 ? "Perfect flight." :
+                               pct >= 80 ? "Mission complete." :
+                               pct >= 50 ? "You got it down." : "Back to the launch pad.";
+
+    var box = el("missBox");
+    if (state.results.length === 0) {
+      box.innerHTML = '<h4>Nothing missed</h4><ul><li class="ok">Every comet landed on the right hundred. Try the next mission up.</li></ul>';
+    } else {
+      var items = state.results.map(function(r){
+        return '<li><code>' + r.n + '</code> → you chose <code>' + r.gave.toLocaleString() +
+               '</code>, it lands on <code class="ok">' + r.answer.toLocaleString() + '</code></li>';
+      }).join("");
+      box.innerHTML = '<h4>Comets to fly again</h4><ul>' + items + '</ul>';
+    }
+    show("screenReport");
+  }
+
+  function show(id){
+    var screens = document.querySelectorAll(".screen");
+    for (var i = 0; i < screens.length; i++) { screens[i].classList.remove("on"); }
+    el(id).classList.add("on");
+  }
+
+  /* ---------- wire up ---------- */
+  var list = el("missionList");
+  MISSIONS.forEach(function(m, i){
+    var b = document.createElement("button");
+    b.className = "mcard";
+    b.type = "button";
+    b.innerHTML = '<div class="num">MISSION ' + (i+1) + '</div><h3>' + m.name + '</h3><p>' + m.blurb + '</p>';
+    b.addEventListener("click", function(){ startMission(m); });
+    list.appendChild(b);
+  });
+
+  el("nextBtn").addEventListener("click", function(){
+    if (state.i >= state.total) { finish(); } else { nextQuestion(); }
+  });
+  el("quitBtn").addEventListener("click", function(){
+    el("missionTag").textContent = "Rounding to the nearest hundred";
+    show("screenStart");
+  });
+  el("againBtn").addEventListener("click", function(){ startMission(state.mission); });
+  el("homeBtn").addEventListener("click", function(){
+    el("missionTag").textContent = "Rounding to the nearest hundred";
+    show("screenStart");
+  });
+
+  el("soundBtn").addEventListener("click", function(){
+    soundOn = !soundOn;
+    this.textContent = soundOn ? "SOUND ON" : "SOUND OFF";
+    this.classList.toggle("on", soundOn);
+    this.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    if (soundOn) { tone("triangle", 880, 0.12, 0.1); }
+  });
+
+
+  /* ---------- fullscreen ---------- */
+  function fsElement(){
+    return document.fullscreenElement || document.webkitFullscreenElement ||
+           document.mozFullScreenElement || document.msFullscreenElement || null;
+  }
+
+  function toggleFullscreen(){
+    var root = document.documentElement;
+    if (fsElement()) {
+      var exit = document.exitFullscreen || document.webkitExitFullscreen ||
+                 document.mozCancelFullScreen || document.msExitFullscreen;
+      if (exit) { exit.call(document); }
+    } else {
+      var enter = root.requestFullscreen || root.webkitRequestFullscreen ||
+                  root.mozRequestFullScreen || root.msRequestFullscreen;
+      if (enter) {
+        var maybe = enter.call(root);
+        if (maybe && maybe.catch) { maybe.catch(function(){ syncFsButton(); }); }
+      }
+    }
+  }
+
+  function syncFsButton(){
+    var on = !!fsElement();
+    var b = el("fsBtn");
+    b.textContent = on ? "EXIT FULL" : "FULLSCREEN";
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+
+  el("fsBtn").addEventListener("click", toggleFullscreen);
+  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(function(evt){
+    document.addEventListener(evt, syncFsButton);
+  });
+  if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen ||
+        document.documentElement.mozRequestFullScreen || document.documentElement.msRequestFullscreen)) {
+    el("fsBtn").hidden = true;
+  }
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "f" || e.key === "F") {
+      var tag = (e.target && e.target.tagName) || "";
+      if (tag !== "INPUT" && tag !== "TEXTAREA") {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
+    }
+    if (!el("screenPlay").classList.contains("on")) { return; }
+    if ((e.key === "Enter" || e.key === " ") && !el("nextBtn").hidden) {
+      e.preventDefault();
+      el("nextBtn").click();
+      return;
+    }
+    var pads = el("answers").querySelectorAll(".pad");
+    var idx = -1;
+    if (e.key >= "1" && e.key <= "4") { idx = parseInt(e.key, 10) - 1; }
+    if (e.key === "ArrowLeft") { idx = 0; }
+    if (e.key === "ArrowRight") { idx = pads.length - 1; }
+    if (idx >= 0 && idx < pads.length && !pads[idx].disabled) {
+      e.preventDefault();
+      pads[idx].click();
+    }
+  });
+})();
+</script>
+</body>
+</html>
