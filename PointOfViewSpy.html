@@ -155,6 +155,20 @@
   .keyrow b{color:var(--gold-dp)}
   .keyrow.spy{background:#FBE7E3;border:1px solid var(--alert)}
 
+  /* fullscreen: native where the browser allows it, faux-fullscreen where it doesn't */
+  .stage:fullscreen, .stage:-webkit-full-screen{
+    border-radius:0; padding:30px 36px; height:100%; overflow-y:auto; font-size:112%;
+  }
+  .stage:fullscreen::after, .stage:-webkit-full-screen::after{border-radius:0}
+  .stage:fullscreen .veil, .stage:-webkit-full-screen .veil{position:fixed;border-radius:0}
+  .stage.faux{
+    position:fixed; inset:0; z-index:9999; border-radius:0; padding:24px 28px;
+    height:100vh; overflow-y:auto; font-size:106%;
+  }
+  .stage.faux::after{border-radius:0}
+  .stage.faux .veil{position:fixed;border-radius:0}
+  .stage:fullscreen.big, .stage.faux.big{font-size:128%}
+
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -468,7 +482,7 @@
     screen:"setup", caseIx:0, mode:"class", level:"grade",
     spy:null, order:[], lastSpy:{}, clueIx:0, filed:[], picked:null,
     stealing:false, resolved:false, scores:[0,0], turn:0, starter:0,
-    phase:"clues", tally:{}, accused:null, accuser:null, modal:null, big:false
+    phase:"clues", tally:{}, accused:null, accuser:null, modal:null, big:false, full:false
   };
 
   const stage = document.getElementById("stage");
@@ -550,6 +564,7 @@
         <button class="btn ghost sm" data-act="guide">Point of view field guide</button>
         <button class="btn ghost sm" data-act="key">Teacher key</button>
         <button class="btn ghost sm" data-act="big">${S.big?"Normal text":"Bigger text"}</button>
+        <button class="btn ghost sm" data-act="full">${S.full?"Exit full screen":"Full screen"}</button>
       </div>`;
   }
 
@@ -718,6 +733,7 @@
           <button class="btn ghost sm" data-act="guide">Field guide</button>
           <button class="btn ghost sm" data-act="key">Teacher key</button>
           <button class="btn ghost sm" data-act="big">${S.big?"Normal text":"Bigger text"}</button>
+          <button class="btn ghost sm" data-act="full">${S.full?"Exit full screen":"Full screen"}</button>
           <button class="btn ghost sm" data-act="home">New game</button>
         </div>
       </div>
@@ -772,6 +788,7 @@
 
   function render(){
     stage.classList.toggle("big", S.big);
+    stage.classList.toggle("faux", S.full && !nativeFS());
     let html = S.screen==="setup" ? setupView() : gameView();
     if(S.modal==="guide") html += guideModal();
     if(S.modal==="key") html += keyModal();
@@ -809,6 +826,34 @@
     S.accused = id; S.phase = "verdict"; render();
   }
 
+  /* Native fullscreen when the browser allows it. Artifacts run inside an iframe,
+     so if the request is refused we fall back to a fixed overlay that fills the frame. */
+  function nativeFS(){ return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+
+  function toggleFull(){
+    if(nativeFS() || S.full){
+      if(nativeFS()){
+        (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+      }
+      S.full = false; render(); return;
+    }
+    const req = stage.requestFullscreen || stage.webkitRequestFullscreen;
+    if(req){
+      const p = req.call(stage);
+      if(p && p.catch) p.catch(()=>{ S.full = true; render(); });
+      S.full = true; render();
+    } else {
+      S.full = true; render();
+    }
+  }
+
+  ["fullscreenchange","webkitfullscreenchange"].forEach(evt=>
+    document.addEventListener(evt, ()=>{ if(!nativeFS() && S.full && !stage.classList.contains("faux")){ S.full = false; } render(); })
+  );
+  document.addEventListener("keydown", e=>{
+    if(e.key === "Escape" && S.full && !nativeFS()){ S.full = false; render(); }
+  });
+
   function clearRound(){
     Object.assign(S,{clueIx:0,filed:[],picked:null,stealing:false,resolved:false,
       scores:[0,0],turn:0,starter:0,phase:"clues",tally:{},accused:null,accuser:null,modal:null});
@@ -842,6 +887,7 @@
       case "key": S.modal="key"; break;
       case "close": S.modal=null; break;
       case "big": S.big=!S.big; break;
+      case "full": return toggleFull();
       case "home": clearRound(); S.screen="setup"; break;
     }
     render();
