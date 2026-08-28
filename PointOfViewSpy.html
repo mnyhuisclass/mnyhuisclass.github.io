@@ -1,0 +1,852 @@
+<div class="stage" id="stage"></div>
+<style>
+  :root{
+    --ink:#06272B; --teal-lt:#1B8A8F; --gold:#F0B429; --gold-dp:#B87F09;
+    --manila:#F6EEDA; --paper-ink:#22201B; --clear:#2F9C74; --alert:#D6553F;
+    --mono:"Courier New",Courier,monospace;
+    --display:"Arial Black","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --read:Georgia,"Iowan Old Style","Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  .stage{
+    font-family:var(--display); color:#EAF6F5;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #14585C 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #0F4649 0%, transparent 55%),
+      var(--ink);
+    border-radius:14px; padding:20px; overflow:hidden; position:relative;
+  }
+  .stage::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:14px;
+    background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
+  .stage.big{font-size:118%}
+
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+  .rule{height:2px;background:linear-gradient(90deg,var(--gold),rgba(240,180,41,0));margin:10px 0 18px;border-radius:2px}
+  button{font-family:inherit;cursor:pointer}
+  button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+  .btn{background:var(--gold);color:#241902;border:none;border-radius:8px;padding:14px 22px;font-size:1rem;
+    letter-spacing:.06em;text-transform:uppercase;box-shadow:0 4px 0 var(--gold-dp);transition:transform .12s,box-shadow .12s}
+  .btn:hover:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 var(--gold-dp)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:#CFEAE8;border:2px solid rgba(207,234,232,.35);box-shadow:none}
+  .btn.ghost:hover{border-color:var(--gold);color:var(--gold);transform:none}
+  .btn.sm{padding:9px 14px;font-size:.78rem}
+
+  .badge-mark{width:74px;height:74px;flex:0 0 74px;border-radius:50%;border:3px solid var(--gold);
+    display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#1B8A8F,#0A3A3E)}
+  .badge-mark span{font-size:1.6rem;color:var(--gold)}
+  .titlewrap{display:flex;gap:18px;align-items:center;margin-bottom:6px}
+  h1{font-size:2.1rem;line-height:1;margin:0;letter-spacing:-.01em}
+  h1 em{font-style:normal;color:var(--gold)}
+  .sub{font-family:var(--mono);font-size:.85rem;color:#9FD3D0;margin:6px 0 0;letter-spacing:.04em;line-height:1.6}
+
+  .panel{background:rgba(255,255,255,.05);border:1px solid rgba(240,180,41,.28);border-radius:12px;padding:18px;margin-bottom:14px}
+  .panel h2{font-size:.88rem;letter-spacing:.16em;text-transform:uppercase;margin:0 0 12px;color:#CFEAE8}
+  .pickrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .pick{text-align:left;background:rgba(0,0,0,.22);border:2px solid rgba(207,234,232,.2);color:#EAF6F5;
+    border-radius:10px;padding:16px;transition:border-color .15s,background .15s}
+  .pick:hover{border-color:var(--teal-lt)}
+  .pick[aria-pressed="true"]{border-color:var(--gold);background:rgba(240,180,41,.14)}
+  .pick strong{display:block;font-size:1.05rem;margin-bottom:5px}
+  .pick small{font-family:var(--mono);font-size:.76rem;color:#9FD3D0;line-height:1.5;display:block;text-transform:none;letter-spacing:0}
+
+  .topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .casetag{font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+  .casetitle{font-size:1.35rem;margin:2px 0 0}
+  .tools{display:flex;gap:8px;flex-wrap:wrap}
+
+  .scoreboard{display:flex;gap:10px;margin-bottom:14px}
+  .score{flex:1;border-radius:10px;padding:10px 14px;border:2px solid rgba(207,234,232,.18);background:rgba(0,0,0,.22);
+    display:flex;justify-content:space-between;align-items:center}
+  .score.active{border-color:var(--gold);background:rgba(240,180,41,.14)}
+  .score span:first-child{font-family:var(--mono);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
+  .score b{font-size:1.5rem;color:var(--gold)}
+
+  .grid{display:grid;grid-template-columns:1.35fr .9fr;gap:16px;align-items:start}
+  @media (max-width:860px){.grid{grid-template-columns:1fr}.pickrow{grid-template-columns:1fr}}
+
+  .file{background:var(--manila);color:var(--paper-ink);border-radius:10px;padding:20px 22px;
+    box-shadow:0 12px 30px rgba(0,0,0,.4);position:relative}
+  .file::before{content:"";position:absolute;left:22px;right:22px;top:0;height:6px;background:var(--gold-dp);border-radius:0 0 4px 4px;opacity:.55}
+  .filehead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+  .filehead .n{font-family:var(--mono);font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:#7A6A45}
+  .subjectline{font-size:1.25rem;margin:0 0 4px}
+  .source{font-family:var(--mono);font-size:.8rem;letter-spacing:.05em;color:#5D5240;margin:0 0 12px}
+  .passage{font-family:var(--read);font-size:1.18rem;line-height:1.68;margin:0;border-left:4px solid var(--gold);padding-left:16px}
+
+  .ask{font-family:var(--mono);font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;color:#5D5240;margin:20px 0 10px}
+  .opts{display:grid;gap:9px}
+  .opt{text-align:left;background:#FFF;border:2px solid #CBBB92;color:var(--paper-ink);border-radius:8px;padding:13px 16px;
+    font-size:.98rem;transition:transform .1s,border-color .12s}
+  .opt:hover:not(:disabled){border-color:var(--teal-lt);transform:translateX(3px)}
+  .opt:disabled{cursor:default;opacity:.5}
+  .opt.right{border-color:var(--clear);background:#E4F7EE;opacity:1}
+  .opt.wrong{border-color:var(--alert);background:#FBE7E3;opacity:1}
+  .opt small{display:block;font-family:var(--mono);font-size:.74rem;color:#6C6047;margin-top:3px}
+
+  .note{font-family:var(--mono);font-size:.9rem;line-height:1.6;margin:12px 0 0;padding:12px 14px;border-radius:8px;
+    background:#FFF6E0;border:1px dashed #C6A868;color:#4A4132}
+  .note.miss{background:#FBE7E3;border:1px dashed var(--alert);color:#7A2B20}
+  .note.hit{background:#E4F7EE;border:1px dashed var(--clear);color:#1D5A44}
+
+  .evidence{margin-top:16px;border-radius:8px;overflow:hidden;border:2px solid #C9B98F}
+  .evidence .lab{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;background:#E3D6B2;color:#5D5240;padding:6px 12px}
+  .redacted{position:relative;padding:16px;background:#FFFDF6}
+  .redacted .txt{font-family:var(--read);font-size:1.05rem;line-height:1.6;color:var(--paper-ink)}
+  .redacted .bar{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#111 0 12px,#1c1c1c 12px 24px);
+    display:grid;place-items:center;color:var(--gold);font-family:var(--mono);letter-spacing:.3em;font-size:.85rem;
+    transition:transform .55s cubic-bezier(.6,.05,.2,1)}
+  .evidence.open .bar{transform:translateX(-101%)}
+
+  .talk{margin-top:14px;padding:12px 14px;border-radius:8px;background:#EFE3C4;font-family:var(--mono);font-size:.86rem;line-height:1.6;color:#4A4132}
+  .talk b{letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;display:block;margin-bottom:5px;color:#7A6A45}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+
+  .suspects{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .sus{position:relative;border-radius:10px;padding:12px 10px 10px;text-align:center;background:rgba(0,0,0,.25);
+    border:2px solid rgba(207,234,232,.18);color:#EAF6F5;width:100%;transition:border-color .15s,opacity .3s}
+  .sus .av{width:44px;height:44px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;
+    background:linear-gradient(150deg,#1B8A8F,#0A3A3E);border:2px solid rgba(240,180,41,.55);font-size:1.05rem;color:var(--gold)}
+  .sus .nm{font-size:.92rem;line-height:1.2}
+  .sus .rl{font-family:var(--mono);font-size:.66rem;color:#9FD3D0;margin-top:4px;letter-spacing:.04em}
+  .sus .st{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;margin-top:7px;color:#7FA9A7}
+  .sus .st.filed{color:var(--gold)}
+  .sus.current{border-color:var(--gold);background:rgba(240,180,41,.12)}
+  .sus.votable{cursor:pointer;border-color:rgba(240,180,41,.45)}
+  .sus.votable:hover{border-color:var(--gold);background:rgba(240,180,41,.18)}
+  .sus .tally{position:absolute;top:8px;right:8px;min-width:26px;height:26px;border-radius:13px;background:var(--gold);
+    color:#241902;font-size:.85rem;display:grid;place-items:center;padding:0 6px}
+  .sus.out{opacity:.4}
+  .sus .stampmark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);
+    font-family:var(--mono);letter-spacing:.16em;font-size:.74rem;padding:3px 8px;border-radius:4px;
+    background:rgba(6,39,43,.88);border:2px solid var(--clear);color:var(--clear)}
+  .sus.guilty{opacity:1;border-color:var(--alert)}
+  .sus.guilty .stampmark{border-color:var(--alert);color:var(--alert)}
+
+  .tracker{margin-top:14px;font-family:var(--mono);font-size:.76rem;color:#9FD3D0;letter-spacing:.1em;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+  .dot{width:11px;height:11px;border-radius:50%;border:2px solid rgba(207,234,232,.4);display:inline-block}
+  .dot.done{background:var(--gold);border-color:var(--gold)}
+  .dot.now{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,180,41,.22)}
+
+  .notes .row{font-family:var(--mono);font-size:.78rem;line-height:1.55;color:#DCEFED;padding:9px 11px;border-radius:7px;
+    background:rgba(0,0,0,.25);border-left:3px solid var(--gold);margin-bottom:7px}
+  .notes .row b{color:var(--gold);display:block;letter-spacing:.1em;font-size:.7rem;margin-bottom:2px}
+  .notes .empty{font-family:var(--mono);font-size:.78rem;color:#7FA9A7;line-height:1.6}
+
+  .verdict{text-align:center}
+  .verdict h2{font-size:1.9rem;margin:0 0 6px;color:var(--paper-ink)}
+  .who{font-size:1.4rem;color:var(--gold-dp);margin:0 0 10px}
+  .debrief{text-align:left;margin:16px 0 0}
+  .debrief .d{background:#FFF;border-radius:7px;padding:11px 13px;margin-bottom:8px;font-family:var(--mono);font-size:.82rem;line-height:1.6;color:#4A4132}
+  .debrief .d b{color:var(--gold-dp)}
+  .debrief .d.spy{background:#FBE7E3;border:1px solid var(--alert)}
+  .payoff{margin:18px 0 0;padding:16px;border-radius:10px;background:#FFF6E0;border:1px solid #C9B98F;
+    font-family:var(--mono);font-size:.9rem;line-height:1.7;color:#4A4132;text-align:left}
+
+  .veil{position:absolute;inset:0;background:rgba(3,20,22,.92);display:grid;place-items:center;padding:18px;z-index:5;border-radius:14px}
+  .modal{background:var(--manila);color:var(--paper-ink);border-radius:12px;padding:22px;max-width:660px;width:100%;max-height:88%;overflow:auto}
+  .modal h3{margin:0 0 4px;font-size:1.2rem}
+  .povlist{display:grid;gap:10px;margin:14px 0}
+  .povitem{background:#FFF;border-left:5px solid var(--teal-lt);border-radius:6px;padding:12px 14px}
+  .povitem b{display:block;font-size:1rem;margin-bottom:3px}
+  .povitem span{font-family:var(--mono);font-size:.82rem;line-height:1.6;color:#4A4132}
+  .keyrow{background:#FFF;border-radius:6px;padding:10px 12px;margin-bottom:8px;font-family:var(--mono);font-size:.8rem;line-height:1.55}
+  .keyrow b{color:var(--gold-dp)}
+  .keyrow.spy{background:#FBE7E3;border:1px solid var(--alert)}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<script>
+(function(){
+  /* Each agent has ONE fixed point of view and TWO versions of their file:
+     cleared (proof from outside the narrator) and guilty. The spy is drawn at
+     random each game, so the same passage can be an alibi one round and the
+     tell the next. */
+  const CASES = [
+    {
+      id:"c1",
+      num:"Case File 01",
+      title:"The Vanishing Cookie Cart",
+      brief:"Forty-eight cookies left the cafeteria cart between 12:10 and 12:25. The lock was not broken \u2014 the cart was opened with the custodian's spare key, which has been signed out since Monday and never returned. Six agents. Six files. Five of them have proof from somebody outside their own story.",
+      suspects:[
+        {
+          id:"marisol",name:"Marisol",role:"Library aide",initial:"M",pov:"first",
+          hint:"Count the pronouns. Words like I, me, and my mean the narrator is standing inside the story.",
+          talk:"This narrator is one of the suspects. What can she tell us, and what can she never tell us?",
+          cleared:{
+            source:"Statement given to Principal Okafor, 1:05 p.m.",
+            text:"I spent every minute of lunch in the library, re-shelving the mystery books with Mr. Ruiz. My hands were covered in dust, not crumbs. I never once walked past the cafeteria.",
+            why:"I and my. Marisol is telling her own story, so we get her exact words.",
+            evidence:"Mr. Ruiz signed the library log beside Marisol's name for 12:05 to 12:30.",
+            note:"Library log signed by Mr. Ruiz, 12:05\u201312:30.",
+            debrief:"Cleared. A first-person narrator only has her own word \u2014 Mr. Ruiz's signature is what turned it into proof."
+          },
+          guilty:{
+            source:"Statement given to Principal Okafor, 1:05 p.m.",
+            text:"I was in the library the whole lunch period, and I do not know why everyone keeps asking me about a key. I gave it back on Monday. I put it on the hook, or maybe in the box. I would remember a thing like that.",
+            why:"I and my all the way through. Everything in this file is only what Marisol says is true.",
+            evidence:"The office log lists the spare key signed out to Marisol on Monday and never returned. Mr. Ruiz never signed her into the library.",
+            note:"Key signed out Monday, never returned. No library signature.",
+            debrief:"THE SPY. First person let her say anything, and nothing outside her own voice stood behind it.",
+            solution:"Marisol signed out the custodian's spare key on Monday and kept it. Her library alibi has no signature, and at 12:15 she was the only agent who could unlock the cart."
+          }
+        },
+        {
+          id:"wes",name:"Wes",role:"Hall pass holder",initial:"W",pov:"thirdLimited",
+          hint:"The narrator uses he. Now ask the second question: whose thoughts do we get \u2014 one person's, or everybody's?",
+          talk:"Whose feelings do we get to know in this file? Whose stay hidden?",
+          cleared:{
+            source:"North hallway camera, described by Officer Reyes",
+            text:"Wes stopped in front of the cart and stared at the empty tray. He could not believe it. He had been saving his hall pass all week for this exact moment, and now there was nothing left but a paper doily.",
+            why:"He, from outside the story \u2014 but we get inside one head. We know what Wes cannot believe and what he had been saving.",
+            evidence:"The camera timestamps Wes at the cart at 12:26, staring at a tray that was already empty.",
+            note:"At the cart 12:26. Tray already empty.",
+            debrief:"Cleared. The narrator opened up Wes's disappointment, and the timestamp put him there after the cookies were gone."
+          },
+          guilty:{
+            source:"North hallway camera, described by Officer Reyes",
+            text:"Wes pressed his hall pass flat against his leg and told himself to walk, not run. He was thinking about the key in his sock, and how nobody ever checks a sock. Behind him the cart door swung open an inch, then settled.",
+            why:"He, from outside \u2014 with one character's thinking laid open. Only Wes's mind is on the page.",
+            evidence:"The office log lists the spare key signed out to Wes on Monday and never returned. No camera or adult places him anywhere but that hallway.",
+            note:"Key signed out Monday, never returned. Nobody places him elsewhere.",
+            debrief:"THE SPY. A limited narrator took us right inside his head, and what was in there was the key.",
+            solution:"Wes never turned in the spare key he signed out on Monday. He walked the north hallway at 12:15 with it in his sock, and nobody can place him anywhere else."
+          }
+        },
+        {
+          id:"kiara",name:"Kiara",role:"Band, 2nd chair",initial:"K",pov:"thirdOmniscient",
+          hint:"The narrator is outside the story. So count the heads: how many people's thoughts show up here?",
+          talk:"This narrator jumped from one mind into another. How is that different from a file that stays with one person?",
+          cleared:{
+            source:"Band room report, Mr. Alvarez",
+            text:"Kiara was worrying about her missing gym shoe and barely watching the conductor. At the front of the room, Mr. Alvarez was wondering whether the trumpets had gone flat again, and whether anyone would notice if he ended rehearsal early.",
+            why:"She and he, told from outside \u2014 and the narrator knows what two different people are thinking at the same moment.",
+            evidence:"Rehearsal ran 11:45 to 12:40, and Mr. Alvarez confirms Kiara never left her chair.",
+            note:"In her chair, rehearsal 11:45\u201312:40, confirmed by Mr. Alvarez.",
+            debrief:"Cleared. An all-knowing narrator showed us Kiara's thoughts and her teacher's, and both put her in the band room."
+          },
+          guilty:{
+            source:"Band room report, Mr. Alvarez",
+            text:"Kiara was certain nobody had noticed her slip out during the trumpet feature. At the podium, Mr. Alvarez was frowning at the empty second chair, wondering where she had gone and how long she had been gone for.",
+            why:"Two minds at once \u2014 hers and Mr. Alvarez's \u2014 from a narrator standing outside both of them.",
+            evidence:"The rehearsal roster shows Kiara's chair empty from 12:05 to 12:30, and the office log lists the spare key signed out to her on Monday and never returned.",
+            note:"Chair empty 12:05\u201312:30. Key signed out Monday, never returned.",
+            debrief:"THE SPY. She was sure nobody noticed \u2014 but an omniscient narrator could also see the one adult who did.",
+            solution:"Kiara left her chair during the trumpet feature with the spare key she had signed out on Monday. She was certain nobody saw her go. Mr. Alvarez was looking straight at the empty seat."
+          }
+        },
+        {
+          id:"priya",name:"Priya",role:"Drumline",initial:"P",pov:"second",
+          hint:"Look at the first word of each sentence. Who is this narrator talking to?",
+          talk:"This file never says I or she. How does second person change who the story feels like it belongs to?",
+          cleared:{
+            source:"Index card taped to the substitute drummer's stand",
+            text:"You start the cadence when the whistle blows at 11:45. You do not stop, no matter what happens behind you. You keep your eyes on Priya's sticks the entire time, because she sets the tempo and you follow it.",
+            why:"Every sentence points at you. The narrator hands out directions instead of telling a story about somebody.",
+            evidence:"The substitute drummer says she watched Priya's sticks without looking away, from 11:45 until the end of rehearsal.",
+            note:"Watched by the sub drummer, 11:45 to end of rehearsal.",
+            debrief:"Cleared. Second person spoke straight to the substitute drummer, and that made her the witness who never looked away."
+          },
+          guilty:{
+            source:"Folded card recovered from a band folder",
+            text:"You wait for the cadence to start, because nobody hears a door open under a cadence. You use the key you never turned in on Monday. You take twelve, not forty-eight, because twelve will not be missed.",
+            why:"You and your, over and over. The narrator is giving somebody step-by-step directions.",
+            evidence:"The card is in Priya's handwriting and was folded inside her band folder. The office log lists the spare key signed out to her on Monday and never returned.",
+            note:"Instructions in her handwriting, in her folder. Key signed out Monday, never returned.",
+            debrief:"THE SPY. Second person never says a name \u2014 but the folder it was sitting in did.",
+            solution:"Priya wrote herself instructions and kept them in her band folder. She slipped out under the cadence with the spare key she had signed out on Monday, and took twelve cookies so the tray would not look empty."
+          }
+        },
+        {
+          id:"devon",name:"Devon",role:"Office helper",initial:"D",pov:"thirdLimited",
+          hint:"Find the pronoun first, then ask whose thoughts you are allowed to see.",
+          talk:"How close is this narrator standing to Devon? What is the closest word you can point to?",
+          cleared:{
+            source:"Interview, Devon, 3:40 p.m.",
+            text:"Devon patted his pocket and found nothing but a granola bar wrapper. He was sure about the time, because Ms. Ferrell had made her joke about the office clock running three minutes fast, and he had laughed at it twice.",
+            why:"He, told from outside \u2014 but the narrator knows Devon's certainty and what he found in his pocket. One mind only.",
+            evidence:"Ms. Ferrell confirms Devon was at the office window with the attendance folders from 12:10 to 12:25.",
+            note:"At the office window with Ms. Ferrell, 12:10\u201312:25.",
+            debrief:"Cleared. The narrator knew Devon's memory, and Ms. Ferrell is what turned that memory into evidence."
+          },
+          guilty:{
+            source:"Interview, Devon, 3:40 p.m.",
+            text:"Devon told himself he would put it back tomorrow. He had been telling himself that since Monday. The key was still warm in his pocket, and behind him the cart was still standing open.",
+            why:"He, from outside \u2014 and the narrator can hear the promise Devon keeps making to himself. That is one open mind.",
+            evidence:"The office log lists the spare key signed out to Devon on Monday and never returned, and Ms. Ferrell never initialed it back in.",
+            note:"Key signed out Monday, never returned. No initial from Ms. Ferrell.",
+            debrief:"THE SPY. Limited point of view stood close enough to hear the promise he kept breaking.",
+            solution:"Devon signed out the spare key on Monday and told himself every day that he would return it. On Friday it was still in his pocket, and the cart was standing open behind him."
+          }
+        },
+        {
+          id:"theo",name:"Theo",role:"Cart pusher",initial:"T",pov:"first",
+          hint:"Is this narrator standing inside the story or outside of it? Look at who is doing the speaking.",
+          talk:"When a narrator speaks for himself, what should a good agent go looking for before believing him?",
+          cleared:{
+            source:"Statement given by Theo, 3:55 p.m.",
+            text:"I push that cart every day and I know exactly how it sounds when it rolls. It never moved during my lunch. Ms. Ferrell was standing right beside me the whole time, and we were counting milk cartons.",
+            why:"I and my. Theo narrates himself, so this file is his voice and nobody else's.",
+            evidence:"Ms. Ferrell confirms Theo was counting milk cartons with her from 12:05 to 12:30.",
+            note:"Counting milk with Ms. Ferrell, 12:05\u201312:30.",
+            debrief:"Cleared. First person gave us only his claim; Ms. Ferrell is what made it evidence."
+          },
+          guilty:{
+            source:"Statement given by Theo, 3:55 p.m.",
+            text:"I dropped that key in the office box on Monday afternoon, I am sure of it. I was outside at recess the whole lunch period anyway. I never even walked past the cart, and I do not really like sugar cookies.",
+            why:"I and my, start to finish. Everything here rests on Theo's own account.",
+            evidence:"No key was logged into the office box on Monday, and the recess aide's roster does not list Theo outside.",
+            note:"Says he returned the key Monday. No log entry, not on the recess roster.",
+            debrief:"THE SPY. A first-person narrator can say anything. Nothing outside Theo's own voice backed him up.",
+            solution:"Theo never dropped the key in the office box, and he was never on the recess roster. He had the only key to the cart and forty-eight cookies to reach."
+          }
+        }
+      ]
+    },
+    {
+      id:"c2",
+      num:"Case File 02",
+      title:"The Missing Supernova Trophy",
+      brief:"The Supernova Trophy left its case in the gym lobby on Friday between 3:05 and 3:30. A witness saw somebody lift the latch left-handed, keeping their right arm stiff at their side, and gold paint was scraped off the trophy base. Six agents. Six files. Five of them have proof from somebody outside their own story.",
+      suspects:[
+        {
+          id:"nadia",name:"Nadia",role:"Stage crew",initial:"N",pov:"thirdOmniscient",
+          hint:"The narrator never says I. So the question becomes: how many people's thoughts show up here?",
+          talk:"Which exact words tell you this narrator is not one of the characters?",
+          cleared:{
+            source:"Rehearsal observation log",
+            text:"Nadia was already thinking about her grandmother's kitchen and the dumplings waiting there. Up in the wings, Mr. Vega was worrying that the curtain rope had frayed again, and hoping nobody would ask him to climb the ladder.",
+            why:"The narrator stays outside the story but slips into two minds, Nadia's and Mr. Vega's.",
+            evidence:"Mr. Vega had Nadia holding the curtain rope beside him from 3:00 until 3:40.",
+            note:"On the curtain rope with Mr. Vega, 3:00\u20133:40.",
+            debrief:"Cleared. Because the narrator could see two minds, it put Nadia and her stage manager in the same place at the same time."
+          },
+          guilty:{
+            source:"Rehearsal observation log",
+            text:"Nadia was sure the sleeve covered it well enough, and she held her right arm still against her side as she moved. Across the wings, Mr. Vega was wondering why she had asked to leave early for the second Friday in a row.",
+            why:"Two minds, one narrator, standing outside them both \u2014 hers and Mr. Vega's.",
+            evidence:"Nadia signed out at 3:05 wearing a cast on her right arm. Nobody was with her after that.",
+            note:"Signed out 3:05. Cast on the RIGHT arm. No witness after.",
+            debrief:"THE SPY. An all-knowing narrator gave away both her secret and the adult who had started to wonder about it.",
+            solution:"Nadia left the wings at 3:05 with a cast on her right arm, which is why the latch had to be lifted left-handed. Mr. Vega had noticed the pattern; he just had not said it out loud yet."
+          }
+        },
+        {
+          id:"beckett",name:"Beckett",role:"Sound booth",initial:"B",pov:"thirdLimited",
+          hint:"Third person is only half the answer. Ask how many minds this narrator can see into.",
+          talk:"Whose side of this story are we getting? What would it sound like if the narrator could hear everyone?",
+          cleared:{
+            source:"Sound booth incident report",
+            text:"Beckett pressed his shoulder against the booth door and pushed again. He had been telling Mr. Vega about that latch for a month. Now he was stuck up there with a headset, a jammed door, and no way down until somebody noticed.",
+            why:"He, from outside the story, with one character's frustration on the page and nobody else's.",
+            evidence:"The custodian pried the booth door open at 3:38 and found Beckett still inside with his headset on.",
+            note:"Locked in the sound booth until 3:38.",
+            debrief:"Cleared. One mind, one point of view \u2014 and the custodian's report confirmed what that mind was telling us."
+          },
+          guilty:{
+            source:"Sound booth incident report",
+            text:"Beckett kept his right elbow tucked against his ribs as he came down the booth stairs. He was thinking about how long gold paint takes to dry, and whether anybody would look at his hands before the buses were called.",
+            why:"He, from outside \u2014 and the narrator can hear exactly what Beckett is worrying about. One head, wide open.",
+            evidence:"Beckett left the sound booth at 3:06 with a cast on his right arm and gold paint drying on his left fingertips.",
+            note:"Left the booth 3:06. Cast on the RIGHT arm, gold on his fingers.",
+            debrief:"THE SPY. Limited point of view put us inside the one head that already knew about the paint.",
+            solution:"Beckett came down from the booth at 3:06, lifted the latch with his free left hand, and carried the trophy out. The gold on his fingertips was still drying when the buses were called."
+          }
+        },
+        {
+          id:"lila",name:"Lila",role:"Lead role",initial:"L",pov:"first",
+          hint:"Look at the pronouns. Is this narrator standing inside the story or outside of it?",
+          talk:"Why is a first-person narrator's word worth more when other people can back it up?",
+          cleared:{
+            source:"Statement given by Lila",
+            text:"I was on stage the whole time, and I had eleven lines in a row without a break. I could not have left even if I wanted to. Ask anyone in the cast, or just look at the script.",
+            why:"I and my. Lila tells her own story, so we hear her exact words and her frustration at being asked.",
+            evidence:"The script confirms eleven straight lines, and the full cast saw Lila on stage until 3:30.",
+            note:"On stage until 3:30, seen by the whole cast.",
+            debrief:"Cleared. First person gave us only Lila's claim; the cast is what turned that claim into evidence."
+          },
+          guilty:{
+            source:"Statement given by Lila",
+            text:"I was on stage almost the whole time. I only stepped off for a minute, maybe two. My arm is in a cast anyway, so I could not have carried anything heavy. Ask anybody. Well \u2014 ask somebody.",
+            why:"I and my. Every fact in this file arrives through Lila's own voice.",
+            evidence:"Lila's cast is on her right arm, and nobody in the cast can say where she was between 3:05 and 3:25.",
+            note:"Cast on the RIGHT arm. Nobody can place her 3:05\u20133:25.",
+            debrief:"THE SPY. First person let her tell it her way, and the cast she mentioned was on the arm the witness described.",
+            solution:"Lila stepped off stage for twenty minutes, not one. Her cast was on her right arm, so she lifted the latch with her left hand, exactly as the witness described."
+          }
+        },
+        {
+          id:"omar",name:"Omar",role:"Gym monitor",initial:"O",pov:"second",
+          hint:"Who is this narrator speaking to? Check the first word of each sentence.",
+          talk:"This file never names anybody. How can a clue told in second person still prove something about a real person?",
+          cleared:{
+            source:"Laminated card clipped to the gym monitor's clipboard",
+            text:"You start at the east doors at 3:10. You sign the sheet at every door you pass, and you do not skip one, even if the hallway looks empty. You finish at the far stairwell and you wait there until the buses are called.",
+            why:"The narrator speaks straight to you and your, handing out directions rather than telling a story about somebody.",
+            evidence:"Omar's initials appear on all seven east hallway doors, timed 3:10 to 3:29 \u2014 the opposite end of the building from the lobby.",
+            note:"Signed seven east-hallway doors, 3:10\u20133:29.",
+            debrief:"Cleared. Second person told him what to do, and the signatures he left behind proved he did it far from the lobby."
+          },
+          guilty:{
+            source:"Gym monitor's sheet, recovered Friday evening",
+            text:"You keep the clipboard in your left hand today, because your right arm will not bend. You skip the lobby doors on the sheet. Nobody checks the sheet until Monday, and by Monday it will not matter.",
+            why:"You and your in every sentence. The narrator is giving instructions directly to a reader.",
+            evidence:"Omar's initials are missing from both lobby doors on Friday's sheet, and he was wearing a cast on his right arm.",
+            note:"Lobby doors left unsigned. Cast on the RIGHT arm.",
+            debrief:"THE SPY. Second person never says his name, but the sheet with his initials missing did.",
+            solution:"Omar skipped the two lobby doors on purpose so the sheet would not place him there. His right arm was in a cast, so the clipboard \u2014 and the latch \u2014 went to his left hand."
+          }
+        },
+        {
+          id:"grady",name:"Grady",role:"Soccer captain",initial:"G",pov:"first",
+          hint:"Who is holding this story? Look for words that put the narrator inside it.",
+          talk:"Grady sounds sure of himself. Should sounding sure make a narrator more believable?",
+          cleared:{
+            source:"Statement given by Grady",
+            text:"I did break my wrist at soccer camp, and I am tired of everybody bringing it up. It was my left wrist, the cast came off in July, and I have the X-ray at home to prove it.",
+            why:"I and my throughout. Grady narrates himself, which is why we can hear exactly how annoyed he is.",
+            evidence:"The clinic record shows a left wrist fracture with the cast removed in July. The witness described a stiff right arm.",
+            note:"Left wrist, cast off in July. Witness saw a stiff RIGHT arm.",
+            debrief:"Cleared. A loud first-person narrator is easy to suspect \u2014 but wrong arm, wrong month."
+          },
+          guilty:{
+            source:"Statement given by Grady",
+            text:"I did break my wrist at soccer camp, and I am tired of everybody bringing it up. The cast came off in July. That was ages ago. I do not know why the officer keeps looking at my sleeve.",
+            why:"I and my. Grady is the narrator of his own file, so the only proof here is his say-so.",
+            evidence:"The clinic record shows a right wrist fracture with the cast still on, and gold paint was found on Grady's left palm.",
+            note:"Says the cast came off in July. Clinic record: RIGHT wrist, still casted.",
+            debrief:"THE SPY. He told the story in his own voice, and his own voice was the only thing holding it up.",
+            solution:"Grady's cast never came off, and it was on his right wrist, not his left. He lifted the latch with his left hand and left gold paint on that palm."
+          }
+        },
+        {
+          id:"zoe",name:"Zoe",role:"Trophy committee",initial:"Z",pov:"thirdLimited",
+          hint:"Find the pronoun first, then find the word that lets you into somebody's thoughts.",
+          talk:"How close does this narrator get to Zoe? Point to the word that proves it.",
+          cleared:{
+            source:"Auditorium seating notes",
+            text:"Zoe stayed in the third row and thought the second act was better than the first. She had promised Ms. Booker she would count programs at intermission, and she was still counting when the bell rang.",
+            why:"She, from outside the story, but the narrator knows what Zoe thought and what she had promised. One mind.",
+            evidence:"Ms. Booker counted programs beside Zoe from 3:00 until the final bell.",
+            note:"Counting programs with Ms. Booker until the bell.",
+            debrief:"Cleared. One mind on the page, and an adult standing beside her the entire time."
+          },
+          guilty:{
+            source:"Auditorium sign-out sheet and hallway camera, 3:08 p.m.",
+            text:"Zoe wrote her name on the sign-out sheet at 3:08 and pulled her sleeve down over the cast on her right arm as she stepped into the hallway. She hoped nobody would ask where she was going, and she kept her left hand free.",
+            why:"She, told from outside \u2014 and the narrator knows what Zoe hoped. One mind, wide open.",
+            evidence:"Zoe left the auditorium at 3:08 with a cast on her right arm and her left hand free. Nobody saw her again until 3:35.",
+            note:"Out at 3:08. Cast on the RIGHT arm, left hand free.",
+            debrief:"THE SPY. The narrator got close enough to hear the question she hoped nobody would ask.",
+            solution:"Zoe signed out at 3:08 with her right arm in a cast and her left hand free, which is exactly the person the witness saw at the trophy case."
+          }
+        }
+      ]
+    }
+  ];
+
+  const POV_INFO = {
+    first:{label:"First person", sig:"I, me, my, we \u2014 the narrator is a character in the story."},
+    second:{label:"Second person", sig:"you, your \u2014 the narrator speaks straight to the reader."},
+    thirdLimited:{label:"Third person limited", sig:"he, she, they \u2014 outside the story, inside ONE character's thoughts."},
+    thirdOmniscient:{label:"Third person omniscient", sig:"he, she, they \u2014 outside the story, inside EVERYBODY's thoughts."},
+    third:{label:"Third person", sig:"he, she, they \u2014 the narrator is not a character in the story."}
+  };
+
+  const POV_PAYOFF = {
+    first:"This time the spy's file was first person. Every word in it arrived through the spy's own voice, so there was nothing to check it against \u2014 which is exactly why the log, the roster, and the record mattered more than the story.",
+    second:"This time the spy's file was second person. It never said a name once. What gave the spy away was not the words but where the words were found.",
+    thirdLimited:"This time the spy's file was third person limited. The narrator stood outside the story but got close enough to one mind to hear the thing the spy hoped nobody would ask about.",
+    thirdOmniscient:"This time the spy's file was third person omniscient. The narrator could show us the spy feeling certain and, in the very same moment, the adult who had already noticed."
+  };
+
+  const base = p => (p === "first" || p === "second") ? p : "third";
+
+  const S = {
+    screen:"setup", caseIx:0, mode:"class", level:"grade",
+    spy:null, order:[], lastSpy:{}, clueIx:0, filed:[], picked:null,
+    stealing:false, resolved:false, scores:[0,0], turn:0, starter:0,
+    phase:"clues", tally:{}, accused:null, accuser:null, modal:null, big:false
+  };
+
+  const stage = document.getElementById("stage");
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const theCase = () => CASES[S.caseIx];
+  const agent = id => theCase().suspects.find(s => s.id === id);
+  const fileFor = id => { const a = agent(id); return Object.assign({}, a, a[id === S.spy ? "guilty" : "cleared"]); };
+  const theClue = () => fileFor(S.order[S.clueIx]);
+  const optionsFor = () => S.level === "grade" ? ["first","second","third"] : ["first","second","thirdLimited","thirdOmniscient"];
+  const correctKey = pov => S.level === "grade" ? base(pov) : pov;
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+    return a;
+  }
+  function deal(){
+    const c = theCase();
+    const pool = c.suspects.map(s=>s.id).filter(id => id !== S.lastSpy[c.id]);
+    S.spy = pool[Math.floor(Math.random()*pool.length)];
+    S.lastSpy[c.id] = S.spy;
+    S.order = shuffle(c.suspects.map(s=>s.id));
+  }
+
+  /* ---------------- setup ---------------- */
+  function setupView(){
+    return `
+      <div class="titlewrap">
+        <div class="badge-mark"><span>&#9733;</span></div>
+        <div>
+          <p class="eyebrow">Supernova Intelligence Agency &middot; Indiana 4.RC.4</p>
+          <h1>Point of View: <em>Name the Spy</em></h1>
+          <p class="sub">Six suspects. Six files. Name each narrator's point of view to declassify the evidence &mdash; then vote on the spy. The spy is drawn at random every game, so the same file can be an alibi one round and the tell the next.</p>
+        </div>
+      </div>
+      <div class="rule"></div>
+
+      <div class="panel">
+        <h2>1 &middot; Choose a case</h2>
+        <div class="pickrow">
+          ${CASES.map((c,i)=>`
+            <button class="pick" data-set="caseIx" data-val="${i}" aria-pressed="${S.caseIx===i}">
+              <strong>${esc(c.title)}</strong>
+              <small>${esc(c.num)} &middot; 6 suspects &middot; one file each &middot; 6 possible spies</small>
+            </button>`).join("")}
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>2 &middot; Choose how you're playing</h2>
+        <div class="pickrow">
+          <button class="pick" data-set="mode" data-val="class" aria-pressed="${S.mode==="class"}">
+            <strong>Whole class briefing</strong>
+            <small>Project it. Class names the point of view, evidence declassifies, case notes build on the side. At the end, tap suspects to tally the class vote and lock it in.</small>
+          </button>
+          <button class="pick" data-set="mode" data-val="duel" aria-pressed="${S.mode==="duel"}">
+            <strong>Partner duel &middot; 2 players</strong>
+            <small>Agents take turns naming the point of view. Correct is 2 points, a miss opens a steal for 1. Naming the spy is worth 3.</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>3 &middot; Choose the challenge level</h2>
+        <div class="pickrow">
+          <button class="pick" data-set="level" data-val="grade" aria-pressed="${S.level==="grade"}">
+            <strong>On standard</strong>
+            <small>Three choices: first person, second person, third person. This is the 4.RC.4 comparison.</small>
+          </button>
+          <button class="pick" data-set="level" data-val="challenge" aria-pressed="${S.level==="challenge"}">
+            <strong>Challenge</strong>
+            <small>Four choices &mdash; third person splits into limited and omniscient. A stretch toward 5.RC.4.</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" data-act="start">Open the case file</button>
+        <button class="btn ghost sm" data-act="guide">Point of view field guide</button>
+        <button class="btn ghost sm" data-act="key">Teacher key</button>
+        <button class="btn ghost sm" data-act="big">${S.big?"Normal text":"Bigger text"}</button>
+      </div>`;
+  }
+
+  /* ---------------- board + notes ---------------- */
+  function board(){
+    const c = theCase(), voting = S.phase === "vote", done = S.phase === "verdict";
+    const currentId = S.phase === "clues" ? S.order[S.clueIx] : null;
+    return `
+      <div class="panel">
+        <h2>${done ? "Final board" : voting ? (S.mode==="duel" ? "Name the spy" : "Class vote") : "Suspect board"}</h2>
+        <div class="suspects">
+          ${c.suspects.map(s=>{
+            const filed = S.filed.includes(s.id), spy = s.id === S.spy;
+            const cls = ["sus", done ? (spy?"guilty":"out") : "", s.id===currentId?"current":"", voting?"votable":""].join(" ");
+            const votes = S.tally[s.id] || 0;
+            return `<button class="${cls}" ${voting?`data-vote="${s.id}"`:"disabled"}>
+              ${voting && votes ? `<span class="tally">${votes}</span>` : ""}
+              <div class="av">${s.initial}</div>
+              <div class="nm">${esc(s.name)}</div>
+              <div class="rl">${esc(s.role)}</div>
+              ${done ? `<span class="stampmark">${spy?"THE SPY":"CLEARED"}</span>`
+                     : `<div class="st ${filed?"filed":""}">${filed?"FILE OPEN":"SEALED"}</div>`}
+            </button>`;
+          }).join("")}
+        </div>
+        <div class="tracker">
+          <span>FILES</span>
+          ${S.order.map((_,i)=>`<span class="dot ${i<S.clueIx||S.phase!=="clues"?"done":""} ${i===S.clueIx&&S.phase==="clues"?"now":""}"></span>`).join("")}
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Case notes</h2>
+        <div class="notes">
+          ${S.filed.length ? S.filed.map(id=>{
+              const f = fileFor(id);
+              return `<div class="row"><b>${esc(f.name)} &middot; ${esc(POV_INFO[f.pov].label)}</b>${esc(f.note)}</div>`;
+            }).join("")
+          : `<p class="empty">Nothing declassified yet. Name a narrator's point of view and the evidence lands here.</p>`}
+        </div>
+      </div>`;
+  }
+
+  /* ---------------- clue card ---------------- */
+  function clueCard(){
+    const c = theCase(), f = theClue(), key = correctKey(f.pov), done = S.resolved;
+    const opts = optionsFor().map(k=>{
+      let cls = "opt";
+      if(done){ if(k===key) cls += " right"; else if(k===S.picked) cls += " wrong"; }
+      return `<button class="${cls}" data-pov="${k}" ${done?"disabled":""}>
+        ${esc(POV_INFO[k].label)}<small>${esc(POV_INFO[k].sig)}</small></button>`;
+    }).join("");
+
+    let feedback = "";
+    if(!done && S.picked) feedback = `<p class="note miss"><b>Not yet, agent.</b><br>${esc(f.hint)}</p>`;
+    if(done) feedback = `<p class="note hit"><b>${esc(POV_INFO[key].label)}.</b><br>${esc(f.why)}</p>`;
+
+    const steal = (S.mode==="duel" && S.stealing && !done)
+      ? `<p class="note miss"><b>Steal chance &mdash; Agent ${S.turn+1}.</b><br>Your partner missed it. Get it right and take 1 point.</p>` : "";
+
+    return `
+      <div class="file">
+        <div class="filehead">
+          <span class="n">File ${S.clueIx+1} of ${S.order.length}</span>
+          <span class="n">${esc(c.num)}</span>
+        </div>
+        <h2 class="subjectline">Agent ${esc(f.name)}</h2>
+        <p class="source">${esc(f.source)}</p>
+        <p class="passage">${esc(f.text)}</p>
+
+        <p class="ask">${S.mode==="duel" ? `Agent ${S.turn+1} &mdash; who is telling this?` : "Who is telling this?"}</p>
+        ${steal}
+        <div class="opts">${opts}</div>
+        ${feedback}
+
+        <div class="evidence ${done?"open":""}">
+          <div class="lab">Evidence &mdash; ${done?"declassified":"sealed"}</div>
+          <div class="redacted">
+            <div class="txt">${esc(f.evidence)}</div>
+            <div class="bar">CLASSIFIED</div>
+          </div>
+        </div>
+        ${done && S.mode==="class" ? `<div class="talk"><b>Talk it over</b>${esc(f.talk)}</div>` : ""}
+        ${done ? `<div class="actions">
+          <button class="btn" data-act="next">${S.clueIx < S.order.length-1 ? "Next file" : "All files open \u2014 take the vote"}</button>
+        </div>` : ""}
+      </div>`;
+  }
+
+  /* ---------------- vote ---------------- */
+  function voteCard(){
+    const c = theCase();
+    const totals = c.suspects.map(s=>({id:s.id,n:S.tally[s.id]||0}));
+    const max = Math.max(...totals.map(t=>t.n));
+    const leaders = totals.filter(t=>t.n===max && max>0);
+    const tie = leaders.length > 1;
+
+    if(S.mode === "duel"){
+      return `
+        <div class="file">
+          <div class="filehead"><span class="n">Final step</span><span class="n">${esc(c.num)}</span></div>
+          <h2 class="subjectline">Agent ${S.accuser+1}, name the spy</h2>
+          <p class="source">All six files are open. Nobody has been cleared yet.</p>
+          <p class="passage">Read the case notes against the briefing. Five of these agents have proof from somebody outside their own story. One has only a story. Tap a suspect on the board.</p>
+          ${S.accuser !== S.starter ? `<p class="note miss"><b>Wrong arrest.</b><br>The other agent gets the next attempt.</p>` : ""}
+        </div>`;
+    }
+    return `
+      <div class="file">
+        <div class="filehead"><span class="n">Final step</span><span class="n">${esc(c.num)}</span></div>
+        <h2 class="subjectline">Class vote</h2>
+        <p class="source">All six files are open. Nobody has been cleared yet.</p>
+        <p class="passage">Read the case notes against the briefing, then take the vote. Tap a suspect once for every hand that goes up, and lock it in when the count is finished.</p>
+        <p class="note"><b>Before you count:</b><br>Which files had proof from outside the narrator &mdash; a log, a timestamp, an adult? Which one had only the narrator's own word?</p>
+        ${tie ? `<p class="note miss"><b>It's a tie.</b><br>Take a runoff between ${leaders.map(l=>esc(agent(l.id).name)).join(" and ")}, or keep tapping to add votes.</p>` : ""}
+        <div class="actions">
+          <button class="btn" data-act="lock" ${(max===0||tie)?"disabled":""}>${max>0&&!tie?`Lock in ${esc(agent(leaders[0].id).name)}`:"Lock in the vote"}</button>
+          <button class="btn ghost" data-act="cleartally">Clear the tally</button>
+        </div>
+      </div>`;
+  }
+
+  /* ---------------- verdict ---------------- */
+  function verdictCard(){
+    const c = theCase(), spyFile = fileFor(S.spy), right = S.accused === S.spy;
+    let head, sub;
+    if(S.mode==="duel"){
+      head = S.scores[0]===S.scores[1] ? "It's a tie" : `Agent ${S.scores[0]>S.scores[1]?1:2} wins`;
+      sub = `Final score &mdash; Agent 1: ${S.scores[0]} &middot; Agent 2: ${S.scores[1]}`;
+    } else {
+      head = right ? "Case closed" : "Case closed, with a correction";
+      sub = right ? "The class named the spy." : `The class voted for ${esc(agent(S.accused).name)}. The evidence points somewhere else.`;
+    }
+    return `
+      <div class="file verdict">
+        <p class="eyebrow" style="color:#7A6A45">${sub}</p>
+        <h2>${head}</h2>
+        <p class="who">The spy was ${esc(spyFile.name)}.</p>
+        <p style="font-family:var(--read);font-size:1.08rem;line-height:1.7;color:#22201B;margin:10px 0 0">${esc(spyFile.solution)}</p>
+        <div class="debrief">
+          ${S.order.map(id=>{ const f = fileFor(id);
+            return `<div class="d ${id===S.spy?"spy":""}"><b>${esc(f.name)} &middot; ${esc(POV_INFO[f.pov].label)}</b><br>${esc(f.debrief)}</div>`;
+          }).join("")}
+        </div>
+        <div class="payoff">${esc(POV_PAYOFF[spyFile.pov])}</div>
+        <div class="actions" style="justify-content:center">
+          <button class="btn" data-act="again">Run this case again &mdash; new spy</button>
+          <button class="btn ghost" data-act="other">Play the other case</button>
+          <button class="btn ghost" data-act="home">New game</button>
+        </div>
+      </div>`;
+  }
+
+  /* ---------------- shells ---------------- */
+  function gameView(){
+    const c = theCase();
+    const main = S.phase==="clues" ? clueCard() : S.phase==="vote" ? voteCard() : verdictCard();
+    return `
+      <div class="topbar">
+        <div>
+          <span class="casetag">${esc(c.num)} &middot; ${S.level==="grade"?"On standard":"Challenge"} &middot; ${S.mode==="duel"?"Partner duel":"Whole class"}</span>
+          <h1 class="casetitle">${esc(c.title)}</h1>
+        </div>
+        <div class="tools">
+          <button class="btn ghost sm" data-act="brief">Briefing</button>
+          <button class="btn ghost sm" data-act="guide">Field guide</button>
+          <button class="btn ghost sm" data-act="key">Teacher key</button>
+          <button class="btn ghost sm" data-act="big">${S.big?"Normal text":"Bigger text"}</button>
+          <button class="btn ghost sm" data-act="home">New game</button>
+        </div>
+      </div>
+      <div class="rule"></div>
+      ${S.mode==="duel" ? `
+        <div class="scoreboard">
+          <div class="score ${S.turn===0?"active":""}"><span>Agent 1</span><b>${S.scores[0]}</b></div>
+          <div class="score ${S.turn===1?"active":""}"><span>Agent 2</span><b>${S.scores[1]}</b></div>
+        </div>` : `<p class="sub" style="margin:0 0 14px;max-width:80ch">${esc(c.brief)}</p>`}
+      <div class="grid"><div>${main}</div><div>${board()}</div></div>`;
+  }
+
+  function guideModal(){
+    const keys = S.level==="grade" ? ["first","second","third"] : ["first","second","thirdLimited","thirdOmniscient"];
+    return `<div class="veil"><div class="modal">
+      <h3>Point of view field guide</h3>
+      <p style="font-family:var(--mono);font-size:.84rem;color:#5D5240;margin:4px 0 0">Two questions crack every passage: Is the narrator inside the story? And whose thoughts can we hear?</p>
+      <div class="povlist">${keys.map(k=>`<div class="povitem"><b>${esc(POV_INFO[k].label)}</b><span>${esc(POV_INFO[k].sig)}</span></div>`).join("")}</div>
+      <button class="btn sm" data-act="close">Back to the case</button>
+    </div></div>`;
+  }
+  function briefModal(){
+    const c = theCase();
+    return `<div class="veil"><div class="modal">
+      <h3>${esc(c.title)}</h3>
+      <p style="font-family:var(--read);font-size:1.05rem;line-height:1.7;margin:10px 0 16px">${esc(c.brief)}</p>
+      <button class="btn sm" data-act="close">Back to the case</button>
+    </div></div>`;
+  }
+  function keyModal(){
+    const inGame = S.screen === "game";
+    const c = theCase();
+    return `<div class="veil"><div class="modal">
+      <h3>Teacher key</h3>
+      <p style="font-family:var(--mono);font-size:.84rem;color:#5D5240;margin:4px 0 14px">
+        ${inGame ? `This round only \u2014 the spy is redrawn every game. Close before you project.`
+                 : `Each agent's point of view never changes. The spy is drawn at random when you open a case, so start a game to see who it is this round.`}</p>
+      ${CASES.map(cs=>`
+        <div style="margin-bottom:16px">
+          <p style="font-family:var(--mono);letter-spacing:.14em;font-size:.74rem;color:#7A6A45;margin:0 0 6px">
+            ${esc(cs.num)} &mdash; ${esc(cs.title)}${(inGame && cs.id===c.id) ? ` &mdash; SPY THIS ROUND: ${esc(agent(S.spy).name).toUpperCase()}` : ""}</p>
+          ${cs.suspects.map(s=>{
+            const isSpy = inGame && cs.id===c.id && s.id===S.spy;
+            const v = s[isSpy ? "guilty" : "cleared"];
+            return `<div class="keyrow ${isSpy?"spy":""}"><b>${esc(s.name)} &mdash; ${esc(POV_INFO[s.pov].label)}</b><br>${
+              (inGame && cs.id===c.id) ? esc(v.note) : "Cleared version and guilty version both written."}</div>`;
+          }).join("")}
+        </div>`).join("")}
+      <button class="btn sm" data-act="close">Close</button>
+    </div></div>`;
+  }
+
+  function render(){
+    stage.classList.toggle("big", S.big);
+    let html = S.screen==="setup" ? setupView() : gameView();
+    if(S.modal==="guide") html += guideModal();
+    if(S.modal==="key") html += keyModal();
+    if(S.modal==="brief") html += briefModal();
+    stage.innerHTML = html;
+  }
+
+  function advance(){
+    if(S.clueIx < S.order.length-1){
+      S.clueIx++; S.picked=null; S.resolved=false; S.stealing=false;
+      if(S.mode==="duel"){ S.starter=(S.starter+1)%2; S.turn=S.starter; }
+    } else {
+      S.phase = "vote";
+      S.accuser = S.mode==="duel" ? (S.starter+1)%2 : 0;
+    }
+  }
+
+  function answer(choice){
+    const f = theClue(), key = correctKey(f.pov), hit = choice === key;
+    S.picked = choice;
+    if(S.mode==="duel"){
+      if(hit){ S.scores[S.turn] += S.stealing ? 1 : 2; S.resolved = true; }
+      else if(!S.stealing){ S.stealing = true; S.turn = (S.turn+1)%2; S.picked = null; }
+      else { S.resolved = true; }
+    } else if(hit){ S.resolved = true; }
+    if(S.resolved && !S.filed.includes(f.id)) S.filed.push(f.id);
+    render();
+  }
+
+  function settle(id){
+    if(S.mode==="duel"){
+      if(id === S.spy){ S.scores[S.accuser] += 3; }
+      else if(S.accuser === (S.starter+1)%2){ S.accuser = S.starter; render(); return; }
+    }
+    S.accused = id; S.phase = "verdict"; render();
+  }
+
+  function clearRound(){
+    Object.assign(S,{clueIx:0,filed:[],picked:null,stealing:false,resolved:false,
+      scores:[0,0],turn:0,starter:0,phase:"clues",tally:{},accused:null,accuser:null,modal:null});
+  }
+
+  stage.addEventListener("click", e=>{
+    const t = e.target.closest("button");
+    if(!t) return;
+    if(t.dataset.set){ S[t.dataset.set] = t.dataset.set==="caseIx" ? +t.dataset.val : t.dataset.val; return render(); }
+    if(t.dataset.pov) return answer(t.dataset.pov);
+    if(t.dataset.vote){
+      if(S.mode==="duel") return settle(t.dataset.vote);
+      S.tally[t.dataset.vote] = (S.tally[t.dataset.vote]||0)+1; return render();
+    }
+
+    switch(t.dataset.act){
+      case "start": clearRound(); deal(); S.screen="game"; break;
+      case "next": advance(); break;
+      case "lock": {
+        const totals = theCase().suspects.map(s=>({id:s.id,n:S.tally[s.id]||0}));
+        const max = Math.max(...totals.map(x=>x.n));
+        const leaders = totals.filter(x=>x.n===max && max>0);
+        if(leaders.length===1) return settle(leaders[0].id);
+        break;
+      }
+      case "cleartally": S.tally={}; break;
+      case "again": clearRound(); deal(); break;
+      case "other": S.caseIx=(S.caseIx+1)%CASES.length; clearRound(); deal(); break;
+      case "brief": S.modal="brief"; break;
+      case "guide": S.modal="guide"; break;
+      case "key": S.modal="key"; break;
+      case "close": S.modal=null; break;
+      case "big": S.big=!S.big; break;
+      case "home": clearRound(); S.screen="setup"; break;
+    }
+    render();
+  });
+
+  render();
+})();
+</script>
