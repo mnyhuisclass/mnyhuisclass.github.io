@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Dodge Fury — 4th Grade Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#080B10;
+  --court:#0E1822;
+  --line:#1C2B38;
+  --teal:#22E4C4;
+  --teal-dim:#0E8F7C;
+  --gold:#FFC53D;
+  --gold-dim:#8A6A1C;
+  --ember:#FF4D6D;
+  --chalk:#EAF2F4;
+  --muted:#7E96A3;
+  --arcade:'Press Start 2P', ui-monospace, monospace;
+  --body:'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+html,body{
+  margin:0;padding:0;height:100%;overflow:hidden;
+  background:var(--void);color:var(--chalk);
+  font-family:var(--body);
+  touch-action:none;
+  -webkit-user-select:none;user-select:none;
+  overscroll-behavior:none;
+}
+
+#app{
+  height:100vh;height:100dvh;
+  display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ---------- HUD ---------- */
+#hud{
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;
+  background:linear-gradient(180deg,#0C141C,#080B10);
+  border-bottom:2px solid var(--line);
+  font-family:var(--arcade);
+  font-size:10px;
+  min-height:46px;
+}
+.hud-chip{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 9px;border-radius:6px;
+  background:#101B26;border:1px solid var(--line);
+  white-space:nowrap;
+}
+.hud-chip .lbl{color:var(--muted);font-size:8px;}
+.hud-chip .val{color:var(--chalk);}
+#hud-mode .val{color:var(--teal);}
+#hud-score .val{color:var(--gold);}
+#hud-spacer{flex:1;}
+#hud-lives{display:flex;gap:3px;}
+.seg{
+  width:20px;height:13px;border-radius:2px;
+  background:var(--teal);box-shadow:0 0 8px rgba(34,228,196,.5);
+  transition:background .18s, box-shadow .18s, transform .18s;
+}
+.seg.warn{background:var(--gold);box-shadow:0 0 8px rgba(255,197,61,.55);}
+.seg.crit{background:var(--ember);box-shadow:0 0 9px rgba(255,77,109,.65);}
+.seg.gone{background:#16232E;box-shadow:none;transform:scaleY(.55);}
+@media (max-width:560px){ .seg{width:13px;height:11px;} }
+
+/* ---------- Ball rack (signature element) ---------- */
+#rack{
+  flex:0 0 auto;
+  display:none;
+  align-items:center;justify-content:center;gap:9px;
+  padding:9px;
+  background:#0A1119;
+  border-bottom:1px solid var(--line);
+}
+#rack.on{display:flex;}
+#rack .rack-label{
+  font-family:var(--arcade);font-size:8px;color:var(--muted);
+  margin-right:4px;
+}
+.rack-ball{
+  width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle at 34% 32%, #FFE9A8, var(--gold) 55%, #B98A15);
+  box-shadow:0 0 12px rgba(255,197,61,.55);
+  transition:transform .18s ease, opacity .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.rack-ball.spent{
+  background:#141F2A;box-shadow:none;
+  transform:scale(.62);opacity:.5;
+}
+.rack-ball.pop{animation:pop .34s ease;}
+@keyframes pop{0%{transform:scale(.2);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
+
+/* ---------- Stage ---------- */
+#stage{
+  flex:1 1 auto;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  min-height:0;padding:8px;
+}
+#court{
+  display:block;
+  background:var(--court);
+  border:2px solid var(--line);
+  border-radius:10px;
+  max-width:100%;max-height:100%;
+}
+
+/* ---------- Question panel ---------- */
+#question{
+  position:absolute;inset:8px;
+  display:none;flex-direction:column;
+  background:linear-gradient(165deg,#0F1A24,#0A1119);
+  border:2px solid var(--line);border-radius:10px;
+  padding:14px;overflow:hidden;
+}
+#question.on{display:flex;}
+
+#q-top{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--arcade);font-size:8px;color:var(--muted);
+  margin-bottom:10px;
+}
+#q-standard{color:var(--teal-dim);}
+
+#q-body{
+  flex:1 1 auto;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+  min-height:0;overflow:auto;
+}
+#q-prompt{
+  font-size:clamp(17px,3.1vw,25px);font-weight:700;line-height:1.4;
+  text-align:center;max-width:760px;
+}
+#q-visual{display:flex;align-items:center;justify-content:center;max-width:100%;}
+#q-visual svg{max-width:min(430px,86vw);height:auto;}
+#q-visual table{
+  border-collapse:collapse;font-family:var(--body);font-size:16px;font-weight:600;
+}
+#q-visual th,#q-visual td{
+  border:1px solid var(--line);padding:6px 16px;text-align:center;
+}
+#q-visual th{background:#132030;color:var(--teal);font-weight:800;}
+
+/* answers */
+#q-answers{flex:0 0 auto;padding-top:12px;}
+#choices{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:9px;
+  max-width:660px;margin:0 auto;
+}
+.choice{
+  padding:15px 10px;border-radius:9px;
+  background:#132030;border:2px solid var(--line);
+  color:var(--chalk);font-family:var(--body);
+  font-size:clamp(16px,2.6vw,21px);font-weight:700;
+  cursor:pointer;transition:transform .1s, border-color .12s, background .12s;
+}
+.choice:active{transform:scale(.97);}
+.choice.right{border-color:var(--teal);background:#0E2B29;color:var(--teal);}
+.choice.wrong{border-color:var(--ember);background:#2B1219;color:var(--ember);}
+.choice.reveal{border-color:var(--teal);}
+/* Number badges only where there's a real keyboard. */
+@media (pointer:fine){
+  .choice::before{
+    content:attr(data-key);
+    display:inline-block;min-width:20px;margin-right:10px;
+    color:var(--muted);font-family:var(--arcade);font-size:10px;
+    vertical-align:middle;
+  }
+}
+
+#typed{max-width:340px;margin:0 auto;}
+#typed-display{
+  height:56px;border-radius:9px;background:#0A1119;
+  border:2px solid var(--teal-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--arcade);font-size:21px;color:var(--gold);
+  margin-bottom:9px;letter-spacing:2px;
+}
+#typed-display.right{border-color:var(--teal);color:var(--teal);}
+#typed-display.wrong{border-color:var(--ember);color:var(--ember);}
+#numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.key{
+  height:50px;border-radius:8px;
+  background:#132030;border:2px solid var(--line);color:var(--chalk);
+  font-family:var(--arcade);font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .1s,background .12s;
+}
+.key:active{transform:scale(.94);background:#1B2C3C;}
+.key.go{background:#0E2B29;border-color:var(--teal-dim);color:var(--teal);}
+.key.del{color:var(--ember);}
+
+#q-feedback{
+  flex:0 0 auto;text-align:center;min-height:26px;padding-top:9px;
+  font-weight:700;font-size:15px;
+}
+#q-feedback.good{color:var(--teal);}
+#q-feedback.bad{color:var(--ember);}
+
+/* ---------- Overlays ---------- */
+.overlay{
+  position:absolute;inset:0;z-index:20;
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  background:rgba(6,9,13,.94);
+  padding:22px;text-align:center;overflow:auto;
+}
+.overlay.on{display:flex;}
+.overlay h1{
+  font-family:var(--arcade);font-size:clamp(20px,4.6vw,36px);
+  color:var(--teal);margin:0;
+  text-shadow:0 0 18px rgba(34,228,196,.45);
+  line-height:1.5;
+}
+.overlay h2{
+  font-family:var(--arcade);font-size:clamp(14px,3vw,22px);
+  margin:0;line-height:1.5;
+}
+.overlay p{margin:0;font-size:16px;color:var(--muted);max-width:520px;line-height:1.55;}
+.btn{
+  font-family:var(--arcade);font-size:12px;
+  padding:15px 26px;border-radius:9px;
+  background:var(--teal);color:#04110E;border:none;
+  cursor:pointer;box-shadow:0 0 20px rgba(34,228,196,.35);
+  transition:transform .1s;
+}
+.btn:active{transform:scale(.96);}
+.btn.ghost{background:transparent;color:var(--muted);border:2px solid var(--line);box-shadow:none;}
+
+#modes{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  gap:9px;width:100%;max-width:720px;
+}
+.mode-card{
+  padding:13px 11px;border-radius:9px;text-align:left;
+  background:#101B26;border:2px solid var(--line);cursor:pointer;
+  transition:transform .1s,border-color .12s;
+}
+.mode-card:active{transform:scale(.97);}
+.mode-card .mc-name{
+  font-family:var(--arcade);font-size:9px;color:var(--teal);
+  line-height:1.5;margin-bottom:6px;display:block;
+}
+.mode-card .mc-std{font-size:12px;color:var(--muted);font-weight:600;}
+
+#count-num{
+  font-family:var(--arcade);font-size:clamp(40px,11vw,84px);color:var(--gold);
+  text-shadow:0 0 28px rgba(255,197,61,.5);
+}
+
+/* ---------- Controls ---------- */
+#controls{
+  flex:0 0 auto;display:none;
+  align-items:center;justify-content:space-between;
+  padding:10px 20px 14px;gap:14px;
+}
+#controls.on{display:flex;}
+
+#dpad{
+  display:grid;
+  grid-template-columns:repeat(3,58px);
+  grid-template-rows:repeat(3,52px);
+  gap:5px;
+}
+.dbtn{
+  border-radius:10px;background:#132030;border:2px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--teal);font-size:21px;touch-action:none;
+}
+.dbtn.hit{background:#17384A;border-color:var(--teal);}
+#d-up{grid-area:1/2}#d-left{grid-area:2/1}#d-down{grid-area:3/2}#d-right{grid-area:2/3}
+
+#throw{
+  width:112px;height:112px;border-radius:50%;
+  background:radial-gradient(circle at 36% 32%, #FFE9A8, var(--gold) 52%, #A87C12);
+  border:3px solid #FFE9A8;color:#2A1D00;
+  font-family:var(--arcade);font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 26px rgba(255,197,61,.45);
+  touch-action:none;transition:transform .08s;
+}
+#throw.hit{transform:scale(.93);}
+#throw.empty{
+  background:#141F2A;border-color:var(--line);color:var(--muted);
+  box-shadow:none;
+}
+
+@media (max-width:560px){
+  #dpad{grid-template-columns:repeat(3,50px);grid-template-rows:repeat(3,45px);}
+  #throw{width:92px;height:92px;font-size:10px;}
+  #hud{font-size:8px;gap:6px;padding:6px 8px;}
+  .hud-chip{padding:5px 7px;}
+  #choices{grid-template-columns:1fr;}
+}
+@media (min-width:900px) and (pointer:fine){
+  #controls{opacity:.9;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="hud">
+    <div class="hud-chip" id="hud-mode"><span class="lbl">MODE</span><span class="val" id="v-mode">—</span></div>
+    <div class="hud-chip" id="hud-round"><span class="lbl">ROUND</span><span class="val" id="v-round">1</span></div>
+    <div id="hud-spacer"></div>
+    <div class="hud-chip"><span class="lbl">HEALTH</span><span id="hud-lives"></span></div>
+    <div class="hud-chip" id="hud-score"><span class="lbl">SCORE</span><span class="val" id="v-score">0</span></div>
+  </div>
+
+  <div id="rack"><span class="rack-label">DODGEBALLS</span></div>
+
+  <div id="stage">
+    <canvas id="court"></canvas>
+
+    <div id="question">
+      <div id="q-top">
+        <span id="q-count">QUESTION 1 / 5</span>
+        <span id="q-standard"></span>
+      </div>
+      <div id="q-body">
+        <div id="q-prompt"></div>
+        <div id="q-visual"></div>
+      </div>
+      <div id="q-answers">
+        <div id="choices"></div>
+        <div id="typed" style="display:none">
+          <div id="typed-display">_</div>
+          <div id="numpad"></div>
+        </div>
+      </div>
+      <div id="q-feedback"></div>
+    </div>
+
+    <div class="overlay on" id="ov-title">
+      <h1>DODGE FURY</h1>
+      <p>Answer five questions to earn dodgeballs. Then take the court and knock out all five opponents before they knock out you. A throw that misses bounces off the back wall — catch the rebound and you get that ball back.</p>
+      <p style="font-size:14px">On a computer: <b style="color:var(--teal)">WASD</b> or <b style="color:var(--teal)">arrow keys</b> to move, <b style="color:var(--gold)">Space</b> to throw. Answer with number keys or type and press Enter.</p>
+      <p style="color:var(--gold);font-weight:700">Pick a skill to practice</p>
+      <div id="modes"></div>
+    </div>
+
+    <div class="overlay" id="ov-count">
+      <h2 style="color:var(--muted)">TAKE THE COURT</h2>
+      <div id="count-num">3</div>
+    </div>
+
+    <div class="overlay" id="ov-msg">
+      <h2 id="msg-title"></h2>
+      <p id="msg-body"></p>
+      <button class="btn" id="msg-go"></button>
+      <button class="btn ghost" id="msg-menu">CHANGE SKILL</button>
+    </div>
+  </div>
+
+  <div id="controls">
+    <div id="dpad">
+      <div class="dbtn" id="d-up">▲</div>
+      <div class="dbtn" id="d-left">◀</div>
+      <div class="dbtn" id="d-down">▼</div>
+      <div class="dbtn" id="d-right">▶</div>
+    </div>
+    <div id="throw">THROW</div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ==================================================================
+   HELPERS
+   ================================================================== */
+const rnd  = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]];} return a; };
+const comma = n => n.toLocaleString('en-US');
+const gcd = (a,b) => b ? gcd(b,a%b) : a;
+
+// Build a 4-option set from a correct answer plus candidate distractors.
+function options(correct, cands){
+  const out=[correct];
+  for(const c of shuffle(cands)){
+    if(out.length>=4) break;
+    if(!out.some(v=>String(v)===String(c))) out.push(c);
+  }
+  let guard=0;
+  while(out.length<4 && guard++<60){
+    const n = Number(correct);
+    if(!isFinite(n)) break;
+    const j = n + rnd(1,9)*(Math.random()<.5?-1:1)*Math.max(1,Math.round(Math.abs(n)*0.05));
+    if(j>0 && !out.some(v=>String(v)===String(j))) out.push(j);
+  }
+  return shuffle(out);
+}
+
+/* --------- SVG builders --------- */
+const C = {teal:'#22E4C4',gold:'#FFC53D',ember:'#FF4D6D',line:'#1C2B38',chalk:'#EAF2F4',muted:'#7E96A3'};
+
+function svgRect(w,h,labelW,labelH){
+  const S=Math.min(300/Math.max(w,h),46), pw=Math.max(w*S,58), ph=Math.max(h*S,44);
+  return `<svg viewBox="0 0 ${pw+80} ${ph+68}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="42" y="16" width="${pw}" height="${ph}" fill="rgba(34,228,196,.11)" stroke="${C.teal}" stroke-width="3" rx="3"/>
+    <text x="${42+pw/2}" y="${ph+44}" fill="${C.gold}" font-size="19" font-weight="700" text-anchor="middle" font-family="Nunito,sans-serif">${labelW}</text>
+    <text x="26" y="${16+ph/2+7}" fill="${C.gold}" font-size="19" font-weight="700" text-anchor="middle" font-family="Nunito,sans-serif">${labelH}</text>
+  </svg>`;
+}
+
+function svgLShape(a,b,c,d){
+  // Outer a wide by b tall, with a notch c wide by d tall removed from top-right.
+  const S=Math.min(230/Math.max(a,b),34);
+  const A=a*S,B=b*S,Cc=c*S,D=d*S;
+  const pts=`42,${16+D} ${42+A-Cc},${16+D} ${42+A-Cc},16 ${42+A},16 ${42+A},${16+B} 42,${16+B}`;
+  return `<svg viewBox="0 0 ${A+92} ${B+62}" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="${pts}" fill="rgba(34,228,196,.11)" stroke="${C.teal}" stroke-width="3"/>
+    <text x="${42+A/2}" y="${B+44}" fill="${C.gold}" font-size="17" font-weight="700" text-anchor="middle" font-family="Nunito,sans-serif">${a} units</text>
+    <text x="24" y="${16+B/2}" fill="${C.gold}" font-size="17" font-weight="700" text-anchor="middle" font-family="Nunito,sans-serif">${b}</text>
+    <text x="${42+A-Cc/2}" y="${12+D+18}" fill="${C.muted}" font-size="14" font-weight="700" text-anchor="middle" font-family="Nunito,sans-serif">${c}×${d} cut</text>
+  </svg>`;
+}
+
+function svgBars(cats,vals,step){
+  const W=380,H=230,pad=42,bw=(W-pad-16)/cats.length;
+  const max=Math.ceil(Math.max(...vals)/step)*step + step;
+  const y=v=>H-34-(v/max)*(H-64);
+  let g='';
+  for(let t=0;t<=max;t+=step){
+    g+=`<line x1="${pad}" y1="${y(t)}" x2="${W-8}" y2="${y(t)}" stroke="${C.line}" stroke-width="1"/>
+        <text x="${pad-7}" y="${y(t)+5}" fill="${C.muted}" font-size="12" text-anchor="end" font-family="Nunito,sans-serif">${t}</text>`;
+  }
+  cats.forEach((c,i)=>{
+    const bx=pad+8+i*bw, bh=H-34-y(vals[i]);
+    g+=`<rect x="${bx}" y="${y(vals[i])}" width="${bw-18}" height="${bh}" fill="${C.teal}" opacity=".8" rx="2"/>
+        <text x="${bx+(bw-18)/2}" y="${H-14}" fill="${C.chalk}" font-size="13" font-weight="700" text-anchor="middle" font-family="Nunito,sans-serif">${c}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+
+function svgLinePlot(values,labels){
+  const W=380,H=190,pad=34,sp=(W-pad*2)/(labels.length-1);
+  let g=`<line x1="${pad-14}" y1="${H-40}" x2="${W-pad+14}" y2="${H-40}" stroke="${C.muted}" stroke-width="2"/>`;
+  labels.forEach((l,i)=>{
+    const x=pad+i*sp;
+    g+=`<line x1="${x}" y1="${H-46}" x2="${x}" y2="${H-34}" stroke="${C.muted}" stroke-width="2"/>
+        <text x="${x}" y="${H-16}" fill="${C.chalk}" font-size="13" font-weight="700" text-anchor="middle" font-family="Nunito,sans-serif">${l}</text>`;
+    for(let k=0;k<values[i];k++)
+      g+=`<text x="${x}" y="${H-56-k*17}" fill="${C.gold}" font-size="17" font-weight="800" text-anchor="middle" font-family="Nunito,sans-serif">✕</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+
+function svgShape(kind){
+  const s=(p,extra='')=>`<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg"><polygon points="${p}" fill="rgba(34,228,196,.11)" stroke="${C.teal}" stroke-width="3"/>${extra}</svg>`;
+  switch(kind){
+    case 'square':        return s('60,25 180,25 180,145 60,145');
+    case 'rectangle':     return s('30,42 210,42 210,128 30,128');
+    case 'parallelogram': return s('30,130 78,40 212,40 164,130');
+    case 'rhombus':       return s('42,130 84,40 208,40 166,130');
+    case 'trapezoid':     return s('30,130 76,40 168,40 214,130');
+    case 'right triangle':   return s('44,136 44,34 190,136');
+    case 'acute triangle':   return s('120,30 44,138 196,138');
+    case 'obtuse triangle':  return s('34,138 210,138 74,44');
+    case 'equilateral triangle': return s('120,30 200,140 40,140');
+    case 'isosceles triangle':   return s('120,28 178,142 62,142');
+    case 'scalene triangle':     return s('40,140 208,124 92,32');
+  }
+  return '';
+}
+
+function svgAngle(kind){
+  const map={'right':90,'acute':rnd(28,68),'obtuse':rnd(108,152)};
+  const deg=map[kind], r=104, rad=(180-deg)*Math.PI/180;
+  const x=42+r*Math.cos(rad), y=140-r*Math.sin(rad);
+  const mark = kind==='right'
+    ? `<path d="M62,140 L62,120 L42,120" fill="none" stroke="${C.gold}" stroke-width="3"/>`
+    : `<path d="M${42+34} 140 A34 34 0 0 0 ${42+34*Math.cos(rad)} ${140-34*Math.sin(rad)}" fill="none" stroke="${C.gold}" stroke-width="3"/>`;
+  return `<svg viewBox="0 0 240 170" xmlns="http://www.w3.org/2000/svg">
+    <line x1="42" y1="140" x2="212" y2="140" stroke="${C.teal}" stroke-width="4"/>
+    <line x1="42" y1="140" x2="${x}" y2="${y}" stroke="${C.teal}" stroke-width="4"/>
+    ${mark}<circle cx="42" cy="140" r="5" fill="${C.teal}"/></svg>`;
+}
+
+function svgFractionBar(num,den){
+  const W=340,H=62,cw=W/den;
+  let g='';
+  for(let i=0;i<den;i++)
+    g+=`<rect x="${i*cw}" y="6" width="${cw}" height="${H-14}" fill="${i<num?'rgba(34,228,196,.7)':'rgba(28,43,56,.6)'}" stroke="${C.teal}" stroke-width="2"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+
+/* ==================================================================
+   QUESTION GENERATORS  — one per skill mode
+   Each returns: {prompt, answer, choices, typeable, svg, html, standard}
+   `level` grows each round: harder numbers, more steps.
+   ================================================================== */
+
+const MODES = {
+
+/* ---- ROUNDING — 4.NS.7 ---- */
+rounding:{
+  name:'ROUNDING', std:'4.NS.7',
+  gen(L){
+    const places = L<=1 ? [[10,'ten'],[100,'hundred']]
+                : L<=2 ? [[100,'hundred'],[1000,'thousand']]
+                       : [[1000,'thousand'],[10000,'ten thousand'],[100000,'hundred thousand']];
+    const [p,word]=pick(places);
+    const lo = p*10, hi = Math.min(999999, p*100-1);
+    const n = rnd(Math.max(lo,100), hi);
+    const ans = Math.round(n/p)*p;
+    const trunc = Math.floor(n/p)*p;                    // chopped instead of rounded
+    const cands=[trunc, trunc+p, Math.round(n/(p*10))*(p*10), Math.round(n/(p/10 || 1))*(p/10 || 1)]
+      .filter(v=>v>0 && v!==ans).map(comma);
+    return {
+      prompt:`Round ${comma(n)} to the nearest ${word}.`,
+      answer:comma(ans), typedAnswer:String(ans), typeable:true,
+      choices:options(comma(ans),cands), standard:'4.NS.7'
+    };
+  }
+},
+
+/* ---- PLACE VALUE — 4.NS.1 ---- */
+placevalue:{
+  name:'PLACE VALUE', std:'4.NS.1',
+  gen(L){
+    const digits = L<=1 ? 4 : L<=2 ? 5 : 6;
+    const n = rnd(Math.pow(10,digits-1), Math.pow(10,digits)-1);
+    const s = String(n);
+    const type = pick(['value','expanded','standard']);
+    const names=['ones','tens','hundreds','thousands','ten thousands','hundred thousands'];
+
+    if(type==='value'){
+      let i = rnd(0,s.length-1);
+      while(s[i]==='0' && s.split('').some(d=>d!=='0')) i=rnd(0,s.length-1);
+      const place = s.length-1-i;
+      const val = Number(s[i]) * Math.pow(10,place);
+      const cands=[Number(s[i]), Number(s[i])*Math.pow(10,Math.max(0,place-1)),
+                   Number(s[i])*Math.pow(10,place+1), place].filter(v=>v!==val).map(comma);
+      return {prompt:`In ${comma(n)}, what is the value of the digit ${s[i]}?`,
+challenge:1, answer:comma(val), typedAnswer:String(val), typeable:true,
+              choices:options(comma(val),cands), standard:'4.NS.1'};
+    }
+
+    if(type==='expanded'){
+      const parts=[];
+      for(let i=0;i<s.length;i++){
+        const d=Number(s[i]); if(d===0) continue;
+        parts.push(comma(d*Math.pow(10,s.length-1-i)));
+      }
+      const cands=[comma(n+Math.pow(10,rnd(1,3))), comma(n-Math.pow(10,rnd(1,3))),
+                   comma(Number(s.split('').reverse().join('')))];
+      return {prompt:`Which number is shown in expanded form?\n${parts.join(' + ')}`,
+              answer:comma(n), typedAnswer:String(n), typeable:true,
+              choices:options(comma(n),cands), standard:'4.NS.1'};
+    }
+
+    // standard form from words
+    const words=[];
+    for(let i=0;i<s.length;i++){
+      const d=Number(s[i]); if(d===0) continue;
+      words.push(`${d} ${names[s.length-1-i]}`);
+    }
+    const cands=[comma(n+Math.pow(10,rnd(2,4))), comma(n*10>999999?Math.floor(n/10):n*10), comma(n-Math.pow(10,rnd(2,4)))];
+    return {prompt:`Write this number in standard form:\n${words.join(', ')}`,
+            answer:comma(n), typedAnswer:String(n), typeable:true,
+            choices:options(comma(n),cands), standard:'4.NS.1'};
+  }
+},
+
+/* ---- ADDITION — 3.CA.1 fluency support ---- */
+addition:{
+  name:'ADDITION', std:'3.CA.1',
+  gen(L){
+    const d = L<=1 ? 3 : L<=2 ? 4 : L<=3 ? 5 : 6;
+    const lo=Math.pow(10,d-1), hi=Math.pow(10,d)-1;
+    const a=rnd(lo,hi), b=rnd(lo,hi), ans=a+b;
+    // classic error: add digits without carrying
+    const noCarry = String(a).padStart(d,'0').split('').map((x,i)=>
+      (Number(x)+Number(String(b).padStart(d,'0')[i]))%10).join('');
+    const cands=[comma(Number(noCarry)), comma(ans+10), comma(ans-100), comma(ans+1000)]
+      .filter(v=>v!==comma(ans));
+    const asWord = Math.random()<.42;
+    const ctx = pick([
+      n=>`The book fair sold ${comma(a)} books in the morning and ${comma(b)} books in the afternoon. How many books were sold in all?`,
+      n=>`A stadium had ${comma(a)} fans on Friday and ${comma(b)} fans on Saturday. How many fans came in total?`,
+      n=>`A charity collected ${comma(a)} cans in September and ${comma(b)} cans in October. How many cans altogether?`
+    ]);
+    return {prompt: asWord ? ctx() : `${comma(a)} + ${comma(b)} = ?`,
+            answer:comma(ans), typedAnswer:String(ans), typeable:true,
+            choices:options(comma(ans),cands), standard:'3.CA.1'};
+  }
+},
+
+/* ---- SUBTRACTION — 3.CA.1 fluency support ---- */
+subtraction:{
+  name:'SUBTRACTION', std:'3.CA.1',
+  gen(L){
+    const d = L<=1 ? 3 : L<=2 ? 4 : L<=3 ? 5 : 6;
+    const lo=Math.pow(10,d-1), hi=Math.pow(10,d)-1;
+    let a=rnd(lo,hi), b=rnd(lo,a);
+    if(L>=2 && Math.random()<.45) a = Math.floor(a/1000)*1000; // across zeros
+    if(b>=a) b=rnd(lo,Math.max(lo+1,a-1));
+    const ans=a-b;
+    // classic error: always take smaller digit from larger
+    const pa=String(a).padStart(d,'0'), pb=String(b).padStart(d,'0');
+    const smallFromLarge=Number(pa.split('').map((x,i)=>Math.abs(Number(x)-Number(pb[i]))).join(''));
+    const cands=[comma(smallFromLarge), comma(ans+10), comma(ans-10), comma(ans+100)]
+      .filter(v=>v!==comma(ans) && !v.startsWith('-'));
+    const asWord = Math.random()<.42;
+    const ctx = pick([
+      ()=>`A theater has ${comma(a)} seats. ${comma(b)} seats are already filled. How many seats are left?`,
+      ()=>`A farm harvested ${comma(a)} apples and sold ${comma(b)} of them. How many apples remain?`,
+      ()=>`A town has ${comma(a)} residents. ${comma(b)} of them are adults. How many are children?`
+    ]);
+    return {prompt: asWord ? ctx() : `${comma(a)} − ${comma(b)} = ?`,
+            answer:comma(ans), typedAnswer:String(ans), typeable:true,
+            choices:options(comma(ans),cands), standard:'3.CA.1'};
+  }
+},
+
+/* ---- AREA & PERIMETER — 4.M.4 ---- */
+areaperimeter:{
+  name:'AREA / PERIM', std:'4.M.4',
+  gen(L){
+    const kind = L<=1 ? pick(['area','perim'])
+               : L<=2 ? pick(['area','perim','missing'])
+                      : pick(['area','perim','missing','composite']);
+
+    if(kind==='composite'){
+      const a=rnd(8,14), b=rnd(6,11), c=rnd(2,a-4), d=rnd(2,b-3);
+      const ans=a*b-c*d;
+      const cands=[a*b, a*b+c*d, 2*(a+b), c*d].filter(v=>v!==ans);
+      return {prompt:`Find the area of this shape in square units.`,
+              svg:svgLShape(a,b,c,d), answer:String(ans), typedAnswer:String(ans),
+              typeable:true, choices:options(String(ans),cands), standard:'4.M.4'};
+    }
+    if(kind==='missing'){
+      const w=rnd(3,L<=2?12:22), h=rnd(3,L<=2?12:22);
+      if(Math.random()<.5){
+        const A=w*h;
+        const cands=[A-w, Math.round(A/2)-w, w, A].filter(v=>v!==h && v>0);
+        return {prompt:`A rectangle has an area of ${A} square units. One side is ${w} units. How long is the other side?`,
+                answer:String(h), typedAnswer:String(h), typeable:true,
+                choices:options(String(h),cands), standard:'4.M.4'};
+      }
+      const P=2*(w+h);
+      const cands=[P-w, P/2, w*h, Math.round(P/4)].filter(v=>v!==h && v>0);
+      return {prompt:`A rectangle has a perimeter of ${P} units. One side is ${w} units. How long is the other side?`,
+              answer:String(h), typedAnswer:String(h), typeable:true,
+              choices:options(String(h),cands), standard:'4.M.4'};
+    }
+    const w=rnd(3,L<=1?10:L<=2?16:28), h=rnd(3,L<=1?10:L<=2?16:28);
+    if(kind==='area'){
+      const ans=w*h, cands=[2*(w+h), w+h, w*h+w, (w+h)*2+w].filter(v=>v!==ans);
+      return {prompt:`Find the AREA of this rectangle in square units.`,
+              svg:svgRect(w,h,`${w} units`,`${h}`), answer:String(ans), typedAnswer:String(ans),
+              typeable:true, choices:options(String(ans),cands), standard:'4.M.4'};
+    }
+    const ans=2*(w+h), cands=[w*h, w+h, 2*w+h, w+2*h].filter(v=>v!==ans);
+    return {prompt:`Find the PERIMETER of this rectangle in units.`,
+            svg:svgRect(w,h,`${w} units`,`${h}`), answer:String(ans), typedAnswer:String(ans),
+            typeable:true, choices:options(String(ans),cands), standard:'4.M.4'};
+  }
+},
+
+/* ---- ALGEBRAIC THINKING — 4.CA.9 / 4.CA.4 / 4.CA.5 ---- */
+algebraic:{
+  name:'ALGEBRA', std:'4.CA.9',
+  gen(L){
+    const kind=pick(['pattern','rule','factor','multiple','compare']);
+
+    if(kind==='pattern'){
+      const start=rnd(2,L<=1?14:40), step=rnd(2,L<=1?7:13);
+      const mult = L>=3 && Math.random()<.4;
+      const seq=[start]; for(let i=1;i<5;i++) seq.push(mult?seq[i-1]*2:seq[i-1]+step);
+      const ans=mult?seq[4]*2:seq[4]+step;
+      const cands=[ans+step, ans-step, seq[4]+seq[3], ans+1].filter(v=>v!==ans);
+      return {prompt:`What is the next number in this pattern?\n${seq.join(', ')}, ___`,
+              answer:String(ans), typedAnswer:String(ans), typeable:true,
+              choices:options(String(ans),cands), standard:'4.CA.9'};
+    }
+    if(kind==='rule'){
+      const start=rnd(3,20), step=rnd(3,12);
+      const seq=[start]; for(let i=1;i<5;i++) seq.push(seq[i-1]+step);
+      const ans=`Add ${step}`;
+      return {prompt:`What rule describes this pattern?\n${seq.join(', ')}`,
+              answer:ans, typeable:false,
+              choices:shuffle([ans,`Add ${step+1}`,`Multiply by ${step}`,`Subtract ${step}`]),
+              standard:'4.CA.9'};
+    }
+    if(kind==='factor'){
+      const n=pick(L<=1?[12,16,18,20,24]:[36,42,48,54,60,72,80,96]);
+      const facs=[]; for(let i=1;i<=n;i++) if(n%i===0) facs.push(i);
+      const ans=pick(facs.filter(f=>f>1&&f<n));
+      const non=[]; for(let i=2;i<n && non.length<8;i++) if(n%i!==0) non.push(i);
+      return {prompt:`Which of these is a FACTOR of ${n}?`,
+              answer:String(ans), typeable:false,
+              choices:options(String(ans),shuffle(non).slice(0,3).map(String)),
+              standard:'4.CA.4'};
+    }
+    if(kind==='multiple'){
+      const n=rnd(3,L<=1?9:12), k=rnd(3,L<=1?8:12), ans=n*k;
+      const cands=[ans+1,ans-1,ans+n-1,n*k+2].filter(v=>v%n!==0);
+      return {prompt:`Which of these is a MULTIPLE of ${n}?`,
+              answer:String(ans), typeable:false,
+              choices:options(String(ans),cands.map(String)), standard:'4.CA.4'};
+    }
+    const base=rnd(3,L<=1?9:15), times=rnd(3,L<=1?6:9), ans=base*times;
+    const name=pick(['Maya','Devon','Priya','Marcus','Elena','Jamal']);
+    const thing=pick(['stickers','marbles','trading cards','books','shells','pencils']);
+    const cands=[base+times, ans-base, ans+base, base*(times+1)].filter(v=>v!==ans);
+    return {prompt:`${name} has ${base} ${thing}. Their friend has ${times} times as many. How many does the friend have?`,
+            answer:String(ans), typedAnswer:String(ans), typeable:true,
+            choices:options(String(ans),cands), standard:'4.CA.5'};
+  }
+},
+
+/* ---- FRACTIONS — 4.NS.3 / 4.NS.4 / 4.CA.6 ---- */
+fractions:{
+  name:'FRACTIONS', std:'4.CA.6',
+  gen(L){
+    const dens=[2,3,4,5,6,8,10];   // grade-4 limit
+    const kind = L<=1 ? pick(['equiv','compare']) : pick(['equiv','compare','add','sub','model']);
+
+    if(kind==='model'){
+      const d=pick([4,5,6,8]), n=rnd(1,d-1);
+      const cands=[`${d-n}/${d}`,`${n}/${d+1}`,`${n+1}/${d}`];
+      return {prompt:`What fraction of the bar is shaded?`, svg:svgFractionBar(n,d),
+              answer:`${n}/${d}`, typeable:false, choices:options(`${n}/${d}`,cands),
+              standard:'4.NS.2'};
+    }
+    if(kind==='equiv'){
+      const d=pick(dens), n=rnd(1,d-1), m=rnd(2,L<=2?3:4);
+      const ans=`${n*m}/${d*m}`;
+      const cands=[`${n+m}/${d+m}`,`${n*m}/${d}`,`${n}/${d*m}`,`${n*(m+1)}/${d*m}`];
+      return {prompt:`Which fraction is equivalent to ${n}/${d}?`,
+              answer:ans, typeable:false, choices:options(ans,cands), standard:'4.NS.3'};
+    }
+    if(kind==='compare'){
+      let d1=pick(dens), d2=pick(dens.filter(x=>x!==d1));
+      const n1=rnd(1,d1-1), n2=rnd(1,d2-1);
+      const v1=n1/d1, v2=n2/d2;
+      const ans = Math.abs(v1-v2)<1e-9 ? '=' : (v1>v2 ? '>' : '<');
+      return {prompt:`Compare the two fractions.\n${n1}/${d1}  ?  ${n2}/${d2}`,
+              answer:ans, typeable:false, choices:['<','>','='], standard:'4.NS.4'};
+    }
+    // add / subtract, common denominators
+    const d=pick(L<=2?[4,5,6,8]:[6,8,10,12]);
+    if(kind==='add'){
+      const n1=rnd(1,d-2), n2=rnd(1,d-n1);
+      const s=n1+n2, ans = s===d ? '1' : `${s}/${d}`;
+      const cands=[`${s}/${d*2}`,`${n1*n2}/${d}`,`${s+1}/${d}`,`${s}/${d+d}`];
+      return {prompt:`${n1}/${d} + ${n2}/${d} = ?`,
+              answer:ans, typeable:false, choices:options(ans,cands), standard:'4.CA.6'};
+    }
+    const n1=rnd(2,d-1), n2=rnd(1,n1-1>0?n1-1:1);
+    const s=n1-n2, ans = s===0 ? '0' : `${s}/${d}`;
+    const cands=[`${s}/${d-1}`,`${n1+n2}/${d}`,`${s+1}/${d}`,`${d-s}/${d}`];
+    return {prompt:`${n1}/${d} − ${n2}/${d} = ?`,
+            answer:ans, typeable:false, choices:options(ans,cands), standard:'4.CA.6'};
+  }
+},
+
+/* ---- MEASUREMENT — 4.M.2 ---- */
+measurement:{
+  name:'MEASUREMENT', std:'4.M.2',
+  gen(L){
+    const table=[
+      ['km','m',1000],['m','cm',100],['kg','g',1000],
+      ['lb','oz',16],['L','mL',1000],['hr','min',60],['min','sec',60]
+    ];
+    const [big,small,f]=pick(table);
+    const q = L<=1 ? rnd(2,9) : L<=2 ? rnd(2,24) : rnd(3,60);
+    const ans=q*f;
+    const cands=[q*f*10, Math.round(q*f/10), q+f, q*(f/10||1)].filter(v=>v!==ans&&v>0).map(comma);
+    const asWord=Math.random()<.4;
+    const ctx=pick([
+      ()=>`A relay race is ${q} ${big} long. How many ${small} is that?`,
+      ()=>`A recipe calls for ${q} ${big}. How many ${small} does it need?`,
+      ()=>`A trip took ${q} ${big}. How many ${small} is that?`
+    ]);
+    return {prompt: asWord ? ctx() : `Convert: ${q} ${big} = ___ ${small}`,
+            answer:comma(ans), typedAnswer:String(ans), typeable:true,
+            choices:options(comma(ans),cands), standard:'4.M.2'};
+  }
+},
+
+/* ---- DATA ANALYSIS — 4.DA.1 / 4.DA.2 ---- */
+data:{
+  name:'DATA', std:'4.DA.1',
+  gen(L){
+    const style = L<=1 ? 'bar' : pick(['bar','bar','table','plot']);
+
+    if(style==='plot'){
+      const labels=['1/8','1/4','3/8','1/2','5/8'];
+      const vals=labels.map(()=>rnd(0,4));
+      if(vals.reduce((a,b)=>a+b,0)<5) vals[2]+=4;
+      const total=vals.reduce((a,b)=>a+b,0);
+      const most=labels[vals.indexOf(Math.max(...vals))];
+      if(Math.random()<.5)
+        return {prompt:`How many measurements are shown on this line plot?`, svg:svgLinePlot(vals,labels),
+                answer:String(total), typedAnswer:String(total), typeable:true,
+                choices:options(String(total),[total+1,total-1,Math.max(...vals),labels.length].map(String)),
+                standard:'4.DA.2'};
+      return {prompt:`Which length was measured most often?`, svg:svgLinePlot(vals,labels),
+              answer:most, typeable:false, choices:shuffle(labels).slice(0,4).includes(most)
+                ? shuffle([most,...shuffle(labels.filter(l=>l!==most)).slice(0,3)])
+                : shuffle([most,...shuffle(labels.filter(l=>l!==most)).slice(0,3)]),
+              standard:'4.DA.2'};
+    }
+
+    const sets=[
+      {t:'Favorite Recess Game', c:['Tag','Soccer','Swings','Hoops']},
+      {t:'Books Read This Month', c:['Ava','Ben','Cruz','Dee']},
+      {t:'Cans Collected', c:['Mon','Tue','Wed','Thu']},
+      {t:'Class Pet Votes', c:['Fish','Gecko','Hamster','Frog']}
+    ];
+    const set=pick(sets);
+    const step = L<=1 ? 5 : pick([5,10]);
+    const vals=set.c.map(()=>rnd(1,L<=1?6:11)*step);
+    const total=vals.reduce((a,b)=>a+b,0);
+    const maxI=vals.indexOf(Math.max(...vals)), minI=vals.indexOf(Math.min(...vals));
+    const visual = style==='table'
+      ? `<table><tr><th>${set.t}</th><th>Count</th></tr>${set.c.map((c,i)=>`<tr><td>${c}</td><td>${vals[i]}</td></tr>`).join('')}</table>`
+      : null;
+    const svg = style==='bar' ? svgBars(set.c,vals,step) : null;
+
+    const q=pick(['total','diff','more','most']);
+    if(q==='total')
+      return {prompt:`${set.t}. What is the TOTAL of all four?`, svg, html:visual,
+              answer:comma(total), typedAnswer:String(total), typeable:true,
+              choices:options(comma(total),[total-vals[0],total+step,total-step,Math.max(...vals)].map(comma)),
+              standard:'4.DA.1'};
+    if(q==='most')
+      return {prompt:`${set.t}. Which one has the MOST?`, svg, html:visual,
+              answer:set.c[maxI], typeable:false, choices:shuffle(set.c), standard:'4.DA.1'};
+    const d=vals[maxI]-vals[minI];
+    if(q==='diff')
+      return {prompt:`${set.t}. What is the difference between the greatest and the least?`, svg, html:visual,
+              answer:String(d), typedAnswer:String(d), typeable:true,
+              choices:options(String(d),[d+step,Math.abs(d-step),vals[maxI],vals[minI]].map(String)),
+              standard:'4.DA.1'};
+    const i=rnd(0,3); let j=rnd(0,3); while(j===i) j=rnd(0,3);
+    const dd=Math.abs(vals[i]-vals[j]);
+    return {prompt:`${set.t}. How many MORE does ${set.c[vals[i]>vals[j]?i:j]} have than ${set.c[vals[i]>vals[j]?j:i]}?`,
+            svg, html:visual, answer:String(dd), typedAnswer:String(dd), typeable:true,
+            choices:options(String(dd),[dd+step,vals[i]+vals[j],Math.abs(dd-step),vals[i]].map(String)),
+            standard:'4.DA.1'};
+  }
+},
+
+/* ---- GEOMETRY — 4.G.1 / 4.G.2 / 4.G.3 ---- */
+geometry:{
+  name:'GEOMETRY', std:'4.G.3',
+  gen(L){
+    const kind = L<=1 ? pick(['quad','angle']) : pick(['quad','angle','symmetry','triangle','lines']);
+
+    if(kind==='quad'){
+      const shapes=['parallelogram','rhombus','trapezoid','rectangle','square'];
+      const s=pick(shapes);
+      return {prompt:`What is the name of this shape?`, svg:svgShape(s),
+              answer:s, typeable:false, choices:shuffle([s,...shuffle(shapes.filter(x=>x!==s)).slice(0,3)]),
+              standard:'4.G.1'};
+    }
+    if(kind==='angle'){
+      const k=pick(['right','acute','obtuse']);
+      return {prompt:`What kind of angle is shown?`, svg:svgAngle(k),
+              answer:k, typeable:false, choices:shuffle(['right','acute','obtuse','straight']),
+              standard:'4.G.3'};
+    }
+    if(kind==='triangle'){
+      const t=pick(['right triangle','acute triangle','obtuse triangle']);
+      return {prompt:`Classify this triangle by its angles.`, svg:svgShape(t),
+              answer:t, typeable:false,
+              choices:shuffle(['right triangle','acute triangle','obtuse triangle','equilateral triangle']),
+              standard:'4.G.3'};
+    }
+    if(kind==='symmetry'){
+      const opts=[['square',4],['rectangle',2],['equilateral triangle',3],['isosceles triangle',1],['parallelogram',0]];
+      const [s,n]=pick(opts);
+      return {prompt:`How many lines of symmetry does this shape have?`, svg:svgShape(s),
+              answer:String(n), typeable:false, choices:shuffle(['0','1','2','3','4']).slice(0,4).includes(String(n))
+                ? shuffle(['0','1','2','3','4']).slice(0,4)
+                : shuffle([String(n),...['0','1','2','3','4'].filter(x=>x!==String(n)).slice(0,3)]),
+              standard:'4.G.2'};
+    }
+    const facts=[
+      ['Which shape always has exactly 2 pairs of parallel sides?','parallelogram',['trapezoid','right triangle','pentagon']],
+      ['Which shape has exactly 1 pair of parallel sides?','trapezoid',['rhombus','square','rectangle']],
+      ['Lines that cross to form a right angle are called…','perpendicular',['parallel','curved','equal']],
+      ['Lines that never cross are called…','parallel',['perpendicular','intersecting','angled']],
+      ['A rhombus always has…','4 equal sides',['4 right angles','1 pair of parallel sides','3 sides']]
+    ];
+    const [p,a,d]=pick(facts);
+    return {prompt:p, answer:a, typeable:false, choices:shuffle([a,...d]), standard:'4.G.1'};
+  }
+}
+};
+
+const MODE_ORDER=['rounding','placevalue','addition','subtraction','areaperimeter',
+                  'algebraic','fractions','measurement','data','geometry'];
+
+/* ==================================================================
+   GAME STATE
+   ================================================================== */
+const MAXHP = 5;
+
+const G = {
+  mode:null, round:1, score:0, hp:MAXHP,
+  balls:0, thrown:0,
+  qIndex:0, current:null, locked:false,
+  phase:'menu'
+};
+
+const $=id=>document.getElementById(id);
+const el={
+  vMode:$('v-mode'), vRound:$('v-round'), vScore:$('v-score'), lives:$('hud-lives'),
+  rack:$('rack'), stage:$('stage'), canvas:$('court'),
+  question:$('question'), qCount:$('q-count'), qStd:$('q-standard'),
+  qPrompt:$('q-prompt'), qVisual:$('q-visual'), qFeedback:$('q-feedback'),
+  choices:$('choices'), typed:$('typed'), typedDisp:$('typed-display'), numpad:$('numpad'),
+  ovTitle:$('ov-title'), ovCount:$('ov-count'), ovMsg:$('ov-msg'), countNum:$('count-num'),
+  msgTitle:$('msg-title'), msgBody:$('msg-body'), msgGo:$('msg-go'), msgMenu:$('msg-menu'),
+  modes:$('modes'), controls:$('controls'), throwBtn:$('throw')
+};
+
+function drawHUD(){
+  el.vRound.textContent=G.round;
+  el.vScore.textContent=comma(G.score);
+  el.vMode.textContent=G.mode?MODES[G.mode].name:'—';
+  el.lives.innerHTML='';
+  for(let i=0;i<MAXHP;i++){
+    const d=document.createElement('span');
+    let cls='seg';
+    if(i>=G.hp) cls+=' gone';
+    else if(G.hp<=1) cls+=' crit';
+    else if(G.hp<=2) cls+=' warn';
+    d.className=cls;
+    el.lives.appendChild(d);
+  }
+}
+
+function drawRack(animateLast){
+  el.rack.querySelectorAll('.rack-ball').forEach(n=>n.remove());
+  const total=G.balls+G.thrown;
+  for(let i=0;i<total;i++){
+    const b=document.createElement('span');
+    b.className='rack-ball'+(i<G.balls?'':' spent');
+    if(animateLast && i===G.balls-1) b.classList.add('pop');
+    el.rack.appendChild(b);
+  }
+  el.throwBtn.classList.toggle('empty', G.balls<=0);
+}
+
+/* ==================================================================
+   MENU
+   ================================================================== */
+MODE_ORDER.forEach(k=>{
+  const m=MODES[k];
+  const c=document.createElement('div');
+  c.className='mode-card';
+  c.innerHTML=`<span class="mc-name">${m.name}</span><span class="mc-std">Indiana ${m.std}</span>`;
+  c.addEventListener('click',()=>startGame(k));
+  el.modes.appendChild(c);
+});
+
+function startGame(modeKey){
+  G.mode=modeKey; G.round=1; G.score=0; G.hp=MAXHP;
+  el.ovTitle.classList.remove('on');
+  drawHUD();
+  startQuestionPhase();
+}
+
+/* ==================================================================
+   QUESTION PHASE
+   ================================================================== */
+function startQuestionPhase(){
+  G.phase='question'; G.qIndex=0; G.balls=0; G.thrown=0; G.locked=false;
+  el.rack.classList.add('on');
+  el.controls.classList.remove('on');
+  el.question.classList.add('on');
+  el.canvas.style.visibility='hidden';
+  drawRack();
+  nextQuestion();
+}
+
+function nextQuestion(){
+  if(G.qIndex>=5){ beginCountdown(); return; }
+  G.locked=false;
+  const q=MODES[G.mode].gen(G.round);
+  G.current=q;
+  el.qCount.textContent=`QUESTION ${G.qIndex+1} / 5`;
+  el.qStd.textContent=q.standard||MODES[G.mode].std;
+  el.qPrompt.innerHTML=String(q.prompt).replace(/\n/g,'<br>');
+  el.qVisual.innerHTML=q.svg||q.html||'';
+  el.qFeedback.textContent=''; el.qFeedback.className='';
+
+  // Randomly choose multiple choice or typed entry, when typed is possible.
+  const useTyped = q.typeable && Math.random()<0.5;
+  if(useTyped) renderTyped(q); else renderChoices(q);
+}
+
+function renderChoices(q){
+  el.typed.style.display='none';
+  el.choices.style.display='grid';
+  el.choices.innerHTML='';
+  q.choices.forEach((c,i)=>{
+    const b=document.createElement('div');
+    b.className='choice'; b.textContent=c; b.dataset.key=i+1;
+    b.addEventListener('click',()=>{
+      if(G.locked) return;
+      G.locked=true;
+      const ok=String(c)===String(q.answer);
+      b.classList.add(ok?'right':'wrong');
+      if(!ok) [...el.choices.children].forEach(n=>{ if(n.textContent===String(q.answer)) n.classList.add('reveal'); });
+      resolveQuestion(ok);
+    });
+    el.choices.appendChild(b);
+  });
+}
+
+let typedBuf='', typedQ=null;
+
+// Single entry point for the number pad — taps and key presses both land here.
+function pressNumpad(k){
+  if(G.locked || !typedQ) return;
+  if(k==='⌫'){ typedBuf=typedBuf.slice(0,-1); }
+  else if(k==='✓'){ submitTyped(typedQ); return; }
+  else if(typedBuf.length<7){ typedBuf+=k; }
+  el.typedDisp.textContent = typedBuf===''?'_':comma(Number(typedBuf));
+}
+
+function renderTyped(q){
+  el.choices.style.display='none';
+  el.typed.style.display='block';
+  typedBuf=''; typedQ=q; el.typedDisp.textContent='_'; el.typedDisp.className='';
+  el.numpad.innerHTML='';
+  ['1','2','3','4','5','6','7','8','9','⌫','0','✓'].forEach(k=>{
+    const b=document.createElement('div');
+    b.className='key'+(k==='✓'?' go':k==='⌫'?' del':'');
+    b.textContent=k;
+    b.addEventListener('click',()=>pressNumpad(k));
+    el.numpad.appendChild(b);
+  });
+}
+
+function submitTyped(q){
+  if(typedBuf==='') return;
+  G.locked=true;
+  const ok = typedBuf === String(q.typedAnswer ?? q.answer).replace(/,/g,'');
+  el.typedDisp.className = ok?'right':'wrong';
+  if(!ok) el.typedDisp.textContent = `${comma(Number(typedBuf))} → ${q.answer}`;
+  resolveQuestion(ok);
+}
+
+function resolveQuestion(ok){
+  if(ok){
+    G.balls++; G.score+=50*G.round;
+    el.qFeedback.className='good';
+    el.qFeedback.textContent = pick(['Dodgeball earned!','Nice — that\'s a ball.','Correct. Load it up.','Got it!']);
+    drawRack(true);
+  }else{
+    el.qFeedback.className='bad';
+    el.qFeedback.textContent = `Not this time. The answer is ${G.current.answer}.`;
+  }
+  drawHUD();
+  setTimeout(()=>{ G.qIndex++; nextQuestion(); }, ok?900:1900);
+}
+
+/* ==================================================================
+   COUNTDOWN → ARENA
+   ================================================================== */
+function beginCountdown(){
+  el.question.classList.remove('on');
+  el.canvas.style.visibility='visible';
+  if(G.balls===0){
+    endRound('lose','NO DODGEBALLS','You need at least one correct answer to take the court. Same round, fresh questions.');
+    return;
+  }
+  el.ovCount.classList.add('on');
+  let n=3; el.countNum.textContent=n;
+  const t=setInterval(()=>{
+    n--;
+    if(n<=0){ clearInterval(t); el.ovCount.classList.remove('on'); startArena(); }
+    else el.countNum.textContent=n;
+  },700);
+}
+
+/* ==================================================================
+   ARENA
+   ================================================================== */
+const W=900, H=560, MID=H*0.5;
+const ctx=el.canvas.getContext('2d');
+
+const A={ player:null, foes:[], mine:[], theirs:[], running:false, raf:0, lastThrow:0, t:0, invuln:0, flash:0, caught:0 };
+const input={up:false,down:false,left:false,right:false};
+
+function fitCanvas(){
+  const box=el.stage.getBoundingClientRect();
+  const avail=Math.max(160, box.width-16), availH=Math.max(120, box.height-16);
+  const s=Math.min(avail/W, availH/H);
+  const dpr=Math.min(window.devicePixelRatio||1, 2.5);
+  el.canvas.style.width=(W*s)+'px';
+  el.canvas.style.height=(H*s)+'px';
+  el.canvas.width=Math.round(W*s*dpr);
+  el.canvas.height=Math.round(H*s*dpr);
+  ctx.setTransform(s*dpr,0,0,s*dpr,0,0);
+}
+window.addEventListener('resize',fitCanvas);
+setTimeout(fitCanvas,60);
+
+function startArena(){
+  G.phase='arena'; G.thrown=0;
+  el.controls.classList.add('on');
+  fitCanvas();
+
+  A.player={x:W/2-22, y:H-92, w:44, h:44, speed:6.2};
+  A.mine=[]; A.theirs=[]; A.t=0; A.lastThrow=0; A.invuln=0; A.flash=0; A.caught=0;
+
+  const speed = 1.0 + G.round*0.28;
+  const rate  = Math.max(620, 1750 - G.round*130);
+  A.foes=[];
+  for(let i=0;i<5;i++){
+    A.foes.push({
+      x: 70 + i*(W-190)/4, y: 60 + (i%2)*54, w:40, h:40,
+      alive:true, dir: Math.random()<.5?-1:1,
+      speed: speed*(0.75+Math.random()*0.6),
+      next: performance.now() + rnd(500, rate) + i*140,
+      rate
+    });
+  }
+  drawRack();
+  A.running=true;
+  A.raf=requestAnimationFrame(loop);
+}
+
+function stopArena(){
+  A.running=false;
+  cancelAnimationFrame(A.raf);
+  el.controls.classList.remove('on');
+  input.up=input.down=input.left=input.right=false;
+  document.querySelectorAll('.dbtn').forEach(b=>b.classList.remove('hit'));
+}
+
+function throwBall(){
+  if(!A.running || G.balls<=0) return;
+  const now=performance.now();
+  if(now-A.lastThrow<330) return;
+  A.lastThrow=now;
+  G.balls--; G.thrown++;
+  A.mine.push({x:A.player.x+A.player.w/2, y:A.player.y, r:11, vx:0, vy:-11.5, back:false});
+  drawRack();
+}
+
+function hit(bx,by,br,o){
+  return bx+br>o.x && bx-br<o.x+o.w && by+br>o.y && by-br<o.y+o.h;
+}
+
+function loop(){
+  if(!A.running) return;
+  A.t++;
+  const now=performance.now();
+  const p=A.player;
+
+  /* --- player movement, confined to own half --- */
+  let dx=0,dy=0;
+  if(input.left) dx-=1; if(input.right) dx+=1;
+  if(input.up) dy-=1; if(input.down) dy+=1;
+  if(dx&&dy){ const m=Math.SQRT1_2; dx*=m; dy*=m; }
+  p.x=Math.max(0,Math.min(W-p.w, p.x+dx*p.speed));
+  p.y=Math.max(MID+8, Math.min(H-p.h, p.y+dy*p.speed));
+
+  /* --- opponents patrol + throw --- */
+  for(const f of A.foes){
+    if(!f.alive) continue;
+    f.x+=f.dir*f.speed;
+    if(f.x<8){f.x=8;f.dir=1;} if(f.x>W-f.w-8){f.x=W-f.w-8;f.dir=-1;}
+    if(now>f.next){
+      f.next=now+rnd(f.rate*0.55, f.rate*1.4);
+      const tx=p.x+p.w/2, ty=p.y+p.h/2;
+      const sx=f.x+f.w/2, sy=f.y+f.h;
+      const d=Math.hypot(tx-sx, ty-sy)||1;
+      const sp=3.4+G.round*0.42;
+      A.theirs.push({x:sx,y:sy,r:11, vx:(tx-sx)/d*sp, vy:(ty-sy)/d*sp});
+    }
+  }
+
+  /* --- player's balls: up, off the back wall, then catchable on the way down --- */
+  for(let i=A.mine.length-1;i>=0;i--){
+    const b=A.mine[i];
+    b.x+=b.vx; b.y+=b.vy;
+
+    if(!b.back){
+      // Outbound. Only an outbound ball can eliminate an opponent.
+      let struck=false;
+      for(const f of A.foes){
+        if(f.alive && hit(b.x,b.y,b.r,f)){
+          f.alive=false; G.score+=120*G.round; drawHUD(); struck=true; break;
+        }
+      }
+      if(struck){ A.mine.splice(i,1); continue; }
+
+      // Back wall — rebound with a little drift so the catch isn't automatic.
+      if(b.y-b.r<=6){
+        b.y=6+b.r;
+        b.vy=7.2;
+        b.vx=(Math.random()<.5?-1:1)*(0.8+Math.random()*1.7);
+        b.back=true;
+      }
+      continue;
+    }
+
+    // Rebounding. Passes through opponents; the player can retrieve it.
+    if(b.x-b.r<0){ b.x=b.r; b.vx*=-1; }
+    if(b.x+b.r>W){ b.x=W-b.r; b.vx*=-1; }
+
+    if(hit(b.x,b.y,b.r,p)){
+      A.mine.splice(i,1);
+      G.balls++; G.thrown--; G.score+=50*G.round;
+      A.caught=54;
+      drawRack(true); drawHUD();
+      continue;
+    }
+    if(b.y-b.r>H) A.mine.splice(i,1);
+  }
+
+  /* --- opponents' balls travel down --- */
+  for(let i=A.theirs.length-1;i>=0;i--){
+    const b=A.theirs[i]; b.x+=b.vx; b.y+=b.vy;
+    if(now>=A.invuln && hit(b.x,b.y,b.r,p)){
+      A.theirs.splice(i,1);
+      G.hp--; drawHUD();
+      A.invuln = now + 1200;   // ~1.2s of grace so one ball can't chain into three
+      A.flash  = 16;
+      if(G.hp<=0){
+        stopArena();
+        endRound('over','GAME OVER',
+          `You reached round ${G.round} in ${MODES[G.mode].name}. Final score: ${comma(G.score)}.`);
+        return;
+      }
+      continue;
+    }
+    if(b.y>H+40||b.x<-40||b.x>W+40) A.theirs.splice(i,1);
+  }
+
+  render();
+
+  /* --- round end checks --- */
+  if(A.foes.every(f=>!f.alive)){
+    stopArena();
+    G.score+=500*G.round;
+    const healed = G.hp<MAXHP;
+    if(healed) G.hp++;
+    drawHUD();
+    endRound('win','ROUND CLEARED',
+      `All five opponents down. ${G.balls} dodgeball${G.balls===1?'':'s'} to spare.`
+      + (healed?' +1 health restored.':' Health still full.'));
+    return;
+  }
+  if(G.balls===0 && A.mine.length===0){
+    stopArena();
+    endRound('lose','OUT OF DODGEBALLS',`Opponents left standing: ${A.foes.filter(f=>f.alive).length}. Answer more questions correctly to take more ammo onto the court.`);
+    return;
+  }
+
+  A.raf=requestAnimationFrame(loop);
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+
+  // court floor
+  ctx.fillStyle='#0E1822'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(255,77,109,.045)'; ctx.fillRect(0,0,W,MID);
+  ctx.fillStyle='rgba(34,228,196,.05)'; ctx.fillRect(0,MID,W,H-MID);
+
+  // center line
+  ctx.strokeStyle='#2A4051'; ctx.lineWidth=3; ctx.setLineDash([14,12]);
+  ctx.beginPath(); ctx.moveTo(0,MID); ctx.lineTo(W,MID); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // opponents
+  for(const f of A.foes){
+    if(!f.alive) continue;
+    ctx.fillStyle='#FF4D6D'; ctx.fillRect(f.x,f.y,f.w,f.h);
+    ctx.strokeStyle='#FF93A9'; ctx.lineWidth=2; ctx.strokeRect(f.x,f.y,f.w,f.h);
+    ctx.fillStyle='#2A0710'; ctx.fillRect(f.x+9,f.y+13,7,7); ctx.fillRect(f.x+24,f.y+13,7,7);
+  }
+
+  // player — blinks while in the grace period after a hit
+  const p=A.player;
+  const inv = performance.now() < A.invuln;
+  if(!inv || Math.floor(A.t/4)%2===0){
+    ctx.shadowColor = inv ? '#FF4D6D' : '#22E4C4'; ctx.shadowBlur=16;
+    ctx.fillStyle   = inv ? '#FF8DA3' : '#22E4C4'; ctx.fillRect(p.x,p.y,p.w,p.h);
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='#EAF2F4'; ctx.lineWidth=2; ctx.strokeRect(p.x,p.y,p.w,p.h);
+    ctx.fillStyle='#04110E'; ctx.fillRect(p.x+10,p.y+14,7,7); ctx.fillRect(p.x+26,p.y+14,7,7);
+  }
+
+  // aim lane
+  if(G.balls>0){
+    ctx.strokeStyle='rgba(255,197,61,.16)'; ctx.lineWidth=2; ctx.setLineDash([7,11]);
+    ctx.beginPath(); ctx.moveTo(p.x+p.w/2,p.y); ctx.lineTo(p.x+p.w/2,0); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // balls
+  for(const b of A.mine){
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    ctx.fillStyle='#FFC53D'; ctx.shadowColor='#FFC53D'; ctx.shadowBlur=14; ctx.fill(); ctx.shadowBlur=0;
+    if(b.back){
+      ctx.strokeStyle='#EAF2F4'; ctx.lineWidth=3; ctx.stroke();
+      const pr=b.r+7+Math.sin(A.t/5)*3;
+      ctx.beginPath(); ctx.arc(b.x,b.y,pr,0,Math.PI*2);
+      ctx.strokeStyle='rgba(234,242,244,.32)'; ctx.lineWidth=2; ctx.stroke();
+    }
+  }
+  for(const b of A.theirs){
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    ctx.fillStyle='#FF4D6D'; ctx.shadowColor='#FF4D6D'; ctx.shadowBlur=14; ctx.fill(); ctx.shadowBlur=0;
+  }
+
+  // court-side readouts
+  ctx.font='bold 15px Nunito, sans-serif'; ctx.fillStyle='#7E96A3'; ctx.textAlign='left';
+  ctx.fillText(`Opponents left: ${A.foes.filter(f=>f.alive).length}`, 14, 24);
+
+  ctx.textAlign='right';
+  ctx.fillText('HEALTH', W-142, 24);
+  for(let i=0;i<MAXHP;i++){
+    const bx=W-130+i*26;
+    if(i<G.hp) ctx.fillStyle = G.hp<=1 ? '#FF4D6D' : G.hp<=2 ? '#FFC53D' : '#22E4C4';
+    else       ctx.fillStyle = '#1C2B38';
+    ctx.fillRect(bx, 12, 21, 14);
+  }
+  ctx.textAlign='left';
+
+  // catch confirmation
+  if(A.caught>0){
+    ctx.font='bold 27px Nunito, sans-serif'; ctx.textAlign='center';
+    ctx.fillStyle=`rgba(34,228,196,${Math.min(1,A.caught/28)})`;
+    ctx.fillText('CAUGHT!  +1 DODGEBALL', W/2, MID+64);
+    ctx.textAlign='left';
+    A.caught--;
+  }
+
+  // impact flash
+  if(A.flash>0){
+    ctx.fillStyle=`rgba(255,77,109,${A.flash/16*0.35})`;
+    ctx.fillRect(0,0,W,H);
+    A.flash--;
+  }
+}
+
+/* ==================================================================
+   ROUND / GAME OUTCOMES
+   ================================================================== */
+function endRound(kind,title,body){
+  G.phase='between';
+  el.rack.classList.remove('on');
+  el.msgTitle.textContent=title;
+  el.msgTitle.style.color = kind==='win' ? 'var(--teal)' : 'var(--ember)';
+  el.msgBody.textContent=body;
+  el.msgGo.textContent = kind==='win' ? `ROUND ${G.round+1}` : kind==='over' ? 'PLAY AGAIN' : 'TRY AGAIN';
+  el.ovMsg.classList.add('on');
+  el.msgGo.onclick=()=>{
+    el.ovMsg.classList.remove('on');
+    if(kind==='win') G.round++;
+    if(kind==='over'){ G.round=1; G.score=0; G.hp=MAXHP; }
+    drawHUD();
+    startQuestionPhase();
+  };
+}
+el.msgMenu.onclick=()=>{
+  stopArena();
+  el.ovMsg.classList.remove('on');
+  el.question.classList.remove('on');
+  el.rack.classList.remove('on');
+  el.ovTitle.classList.add('on');
+  G.phase='menu'; G.mode=null; G.round=1; G.score=0; G.hp=MAXHP;
+  drawHUD();
+};
+
+/* ==================================================================
+   INPUT — touch first, keyboard as a bonus
+   ================================================================== */
+function bindHold(node, on, off){
+  const start=e=>{ e.preventDefault(); node.classList.add('hit'); on(); };
+  const end=e=>{ e.preventDefault(); node.classList.remove('hit'); off(); };
+  node.addEventListener('touchstart',start,{passive:false});
+  node.addEventListener('touchend',end,{passive:false});
+  node.addEventListener('touchcancel',end,{passive:false});
+  node.addEventListener('mousedown',start);
+  node.addEventListener('mouseup',end);
+  node.addEventListener('mouseleave',end);
+}
+bindHold($('d-up'),   ()=>input.up=true,    ()=>input.up=false);
+bindHold($('d-down'), ()=>input.down=true,  ()=>input.down=false);
+bindHold($('d-left'), ()=>input.left=true,  ()=>input.left=false);
+bindHold($('d-right'),()=>input.right=true, ()=>input.right=false);
+
+el.throwBtn.addEventListener('touchstart',e=>{e.preventDefault();el.throwBtn.classList.add('hit');throwBall();},{passive:false});
+el.throwBtn.addEventListener('touchend',e=>{e.preventDefault();el.throwBtn.classList.remove('hit');},{passive:false});
+el.throwBtn.addEventListener('mousedown',()=>{el.throwBtn.classList.add('hit');throwBall();});
+el.throwBtn.addEventListener('mouseup',()=>el.throwBtn.classList.remove('hit'));
+
+const KEYMAP={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
+let spaceHeld=false;
+
+window.addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+
+  if(G.phase==='arena'){
+    if(KEYMAP[k]){ input[KEYMAP[k]]=true; e.preventDefault(); return; }
+    if(k===' '){
+      e.preventDefault();
+      if(!spaceHeld){ spaceHeld=true; throwBall(); }   // one ball per press, not per repeat
+    }
+    return;
+  }
+
+  if(G.phase==='question'){
+    if(G.locked) return;
+    if(el.typed.style.display!=='none'){
+      if(/^[0-9]$/.test(k))      { e.preventDefault(); pressNumpad(k); }
+      else if(k==='backspace')   { e.preventDefault(); pressNumpad('⌫'); }
+      else if(k==='enter')       { e.preventDefault(); pressNumpad('✓'); }
+      return;
+    }
+    if(/^[1-4]$/.test(k)){
+      e.preventDefault();
+      const node=el.choices.children[Number(k)-1];
+      if(node) node.click();
+    }
+    return;
+  }
+
+  // Between rounds: Enter or Space advances.
+  if(G.phase==='between' && (k==='enter'||k===' ')){
+    e.preventDefault();
+    if(el.ovMsg.classList.contains('on')) el.msgGo.click();
+  }
+});
+
+window.addEventListener('keyup',e=>{
+  const k=e.key.toLowerCase();
+  if(KEYMAP[k]) input[KEYMAP[k]]=false;
+  if(k===' ') spaceHeld=false;
+});
+
+// Kill iOS double-tap zoom and rubber-band scrolling.
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+
+drawHUD();
+</script>
+</body>
+</html>
