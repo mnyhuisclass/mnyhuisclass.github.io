@@ -80,6 +80,7 @@ html,body{
   flex:0 0 auto;
   display:none;
   align-items:center;justify-content:center;gap:9px;
+  flex-wrap:wrap;
   padding:9px;
   background:#0A1119;
   border-bottom:1px solid var(--line);
@@ -101,6 +102,10 @@ html,body{
 }
 .rack-ball.pop{animation:pop .34s ease;}
 @keyframes pop{0%{transform:scale(.2);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
+@media (max-width:560px){
+  #rack{gap:6px;padding:7px;}
+  .rack-ball{width:17px;height:17px;}
+}
 
 /* ---------- Stage ---------- */
 #stage{
@@ -326,7 +331,7 @@ html,body{
 
     <div id="question">
       <div id="q-top">
-        <span id="q-count">QUESTION 1 / 5</span>
+        <span id="q-count">QUESTION 1 / 7</span>
         <span id="q-standard"></span>
       </div>
       <div id="q-body">
@@ -345,7 +350,7 @@ html,body{
 
     <div class="overlay on" id="ov-title">
       <h1>DODGE FURY</h1>
-      <p>Answer five questions to earn dodgeballs. Then take the court and knock out all five opponents before they knock out you. A throw that misses bounces off the back wall — catch the rebound and you get that ball back.</p>
+      <p>Answer seven questions to earn dodgeballs. Then take the court and knock out all five opponents before they knock out you. A throw that misses bounces off the back wall — catch the rebound and you get that ball back.</p>
       <p style="font-size:14px">On a computer: <b style="color:var(--teal)">WASD</b> or <b style="color:var(--teal)">arrow keys</b> to move, <b style="color:var(--gold)">Space</b> to throw. Answer with number keys or type and press Enter.</p>
       <p style="color:var(--gold);font-weight:700">Pick a skill to practice</p>
       <div id="modes"></div>
@@ -628,6 +633,144 @@ subtraction:{
   }
 },
 
+/* ---- MULTIPLICATION — 4.CA.1 / 4.CA.3 ---- */
+multiplication:{
+  name:'MULTIPLY', std:'4.CA.1',
+  gen(L){
+    const kind = L<=1 ? pick(['calc','word'])
+               : L<=2 ? pick(['calc','word','missing'])
+                      : pick(['calc','word','missing','property']);
+
+    if(kind==='property'){
+      const t=pick(['dist','comm','assoc']);
+      if(t==='dist'){
+        const a=rnd(3,9), b=rnd(21,79);
+        const tens=Math.floor(b/10)*10, ones=b%10;
+        const ans=`(${a} × ${tens}) + (${a} × ${ones})`;
+        return {prompt:`Which expression uses the DISTRIBUTIVE property to break apart ${a} × ${b}?`,
+          answer:ans, typeable:false,
+          choices:shuffle([ans,
+            `(${a} × ${tens}) × (${a} × ${ones})`,
+            `(${a} + ${tens}) + (${a} + ${ones})`,
+            `(${a} × ${tens}) − (${a} × ${ones})`]),
+          standard:'4.CA.3'};
+      }
+      if(t==='comm'){
+        const a=rnd(3,12), c=rnd(3,12);
+        return {prompt:`${a} × ${c} = ${c} × ___`,
+          answer:String(a), typedAnswer:String(a), typeable:true,
+          choices:options(String(a),[String(c),String(a*c),String(a+c)]),
+          standard:'4.CA.3'};
+      }
+      const x=rnd(2,5),y=rnd(2,5),z=rnd(2,6);
+      const ans=`(${x} × ${y}) × ${z}`;
+      return {prompt:`Which expression equals ${x} × (${y} × ${z})?`,
+        answer:ans, typeable:false,
+        choices:shuffle([ans,`${x} + (${y} × ${z})`,`(${x} + ${y}) × ${z}`,`${x} × ${y} × ${y}`]),
+        standard:'4.CA.3'};
+    }
+
+    // 4.CA.1 caps this at 4-digit × 1-digit, or 2-digit × 2-digit.
+    let a,b;
+    if(L<=1)      { a=rnd(12,99);   b=rnd(3,9); }
+    else if(L<=2) { a=rnd(101,999); b=rnd(3,9); }
+    else if(Math.random()<.5) { a=rnd(1001,9999); b=rnd(3,9); }
+    else          { a=rnd(L<=3?11:21, L<=3?49:99); b=rnd(L<=3?11:21, L<=3?49:99); }
+    const ans=a*b;
+
+    // Distractors: the unshifted partial product (the classic 2-digit × 2-digit error),
+    // adding instead of multiplying, and losing or gaining one group.
+    const noShift = a*(b%10) + a*Math.floor(b/10);
+    const cands=[a+b, ans-a, ans+a, noShift].filter(v=>v!==ans && v>0).map(comma);
+
+    if(kind==='missing'){
+      // "Believes a missing factor is found by multiplying the known numbers."
+      const c2=[a*b, a+b, b, Math.abs(a-b)].filter(v=>v!==a && v>0).map(comma);
+      return {prompt:`___ × ${b} = ${comma(ans)}`,
+        answer:comma(a), typedAnswer:String(a), typeable:true,
+        choices:options(comma(a),c2), standard:'4.CA.1'};
+    }
+    if(kind==='word'){
+      const n=pick(['Maya','Devon','Priya','Marcus','Elena','Jamal']);
+      const ctx=pick([
+        `A school orders ${comma(b)} boxes of markers. Each box holds ${comma(a)} markers. How many markers in all?`,
+        `${n} reads ${comma(a)} pages each week for ${comma(b)} weeks. How many pages is that?`,
+        `A theater has ${comma(b)} sections with ${comma(a)} seats in each. How many seats in all?`
+      ]);
+      return {prompt:ctx, answer:comma(ans), typedAnswer:String(ans), typeable:true,
+        choices:options(comma(ans),cands), standard:'4.CA.1'};
+    }
+    return {prompt:`${comma(a)} × ${comma(b)} = ?`,
+      answer:comma(ans), typedAnswer:String(ans), typeable:true,
+      choices:options(comma(ans),cands), standard:'4.CA.1'};
+  }
+},
+
+/* ---- DIVISION — 4.CA.2 ---- */
+division:{
+  name:'DIVIDE', std:'4.CA.2',
+  gen(L){
+    const kind = L<=1 ? pick(['calc','word'])
+               : L<=2 ? pick(['calc','word','missing'])
+                      : pick(['calc','word','missing','interpret']);
+
+    // 4.CA.2: up to four-digit dividends, one-digit divisors.
+    const divisor=rnd(3,9);
+    const maxQ=Math.floor(9999/divisor);
+    let quotient;
+    if(L<=1)      quotient=rnd(4,20);
+    else if(L<=2) quotient=rnd(20,Math.min(140,maxQ));
+    else if(L<=3) quotient=rnd(60,Math.min(600,maxQ));
+    else          quotient=rnd(200,Math.min(1100,maxQ));
+
+    const wantRem = L>=2 && kind!=='missing' && Math.random()<.55;
+    const rem = wantRem ? rnd(1,divisor-1) : 0;
+    const dividend = quotient*divisor + rem;
+
+    if(kind==='missing'){
+      // Inverse relationship. Distractor 1 is the multiply-the-knowns error.
+      const prod=quotient*divisor;
+      const c2=[prod*divisor, prod+divisor, divisor, quotient+1]
+        .filter(v=>v!==quotient&&v>0).map(comma);
+      return {prompt:`___ × ${divisor} = ${comma(prod)}`,
+        answer:comma(quotient), typedAnswer:String(quotient), typeable:true,
+        choices:options(comma(quotient),c2), standard:'4.CA.2'};
+    }
+
+    if(kind==='interpret' && rem>0){
+      const thing=pick(['books','markers','apples','tickets','shells']);
+      if(Math.random()<.5)
+        return {prompt:`${comma(dividend)} ${thing} are packed into groups of ${divisor}. How many FULL groups are there?`,
+          answer:comma(quotient), typedAnswer:String(quotient), typeable:true,
+          choices:options(comma(quotient),
+            [comma(quotient+1),String(rem),comma(dividend-divisor),String(divisor)]),
+          standard:'4.CA.2'};
+      return {prompt:`${comma(dividend)} ${thing} are packed into groups of ${divisor}. How many are LEFT OVER?`,
+        answer:String(rem), typedAnswer:String(rem), typeable:true,
+        choices:options(String(rem),[comma(quotient),String(divisor),String(rem+1),'0']),
+        standard:'4.CA.2'};
+    }
+
+    const ansText = rem ? `${comma(quotient)} R${rem}` : comma(quotient);
+    // Distractors: divisor-as-quotient, division-read-as-subtraction,
+    // word-problem-means-add, misremembered tables, mishandled remainder.
+    const cands = rem
+      ? [`${comma(quotient)} R0`, `${comma(quotient+1)} R${rem}`,
+         `${comma(quotient-1)} R${rem}`, `${comma(quotient)} R${divisor-rem}`,
+         `${String(rem)} R${quotient%10}`]
+      : [String(divisor), comma(dividend-divisor), comma(dividend+divisor),
+         comma(quotient+1), comma(quotient-1)];
+
+    const prompt = kind==='word'
+      ? (rem ? `${comma(dividend)} pencils are shared equally among ${divisor} classrooms. How many does each get, and how many are left over?`
+             : `${comma(dividend)} stickers are shared equally among ${divisor} students. How many does each student get?`)
+      : `${comma(dividend)} ÷ ${divisor} = ?`;
+
+    return {prompt, answer:ansText, typedAnswer:String(quotient),
+      typeable:!rem, choices:options(ansText,cands), standard:'4.CA.2'};
+  }
+},
+
 /* ---- AREA & PERIMETER — 4.M.4 ---- */
 areaperimeter:{
   name:'AREA / PERIM', std:'4.M.4',
@@ -907,13 +1050,14 @@ geometry:{
 }
 };
 
-const MODE_ORDER=['rounding','placevalue','addition','subtraction','areaperimeter',
-                  'algebraic','fractions','measurement','data','geometry'];
+const MODE_ORDER=['rounding','placevalue','addition','subtraction','multiplication','division',
+                  'areaperimeter','algebraic','fractions','measurement','data','geometry'];
 
 /* ==================================================================
    GAME STATE
    ================================================================== */
 const MAXHP = 5;
+const QPERROUND = 7;   // questions per round = maximum dodgeballs into the arena
 
 const G = {
   mode:null, round:1, score:0, hp:MAXHP,
@@ -995,11 +1139,11 @@ function startQuestionPhase(){
 }
 
 function nextQuestion(){
-  if(G.qIndex>=5){ beginCountdown(); return; }
+  if(G.qIndex>=QPERROUND){ beginCountdown(); return; }
   G.locked=false;
   const q=MODES[G.mode].gen(G.round);
   G.current=q;
-  el.qCount.textContent=`QUESTION ${G.qIndex+1} / 5`;
+  el.qCount.textContent=`QUESTION ${G.qIndex+1} / ${QPERROUND}`;
   el.qStd.textContent=q.standard||MODES[G.mode].std;
   el.qPrompt.innerHTML=String(q.prompt).replace(/\n/g,'<br>');
   el.qVisual.innerHTML=q.svg||q.html||'';
