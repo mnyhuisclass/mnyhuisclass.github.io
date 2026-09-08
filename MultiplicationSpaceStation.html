@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moonshot — Supernova Space Program</title>
+<style>
+  :root{
+    --void:#041219;
+    --deck:#0a2530;
+    --deck2:#0e3844;
+    --line:#17505d;
+    --teal:#1fbfc4;
+    --teal-d:#0f7c83;
+    --gold:#ffc628;
+    --gold-d:#b78400;
+    --cream:#e9f7f7;
+    --dim:#8db2b8;
+    --bad:#ff8f6b;
+    --font: "Trebuchet MS", "Lucida Grande", Verdana, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, #0d3a46 0%, transparent 60%),
+      var(--void);
+    color:var(--cream);
+    font-family:var(--font);
+    min-height:100vh;
+    -webkit-text-size-adjust:100%;
+  }
+  .stage{max-width:880px;margin:0 auto;padding:18px 18px 40px}
+  h1,h2,h3{margin:0;line-height:1.05;font-weight:700}
+  p{line-height:1.5}
+  button{font-family:inherit;cursor:pointer;border:0}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+  /* ---------- top bar ---------- */
+  .bar{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:22px;
+  }
+  .brand{font-size:15px;color:var(--teal);font-weight:700;letter-spacing:.02em}
+  .bar .spacer{flex:1}
+  .chip{
+    display:flex;align-items:baseline;gap:7px;font-size:15px;color:var(--dim);
+  }
+  .chip b{color:var(--cream);font-size:19px}
+  .parts b{color:var(--gold)}
+
+  /* ---------- buttons ---------- */
+  .go{
+    background:var(--gold);color:#1a1200;font-size:19px;font-weight:700;
+    padding:14px 26px;border-radius:40px;box-shadow:0 4px 0 var(--gold-d);
+    transition:transform .08s, box-shadow .08s;
+  }
+  .go:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gold-d)}
+  .go.wide{width:100%}
+  .ghost{
+    background:transparent;color:var(--teal);border:2px solid var(--teal-d);
+    padding:11px 20px;border-radius:40px;font-size:15px;font-weight:700;
+  }
+  .ghost:hover{background:#0d3b45}
+
+  /* ---------- title ---------- */
+  .hero{text-align:center;padding:14px 0 6px}
+  .hero .kicker{color:var(--teal);font-size:16px;margin:0 0 6px}
+  .hero h1{
+    font-size:clamp(46px,13vw,86px);color:var(--gold);
+    text-shadow:0 0 34px rgba(255,198,40,.28);
+  }
+  .hero .sub{color:var(--dim);max-width:44ch;margin:12px auto 0;font-size:17px}
+  .padrocket{margin:18px auto 6px;display:block}
+
+  .setup{
+    margin:24px auto 0;max-width:560px;text-align:left;
+    background:var(--deck);border:1px solid var(--line);border-radius:16px;padding:18px 20px;
+  }
+  .setup h3{font-size:17px;margin-bottom:4px}
+  .setup .q{color:var(--dim);font-size:15px;margin:16px 0 8px}
+  .setup .q:first-of-type{margin-top:10px}
+  .opts{display:flex;gap:10px;flex-wrap:wrap}
+  .opt{
+    background:var(--deck2);color:var(--cream);border:2px solid var(--line);
+    border-radius:12px;padding:10px 15px;font-size:15px;text-align:left;flex:1 1 190px;
+  }
+  .opt small{display:block;color:var(--dim);font-weight:400;margin-top:3px;font-size:13px}
+  .opt[aria-pressed="true"]{border-color:var(--teal);background:#0f4550;color:#fff}
+  .opt[aria-pressed="true"] small{color:#bfe6e8}
+
+  /* ---------- quiz ---------- */
+  .roundline{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .roundline h2{font-size:22px}
+  .roundline .of{color:var(--dim);font-size:15px}
+  .track{display:flex;gap:5px;margin:0 0 26px}
+  .track i{height:7px;flex:1;border-radius:4px;background:var(--deck2)}
+  .track i.hit{background:var(--gold)}
+  .track i.miss{background:var(--bad);opacity:.55}
+  .track i.now{background:var(--teal)}
+
+  .problem{
+    text-align:center;background:var(--deck);border:1px solid var(--line);
+    border-radius:20px;padding:30px 20px 26px;
+  }
+  .problem .eq{font-size:clamp(44px,12vw,74px);font-weight:700;line-height:1}
+  .problem .eq span{color:var(--teal)}
+  .answer{
+    margin:22px auto 0;display:block;width:min(260px,80%);
+    background:#02090d;border:2px solid var(--line);border-radius:14px;
+    color:var(--gold);font-family:var(--font);font-weight:700;
+    font-size:40px;text-align:center;padding:8px 10px;
+  }
+  .answer::-webkit-outer-spin-button,.answer::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .answer{-moz-appearance:textfield}
+  .hint{color:var(--dim);font-size:14px;margin:12px 0 0;min-height:20px}
+  .verdict{min-height:74px;margin-top:16px;text-align:center}
+  .verdict .yes{color:var(--gold);font-size:24px;font-weight:700}
+  .verdict .no{color:var(--bad);font-size:21px;font-weight:700}
+  .verdict .fix{color:var(--dim);font-size:16px;margin-top:6px}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:300px;margin:20px auto 0}
+  .pad button{
+    background:var(--deck2);color:var(--cream);border:1px solid var(--line);
+    border-radius:12px;padding:14px 0;font-size:21px;font-weight:700;
+  }
+  .pad button:active{background:var(--teal-d)}
+
+  /* ---------- build ---------- */
+  .shop{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:8px}
+  .part{
+    background:var(--deck);border:1px solid var(--line);border-radius:16px;
+    padding:16px;display:flex;flex-direction:column;gap:8px;
+  }
+  .part .top{display:flex;align-items:center;gap:10px}
+  .part svg{flex:0 0 auto}
+  .part h3{font-size:17px}
+  .part .eff{color:var(--teal);font-size:14px}
+  .part p{margin:0;color:var(--dim);font-size:14px}
+  .pips{display:flex;gap:4px;margin-top:2px}
+  .pips i{width:100%;height:9px;border-radius:3px;background:#0a2c36;border:1px solid var(--line)}
+  .pips i.on{background:var(--gold);border-color:var(--gold-d)}
+  .buy{
+    margin-top:auto;background:var(--teal-d);color:#fff;border-radius:10px;
+    padding:11px;font-size:15px;font-weight:700;
+  }
+  .buy:hover:not(:disabled){background:var(--teal);color:#03181c}
+  .buy:disabled{background:#0a2c36;color:#54767d;cursor:not-allowed}
+  .readout{
+    margin:22px 0 0;background:var(--deck2);border:1px solid var(--line);border-radius:16px;
+    padding:16px 18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .readout .big{font-size:34px;font-weight:700;color:var(--gold)}
+  .readout .lbl{color:var(--dim);font-size:14px;margin-bottom:2px}
+  .readout .spacer{flex:1}
+
+  /* ---------- flight ---------- */
+  .flight{display:flex;gap:18px;align-items:stretch}
+  .sky{
+    position:relative;flex:1;height:min(58vh,420px);border-radius:20px;overflow:hidden;
+    border:1px solid var(--line);
+    background:
+      radial-gradient(circle at 22% 18%, #fff 0 1px, transparent 1.6px),
+      radial-gradient(circle at 68% 42%, #fff 0 1px, transparent 1.6px),
+      radial-gradient(circle at 41% 71%, #cfeff2 0 1px, transparent 1.6px),
+      radial-gradient(circle at 86% 88%, #fff 0 1px, transparent 1.6px),
+      linear-gradient(#02080c 0%, #05202b 62%, #0d4550 100%);
+    background-size:160px 160px,220px 220px,120px 120px,300px 300px,100% 100%;
+  }
+  .sky.rising{animation:scroll 2.4s linear infinite}
+  @keyframes scroll{to{background-position:0 160px,0 220px,0 120px,0 300px,0 0}}
+  .moon{
+    position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    width:54px;height:54px;border-radius:50%;
+    background:radial-gradient(circle at 35% 32%, #fffdf2, #d9d2b5 70%, #a89f80);
+    box-shadow:0 0 30px rgba(255,255,235,.35);
+  }
+  .ship{position:absolute;left:50%;bottom:14%;transform:translateX(-50%)}
+  .ship.shake{animation:wob .5s ease-in-out infinite alternate}
+  @keyframes wob{from{transform:translateX(-50%) rotate(-1.4deg)}to{transform:translateX(-50%) rotate(1.4deg)}}
+  .flame{transform-origin:50% 0;animation:burn .12s steps(2) infinite}
+  @keyframes burn{to{transform:scaleY(.62) scaleX(1.12)}}
+  .odo{
+    position:absolute;left:0;right:0;bottom:0;padding:12px 14px;
+    background:linear-gradient(transparent,rgba(2,10,14,.85));
+    display:flex;align-items:flex-end;gap:10px;
+  }
+  .odo .big{font-size:30px;font-weight:700;color:var(--gold)}
+  .odo .u{color:var(--dim);font-size:14px;padding-bottom:5px}
+  .flag{
+    position:absolute;left:10px;color:var(--teal);font-size:13px;
+    background:rgba(4,18,25,.8);border-left:3px solid var(--teal);padding:3px 8px;border-radius:0 8px 8px 0;
+  }
+  .gauge{
+    width:76px;flex:0 0 76px;border:1px solid var(--line);border-radius:20px;
+    background:var(--deck);position:relative;overflow:hidden;
+  }
+  .gauge .fill{
+    position:absolute;left:0;right:0;bottom:0;height:0%;
+    background:linear-gradient(var(--teal),var(--teal-d));
+  }
+  .gauge .tick{position:absolute;left:0;right:0;border-top:1px dashed #2c6d78;font-size:10px;color:var(--dim);padding-left:5px}
+  .gauge .cap{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:11px;color:var(--gold)}
+
+  /* ---------- summary / final ---------- */
+  .panel{background:var(--deck);border:1px solid var(--line);border-radius:20px;padding:22px}
+  .stats{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin:18px 0}
+  .stat .lbl{color:var(--dim);font-size:13px}
+  .stat .val{font-size:28px;font-weight:700}
+  .stat .val.g{color:var(--gold)}
+  .stat .val.t{color:var(--teal)}
+  table{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:400;font-size:13px}
+  .misses{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .misses span{background:var(--deck2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:15px}
+  .misses b{color:var(--gold)}
+  .win h2{font-size:clamp(32px,9vw,54px);color:var(--gold)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:center}
+  .hidden{display:none}
+  @media (prefers-reduced-motion:reduce){
+    .sky.rising,.ship.shake,.flame{animation:none}
+    .go{transition:none}
+  }
+  @media (max-width:520px){
+    .flight{flex-direction:column-reverse}
+    .gauge{width:auto;flex:0 0 58px;height:58px}
+    .gauge .fill{top:0;right:auto;width:0%;height:auto}
+    .gauge .tick,.gauge .cap{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="bar" id="bar">
+    <span class="brand">Supernova Space Program</span>
+    <span class="spacer"></span>
+    <span class="chip" id="chipRound"></span>
+    <span class="chip parts" id="chipParts"></span>
+    <span class="chip" id="chipDist"></span>
+  </div>
+
+  <!-- ============ TITLE ============ -->
+  <section id="scTitle">
+    <div class="hero">
+      <p class="kicker">Mission: 238,900 miles to the Moon</p>
+      <h1>Moonshot</h1>
+      <svg class="padrocket" width="120" height="150" viewBox="0 0 120 150" aria-hidden="true">
+        <path d="M60 6c16 18 24 42 24 68v26H36V74C36 48 44 24 60 6z" fill="#e9f7f7"/>
+        <path d="M60 6c16 18 24 42 24 68v26H60z" fill="#bcd9dc"/>
+        <circle cx="60" cy="60" r="11" fill="#0a2530" stroke="#1fbfc4" stroke-width="4"/>
+        <path d="M36 78 18 112h18zM84 78l18 34H84z" fill="#1fbfc4"/>
+        <rect x="36" y="100" width="48" height="12" rx="4" fill="#ffc628"/>
+        <path d="M48 112h24l-12 26z" fill="#ffc628" opacity=".85"/>
+        <path d="M52 112h16l-8 16z" fill="#fff5cf"/>
+      </svg>
+      <p class="sub">Solve multiplication problems to earn rocket parts. Build a better rocket each round, then launch. Five launches to reach the Moon.</p>
+    </div>
+
+    <div class="setup">
+      <h3>Mission setup</h3>
+      <p class="q" id="lblLen">How many problems each round?</p>
+      <div class="opts" role="group" aria-labelledby="lblLen">
+        <button class="opt" data-len="10" aria-pressed="true">10 problems
+          <small>1 part per correct answer</small></button>
+        <button class="opt" data-len="5" aria-pressed="false">5 problems
+          <small>2 parts per correct answer — short session</small></button>
+      </div>
+      <p class="q" id="lblDiff">What should the problems look like?</p>
+      <div class="opts" role="group" aria-labelledby="lblDiff">
+        <button class="opt" data-diff="ramp" aria-pressed="true">Grow each round
+          <small>Facts, then 2-digit by 1-digit (4.C.1)</small></button>
+        <button class="opt" data-diff="facts" aria-pressed="false">Facts only
+          <small>Stays inside 2 &times; 2 through 12 &times; 12</small></button>
+      </div>
+      <div class="row"><button class="go wide" id="btnStart">Start the mission</button></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="scQuiz" class="hidden">
+    <div class="roundline">
+      <h2 id="qTitle">Round 1</h2>
+      <span class="of" id="qOf"></span>
+    </div>
+    <div class="track" id="qTrack"></div>
+    <div class="problem">
+      <div class="eq" id="qEq"></div>
+      <input class="answer num" id="qIn" type="number" inputmode="numeric" autocomplete="off" aria-label="Your answer">
+      <p class="hint" id="qHint">Type your answer, then press Enter.</p>
+      <div class="pad" id="qPad"></div>
+    </div>
+    <div class="verdict" id="qVerdict"></div>
+  </section>
+
+  <!-- ============ BUILD ============ -->
+  <section id="scBuild" class="hidden">
+    <div class="roundline"><h2>Build round</h2><span class="of" id="bOf"></span></div>
+    <div class="shop" id="bShop"></div>
+    <div class="readout">
+      <div>
+        <div class="lbl">This launch will travel about</div>
+        <div class="big num" id="bProj">0 mi</div>
+      </div>
+      <div class="spacer"></div>
+      <div>
+        <div class="lbl" id="bAccLbl"></div>
+        <div class="num" id="bAcc" style="font-size:19px"></div>
+      </div>
+      <button class="go" id="btnLaunch">Launch</button>
+    </div>
+    <p class="hint" id="bTip"></p>
+  </section>
+
+  <!-- ============ FLIGHT ============ -->
+  <section id="scFlight" class="hidden">
+    <div class="roundline"><h2 id="fTitle">Launch 1</h2><span class="of" id="fOf"></span></div>
+    <div class="flight">
+      <div class="sky" id="fSky">
+        <div class="moon"></div>
+        <div class="ship" id="fShip">
+          <svg width="52" height="86" viewBox="0 0 52 86" aria-hidden="true">
+            <path class="flame" d="M18 62h16l-8 22z" fill="#ffc628"/>
+            <path d="M26 2c9 11 14 25 14 40v18H12V42C12 27 17 13 26 2z" fill="#e9f7f7"/>
+            <circle cx="26" cy="34" r="6" fill="#0a2530" stroke="#1fbfc4" stroke-width="3"/>
+            <path d="M12 46 3 64h9zM40 46l9 18h-9z" fill="#1fbfc4"/>
+            <rect x="12" y="56" width="28" height="8" rx="3" fill="#ffc628"/>
+          </svg>
+        </div>
+        <div class="odo"><span class="big num" id="fOdo">0</span><span class="u">miles this launch</span></div>
+        <div id="fFlags"></div>
+      </div>
+      <div class="gauge" id="fGauge">
+        <div class="fill" id="fFill"></div>
+        <div class="cap">Moon</div>
+      </div>
+    </div>
+    <div class="row"><button class="go hidden" id="btnAfter">Continue</button></div>
+  </section>
+
+  <!-- ============ ROUND SUMMARY ============ -->
+  <section id="scSum" class="hidden">
+    <div class="panel">
+      <h2 id="sTitle"></h2>
+      <p id="sLine" style="color:var(--dim);max-width:52ch"></p>
+      <div class="stats">
+        <div class="stat"><div class="lbl">This launch</div><div class="val g num" id="sThis"></div></div>
+        <div class="stat"><div class="lbl">Total distance</div><div class="val num" id="sTotal"></div></div>
+        <div class="stat"><div class="lbl">Still to go</div><div class="val t num" id="sLeft"></div></div>
+        <div class="stat"><div class="lbl">Parts saved</div><div class="val num" id="sParts"></div></div>
+      </div>
+      <button class="go" id="btnNext">Next round</button>
+    </div>
+  </section>
+
+  <!-- ============ FINAL ============ -->
+  <section id="scFinal" class="hidden">
+    <div class="panel win">
+      <h2 id="xTitle"></h2>
+      <p id="xLine" style="color:var(--dim);max-width:54ch;font-size:17px"></p>
+      <div class="stats">
+        <div class="stat"><div class="lbl">Distance flown</div><div class="val g num" id="xDist"></div></div>
+        <div class="stat"><div class="lbl">Problems correct</div><div class="val num" id="xCorrect"></div></div>
+        <div class="stat"><div class="lbl">Accuracy</div><div class="val t num" id="xAcc"></div></div>
+      </div>
+      <h3 style="margin-top:10px;font-size:17px">Mission log</h3>
+      <table>
+        <thead><tr><th>Round</th><th>Correct</th><th>Parts earned</th><th>Launch distance</th></tr></thead>
+        <tbody id="xRows"></tbody>
+      </table>
+      <div id="xMissWrap" class="hidden">
+        <h3 style="margin-top:22px;font-size:17px">Facts to practice</h3>
+        <div class="misses" id="xMiss"></div>
+      </div>
+      <div class="row">
+        <button class="go" id="btnAgain">Fly again</button>
+        <button class="ghost" id="btnPrint">Print this log</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const MOON = 238900;
+  const BASE = 1500;
+  const PERFECT_BONUS = 3000;
+  const ROUNDS = 5;
+
+  const UPGRADES = [
+    { key:"engine",  name:"Main engine",  cost:4, add:6400,  max:6,
+      blurb:"More thrust off the pad.", icon:iconEngine },
+    { key:"tank",    name:"Fuel tank",    cost:3, max:6, add:4400,
+      blurb:"Burn longer before you coast.", icon:iconTank },
+    { key:"booster", name:"Booster stage",cost:6, max:4, add:11000,
+      blurb:"Drops away and gives a huge push.", icon:iconBooster },
+    { key:"nose",    name:"Nose cone",    cost:5, max:3, mult:0.15,
+      blurb:"Cuts drag, so every mile counts more.", icon:iconNose }
+  ];
+
+  const MILES = [
+    { d:60,     name:"Edge of the atmosphere" },
+    { d:250,    name:"Low Earth orbit" },
+    { d:22236,  name:"Weather satellites" },
+    { d:119450, name:"Halfway to the Moon" },
+    { d:MOON,   name:"The Moon" }
+  ];
+
+  const S = {
+    len:10, perPart:1, diff:"ramp",
+    round:1, parts:0, total:0,
+    lv:{engine:0,tank:0,booster:0,nose:0},
+    qs:[], idx:0, hits:0, marks:[],
+    log:[], misses:[], lastFlight:0, answered:false
+  };
+
+  // ---------- helpers ----------
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString("en-US");
+  const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function show(sec){
+    ["scTitle","scQuiz","scBuild","scFlight","scSum","scFinal"].forEach(id=>$(id).classList.add("hidden"));
+    $(sec).classList.remove("hidden");
+    $("bar").style.visibility = (sec==="scTitle") ? "hidden" : "visible";
+    window.scrollTo(0,0);
+  }
+  function bar(){
+    $("chipRound").innerHTML = "Round <b class='num'>"+S.round+"</b><span style='color:var(--dim)'>/"+ROUNDS+"</span>";
+    $("chipParts").innerHTML = "Parts <b class='num'>"+S.parts+"</b>";
+    $("chipDist").innerHTML = "Flown <b class='num'>"+fmt(S.total)+"</b> mi";
+  }
+
+  // ---------- problem generation ----------
+  function makeProblems(){
+    const seen = new Set(), out = [];
+    let guard = 0;
+    while(out.length < S.len && guard++ < 600){
+      const p = oneProblem();
+      const k = Math.min(p.a,p.b)+"x"+Math.max(p.a,p.b);
+      if(seen.has(k)) continue;
+      seen.add(k); out.push(p);
+    }
+    return out;
+  }
+  function oneProblem(){
+    let a,b;
+    if(S.diff === "facts"){
+      const hi = S.round <= 1 ? 9 : 12;
+      a = rnd(2,hi); b = rnd(2,hi);
+    } else {
+      switch(S.round){
+        case 1: a = rnd(2,6);  b = rnd(2,9);  break;
+        case 2: a = rnd(3,9);  b = rnd(3,9);  break;
+        case 3: a = rnd(4,12); b = rnd(3,12); break;
+        case 4:
+          if(Math.random() < .35){ a = rnd(2,9); b = rnd(2,9)*10; }
+          else { a = rnd(12,49); b = rnd(2,6); }
+          break;
+        default:
+          if(Math.random() < .4){ a = rnd(11,30); b = rnd(2,5)*10; }
+          else { a = rnd(23,89); b = rnd(3,9); }
+      }
+    }
+    if(Math.random() < .5){ const t=a; a=b; b=t; }
+    return { a:a, b:b, p:a*b };
+  }
+
+  // ---------- quiz ----------
+  function startRound(){
+    S.qs = makeProblems(); S.idx = 0; S.hits = 0; S.marks = [];
+    $("qTitle").textContent = "Round " + S.round;
+    $("qOf").textContent = S.round === 1
+      ? "Every correct answer earns " + (S.perPart>1 ? S.perPart+" rocket parts" : "a rocket part")
+      : "Parts saved: " + S.parts;
+    drawTrack(); askQuestion(); show("scQuiz"); bar();
+  }
+  function drawTrack(){
+    let h = "";
+    for(let i=0;i<S.len;i++){
+      const c = S.marks[i] === true ? "hit" : S.marks[i] === false ? "miss" : (i===S.idx ? "now" : "");
+      h += "<i class='"+c+"'></i>";
+    }
+    $("qTrack").innerHTML = h;
+  }
+  function askQuestion(){
+    const q = S.qs[S.idx];
+    S.answered = false;
+    $("qEq").innerHTML = q.a + " <span>&times;</span> " + q.b;
+    $("qIn").value = ""; $("qIn").disabled = false; $("qIn").focus();
+    $("qVerdict").innerHTML = "";
+    $("qHint").textContent = "Problem " + (S.idx+1) + " of " + S.len;
+    drawTrack();
+  }
+  function submit(){
+    if(S.answered) return;
+    const q = S.qs[S.idx];
+    const raw = $("qIn").value.trim();
+    if(raw === ""){ $("qHint").textContent = "Type a number first."; return; }
+    S.answered = true;
+    $("qIn").disabled = true;
+    const ok = Number(raw) === q.p;
+    S.marks[S.idx] = ok;
+    if(ok){
+      S.hits++; S.parts += S.perPart;
+      $("qVerdict").innerHTML = "<div class='yes'>Correct — "
+        + (S.perPart>1 ? S.perPart+" parts" : "1 part") + " added</div>"
+        + "<div class='fix'>Parts on hand: " + S.parts + "</div>";
+    } else {
+      S.misses.push(q.a + " \u00d7 " + q.b + " = " + q.p);
+      $("qVerdict").innerHTML = "<div class='no'>Not this time</div>"
+        + "<div class='fix'>" + q.a + " \u00d7 " + q.b + " = <b style='color:var(--gold)'>" + q.p + "</b></div>";
+    }
+    bar(); drawTrack();
+    setTimeout(function(){
+      S.idx++;
+      if(S.idx >= S.len) buildScreen(); else askQuestion();
+    }, ok ? 750 : 1900);
+  }
+
+  // ---------- build ----------
+  function accuracy(){ return S.hits / S.len; }
+  function thrust(){
+    let t = BASE;
+    UPGRADES.forEach(function(u){ if(u.add) t += S.lv[u.key]*u.add; });
+    return t;
+  }
+  function projected(){
+    const acc = accuracy();
+    let d = thrust() * (1 + 0.15*S.lv.nose) * (0.65 + 0.35*acc);
+    if(S.hits === S.len) d += PERFECT_BONUS;
+    return Math.round(d);
+  }
+  function buildScreen(){
+    $("bOf").textContent = "Spend parts, then launch";
+    $("bAccLbl").textContent = "Round " + S.round + " accuracy";
+    $("bAcc").textContent = S.hits + " of " + S.len + "  (" + Math.round(accuracy()*100) + "%)";
+    $("bTip").textContent = S.hits === S.len
+      ? "A clean round adds a " + fmt(PERFECT_BONUS) + " mile bonus to this launch."
+      : "Upgrades stay on the rocket for every launch after this one, so early parts do the most work.";
+    drawShop(); show("scBuild"); bar();
+  }
+  function drawShop(){
+    $("bShop").innerHTML = UPGRADES.map(function(u){
+      const lv = S.lv[u.key], maxed = lv >= u.max, afford = S.parts >= u.cost;
+      let pips = "";
+      for(let i=0;i<u.max;i++) pips += "<i class='"+(i<lv?"on":"")+"'></i>";
+      const eff = u.mult ? "+15% on total distance" : "+" + fmt(u.add) + " miles per launch";
+      return "<div class='part'>"
+        + "<div class='top'>" + u.icon() + "<div><h3>" + u.name + "</h3>"
+        + "<div class='eff'>" + eff + "</div></div></div>"
+        + "<p>" + u.blurb + "</p>"
+        + "<div class='pips'>" + pips + "</div>"
+        + "<button class='buy' data-key='" + u.key + "'" + (maxed || !afford ? " disabled" : "") + ">"
+        + (maxed ? "Fully upgraded" : "Add for " + u.cost + " parts") + "</button>"
+        + "</div>";
+    }).join("");
+    $("bShop").querySelectorAll(".buy").forEach(function(b){
+      b.addEventListener("click", function(){
+        const u = UPGRADES.find(x=>x.key===b.dataset.key);
+        if(S.parts >= u.cost && S.lv[u.key] < u.max){
+          S.parts -= u.cost; S.lv[u.key]++; drawShop(); refreshProj(); bar();
+        }
+      });
+    });
+    refreshProj();
+  }
+  function refreshProj(){ $("bProj").textContent = fmt(projected()) + " mi"; }
+
+  // ---------- flight ----------
+  function launch(){
+    const gain = projected();
+    S.lastFlight = gain;
+    const from = S.total, to = Math.min(MOON, from + gain);
+    S.total = to;
+    $("fTitle").textContent = "Launch " + S.round;
+    $("fOf").textContent = "Cumulative distance from Earth";
+    $("fFlags").innerHTML = "";
+    $("fOdo").textContent = "0";
+    setFill(from);
+    show("scFlight");
+    $("btnAfter").classList.add("hidden");
+    const sky = $("fSky"), ship = $("fShip");
+    if(!reduce){ sky.classList.add("rising"); ship.classList.add("shake"); }
+    const flagged = new Set();
+    const dur = reduce ? 0 : 3400, t0 = performance.now();
+    function frame(now){
+      const k = dur ? Math.min(1,(now-t0)/dur) : 1;
+      const e = 1 - Math.pow(1-k,2.2);
+      const cur = from + (to-from)*e;
+      $("fOdo").textContent = fmt(cur-from);
+      setFill(cur);
+      MILES.forEach(function(m){
+        if(cur >= m.d && !flagged.has(m.name) && from < m.d){
+          flagged.add(m.name);
+          const el = document.createElement("div");
+          el.className = "flag";
+          el.style.bottom = (18 + flagged.size*30) + "px";
+          el.textContent = "Passed " + m.name;
+          $("fFlags").appendChild(el);
+        }
+      });
+      if(k < 1) requestAnimationFrame(frame);
+      else {
+        sky.classList.remove("rising"); ship.classList.remove("shake");
+        bar();
+        const b = $("btnAfter");
+        b.textContent = (S.round >= ROUNDS || S.total >= MOON) ? "See mission report" : "Round report";
+        b.classList.remove("hidden"); b.focus();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  function setFill(cur){
+    const pct = Math.min(100, cur/MOON*100);
+    const f = $("fFill");
+    if(window.innerWidth <= 520){ f.style.width = pct+"%"; f.style.height="100%"; }
+    else f.style.height = pct + "%";
+  }
+
+  // ---------- summaries ----------
+  function afterFlight(){
+    S.log.push({ r:S.round, hits:S.hits, parts:S.hits*S.perPart, dist:S.lastFlight });
+    if(S.total >= MOON || S.round >= ROUNDS){ finalScreen(); return; }
+    const left = MOON - S.total;
+    const nextUp = MILES.filter(m=>m.d>S.total)[0];
+    $("sTitle").textContent = "Launch " + S.round + " report";
+    $("sLine").textContent = nextUp
+      ? "You are past " + (MILES.filter(m=>m.d<=S.total).slice(-1)[0]||{name:"the launch pad"}).name.toLowerCase()
+        + ". Next marker: " + nextUp.name + " at " + fmt(nextUp.d) + " miles."
+      : "";
+    $("sThis").textContent = fmt(S.lastFlight) + " mi";
+    $("sTotal").textContent = fmt(S.total) + " mi";
+    $("sLeft").textContent = fmt(left) + " mi";
+    $("sParts").textContent = S.parts;
+    show("scSum"); bar();
+  }
+  function finalScreen(){
+    const won = S.total >= MOON;
+    const totalQ = S.log.reduce((a,r)=>a+S.len,0);
+    const totalC = S.log.reduce((a,r)=>a+r.hits,0);
+    const acc = totalQ ? Math.round(totalC/totalQ*100) : 0;
+    $("xTitle").textContent = won ? "Touchdown on the Moon" : "Out of launches";
+    if(won){
+      $("xLine").textContent = "The rocket covered all " + fmt(MOON)
+        + " miles and landed. Every part came from a multiplication problem you solved.";
+    } else {
+      const reached = MILES.filter(m=>m.d<=S.total).slice(-1)[0];
+      $("xLine").textContent = "You made it " + fmt(S.total) + " miles, "
+        + Math.round(S.total/MOON*100) + "% of the way"
+        + (reached ? " and past " + reached.name.toLowerCase() : "")
+        + ". More correct answers means more parts, and buying upgrades earlier makes every launch count.";
+    }
+    $("xDist").textContent = fmt(S.total) + " mi";
+    $("xCorrect").textContent = totalC + " / " + totalQ;
+    $("xAcc").textContent = acc + "%";
+    $("xRows").innerHTML = S.log.map(r =>
+      "<tr><td>" + r.r + "</td><td>" + r.hits + " of " + S.len + "</td><td>"
+      + r.parts + "</td><td class='num'>" + fmt(r.dist) + " mi</td></tr>").join("");
+    if(S.misses.length){
+      $("xMissWrap").classList.remove("hidden");
+      const seen = [];
+      S.misses.forEach(m=>{ if(seen.indexOf(m)<0) seen.push(m); });
+      $("xMiss").innerHTML = seen.map(m=>"<span>"+m.replace(/= (\d+)/,"= <b>$1</b>")+"</span>").join("");
+    } else {
+      $("xMissWrap").classList.add("hidden");
+    }
+    show("scFinal"); bar();
+  }
+  function nextRound(){ S.round++; startRound(); }
+  function reset(){
+    S.round=1; S.parts=0; S.total=0; S.log=[]; S.misses=[];
+    S.lv={engine:0,tank:0,booster:0,nose:0};
+    show("scTitle");
+  }
+
+  // ---------- icons ----------
+  function iconEngine(){ return "<svg width='34' height='34' viewBox='0 0 34 34'><path d='M9 6h16l-3 14H12z' fill='#e9f7f7'/><path d='M12 20h10l4 8H8z' fill='#1fbfc4'/><path d='M13 28h8l-4 5z' fill='#ffc628'/></svg>"; }
+  function iconTank(){ return "<svg width='34' height='34' viewBox='0 0 34 34'><rect x='10' y='4' width='14' height='26' rx='7' fill='#e9f7f7'/><rect x='13' y='12' width='8' height='14' rx='3' fill='#ffc628'/></svg>"; }
+  function iconBooster(){ return "<svg width='34' height='34' viewBox='0 0 34 34'><rect x='4' y='6' width='9' height='20' rx='4' fill='#1fbfc4'/><rect x='21' y='6' width='9' height='20' rx='4' fill='#1fbfc4'/><rect x='14' y='2' width='6' height='26' rx='3' fill='#e9f7f7'/><path d='M6 26h5l-2 5zM23 26h5l-2 5z' fill='#ffc628'/></svg>"; }
+  function iconNose(){ return "<svg width='34' height='34' viewBox='0 0 34 34'><path d='M17 3c6 7 9 15 9 22H8c0-7 3-15 9-22z' fill='#e9f7f7'/><path d='M17 3c6 7 9 15 9 22h-9z' fill='#bcd9dc'/><rect x='8' y='25' width='18' height='5' rx='2' fill='#ffc628'/></svg>"; }
+
+  // ---------- wiring ----------
+  document.querySelectorAll(".opt").forEach(function(b){
+    b.addEventListener("click", function(){
+      const group = b.dataset.len ? "len" : "diff";
+      document.querySelectorAll(".opt[data-"+group+"]").forEach(o=>o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      if(group === "len"){ S.len = +b.dataset.len; S.perPart = S.len === 5 ? 2 : 1; }
+      else S.diff = b.dataset.diff;
+    });
+  });
+  $("btnStart").addEventListener("click", function(){ reset(); startRound(); });
+  $("qIn").addEventListener("keydown", function(e){ if(e.key === "Enter") submit(); });
+  $("btnLaunch").addEventListener("click", launch);
+  $("btnAfter").addEventListener("click", afterFlight);
+  $("btnNext").addEventListener("click", nextRound);
+  $("btnAgain").addEventListener("click", reset);
+  $("btnPrint").addEventListener("click", function(){ window.print(); });
+
+  // number pad (touchscreens)
+  const padKeys = ["1","2","3","4","5","6","7","8","9","clear","0","enter"];
+  $("qPad").innerHTML = padKeys.map(function(k){
+    const label = k === "clear" ? "&larr;" : k === "enter" ? "&crarr;" : k;
+    return "<button data-k='" + k + "' aria-label='" + k + "'>" + label + "</button>";
+  }).join("");
+  $("qPad").addEventListener("click", function(e){
+    const b = e.target.closest("button"); if(!b) return;
+    const k = b.dataset.k, inp = $("qIn");
+    if(k === "enter") submit();
+    else if(k === "clear") inp.value = inp.value.slice(0,-1);
+    else if(!S.answered) inp.value += k;
+  });
+
+  show("scTitle");
+})();
+</script>
+</body>
+</html>
