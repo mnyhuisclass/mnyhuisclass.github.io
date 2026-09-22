@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<!--
+  SUMMARY SUMMIT  v1.0
+  4th Grade Arcade / ELA
+  Indiana 4.RC.2 (summarize), supports 4.RL.2 and 4.RN.2
+
+  Students read a short passage, then ski a slope and steer through the gate
+  whose sentence belongs in the summary. A wrong gate is a randomized wipeout
+  or yeti, with feedback naming why that sentence does not belong.
+
+  One self-contained file. No build step, no dependencies, no server needed.
+  Works from file://, from GitHub Pages, or from any static host.
+  Web fonts load from Google when the network allows and fall back to system
+  fonts when it does not, so the game is fully playable offline.
+
+  To add a link back to the arcade menu, set ARCADE_HOME near the top of the
+  script below. Progress is saved per device under keys beginning "summary-summit.".
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Summary Summit</title>
+<meta name="description" content="A summarizing game for 4th grade. Read a passage, then ski the gates that build a good summary.">
+<meta name="theme-color" content="#04201E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'%3E%3Crect width='52' height='52' rx='10' fill='%2304201E'/%3E%3Cpath d='M6 42 L20 16 L29 31 L34 23 L46 42 Z' fill='%23F6FAFE'/%3E%3Cpath d='M26 8 L26 16' stroke='%23F3B53F' stroke-width='3'/%3E%3Cpath d='M26 8 L36 11 L26 14 Z' fill='%23F3B53F'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#06211E;
+  --pine:#0B3A34;
+  --pine-dk:#04201E;
+  --teal:#12867E;
+  --teal-lt:#57C6B8;
+  --gold:#F3B53F;
+  --gold-dk:#B9760D;
+  --snow:#F6FAFE;
+  --snow-2:#E0EDF7;
+  --snow-3:#B9D4E7;
+  --slate:#2C4B5C;
+  --crash:#D9503F;
+  --grow:#2FA36B;
+  --sans:"Fredoka","Trebuchet MS",Roboto,"Segoe UI",system-ui,sans-serif;
+  --read:"Atkinson Hyperlegible",Verdana,Roboto,"Segoe UI",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:var(--sans);
+  color:var(--snow);
+  background:
+    radial-gradient(1100px 620px at 50% -10%, #12514A 0%, transparent 62%),
+    linear-gradient(#072B28, #04201E 70%);
+  background-color:#04201E;
+  min-height:100%;
+}
+.wrap{max-width:1060px;margin:0 auto;padding:18px 16px 40px}
+.screen{display:none}
+.screen.on{display:block}
+
+/* ---------- masthead ---------- */
+.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.brandmark{display:flex;align-items:center;gap:12px}
+.brandmark svg{flex:none}
+.brandmark h1{font-size:clamp(28px,5vw,44px);font-weight:600;letter-spacing:.2px;margin:0;line-height:1}
+.brandmark p{margin:4px 0 0;font-size:14px;color:var(--teal-lt);font-weight:400}
+.tally{font-size:14px;color:var(--snow-3);text-align:right;line-height:1.5}
+.homelink{display:inline-block;margin-bottom:8px;font-size:14px;color:var(--teal-lt);text-decoration:none;
+  border:1px solid rgba(87,198,184,.4);border-radius:999px;padding:6px 14px}
+.homelink:hover{background:rgba(87,198,184,.15)}
+.homelink:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.homelink[hidden]{display:none}
+.resetlink{display:block;margin:8px 0 0 auto;background:none;border:none;cursor:pointer;
+  font-size:13px;color:var(--snow-3);text-decoration:underline;padding:4px 0}
+.resetlink:hover{color:var(--gold)}
+.resetlink:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.resetlink[hidden]{display:none}
+.tally b{color:var(--gold);font-weight:600}
+
+/* ---------- trail map ---------- */
+.trailmap{position:relative;margin:0;padding:0;list-style:none}
+.trailmap::before{
+  content:"";position:absolute;left:26px;top:22px;bottom:22px;width:0;
+  border-left:3px dotted rgba(87,198,184,.45);
+}
+.peak{position:relative;padding:0 0 14px 62px}
+.peak .node{
+  position:absolute;left:8px;top:14px;width:40px;height:40px;border-radius:50%;
+  background:var(--pine);border:2px solid rgba(87,198,184,.5);
+  display:grid;place-items:center;font-size:15px;color:var(--teal-lt);font-weight:600;
+}
+.peak.done .node{background:var(--gold);border-color:var(--gold);color:#3B2503}
+.peakbtn{
+  width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);
+  border-radius:4px 16px 16px 4px;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  transition:background .12s ease,border-color .12s ease;
+}
+.peakbtn:hover{background:rgba(87,198,184,.13);border-color:rgba(87,198,184,.45)}
+.peakbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.peakbtn .ttl{font-size:19px;font-weight:500;display:block}
+.peakbtn .meta{font-size:13px;color:var(--snow-3);font-weight:400}
+.flagmark{font-size:13px;color:var(--gold);white-space:nowrap;font-weight:500}
+.flagmark.silver{color:var(--snow-3)}
+
+/* ---------- reading screen ---------- */
+.reader{background:var(--snow);color:var(--ink);border-radius:18px;padding:clamp(20px,4vw,38px);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.reader .kicker{font-size:13px;color:var(--gold-dk);font-weight:500;margin:0 0 6px}
+.reader h2{font-family:var(--sans);font-weight:600;font-size:clamp(24px,4vw,34px);margin:0 0 14px;color:var(--pine-dk)}
+.passage{font-family:var(--read);font-size:18px;line-height:1.65;max-width:63ch}
+.passage p{margin:0 0 15px}
+.readerbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:22px;padding-top:18px;border-top:2px solid var(--snow-2)}
+.hint{font-family:var(--read);font-size:14px;color:var(--slate);max-width:44ch}
+
+/* ---------- buttons ---------- */
+button{font-family:var(--sans)}
+.btn{
+  border:none;border-radius:999px;padding:13px 26px;font-size:17px;font-weight:500;
+  background:var(--gold);color:#3B2503;cursor:pointer;box-shadow:0 4px 0 var(--gold-dk);
+}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--gold-dk)}
+.btn:focus-visible{outline:3px solid var(--teal-lt);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--pine);box-shadow:none;border:2px solid rgba(11,58,52,.3)}
+.btn.small{padding:9px 18px;font-size:15px}
+.btn.onsnow{background:var(--teal);color:#fff;box-shadow:0 4px 0 #0A5C56}
+.btn.onsnow:active{box-shadow:0 2px 0 #0A5C56}
+
+/* ---------- run screen ---------- */
+.runbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.runbar .where{font-size:15px;color:var(--teal-lt)}
+.runbar .where b{color:var(--snow);font-weight:500}
+.runtools{display:flex;gap:8px;align-items:center}
+.icobtn{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:var(--snow);
+  border-radius:10px;padding:8px 12px;font-size:14px;cursor:pointer;
+}
+.icobtn:hover{background:rgba(87,198,184,.2)}
+.icobtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.prompt{
+  font-size:clamp(17px,2.6vw,21px);font-weight:500;text-align:center;margin:0 0 10px;color:var(--gold);
+  min-height:1.5em;
+}
+.signs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;min-height:126px;align-items:stretch}
+@keyframes signin{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
+.signs .sign{animation:signin .3s ease both}
+.sign{
+  background:var(--snow);color:var(--ink);border-radius:12px;padding:12px 12px 13px;
+  border:3px solid transparent;position:relative;min-height:126px;
+  display:flex;gap:9px;align-items:flex-start;
+  font-family:var(--read);font-size:15px;line-height:1.35;
+}
+.sign .lane{
+  flex:none;width:26px;height:26px;border-radius:8px;background:var(--snow-2);color:var(--slate);
+  display:grid;place-items:center;font-family:var(--sans);font-size:15px;font-weight:600;
+}
+.sign.lit{border-color:var(--gold);box-shadow:0 0 0 5px rgba(243,181,63,.25)}
+.sign.lit .lane{background:var(--gold);color:#3B2503}
+.sign.right{border-color:var(--grow);box-shadow:0 0 0 5px rgba(47,163,107,.3)}
+.sign.wrong{border-color:var(--crash);opacity:.55}
+
+canvas{display:block;width:100%;height:auto;aspect-ratio:1000/420;border-radius:14px;background:var(--snow);touch-action:none}
+
+.touchpad{display:none;gap:14px;margin-top:12px;touch-action:none}
+.touchpad.on{display:flex}
+.touchpad button{
+  flex:1;min-height:92px;border-radius:18px;border:none;cursor:pointer;
+  background:linear-gradient(#17A196,#0E736C);color:#fff;
+  box-shadow:0 5px 0 #084A45;touch-action:none;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-family:var(--sans);font-size:15px;font-weight:500;
+}
+.touchpad button svg{display:block}
+.touchpad button.pressed{background:linear-gradient(#F3B53F,#D0900F);color:#3B2503;box-shadow:0 2px 0 #8C5F06;transform:translateY(3px)}
+.touchpad button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.slot{
+  border:1px dashed rgba(255,255,255,.22);border-radius:10px;padding:9px 10px;min-height:62px;
+  font-family:var(--read);font-size:13px;line-height:1.35;color:var(--snow-3);
+}
+.slot.full{border-style:solid;border-color:rgba(87,198,184,.5);background:rgba(87,198,184,.12);color:var(--snow)}
+.slot .n{display:block;font-family:var(--sans);font-size:12px;color:var(--teal-lt);margin-bottom:3px}
+
+/* ---------- overlays ---------- */
+.veil{
+  position:fixed;inset:0;background:rgba(4,20,18,.82);display:none;
+  align-items:center;justify-content:center;padding:20px;z-index:20;
+  padding-top:calc(20px + env(safe-area-inset-top,0px));
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+}
+.veil.on{display:flex}
+.card{
+  background:var(--snow);color:var(--ink);border-radius:18px;padding:clamp(20px,4vw,32px);
+  max-width:620px;width:100%;max-height:100%;overflow:auto;box-shadow:0 22px 50px rgba(0,0,0,.5);
+}
+.card h3{font-family:var(--sans);font-weight:600;font-size:26px;margin:0 0 6px;color:var(--pine-dk)}
+.card .tag{
+  display:inline-block;font-family:var(--sans);font-size:13px;font-weight:500;
+  background:var(--snow-2);color:var(--slate);border-radius:999px;padding:4px 12px;margin-bottom:12px;
+}
+.card p{font-family:var(--read);font-size:16px;line-height:1.55;margin:0 0 14px}
+.card .picked{border-left:5px solid var(--crash);padding-left:12px;color:var(--slate)}
+.card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.summaryout{
+  font-family:var(--read);font-size:17px;line-height:1.6;background:var(--snow-2);
+  border-radius:12px;padding:16px 18px;margin:0 0 16px;
+}
+.medal{font-family:var(--sans);font-size:19px;font-weight:600;color:var(--gold-dk);margin:0 0 10px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:640px){
+  .signs{grid-template-columns:1fr;gap:6px}
+  .sign{min-height:0;font-size:14px}
+  .strip{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ TRAIL MAP ============ -->
+<section id="screen-map" class="screen on">
+  <div class="masthead">
+    <div class="brandmark">
+      <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
+        <path d="M4 44 L20 14 L29 30 L34 22 L48 44 Z" fill="#F6FAFE"/>
+        <path d="M20 14 L26 25 L20 27 L15 24 Z" fill="#B9D4E7"/>
+        <path d="M34 22 L38 28 L34 29 L31 26 Z" fill="#B9D4E7"/>
+        <path d="M26 8 L26 15" stroke="#F3B53F" stroke-width="3" stroke-linecap="round"/>
+        <path d="M26 8 L36 11 L26 14 Z" fill="#F3B53F"/>
+      </svg>
+      <div>
+        <h1>Summary Summit</h1>
+        <p>Read the story, then ski the gates that build the summary.</p>
+      </div>
+    </div>
+    <div>
+      <a class="homelink" id="homelink" hidden>Back to the arcade</a>
+      <div class="tally" id="tally"></div>
+      <button class="resetlink" id="btn-reset" hidden>Clear flags on this device</button>
+    </div>
+  </div>
+  <ol class="trailmap" id="trailmap"></ol>
+</section>
+
+<!-- ============ READING ============ -->
+<section id="screen-read" class="screen">
+  <div class="reader">
+    <p class="kicker" id="read-kicker"></p>
+    <h2 id="read-title"></h2>
+    <div class="passage" id="read-passage"></div>
+    <div class="readerbar">
+      <button class="btn" id="btn-drop">Drop in</button>
+      <button class="btn ghost small" id="btn-back">Back to the trail map</button>
+      <p class="hint">Four gates are coming. Steer into the lane whose sign belongs in the summary.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RUN ============ -->
+<section id="screen-run" class="screen">
+  <div class="runbar">
+    <div class="where">Gate <b id="gate-n">1</b> of 4 on <b id="run-title"></b></div>
+    <div class="runtools">
+      <button class="icobtn" id="btn-reread">Read the story</button>
+      <button class="icobtn" id="btn-speed">Speed: Standard</button>
+      <button class="icobtn" id="btn-pad">Control pad: on</button>
+      <button class="icobtn" id="btn-sound">Sound on</button>
+      <button class="icobtn" id="btn-quit">Leave run</button>
+    </div>
+  </div>
+  <p class="prompt" id="prompt"></p>
+  <div class="signs" id="signs"></div>
+  <canvas id="slope" width="1000" height="420" aria-label="Ski slope. Use the left and right arrow keys to steer."></canvas>
+  <div class="touchpad" id="touchpad">
+    <button id="tp-left" aria-label="Steer left"><svg width="46" height="34" viewBox="0 0 46 34" aria-hidden="true"><path d="M28 4 L10 17 L28 30 Z" fill="currentColor"/><rect x="31" y="13" width="9" height="8" rx="3" fill="currentColor"/></svg>Steer left</button>
+    <button id="tp-right" aria-label="Steer right"><svg width="46" height="34" viewBox="0 0 46 34" aria-hidden="true"><path d="M18 4 L36 17 L18 30 Z" fill="currentColor"/><rect x="6" y="13" width="9" height="8" rx="3" fill="currentColor"/></svg>Steer right</button>
+  </div>
+  <div class="strip" id="strip"></div>
+  <p class="sr" aria-live="polite" id="live"></p>
+</section>
+
+</div>
+
+<!-- ============ OVERLAYS ============ -->
+<div class="veil" id="veil-crash"><div class="card">
+  <h3 id="crash-head"></h3>
+  <span class="tag" id="crash-tag"></span>
+  <p class="picked" id="crash-picked"></p>
+  <p id="crash-why"></p>
+  <div class="actions"><button class="btn" id="btn-retry">Hike back up and try again</button></div>
+</div></div>
+
+<div class="veil" id="veil-story"><div class="card">
+  <h3 id="peek-title"></h3>
+  <div class="passage" id="peek-passage"></div>
+  <div class="actions"><button class="btn" id="btn-resume">Back to the run</button></div>
+</div></div>
+
+<div class="veil" id="veil-finish"><div class="card">
+  <h3>You reached the bottom</h3>
+  <p class="medal" id="fin-medal"></p>
+  <p style="margin-bottom:8px">Here is the summary you built:</p>
+  <p class="summaryout" id="fin-summary"></p>
+  <p id="fin-note"></p>
+  <div class="actions">
+    <button class="btn" id="btn-next">Next peak</button>
+    <button class="btn ghost small" id="btn-map">Trail map</button>
+  </div>
+</div></div>
+<script>
+/* =======================================================================
+   SUMMARY SUMMIT  ~  data
+   Ten original passages, each with four summary gates.
+   Each gate: one sentence that belongs in a summary, two that do not.
+   ======================================================================= */
+
+const STORIES = [
+{
+  id:"tracks", title:"Tracks in the Snow", genre:"Realistic fiction",
+  text:[
+    "Every morning before school, Ben filled the bird feeder outside his window. Every afternoon when he got home, the feeder was empty again. No seed had spilled on the ground below it. Something was taking all of it.",
+    "Ben's sister said a deer was probably to blame. His neighbor said it had to be squirrels. Ben wanted proof instead of guesses, so he borrowed a trail camera from his uncle and strapped it to the maple tree.",
+    "The first night, the camera caught nothing but blowing snow. The second night, the battery died. On the third night, Ben aimed the camera lower and waited.",
+    "The next afternoon he scrolled through the photos and laughed out loud. A round opossum was hanging upside down from the feeder with sunflower seed stuck all over its whiskers.",
+    "Ben did not want to starve the opossum, so he built a low feeder near the fence and filled it with cracked corn. After that the birds ate in peace, and so did the opossum."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Ben kept finding his bird feeder empty and wanted to know why.", ok:true},
+      {t:"Ben's sister said a deer was eating all of the seed.", ok:false, tag:"Just a small detail", why:"That is one person's guess near the start of the story. A summary opens with what the whole story is about, not with one line of it."},
+      {t:"Winter is a hard season for animals that live near people.", ok:false, tag:"Too broad", why:"That could be said about almost any winter story. Your summary needs to be about Ben and his feeder."}
+    ]},
+    { q:"Which sentence tells the important thing Ben did?", opts:[
+      {t:"He borrowed a trail camera and set it up on the maple tree.", ok:true},
+      {t:"The camera battery died on the second night.", ok:false, tag:"Just a small detail", why:"The dead battery is a bump along the way. Leave the tiny steps out and keep the big action."},
+      {t:"Ben is the smartest kid on his whole street.", ok:false, tag:"An opinion", why:"The passage never says that. A summary only carries what the author actually wrote."}
+    ]},
+    { q:"Which sentence tells what Ben found out?", opts:[
+      {t:"The photos showed an opossum hanging from the feeder and eating the seed.", ok:true},
+      {t:"The opossum had sunflower seed stuck all over its whiskers.", ok:false, tag:"Just a small detail", why:"That detail is fun, but it is a close up of a moment. The summary needs the discovery itself."},
+      {t:"The first pictures showed only blowing snow in a dark yard.", ok:false, tag:"Only part of the story", why:"That was night one. The point of this part is what the camera finally caught."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"Ben solved the problem by adding a low feeder with corn for the opossum.", ok:true},
+      {t:"Opossums are the only marsupial that lives in North America.", ok:false, tag:"Not in the passage", why:"True fact, wrong story. Everything in a summary has to come from the text you read."},
+      {t:"Everybody should put out two bird feeders instead of one.", ok:false, tag:"An opinion", why:"That is advice you thought of. Ending a summary means telling how the story ended."}
+    ]}
+  ]
+},
+{
+  id:"bell", title:"The Bell at Maple Street", genre:"Realistic fiction",
+  text:[
+    "The barn behind Ada's grandfather's house was stacked with things nobody had touched in years. Ada was dragging a feed sack out of the way when her elbow hit something that rang.",
+    "Under a canvas sheet sat a brass bell about the size of a bucket. The metal had gone green and gritty, and the clapper inside was frozen with rust.",
+    "Her grandfather knew it the moment he saw it. The bell had hung outside Maple Street School until the building closed in 1962. Someone had hauled it into the barn and forgotten about it.",
+    "Ada asked if they could fix it. For three Saturdays they scrubbed the brass with salt and vinegar, soaked the clapper in oil, and worked it loose a little at a time. Her grandfather welded a stand out of scrap pipe.",
+    "In October the new school turned one hundred years old. Ada and her grandfather rolled the bell into the gym on a cart. When the principal pulled the rope, the whole room went quiet, and then everyone cheered."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Ada found an old brass bell buried in her grandfather's barn.", ok:true},
+      {t:"The barn was stacked with feed sacks and dusty tools.", ok:false, tag:"Just a small detail", why:"That describes the setting. The summary starts with what actually happens."},
+      {t:"Old buildings in small towns are full of forgotten treasures.", ok:false, tag:"Too broad", why:"That is a big general idea. Start with Ada and the bell she found."}
+    ]},
+    { q:"Which sentence gives the key background?", opts:[
+      {t:"The bell had hung at Maple Street School until it closed in 1962.", ok:true},
+      {t:"The bell was about the size of a bucket.", ok:false, tag:"Just a small detail", why:"Size is a description. What matters here is where the bell came from."},
+      {t:"Her grandfather is the best fixer in the whole town.", ok:false, tag:"An opinion", why:"The passage does not say that. Keep your own praise out of a summary."}
+    ]},
+    { q:"Which sentence tells the main work they did?", opts:[
+      {t:"Ada and her grandfather spent three Saturdays cleaning and repairing the bell.", ok:true},
+      {t:"They scrubbed the brass with salt and vinegar.", ok:false, tag:"Only part of the story", why:"That is one step out of several. Pull the steps together into one sentence instead."},
+      {t:"Her grandfather welded a stand out of scrap pipe.", ok:false, tag:"Just a small detail", why:"A small piece of the repair. The summary needs the whole job, not one part of it."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"They rang the bell at the school's one hundredth birthday celebration.", ok:true},
+      {t:"Everyone in the gym cheered after the bell rang.", ok:false, tag:"Just a small detail", why:"The cheering is the reaction. The event itself is what belongs in the summary."},
+      {t:"Every school should ring a bell each morning.", ok:false, tag:"An opinion", why:"That is your idea, not the author's ending."}
+    ]}
+  ]
+},
+{
+  id:"owls", title:"Why Owls Fly Quiet", genre:"Science article",
+  text:[
+    "A mouse under the grass can hear a hawk coming. It almost never hears an owl. An owl can cross a whole field without making a sound, and the reason is hidden in its feathers.",
+    "The front edge of an owl's flight feather is lined with a stiff comb. Instead of one loud rush of air rolling over the wing, the comb splits that air into many small streams.",
+    "The back edge of the feather is soft and frayed like a fringe, so the air slides off quietly instead of snapping. On top of the wing sits a layer of velvety down that soaks up whatever noise is left.",
+    "Silent wings help an owl twice. The mouse never gets a warning, and the owl can hear the faint scratching of that mouse moving under the snow.",
+    "Engineers pay attention to this. Comb shaped edges copied from owl feathers now show up on wind turbine blades and computer fans to make them quieter."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Owls fly almost silently because of the way their feathers are built.", ok:true},
+      {t:"A mouse can hear a hawk but almost never hears an owl.", ok:false, tag:"Just a small detail", why:"That is the hook the author used to pull you in. The summary starts with the main idea."},
+      {t:"Owls are the most amazing birds in the whole forest.", ok:false, tag:"An opinion", why:"The article never says owls are the best. Summaries report, they do not cheer."}
+    ]},
+    { q:"Which sentence gives the first key detail?", opts:[
+      {t:"A stiff comb on the front edge of each feather breaks up rushing air.", ok:true},
+      {t:"Owls hunt mice at night.", ok:false, tag:"Too broad", why:"That is generally true, but it is not the point this part of the article is making."},
+      {t:"Owl feathers feel soft when you touch them.", ok:false, tag:"Not in the passage", why:"The article talks about how feathers work, not how they feel in your hand."}
+    ]},
+    { q:"Which sentence gives the next key detail?", opts:[
+      {t:"A frayed back edge and velvety down soak up the rest of the sound.", ok:true},
+      {t:"The air slides off the back edge of the feather.", ok:false, tag:"Only part of the story", why:"Close, but it leaves out the down on top of the wing. Good summary sentences pull the parts together."},
+      {t:"Owls have huge eyes for seeing in the dark.", ok:false, tag:"Not in the passage", why:"You may know that about owls, but this article never mentions their eyes."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"Quiet wings hide the owl and let it hear prey, and engineers now copy the design.", ok:true},
+      {t:"Wind turbines and computer fans are very loud machines.", ok:false, tag:"Only part of the story", why:"The article's point is that owl feathers gave engineers a way to quiet those machines."},
+      {t:"Anyone building a fan should study owls first.", ok:false, tag:"An opinion", why:"That is advice you added. Stick with what the author actually reported."}
+    ]}
+  ]
+},
+{
+  id:"bats", title:"Counting the Bats", genre:"Science article",
+  text:[
+    "Every January, a small team of biologists straps on headlamps and climbs down into caves in southern Indiana. They are there to count bats.",
+    "Indiana bats hibernate in tight clusters on cave ceilings. Hundreds of them can pack into a patch no bigger than a bath towel, hanging so close together that they look like one gray blanket.",
+    "Counting them one by one would wake them, and a bat woken in winter burns fat it cannot spare. So the team photographs each cluster, leaves quickly, and counts the bats later on a computer screen.",
+    "The counts dropped hard after 2011. A fungus called white nose syndrome spread through the caves and woke bats over and over during hibernation. The bats used up their fat weeks before spring and starved.",
+    "Now gates made of steel bars stand at many cave mouths. Bats fly right through the openings, but people cannot walk in and carry the fungus on their boots. The winter counts have slowly begun to hold steady again."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Biologists count the Indiana bats that hibernate in caves every winter.", ok:true},
+      {t:"The biologists wear headlamps when they go into the caves.", ok:false, tag:"Just a small detail", why:"Equipment is a detail. Start with the work the article is really about."},
+      {t:"Caves are dark and dangerous places to explore.", ok:false, tag:"Too broad", why:"That is a general statement about caves, not the main idea of this article."}
+    ]},
+    { q:"Which sentence tells how the counting is done?", opts:[
+      {t:"They photograph the clusters and count the bats later so the bats stay asleep.", ok:true},
+      {t:"Hundreds of bats can pack into a space the size of a bath towel.", ok:false, tag:"Just a small detail", why:"A great picture in your head, but it is one small fact inside a bigger idea."},
+      {t:"The bats look like one gray blanket on the ceiling.", ok:false, tag:"Just a small detail", why:"That is a description. The summary needs the method the scientists use."}
+    ]},
+    { q:"Which sentence tells the big problem?", opts:[
+      {t:"A fungus called white nose syndrome woke the bats early and made them starve.", ok:true},
+      {t:"The bat counts dropped after 2011.", ok:false, tag:"Only part of the story", why:"That tells what happened but not why. A summary should carry the cause too."},
+      {t:"Bats are the most important animal in Indiana.", ok:false, tag:"An opinion", why:"The article does not rank animals. Leave opinions out."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"Gates at cave entrances now protect the bats, and the counts are holding steady.", ok:true},
+      {t:"The gates are made out of steel bars.", ok:false, tag:"Just a small detail", why:"What the gates are made of matters less than what they do and what changed."},
+      {t:"People should never be allowed inside any cave.", ok:false, tag:"An opinion", why:"The author never says that. A summary ends with the text's ending, not your rule."}
+    ]}
+  ]
+},
+{
+  id:"limberlost", title:"The Woman Who Wrote the Swamp", genre:"Biography",
+  text:[
+    "In 1888, Gene Stratton-Porter moved to the little town of Geneva, Indiana, at the edge of a wet, buggy, tangled place called the Limberlost Swamp. Most of her neighbors thought the swamp was useless ground.",
+    "She thought it was full of stories. She hauled a heavy box camera into the muck, sometimes standing in water up to her knees for hours, and photographed moths, birds, and nests that almost nobody had ever seen up close.",
+    "Then she wrote about them. Her novels and nature books sold millions of copies, and readers all over the country learned the names of Limberlost creatures from her pages.",
+    "While she wrote, the swamp was disappearing. Crews dug ditches and drained the water so the land could be farmed. By 1913 the Limberlost she loved was mostly gone, and she moved north to a new home at Sylvan Lake.",
+    "Her books outlasted the ditches. Readers who grew up on them pushed to protect wetlands, and today groups have bought back pieces of the old Limberlost and let the water return."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Gene Stratton-Porter photographed and wrote about Indiana's Limberlost Swamp.", ok:true},
+      {t:"In 1888 she moved to the town of Geneva, Indiana.", ok:false, tag:"Just a small detail", why:"A date and a town name are details. The first sentence should say what she is known for."},
+      {t:"Her neighbors thought the swamp was useless ground.", ok:false, tag:"Just a small detail", why:"That is what other people thought. The summary is about her."}
+    ]},
+    { q:"Which sentence tells how she worked?", opts:[
+      {t:"She carried a heavy camera into the swamp to photograph moths, birds, and nests.", ok:true},
+      {t:"She sometimes stood in water up to her knees.", ok:false, tag:"Just a small detail", why:"Vivid, but small. Roll details like that into the bigger sentence about her work."},
+      {t:"Photography was very difficult in the 1800s.", ok:false, tag:"Not in the passage", why:"The article never says that. Only use what the text gives you."}
+    ]},
+    { q:"Which sentence tells what changed?", opts:[
+      {t:"Crews drained the swamp for farmland, so she moved away and kept writing.", ok:true},
+      {t:"Her books sold millions of copies.", ok:false, tag:"Only part of the story", why:"That is true, but this part of the passage is about losing the swamp."},
+      {t:"Draining the Limberlost was a terrible mistake.", ok:false, tag:"An opinion", why:"You may agree, but the author reports what happened instead of judging it."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"Her books taught readers to value wetlands, and part of the Limberlost is now restored.", ok:true},
+      {t:"She moved north to a new home at Sylvan Lake.", ok:false, tag:"Just a small detail", why:"That happens in the middle. The ending is about the difference her work made."},
+      {t:"Everyone should read her novels today.", ok:false, tag:"An opinion", why:"A summary ends the way the text ends, not with a recommendation."}
+    ]}
+  ]
+},
+{
+  id:"flight", title:"Twelve Seconds", genre:"Biography",
+  text:[
+    "Wilbur and Orville Wright fixed and built bicycles in a shop in Dayton, Ohio. Wilbur had been born on a farm near Millville, Indiana. Neither brother had a college degree, and neither one had ever flown.",
+    "They studied birds instead. Watching buzzards tip and recover in the wind, Wilbur noticed that the birds twisted the tips of their wings to stay balanced. The brothers built that twist into their own wings and called it wing warping.",
+    "They tested gliders on the windy dunes at Kitty Hawk, North Carolina. When the published wing tables they were using turned out to be wrong, they built a small wind tunnel in the bicycle shop and tested more than one hundred wing shapes themselves.",
+    "On December 17, 1903, their powered machine lifted off the sand with Orville lying flat on the lower wing. The flight lasted twelve seconds and covered about one hundred twenty feet.",
+    "Five people watched. Most newspapers ignored it. Within ten years, airplanes were flying across countries."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Two bicycle makers, Wilbur and Orville Wright, figured out how to fly.", ok:true},
+      {t:"Wilbur was born on a farm near Millville, Indiana.", ok:false, tag:"Just a small detail", why:"Interesting for Indiana readers, but it is not what the passage is mostly about."},
+      {t:"Flying is the greatest invention in all of history.", ok:false, tag:"An opinion", why:"The passage does not make that claim, so your summary should not either."}
+    ]},
+    { q:"Which sentence tells where their idea came from?", opts:[
+      {t:"They copied the way buzzards twist their wingtips to stay balanced.", ok:true},
+      {t:"Neither brother had ever been to college.", ok:false, tag:"Just a small detail", why:"A fact about them, but not the idea that made the plane work."},
+      {t:"Buzzards are excellent fliers.", ok:false, tag:"Too broad", why:"The point is what the brothers learned from the birds and used."}
+    ]},
+    { q:"Which sentence tells how they tested?", opts:[
+      {t:"They flew gliders at Kitty Hawk and built a wind tunnel to test wing shapes.", ok:true},
+      {t:"The wing tables they were using turned out to be wrong.", ok:false, tag:"Only part of the story", why:"That is the reason they built the wind tunnel. The summary needs the testing itself."},
+      {t:"Kitty Hawk is in North Carolina.", ok:false, tag:"Just a small detail", why:"A location fact. It does not carry the important action."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"On December 17, 1903, their powered plane flew for twelve seconds.", ok:true},
+      {t:"Only five people were there to watch the flight.", ok:false, tag:"Just a small detail", why:"A memorable detail, but the flight is the event that matters."},
+      {t:"Newspapers should have paid more attention to the brothers.", ok:false, tag:"An opinion", why:"That is your judgment about the reporters, not the author's ending."}
+    ]}
+  ]
+},
+{
+  id:"freethrow", title:"Six for Twenty Two", genre:"Realistic fiction",
+  text:[
+    "Dev could hit a shot from the corner with a hand in his face. He could bank one in while falling out of bounds. But standing alone at the free throw line, with nobody guarding him at all, he had made six out of twenty two all season.",
+    "Coach Ruiz did not talk to him about his elbow or his wrist. She gave him a routine instead. Three dribbles. One breath. Eyes on the back of the rim. The same thing every single time.",
+    "It felt silly at first. Dev stayed after every practice from November into January and shot fifty free throws, counting the dribbles out loud until he stopped needing to count.",
+    "In the last game before break, he was fouled with four seconds left and the score tied. He stepped to the line and heard nothing but his own count. Three dribbles. One breath. Both shots dropped through.",
+    "At practice the next week, a new teammate was bricking free throws and looking miserable. Dev walked over and showed him the count."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Dev was a strong shooter who kept missing his free throws.", ok:true},
+      {t:"Dev made six out of twenty two free throws that season.", ok:false, tag:"Just a small detail", why:"A number from the text. Your first sentence should name the problem in your own words."},
+      {t:"Free throws are the hardest shot in basketball.", ok:false, tag:"An opinion", why:"The story never says that. Keep opinions out of a summary."}
+    ]},
+    { q:"Which sentence tells what his coach did?", opts:[
+      {t:"His coach gave him a routine to repeat before every free throw.", ok:true},
+      {t:"Coach Ruiz told him to take three dribbles and one breath.", ok:false, tag:"Just a small detail", why:"Those are the steps inside the routine. Naming the routine covers them all."},
+      {t:"Coach Ruiz is the smartest coach in the league.", ok:false, tag:"An opinion", why:"The story shows her helping, but it never calls her the smartest."}
+    ]},
+    { q:"Which sentence tells what Dev did about it?", opts:[
+      {t:"He shot fifty free throws after every practice for months.", ok:true},
+      {t:"The routine felt silly to him at first.", ok:false, tag:"Just a small detail", why:"A feeling along the way. The important thing is the practice he put in."},
+      {t:"He counted his dribbles out loud in an empty gym.", ok:false, tag:"Just a small detail", why:"A nice picture, but it is one small piece of all that practice."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"He made two free throws to win a close game and then taught the routine to a teammate.", ok:true},
+      {t:"Dev was fouled with four seconds left in the game.", ok:false, tag:"Only part of the story", why:"That sets up the ending but does not tell what happened. Finish the thought."},
+      {t:"Every player should count their dribbles at the line.", ok:false, tag:"An opinion", why:"That is advice you added. End with how the story actually ended."}
+    ]}
+  ]
+},
+{
+  id:"canoe", title:"The Cardboard Canoe", genre:"Realistic fiction",
+  text:[
+    "The rules of the race were short. Build a boat out of cardboard and tape. No wood, no plastic, no glue. Paddle it across the shallow end of the pool and back without sinking.",
+    "Maya's team taped together a long flat box, painted a stripe on the side, and carried it to the pool feeling pretty good about it. It went under in forty seconds. Water crept through the seams along the bottom, the cardboard went soft, and the whole thing folded like a wet napkin.",
+    "They had eight days left. Instead of starting over with a fancier shape, the team looked at where the water had come in.",
+    "The new boat had curved cardboard ribs inside it, the way a canoe has ribs. Every seam got two layers of tape, one running along it and one wrapping around it. They tested it in a puddle first.",
+    "On race day the second boat crossed the pool and came back with Maya still dry to the knees. It finished second. The judges gave it the design award anyway, because of the ribs."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"Maya's team had to build a boat out of cardboard and tape for a race.", ok:true},
+      {t:"The rules said no wood, no plastic, and no glue.", ok:false, tag:"Just a small detail", why:"Those are the fine print. The first sentence should name the task."},
+      {t:"Cardboard is a terrible material for building boats.", ok:false, tag:"An opinion", why:"The story actually shows cardboard working, and it never makes that claim."}
+    ]},
+    { q:"Which sentence tells what went wrong?", opts:[
+      {t:"Their first boat sank in under a minute because the seams leaked.", ok:true},
+      {t:"They painted a stripe on the side of the first boat.", ok:false, tag:"Just a small detail", why:"The paint has nothing to do with what happened. Cut details that do not matter."},
+      {t:"The cardboard folded like a wet napkin.", ok:false, tag:"Just a small detail", why:"A great description, but it does not say why the boat failed."}
+    ]},
+    { q:"Which sentence tells what they changed?", opts:[
+      {t:"They rebuilt it with cardboard ribs inside and taped every seam twice.", ok:true},
+      {t:"They had eight days left before the race.", ok:false, tag:"Just a small detail", why:"The timeline is background. The fix is what matters."},
+      {t:"They tested the new boat in a puddle first.", ok:false, tag:"Only part of the story", why:"That is one step. The important change was the ribs and the doubled tape."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"The new boat finished second in the race and won the design award.", ok:true},
+      {t:"Maya stayed dry all the way to her knees.", ok:false, tag:"Just a small detail", why:"Funny, but small. End with the result of the race."},
+      {t:"The judges should have given them first place.", ok:false, tag:"An opinion", why:"That is what you think. A summary reports the ending as written."}
+    ]}
+  ]
+},
+{
+  id:"flake", title:"How a Snowflake Gets Its Shape", genre:"Science article",
+  text:[
+    "A snowflake does not start as snow. It starts as a speck. High in a cloud, a piece of dust or pollen drifts along, and water vapor freezes directly onto it.",
+    "Water molecules do not stack in a sloppy pile. They lock together at a fixed angle, and that angle is why every ice crystal grows six sides. Six arms, six corners, every single time.",
+    "After that, the weather takes over. Near twenty eight degrees the crystal grows wide flat plates. Around twenty three degrees it grows into thin hollow columns like tiny pencils. Near five degrees it sprouts the branching stars most people picture when they hear the word snowflake.",
+    "A falling crystal passes through layers of different temperature and moisture on the way down. It might grow plates in one layer and branches in the next.",
+    "No two crystals drift through exactly the same path, so no two finish exactly the same shape. They all have six sides, and they are all different."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"A snowflake begins when water vapor freezes onto a tiny speck in a cloud.", ok:true},
+      {t:"A snowflake does not start as snow.", ok:false, tag:"Only part of the story", why:"That is the author's attention grabber. Say what it does start as."},
+      {t:"Snow is the best part of winter.", ok:false, tag:"An opinion", why:"The article gives facts, not favorites."}
+    ]},
+    { q:"Which sentence explains the six sides?", opts:[
+      {t:"Water molecules lock at a fixed angle, so every crystal grows six sides.", ok:true},
+      {t:"Snowflakes have six arms and six corners.", ok:false, tag:"Only part of the story", why:"That tells what happens but leaves out why, and the why is the whole point here."},
+      {t:"Ice is harder than water.", ok:false, tag:"Not in the passage", why:"The article never mentions that. Summaries stay inside the text."}
+    ]},
+    { q:"Which sentence tells what decides the shape?", opts:[
+      {t:"Temperature and moisture decide whether it grows plates, columns, or stars.", ok:true},
+      {t:"Near twenty three degrees the crystal grows thin hollow columns.", ok:false, tag:"Just a small detail", why:"One example from a list. Group the examples into one sentence instead."},
+      {t:"Branching stars are the prettiest kind of snowflake.", ok:false, tag:"An opinion", why:"The article says people picture them, not that they are the prettiest."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"Each flake takes a different path down, so no two end up exactly alike.", ok:true},
+      {t:"A falling crystal passes through layers of air.", ok:false, tag:"Only part of the story", why:"True, but it stops before the conclusion the author is building toward."},
+      {t:"Nobody has ever checked every snowflake on earth.", ok:false, tag:"Not in the passage", why:"That is your own thinking. Stay with what the text says."}
+    ]}
+  ]
+},
+{
+  id:"iceman", title:"The Man in the Glacier", genre:"History article",
+  text:[
+    "In September 1991, two hikers crossing a high pass in the Alps saw something brown sticking out of the melting ice. It was a head and a pair of shoulders.",
+    "They assumed a climber had died there a few years earlier and reported it to the police. Workers chipped the body out with a jackhammer and a ski pole, which damaged it badly.",
+    "Then scientists tested the remains. The man had died about five thousand three hundred years ago. He had been frozen in that ice since before the first Egyptian pyramid was built.",
+    "Almost everything he carried had survived with him. A copper axe, a bearskin cap, shoes stuffed with grass, a cloak woven from long stems, arrows, and a birch bark container. Later scans found sixty one small tattoos on his skin and a stone arrowhead lodged in his shoulder.",
+    "He now rests in a chilled room in a museum in Italy, kept at the temperature of the glacier that held him. Researchers study his tools, his last meal, and even the pollen in his stomach to learn how people lived back then."
+  ],
+  rows:[
+    { q:"Which sentence is the best way to start the summary?", opts:[
+      {t:"In 1991, two hikers in the Alps found a body melting out of a glacier.", ok:true},
+      {t:"The hikers thought the body was from a recent climbing accident.", ok:false, tag:"Only part of the story", why:"That is what they guessed at first. Start with the discovery itself."},
+      {t:"Hiking in the mountains can be dangerous.", ok:false, tag:"Too broad", why:"That is a general warning, not what this article is about."}
+    ]},
+    { q:"Which sentence gives the surprise?", opts:[
+      {t:"Tests showed the man had died about five thousand three hundred years ago.", ok:true},
+      {t:"Workers used a jackhammer and damaged the body.", ok:false, tag:"Just a small detail", why:"That is a mistake made during the recovery, not the big discovery."},
+      {t:"The Egyptian pyramids are extremely old.", ok:false, tag:"Only part of the story", why:"The pyramids are there for comparison. The point is how old the man is."}
+    ]},
+    { q:"Which sentence tells why he matters?", opts:[
+      {t:"His axe, clothing, and tools survived and show how people lived then.", ok:true},
+      {t:"Scans found sixty one small tattoos on his skin.", ok:false, tag:"Just a small detail", why:"A famous detail, but one item out of many. Group them instead."},
+      {t:"His shoes were stuffed with grass.", ok:false, tag:"Just a small detail", why:"One piece of clothing. A summary needs the bigger reason the find matters."}
+    ]},
+    { q:"Which sentence finishes the summary?", opts:[
+      {t:"He is kept in a freezing museum room so scientists can keep studying him.", ok:true},
+      {t:"The museum is located in Italy.", ok:false, tag:"Just a small detail", why:"Where the museum sits is less important than what is happening there."},
+      {t:"The body should have been left in the ice.", ok:false, tag:"An opinion", why:"The article does not argue that. Do not add your own position."}
+    ]}
+  ]
+}
+];
+</script>
+<script>
+/* =======================================================================
+   SUMMARY SUMMIT  ~  engine
+   ======================================================================= */
+/* ---------------------------------------------------------------
+   ARCADE SETTINGS
+   ARCADE_HOME: path back to your arcade menu, for example
+   "../index.html" or "/index.html". Leave it as "" to hide the link.
+   --------------------------------------------------------------- */
+const ARCADE_HOME = "";
+const STORE = "summary-summit.";
+
+const $ = id => document.getElementById(id);
+if (typeof CanvasRenderingContext2D !== "undefined" && CanvasRenderingContext2D.prototype && !CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+    r = Math.min(r, w/2, h/2);
+    this.beginPath();
+    this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r); this.arcTo(x+w,y+h,x,y+h,r);
+    this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r); this.closePath();
+    return this;
+  };
+}
+const LANE_L = 60, LANE_R = 940, SKIER_Y = 300, GATE_DIST = 800;
+const SPEEDS = [{n:"Chill",v:95},{n:"Standard",v:135},{n:"Fast",v:185}];
+const LETTERS = ["A","B","C","D"];
+
+const G = {
+  story:null, storyIndex:0, row:0, scroll:0, crashes:0, collected:[],
+  mode:"idle",            // idle | run | crash | yeti | pass | finish
+  t:0, gateY:GATE_DIST, skier:{x:500, vx:0, lean:0}, decor:[], order:[], lastLane:1,
+  keys:{left:false,right:false}, pointerX:null, speed:1, sound:true,
+  yeti:{x:500,y:-80,got:false}, tumble:0
+};
+
+/* ---------- saved progress ---------- */
+let SAVE = {};   // reassigned by the reset control
+try { SAVE = JSON.parse(localStorage.getItem(STORE+"progress") || "{}") || {}; } catch(e){ SAVE = {}; }
+function persist(){ try{ localStorage.setItem(STORE+"progress", JSON.stringify(SAVE)); }catch(e){} }
+try {
+  const s = localStorage.getItem(STORE+"speed");
+  if (s !== null) G.speed = Math.max(0, Math.min(2, parseInt(s,10)||1));
+  G.sound = localStorage.getItem(STORE+"sound") !== "off";
+} catch(e){}
+
+/* ---------- sound ---------- */
+let actx = null;
+function tone(freq, dur, type, vol, slideTo){
+  if (!G.sound) return;
+  try {
+    if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || "sine"; o.frequency.setValueAtTime(freq, actx.currentTime);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, actx.currentTime + dur);
+    g.gain.setValueAtTime(vol || 0.16, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + dur);
+  } catch(e){}
+}
+const sfx = {
+  good(){ tone(660,.12,"triangle",.18); setTimeout(()=>tone(990,.22,"triangle",.18),110); },
+  thud(){ tone(150,.35,"sawtooth",.2,60); },
+  growl(){ tone(220,.5,"sawtooth",.2,70); setTimeout(()=>tone(180,.4,"square",.14,60),160); },
+  win(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.28,"triangle",.17),i*130)); }
+};
+
+/* ---------- screens ---------- */
+function show(id){
+  ["screen-map","screen-read","screen-run"].forEach(s => $(s).classList.toggle("on", s===id));
+  window.scrollTo(0,0);
+}
+function veil(id,on){ $(id).classList.toggle("on", !!on); }
+
+/* ---------- trail map ---------- */
+function rankLabel(r){ return r==="gold" ? "Gold flag planted" : r==="silver" ? "Silver flag planted" : r==="done" ? "Peak skied" : ""; }
+function buildMap(){
+  const list = $("trailmap"); list.innerHTML = "";
+  STORIES.forEach((st,i)=>{
+    const rec = SAVE[st.id];
+    const li = document.createElement("li");
+    li.className = "peak" + (rec ? " done" : "");
+    li.innerHTML =
+      '<span class="node" aria-hidden="true">'+(rec ? "&#9873;" : (i+1))+'</span>' +
+      '<button class="peakbtn"><span><span class="ttl"></span>' +
+      '<span class="meta"></span></span><span class="flagmark"></span></button>';
+    li.querySelector(".ttl").textContent = st.title;
+    li.querySelector(".meta").textContent = st.genre + " \u00b7 4 gates";
+    const fm = li.querySelector(".flagmark");
+    if (rec){ fm.textContent = rankLabel(rec.rank); if (rec.rank!=="gold") fm.classList.add("silver"); }
+    li.querySelector(".peakbtn").addEventListener("click", ()=>openStory(i));
+    list.appendChild(li);
+  });
+  const done = STORIES.filter(s=>SAVE[s.id]).length;
+  const gold = STORIES.filter(s=>SAVE[s.id] && SAVE[s.id].rank==="gold").length;
+  $("tally").innerHTML = "<b>"+done+"</b> of "+STORIES.length+" peaks skied<br><b>"+gold+"</b> gold flags";
+  $("btn-reset").hidden = done === 0;
+}
+
+/* ---------- reading screen ---------- */
+function paras(target, st){
+  target.innerHTML = "";
+  st.text.forEach(p=>{ const el = document.createElement("p"); el.textContent = p; target.appendChild(el); });
+}
+function openStory(i){
+  G.storyIndex = i; G.story = STORIES[i];
+  $("read-kicker").textContent = "Peak " + (i+1) + " \u00b7 " + G.story.genre;
+  $("read-title").textContent = G.story.title;
+  paras($("read-passage"), G.story);
+  show("screen-read");
+}
+
+/* ---------- run setup ---------- */
+function startRun(){
+  const st = G.story;
+  G.row = 0; G.crashes = 0; G.collected = []; G.order = [];
+  st.rows.forEach(r=>{
+    const idx = r.opts.map((_,i)=>i);
+    for (let i=idx.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; }
+    G.order.push(idx);
+  });
+  $("run-title").textContent = st.title;
+  G.scroll = 0; seedDecor();
+  buildStrip();
+  show("screen-run");
+  beginRow();
+}
+function buildStrip(){
+  const strip = $("strip"); strip.innerHTML = "";
+  for (let i=0;i<4;i++){
+    const d = document.createElement("div");
+    d.className = "slot"; d.id = "slot"+i;
+    d.innerHTML = '<span class="n">Part '+(i+1)+'</span><span class="s">waiting</span>';
+    strip.appendChild(d);
+  }
+}
+function fillStrip(i, text){
+  const d = $("slot"+i); d.classList.add("full"); d.querySelector(".s").textContent = text;
+}
+function currentOpts(){
+  if (!G.story || !G.story.rows[G.row]) return [];
+  const r = G.story.rows[G.row];
+  return G.order[G.row].map(i => r.opts[i]);
+}
+function beginRow(){
+  const r = G.story.rows[G.row];
+  const opts = currentOpts();
+  G.laneCount = opts.length;
+  $("gate-n").textContent = G.row + 1;
+  $("prompt").textContent = r.q;
+  const signs = $("signs"); signs.innerHTML = "";
+  opts.forEach((o,i)=>{
+    const d = document.createElement("div");
+    d.className = "sign"; d.id = "sign"+i;
+    d.innerHTML = '<span class="lane">'+LETTERS[i]+'</span><span></span>';
+    d.lastChild.textContent = o.t;
+    signs.appendChild(d);
+  });
+  signs.style.gridTemplateColumns = "repeat("+opts.length+",1fr)";
+  $("live").textContent = r.q + " " + opts.map((o,i)=>LETTERS[i]+". "+o.t).join(" ");
+  armGate(G.row === 0);
+}
+/* The hill never restarts. It scrolls once, from the top of the run to the
+   finish line, and each new gate is simply armed further down the same slope. */
+const DECOR_SPAN = 1500;
+function decorAt(y){
+  const side = Math.random() < .5, kind = Math.random();
+  if (kind < .46) return {k:"tree", y, x: side ? 6 + Math.random()*46 : 948 + Math.random()*46, s:.75+Math.random()*.6};
+  if (kind < .62) return {k:"rock", y, x: side ? 12 + Math.random()*36 : 952 + Math.random()*36, s:.7+Math.random()*.5};
+  return {k:"mogul", y, x: LANE_L + 20 + Math.random()*(LANE_R-LANE_L-40), s:.7+Math.random()*.8};
+}
+function seedDecor(){
+  G.decor = [];
+  for (let i=0;i<70;i++) G.decor.push(decorAt(G.scroll - 250 + Math.random()*DECOR_SPAN));
+}
+function recycleDecor(){
+  for (let i=0;i<G.decor.length;i++){
+    if (G.decor[i].y < G.scroll - 260) G.decor[i] = decorAt(G.decor[i].y + DECOR_SPAN);
+  }
+}
+function armGate(center){
+  G.gateY = G.scroll + GATE_DIST;
+  if (center){ G.skier.x = (LANE_L+LANE_R)/2; G.skier.vx = 0; G.skier.lean = 0; }
+  G.tumble = 0; G.lastLane = -1; G.yeti.got = false; G.yeti.y = -90;
+  G.mode = "run"; G.t = 0;
+}
+
+/* ---------- canvas ---------- */
+const cv = $("slope"), cx = cv.getContext("2d");
+function laneBounds(n){
+  const w = (LANE_R-LANE_L)/n, out = [];
+  for (let i=0;i<=n;i++) out.push(LANE_L + w*i);
+  return out;
+}
+function laneOf(x, n){
+  const w = (LANE_R-LANE_L)/n;
+  return Math.max(0, Math.min(n-1, Math.floor((x-LANE_L)/w)));
+}
+function screenY(worldY){ return SKIER_Y - (worldY - G.scroll); }
+
+function drawTree(x,y,s){
+  cx.save(); cx.translate(x,y); cx.scale(s,s);
+  cx.fillStyle = "rgba(20,60,70,.16)"; cx.beginPath(); cx.ellipse(6,4,20,7,0,0,7); cx.fill();
+  cx.fillStyle = "#0E4A42";
+  for (let i=0;i<3;i++){
+    const t = -10 - i*20, w = 26 - i*6;
+    cx.beginPath(); cx.moveTo(0,t-26); cx.lineTo(w,t); cx.lineTo(-w,t); cx.closePath(); cx.fill();
+  }
+  cx.fillStyle = "#EAF5FC";
+  cx.beginPath(); cx.moveTo(0,-72); cx.lineTo(9,-56); cx.lineTo(-9,-56); cx.closePath(); cx.fill();
+  cx.restore();
+}
+function drawRock(x,y,s){
+  cx.save(); cx.translate(x,y); cx.scale(s,s);
+  cx.fillStyle = "#5E7484"; cx.beginPath();
+  cx.moveTo(-16,0); cx.lineTo(-8,-14); cx.lineTo(6,-17); cx.lineTo(17,-3); cx.lineTo(12,2); cx.closePath(); cx.fill();
+  cx.fillStyle = "#EAF5FC"; cx.beginPath();
+  cx.moveTo(-8,-14); cx.lineTo(6,-17); cx.lineTo(10,-11); cx.lineTo(-4,-8); cx.closePath(); cx.fill();
+  cx.restore();
+}
+function drawMogul(x,y,s){
+  cx.save(); cx.translate(x,y); cx.scale(s,s);
+  cx.fillStyle = "#E5F0F8"; cx.beginPath(); cx.ellipse(0,0,26,9,0,0,7); cx.fill();
+  cx.fillStyle = "#CDE2F0"; cx.beginPath(); cx.ellipse(0,3,26,6,0,0,7); cx.fill();
+  cx.restore();
+}
+function drawSkier(x,y,lean,tumble){
+  cx.save(); cx.translate(x,y);
+  cx.fillStyle = "rgba(30,70,90,.18)";
+  cx.beginPath(); cx.ellipse(0,10,16,5,0,0,7); cx.fill();
+  cx.rotate(tumble ? tumble : lean*0.35);
+  cx.strokeStyle = "#21313B"; cx.lineWidth = 4; cx.lineCap = "round";
+  cx.beginPath(); cx.moveTo(-9,14); cx.lineTo(-7,-6); cx.stroke();
+  cx.beginPath(); cx.moveTo(9,14); cx.lineTo(7,-6); cx.stroke();
+  cx.fillStyle = "#12867E";
+  cx.beginPath(); cx.roundRect(-11,-24,22,22,7); cx.fill();
+  cx.strokeStyle = "#0A5C56"; cx.lineWidth = 3;
+  cx.beginPath(); cx.moveTo(-11,-16); cx.lineTo(-20,-6); cx.stroke();
+  cx.beginPath(); cx.moveTo(11,-16); cx.lineTo(20,-6); cx.stroke();
+  cx.fillStyle = "#F0D3B4"; cx.beginPath(); cx.arc(0,-31,9,0,7); cx.fill();
+  cx.fillStyle = "#F3B53F"; cx.beginPath(); cx.arc(0,-34,10,Math.PI,0); cx.fill();
+  cx.fillRect(-10,-35,20,4);
+  cx.fillStyle = "#21313B"; cx.beginPath(); cx.roundRect(-8,-33,16,6,3); cx.fill();
+  cx.restore();
+}
+function drawYeti(x,y,s,grab){
+  cx.save(); cx.translate(x,y); cx.scale(s,s);
+  cx.fillStyle = "rgba(30,70,90,.16)"; cx.beginPath(); cx.ellipse(0,22,30,8,0,0,7); cx.fill();
+  cx.fillStyle = "#F2F8FD";
+  cx.beginPath();
+  for (let i=0;i<14;i++){
+    const a = (i/14)*Math.PI*2, r = 30 + (i%2 ? 5 : 0);
+    cx.lineTo(Math.cos(a)*r, Math.sin(a)*r*0.95);
+  }
+  cx.closePath(); cx.fill();
+  cx.fillStyle = "#DCEAF5";
+  cx.beginPath(); cx.ellipse(0,6,18,14,0,0,7); cx.fill();
+  const arm = grab ? -14 : -26;
+  cx.strokeStyle = "#F2F8FD"; cx.lineWidth = 13; cx.lineCap = "round";
+  cx.beginPath(); cx.moveTo(-22,-6); cx.lineTo(-36,arm); cx.stroke();
+  cx.beginPath(); cx.moveTo(22,-6); cx.lineTo(36,arm); cx.stroke();
+  cx.fillStyle = "#21313B";
+  cx.beginPath(); cx.arc(-10,-10,4.5,0,7); cx.fill();
+  cx.beginPath(); cx.arc(10,-10,4.5,0,7); cx.fill();
+  cx.fillStyle = "#8C3B3B";
+  cx.beginPath(); cx.ellipse(0,6,12,grab?10:6,0,0,7); cx.fill();
+  cx.fillStyle = "#FFF";
+  for (let i=-2;i<=2;i++){ cx.beginPath(); cx.moveTo(i*5-2,0); cx.lineTo(i*5+2,0); cx.lineTo(i*5,5); cx.closePath(); cx.fill(); }
+  cx.restore();
+}
+function drawGate(){
+  const n = G.laneCount, b = laneBounds(n), gy = screenY(G.gateY);
+  if (gy < -140 || gy > 520) return;
+  cx.save();
+  cx.fillStyle = "rgba(243,181,63,.16)";
+  cx.fillRect(LANE_L, gy-6, LANE_R-LANE_L, 12);
+  cx.strokeStyle = "rgba(200,140,40,.5)"; cx.lineWidth = 2; cx.setLineDash([12,9]);
+  cx.beginPath(); cx.moveTo(LANE_L,gy); cx.lineTo(LANE_R,gy); cx.stroke();
+  cx.setLineDash([]);
+  b.forEach(bx=>{
+    cx.strokeStyle = "#B9760D"; cx.lineWidth = 5; cx.lineCap = "round";
+    cx.beginPath(); cx.moveTo(bx, gy); cx.lineTo(bx, gy-46); cx.stroke();
+    cx.fillStyle = "#D9503F";
+    cx.beginPath(); cx.moveTo(bx,gy-46); cx.lineTo(bx+22,gy-39); cx.lineTo(bx,gy-32); cx.closePath(); cx.fill();
+  });
+  for (let i=0;i<n;i++){
+    const mid = (b[i]+b[i+1])/2;
+    cx.fillStyle = "#0B3A34";
+    cx.beginPath(); cx.roundRect(mid-19, gy-26, 38, 34, 10); cx.fill();
+    cx.fillStyle = "#F3B53F"; cx.font = "600 26px Fredoka, sans-serif";
+    cx.textAlign = "center"; cx.textBaseline = "middle";
+    cx.fillText(LETTERS[i], mid, gy-8);
+  }
+  cx.restore();
+}
+function drawFinish(){
+  const fy = screenY(G.gateY);
+  if (fy < -100 || fy > 520) return;
+  cx.save();
+  for (let i=0;i<20;i++){
+    cx.fillStyle = i%2 ? "#0B3A34" : "#F6FAFE";
+    cx.fillRect(LANE_L + i*((LANE_R-LANE_L)/20), fy-18, (LANE_R-LANE_L)/20, 18);
+  }
+  cx.fillStyle = "#F3B53F"; cx.fillRect(LANE_L, fy, LANE_R-LANE_L, 6);
+  cx.restore();
+}
+
+function render(){
+  cx.clearRect(0,0,1000,420);
+  if (!G.story || G.mode==="idle"){ cx.fillStyle="#F6FAFE"; cx.fillRect(0,0,1000,420); return; }
+  const g = cx.createLinearGradient(0,0,0,420);
+  g.addColorStop(0,"#E3EFF8"); g.addColorStop(.35,"#F6FAFE"); g.addColorStop(1,"#FFFFFF");
+  cx.fillStyle = g; cx.fillRect(0,0,1000,420);
+  cx.fillStyle = "#D5E6F2"; cx.fillRect(0,0,LANE_L-8,420); cx.fillRect(LANE_R+8,0,1000-LANE_R,420);
+
+  const n = G.laneCount, b = laneBounds(n);
+  cx.strokeStyle = "rgba(90,150,185,.28)"; cx.lineWidth = 2;
+  cx.setLineDash([14,16]); cx.lineDashOffset = -(G.scroll % 30);
+  for (let i=1;i<n;i++){ cx.beginPath(); cx.moveTo(b[i],0); cx.lineTo(b[i],420); cx.stroke(); }
+  cx.setLineDash([]);
+
+  G.decor.forEach(d=>{
+    const y = screenY(d.y);
+    if (y < -170 || y > 570) return;
+    if (d.k==="tree") drawTree(d.x,y,d.s);
+    else if (d.k==="rock") drawRock(d.x,y,d.s);
+    else drawMogul(d.x,y,d.s);
+  });
+
+  if (G.mode==="finish") drawFinish(); else drawGate();
+
+  if (G.mode==="run" || G.mode==="pass" || G.mode==="finish"){
+    cx.strokeStyle = "rgba(150,195,220,.55)"; cx.lineWidth = 3; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(G.skier.x-9, SKIER_Y+14); cx.lineTo(G.skier.x-9-G.skier.lean*26, SKIER_Y+52); cx.stroke();
+    cx.beginPath(); cx.moveTo(G.skier.x+9, SKIER_Y+14); cx.lineTo(G.skier.x+9-G.skier.lean*26, SKIER_Y+52); cx.stroke();
+  }
+  if (!(G.mode==="yeti" && G.yeti.got)) drawSkier(G.skier.x, SKIER_Y, G.skier.lean, G.tumble);
+  if (G.mode==="yeti") drawYeti(G.yeti.x, G.yeti.y, 1, G.yeti.got);
+
+  if (G.mode==="crash"){
+    const life = Math.min(1, G.t/1.4), size = 7 * (1 - life);
+    if (size > 0.2){
+      cx.fillStyle = "rgba(255,255,255," + (.85*(1-life)).toFixed(3) + ")";
+      for (let i=0;i<14;i++){
+        const a = i*.45 + G.t*3, r = 12 + G.t*120;
+        cx.beginPath(); cx.arc(G.skier.x+Math.cos(a)*r, SKIER_Y+Math.sin(a)*r*.6, size, 0, 7); cx.fill();
+      }
+    }
+  }
+}
+
+/* ---------- loop ---------- */
+let last = performance.now();
+function loop(now){
+  requestAnimationFrame(loop);          // queued first, so a bad frame cannot stop the game
+  const dt = Math.min(.05, (now-last)/1000); last = now;
+  try { step(dt); render(); }
+  catch(err){ if (!G.warned){ G.warned = true; console.error("Summary Summit frame error:", err); } }
+}
+function step(dt){
+  if (document.querySelector(".veil.on")) return;   // a card is up, so the hill waits
+  if (G.mode==="run"){
+    G.scroll += SPEEDS[G.speed].v * dt;
+    let dir = 0;
+    if (G.keys.left) dir -= 1;
+    if (G.keys.right) dir += 1;
+    if (G.pointerX !== null){
+      const d = G.pointerX - G.skier.x;
+      dir = Math.abs(d) < 8 ? 0 : (d > 0 ? 1 : -1);
+    }
+    G.skier.vx += (dir*330 - G.skier.vx) * Math.min(1, dt*9);
+    G.skier.x = Math.max(LANE_L+14, Math.min(LANE_R-14, G.skier.x + G.skier.vx*dt));
+    G.skier.lean = Math.max(-1, Math.min(1, G.skier.vx/330));
+    const n = G.laneCount, lane = laneOf(G.skier.x, n);
+    if (lane !== G.lastLane){ G.lastLane = lane; highlight(lane); }
+    recycleDecor();
+    if (G.scroll >= G.gateY) resolve(lane);
+  } else if (G.mode==="pass"){
+    G.t += dt; G.scroll += SPEEDS[G.speed].v * dt;
+    G.skier.vx += (0 - G.skier.vx) * Math.min(1, dt*6);
+    G.skier.x = Math.max(LANE_L+14, Math.min(LANE_R-14, G.skier.x + G.skier.vx*dt));
+    G.skier.lean = Math.max(-1, Math.min(1, G.skier.vx/330));
+    recycleDecor();
+    if (G.t > .85) nextRow();
+  } else if (G.mode==="crash"){
+    G.t += dt; G.tumble += dt*9;
+    G.skier.x = Math.max(LANE_L+14, Math.min(LANE_R-14, G.skier.x + G.skier.vx*dt*.3));
+    if (G.t > 1.05 && !G.shown){ G.shown = true; showCrash(); }
+  } else if (G.mode==="yeti"){
+    G.t += dt;
+    if (!G.yeti.got){
+      G.yeti.y += 330*dt;
+      G.yeti.x += (G.skier.x - G.yeti.x) * Math.min(1, dt*5);
+      if (G.yeti.y >= SKIER_Y-6){ G.yeti.got = true; G.yeti.y = SKIER_Y-6; }
+    } else {
+      G.yeti.y += 120*dt;
+    }
+    if (G.t > 1.5 && !G.shown){ G.shown = true; showCrash(); }
+  } else if (G.mode==="finish"){
+    G.t += dt; G.scroll += SPEEDS[G.speed].v * 2.2 * dt;   // tuck for the finish
+    G.skier.vx += (0 - G.skier.vx) * Math.min(1, dt*6);
+    G.skier.x = Math.max(LANE_L+14, Math.min(LANE_R-14, G.skier.x + G.skier.vx*dt));
+    G.skier.lean = Math.max(-1, Math.min(1, G.skier.vx/330));
+    recycleDecor();
+    if (G.scroll >= G.gateY + 90 && !G.shown){ G.shown = true; showFinish(); }
+  }
+}
+function highlight(lane){
+  const n = G.laneCount;
+  for (let i=0;i<n;i++){ const s = $("sign"+i); if (s) s.classList.toggle("lit", i===lane); }
+}
+
+/* ---------- resolving a gate ---------- */
+function resolve(lane){
+  const opt = currentOpts()[lane];
+  const signs = G.laneCount;
+  if (opt.ok){
+    for (let i=0;i<signs;i++){ const s=$("sign"+i); if(s){ s.classList.remove("lit"); if(i===lane) s.classList.add("right"); else s.classList.add("wrong"); } }
+    G.collected.push(opt.t);
+    fillStrip(G.row, opt.t);
+    $("live").textContent = "Clean line. " + opt.t;
+    sfx.good();
+    G.mode = "pass"; G.t = 0;
+  } else {
+    G.pickedOpt = opt;
+    const s = $("sign"+lane); if (s){ s.classList.remove("lit"); s.classList.add("wrong"); }
+    G.shown = false; G.t = 0;
+    if (Math.random() < .5){ G.mode = "crash"; G.tumble = .2; sfx.thud(); $("live").textContent = "Wipeout."; }
+    else { G.mode = "yeti"; G.yeti.y = -90; G.yeti.x = G.skier.x; G.yeti.got = false; sfx.growl(); $("live").textContent = "A yeti got you."; }
+  }
+}
+function nextRow(){
+  G.row++;
+  if (G.row >= G.story.rows.length){
+    G.mode = "finish"; G.t = 0; G.shown = false; G.gateY = G.scroll + 430;
+    $("prompt").textContent = "Finish line";
+    const fin = $("signs");
+    fin.innerHTML = '<div class="sign" style="grid-column:1/-1"><span class="lane">&#9873;</span><span></span></div>';
+    fin.lastChild.lastChild.textContent = "Tuck for the line. Your summary is built below.";
+    sfx.win();
+  } else {
+    beginRow();
+  }
+}
+const WIPE = ["Wipeout", "Face full of snow", "Yard sale", "Over the handlebars"];
+const YETI = ["A yeti got you", "Yeti snack", "Snatched by a yeti"];
+function showCrash(){
+  G.crashes++;
+  const yeti = G.mode==="yeti";
+  const pick = yeti ? YETI[Math.floor(Math.random()*YETI.length)] : WIPE[Math.floor(Math.random()*WIPE.length)];
+  $("crash-head").textContent = pick;
+  $("crash-tag").textContent = G.pickedOpt.tag;
+  $("crash-picked").textContent = "You skied: " + G.pickedOpt.t;
+  $("crash-why").textContent = G.pickedOpt.why;
+  veil("veil-crash", true);
+  $("btn-retry").focus();
+}
+function rankFor(c){ return c===0 ? "gold" : c<=2 ? "silver" : "done"; }
+function showFinish(){
+  const rank = rankFor(G.crashes);
+  const prev = SAVE[G.story.id];
+  const order = {done:0, silver:1, gold:2};
+  if (!prev || order[rank] > order[prev.rank]) SAVE[G.story.id] = {rank, crashes:G.crashes};
+  persist();
+  $("fin-medal").textContent =
+    rank==="gold" ? "Gold flag. Four clean gates, no crashes." :
+    rank==="silver" ? "Silver flag. " + G.crashes + (G.crashes===1?" crash":" crashes") + " on the way down." :
+    "You made it down after " + G.crashes + " crashes. Take the run again for a flag.";
+  $("fin-summary").textContent = G.collected.join(" ");
+  $("fin-note").textContent = "Now say that summary out loud in your own words, without looking.";
+  veil("veil-finish", true);
+  buildMap();
+  $("btn-next").focus();
+}
+
+/* ---------- input ---------- */
+addEventListener("keydown", e=>{
+  const k = e.key.toLowerCase();
+  const onRun = $("screen-run").classList.contains("on");
+  const blocked = $("veil-crash").classList.contains("on") || $("veil-finish").classList.contains("on");
+  if (k==="arrowleft"||k==="a"){ G.keys.left = true; if (onRun) e.preventDefault(); }
+  if (k==="arrowright"||k==="d"){ G.keys.right = true; if (onRun) e.preventDefault(); }
+  if (k==="escape" && onRun && !blocked) toggleStory();
+});
+addEventListener("keyup", e=>{
+  const k = e.key.toLowerCase();
+  if (k==="arrowleft"||k==="a") G.keys.left = false;
+  if (k==="arrowright"||k==="d") G.keys.right = false;
+});
+function canvasX(ev){
+  const r = cv.getBoundingClientRect();
+  return (ev.clientX - r.left) / r.width * 1000;
+}
+cv.addEventListener("pointerdown", e=>{ cv.setPointerCapture(e.pointerId); G.pointerX = canvasX(e); });
+cv.addEventListener("pointermove", e=>{ if (G.pointerX !== null) G.pointerX = canvasX(e); });
+["pointerup","pointercancel","pointerleave"].forEach(t=>cv.addEventListener(t, ()=>{ G.pointerX = null; }));
+function hold(btn, side){
+  const on = e=>{
+    e.preventDefault();
+    try{ btn.setPointerCapture(e.pointerId); }catch(err){}
+    G.keys[side] = true; btn.classList.add("pressed");
+  };
+  const off = e=>{ G.keys[side] = false; btn.classList.remove("pressed"); };
+  btn.addEventListener("pointerdown", on);
+  ["pointerup","pointercancel","lostpointercapture"].forEach(t=>btn.addEventListener(t, off));
+  btn.addEventListener("contextmenu", e=>e.preventDefault());
+  btn.addEventListener("keydown", e=>{ if (e.key===" "||e.key==="Enter"){ e.preventDefault(); G.keys[side]=true; btn.classList.add("pressed"); } });
+  btn.addEventListener("keyup", e=>{ if (e.key===" "||e.key==="Enter"){ G.keys[side]=false; btn.classList.remove("pressed"); } });
+  btn.addEventListener("blur", off);
+}
+hold($("tp-left"), "left"); hold($("tp-right"), "right");
+addEventListener("pointerup", ()=>{
+  G.keys.left = G.keys.right = false;
+  $("tp-left").classList.remove("pressed"); $("tp-right").classList.remove("pressed");
+});
+let padOn = true;
+try{
+  const saved = localStorage.getItem(STORE+"pad");
+  padOn = saved === null ? matchMedia("(pointer:coarse)").matches : saved === "on";
+}catch(e){ padOn = false; }
+function applyPad(){
+  $("touchpad").classList.toggle("on", padOn);
+  $("btn-pad").textContent = "Control pad: " + (padOn ? "on" : "off");
+  if (!padOn){ G.keys.left = G.keys.right = false; }
+}
+$("btn-pad").addEventListener("click", ()=>{
+  padOn = !padOn; applyPad();
+  try{ localStorage.setItem(STORE+"pad", padOn ? "on" : "off"); }catch(e){}
+});
+
+/* ---------- buttons ---------- */
+$("btn-drop").addEventListener("click", startRun);
+$("btn-back").addEventListener("click", ()=>{ buildMap(); show("screen-map"); });
+$("btn-quit").addEventListener("click", ()=>{ G.mode="idle"; buildMap(); show("screen-map"); });
+$("btn-retry").addEventListener("click", ()=>{
+  veil("veil-crash", false);
+  const n = G.laneCount;
+  for (let i=0;i<n;i++){ const s=$("sign"+i); if(s) s.classList.remove("wrong","right","lit"); }
+  armGate(false);
+});
+function toggleStory(){
+  const on = $("veil-story").classList.contains("on");
+  if (on){ veil("veil-story", false); last = performance.now(); }
+  else {
+    $("peek-title").textContent = G.story.title;
+    paras($("peek-passage"), G.story);
+    veil("veil-story", true);
+    $("btn-resume").focus();
+  }
+}
+$("btn-reread").addEventListener("click", toggleStory);
+$("btn-resume").addEventListener("click", toggleStory);
+$("btn-speed").addEventListener("click", ()=>{
+  G.speed = (G.speed+1) % SPEEDS.length;
+  $("btn-speed").textContent = "Speed: " + SPEEDS[G.speed].n;
+  try{ localStorage.setItem(STORE+"speed", String(G.speed)); }catch(e){}
+});
+$("btn-sound").addEventListener("click", ()=>{
+  G.sound = !G.sound;
+  $("btn-sound").textContent = G.sound ? "Sound on" : "Sound off";
+  try{ localStorage.setItem(STORE+"sound", G.sound ? "on" : "off"); }catch(e){}
+});
+$("btn-map").addEventListener("click", ()=>{ veil("veil-finish", false); G.mode="idle"; buildMap(); show("screen-map"); });
+$("btn-next").addEventListener("click", ()=>{
+  veil("veil-finish", false);
+  let i = (G.storyIndex+1) % STORIES.length, guard = 0;
+  while (SAVE[STORIES[i].id] && guard++ < STORIES.length) i = (i+1) % STORIES.length;
+  openStory(i);
+});
+
+/* ---------- go ---------- */
+$("btn-reset").addEventListener("click", ()=>{
+  if (!confirm("Clear every flag saved on this device and start the mountain over?")) return;
+  SAVE = {}; persist(); buildMap();
+});
+if (ARCADE_HOME){
+  const hl = $("homelink");
+  hl.href = ARCADE_HOME; hl.hidden = false;
+}
+applyPad();
+$("btn-speed").textContent = "Speed: " + SPEEDS[G.speed].n;
+$("btn-sound").textContent = G.sound ? "Sound on" : "Sound off";
+buildMap();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
