@@ -209,6 +209,26 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1000/420;border-radius:
 .card p{font-family:var(--read);font-size:16px;line-height:1.55;margin:0 0 14px}
 .card .picked{border-left:5px solid var(--crash);padding-left:12px;color:var(--slate)}
 .card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.orderlist{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px}
+.orderlist li{
+  display:flex;align-items:center;gap:10px;background:var(--snow-2);border-radius:12px;
+  padding:10px 10px 10px 12px;border:2px solid transparent;
+}
+.orderlist li.ok{background:#E2F4EA;border-color:var(--grow)}
+.orderlist .pos{
+  flex:none;width:30px;height:30px;border-radius:9px;background:var(--pine);color:var(--gold);
+  display:grid;place-items:center;font-family:var(--sans);font-size:16px;font-weight:600;
+}
+.orderlist li.ok .pos{background:var(--grow);color:#fff}
+.orderlist .txt{flex:1;font-family:var(--read);font-size:15px;line-height:1.35}
+.orderlist .mv{display:flex;flex-direction:column;gap:4px}
+.orderlist .mv button{
+  width:40px;height:30px;border:none;border-radius:8px;background:var(--teal);color:#fff;
+  font-size:15px;line-height:1;cursor:pointer;touch-action:manipulation;
+}
+.orderlist .mv button:disabled{background:var(--snow-3);color:#8098A8;cursor:default}
+.orderlist .mv button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.orderhint{font-family:var(--read);font-size:15px;color:var(--slate);margin:0 0 14px}
 .summaryout{
   font-family:var(--read);font-size:17px;line-height:1.6;background:var(--snow-2);
   border-radius:12px;padding:16px 18px;margin:0 0 16px;
@@ -260,7 +280,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1000/420;border-radius:
     <div class="readerbar">
       <button class="btn" id="btn-drop">Drop in</button>
       <button class="btn ghost small" id="btn-back">Back to the trail map</button>
-      <p class="hint">Four gates are coming. Steer into the lane whose sign belongs in the summary.</p>
+      <p class="hint" id="read-hint"></p>
     </div>
   </div>
 </section>
@@ -305,10 +325,17 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1000/420;border-radius:
   <div class="actions"><button class="btn" id="btn-resume">Back to the run</button></div>
 </div></div>
 
+<div class="veil" id="veil-order"><div class="card">
+  <h3>Put the summary in order</h3>
+  <p class="orderhint" id="order-hint"></p>
+  <ol class="orderlist" id="orderlist"></ol>
+  <div class="actions"><button class="btn" id="btn-check">Check the order</button></div>
+</div></div>
+
 <div class="veil" id="veil-finish"><div class="card">
   <h3>You reached the bottom</h3>
   <p class="medal" id="fin-medal"></p>
-  <p style="margin-bottom:8px">Here is the summary you built:</p>
+  <p style="margin-bottom:8px" id="fin-lead">Here is the summary you built:</p>
   <p class="summaryout" id="fin-summary"></p>
   <p id="fin-note"></p>
   <div class="actions">
@@ -643,6 +670,333 @@ const STORIES = [
       {t:"The body should have been left in the ice.", ok:false, tag:"An opinion", why:"The article does not argue that. Do not add your own position."}
     ]}
   ]
+},
+/* ===================================================================
+   PEAKS 11 to 20  ~  ordering runs
+   Gates arrive out of sequence. The four sentences collected on the way
+   down have to be put in order at the bottom to finish the run.
+   Each correct option carries seq, its true place in the summary.
+   =================================================================== */
+{
+  id:"gertie", title:"The Bridge That Danced", genre:"History article", ordering:true,
+  text:[
+    "When the Tacoma Narrows Bridge opened in Washington State in July 1940, drivers noticed something strange right away. On windy days the roadway rippled up and down like a ribbon. Some people drove across on purpose just to feel the bounce, and they nicknamed the bridge Galloping Gertie.",
+    "Engineers had built the deck long, narrow, and shallow, with solid steel sides instead of open trusses. Wind could not pass through it. Instead the wind pushed against the deck and set it swinging.",
+    "On the morning of November 7, 1940, a steady forty mile an hour wind did something new. The deck stopped bouncing up and down and began to twist, one edge rising while the other dropped. The twisting grew for about an hour.",
+    "Then a support cable slipped, and the middle of the bridge tore loose and fell into the water below. A reporter had already stopped traffic, and nobody was killed.",
+    "Engineers studied films of the collapse for years. Modern bridge decks are built with openings that let wind pass through, and that shape traces straight back to Gertie."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"In a steady wind the deck began to twist until the middle tore loose and fell.", ok:true, seq:3},
+      {t:"People nicknamed the bridge Galloping Gertie.", ok:false, tag:"Just a small detail", why:"A fun nickname, but it is not one of the four things that happened."},
+      {t:"A reporter stopped traffic before the collapse.", ok:false, tag:"Just a small detail", why:"One moment inside a much bigger event."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The Tacoma Narrows Bridge opened in 1940 and bounced in the wind from the start.", ok:true, seq:1},
+      {t:"Drivers crossed the bridge on purpose to feel it bounce.", ok:false, tag:"Just a small detail", why:"That is a detail about the bouncing, not the event itself."},
+      {t:"Nobody should have been allowed to drive on that bridge.", ok:false, tag:"An opinion", why:"The article reports what happened and does not blame anyone."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Engineers studied the failure and now design decks that let wind pass through.", ok:true, seq:4},
+      {t:"Modern bridges are much safer than old ones.", ok:false, tag:"Too broad", why:"That is a general claim. Say what engineers actually changed."},
+      {t:"Nobody was killed in the collapse.", ok:false, tag:"Just a small detail", why:"Good news, but the lasting point is what engineers learned."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Its narrow deck with solid sides blocked the wind instead of letting it through.", ok:true, seq:2},
+      {t:"The deck was made out of steel.", ok:false, tag:"Just a small detail", why:"The material matters less than the shape that trapped the wind."},
+      {t:"The engineers who built it were careless.", ok:false, tag:"An opinion", why:"The article never says that. Keep judgments out."}
+    ]}
+  ]
+},
+{
+  id:"popcorn", title:"Why Popcorn Pops", genre:"Science article", ordering:true,
+  text:[
+    "A popcorn kernel looks dry, but there is a drop of water sealed inside it. That water is the whole trick.",
+    "Around the outside is a hull, a shell so hard and so tight that steam cannot leak out. Inside the hull sits a packet of soft white starch with the water trapped in the middle of it.",
+    "Heat the kernel and the water turns to steam. The steam has nowhere to go, so pressure climbs inside the hull. By the time the kernel reaches about 355 degrees, the pressure inside is around nine times the air pressure outside.",
+    "Then the hull splits. The pressure drops all at once, the steam expands, and the soft starch puffs out and turns itself inside out like a tiny white cloud. It cools in a fraction of a second and hardens in that shape.",
+    "The kernels left at the bottom of the bowl usually had a crack in the hull. Their steam leaked out slowly, so the pressure never built."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Heating the kernel turns that water to steam and pressure builds with no way out.", ok:true, seq:2},
+      {t:"The pressure inside reaches about nine times the air pressure outside.", ok:false, tag:"Just a small detail", why:"A number that supports the idea. The idea itself is what you need."},
+      {t:"Steam is hotter than boiling water.", ok:false, tag:"Not in the passage", why:"The article never says that, so it cannot go in the summary."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Kernels with a cracked hull leak steam, so they never pop.", ok:true, seq:4},
+      {t:"Some kernels are left at the bottom of the bowl.", ok:false, tag:"Only part of the story", why:"That tells what you see but not why it happens."},
+      {t:"Everyone should throw out old popcorn.", ok:false, tag:"An opinion", why:"That is advice you added to the text."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"A popcorn kernel holds a drop of water sealed inside a hard hull.", ok:true, seq:1},
+      {t:"The starch inside the kernel is soft and white.", ok:false, tag:"Just a small detail", why:"A description of one part, not the setup the whole article rests on."},
+      {t:"Popcorn is the best snack there is.", ok:false, tag:"An opinion", why:"The article gives facts about popcorn, not favorites."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The hull splits, and the starch puffs out and hardens into the shape you eat.", ok:true, seq:3},
+      {t:"The kernel reaches about 355 degrees.", ok:false, tag:"Just a small detail", why:"A measurement. The summary needs the event it leads to."},
+      {t:"Popcorn was grown thousands of years ago.", ok:false, tag:"Not in the passage", why:"True elsewhere, but this article never mentions it."}
+    ]}
+  ]
+},
+{
+  id:"coop", title:"The Coop Door", genre:"Realistic fiction", ordering:true,
+  text:[
+    "Something was getting into the chicken coop at night. Ava's family lost a hen every week or two, and closing the coop door by hand at dusk only worked when somebody remembered.",
+    "Ava and her dad decided to build a door that closed itself. They mounted a small motor above the doorway, wound a cord around a spool, and wired the motor to a timer set for sunset.",
+    "The first version lasted one night. The door was a flat panel that slid down a single track, and it jammed halfway when a wood shaving worked its way under the edge. In the morning the door stood half open and a hen was gone.",
+    "Ava added a second track on the other side so the panel could not tip, and she hung a fishing weight on the bottom edge so the door pulled down hard enough to sweep the track clear.",
+    "The new door has closed every night since. Ava resets the timer once a month, because sunset keeps moving."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The first door jammed halfway and another hen was lost that night.", ok:true, seq:3},
+      {t:"A wood shaving worked its way under the edge of the door.", ok:false, tag:"Just a small detail", why:"That is the tiny cause. The summary needs what it caused."},
+      {t:"Ava is a better builder than her dad.", ok:false, tag:"An opinion", why:"The story never compares them."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Ava and her dad built a door that a timer closed at sunset.", ok:true, seq:2},
+      {t:"They mounted a small motor above the doorway.", ok:false, tag:"Just a small detail", why:"One piece of the build. Name the whole solution instead."},
+      {t:"Raccoons are the most common chicken thief.", ok:false, tag:"Not in the passage", why:"The story never says what was taking the hens."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"A second track and a weight fixed the jam, and the door has worked ever since.", ok:true, seq:4},
+      {t:"Ava resets the timer once a month.", ok:false, tag:"Just a small detail", why:"A small habit at the very end, not the fix itself."},
+      {t:"Anyone with chickens should build a door like this.", ok:false, tag:"An opinion", why:"That is a recommendation you added."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Something was killing hens at night and nobody remembered to shut the door.", ok:true, seq:1},
+      {t:"The family lost a hen every week or two.", ok:false, tag:"Only part of the story", why:"That is half the problem. The forgotten door is the other half."},
+      {t:"Chickens need to be locked up at night.", ok:false, tag:"Too broad", why:"A general fact about chickens, not this family's problem."}
+    ]}
+  ]
+},
+{
+  id:"syrup", title:"Sap to Syrup", genre:"Science article", ordering:true,
+  text:[
+    "Maple syrup season is short. It opens in late February, when nights still freeze and days climb above forty degrees. That daily swing pushes sap up and down inside a sugar maple, and without it the sap will not run.",
+    "A sugarmaker drills a hole about two inches into the trunk and taps in a spout. What drips out is clear and barely sweet, only a little sweeter than water. A bucket can fill in a day.",
+    "Then comes the long part. The sap goes into a wide flat pan over a fire and boils for hours while the water steams off. It takes about forty gallons of sap to make one gallon of syrup.",
+    "When the syrup reaches seven degrees above boiling, it is finished. The sugarmaker filters out the grit, called sugar sand, and bottles the syrup hot.",
+    "The whole season runs four to six weeks. Once the nights stop freezing the sap turns bitter, and the taps come out of the trees."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Boiling steams the water off, and forty gallons of sap makes one gallon of syrup.", ok:true, seq:3},
+      {t:"The sap boils in a wide flat pan over a fire.", ok:false, tag:"Only part of the story", why:"That is the equipment. The point is how much sap it takes."},
+      {t:"Maple syrup tastes better than the syrup at the store.", ok:false, tag:"An opinion", why:"The article never compares them."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Maple season starts in late winter, when freezing nights and warm days make sap run.", ok:true, seq:1},
+      {t:"Days have to climb above forty degrees.", ok:false, tag:"Just a small detail", why:"One half of the temperature swing, pulled out on its own."},
+      {t:"Trees are the most useful plants on earth.", ok:false, tag:"Too broad", why:"Not something this article says or needs."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The syrup is filtered and bottled, and the season ends when nights stop freezing.", ok:true, seq:4},
+      {t:"The grit filtered out of the syrup is called sugar sand.", ok:false, tag:"Just a small detail", why:"A name for one thing. The summary needs the step."},
+      {t:"Everyone should tap a maple tree in their yard.", ok:false, tag:"An opinion", why:"The article explains, it does not recommend."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Sugarmakers drill the trunk and tap in a spout to collect the clear sap.", ok:true, seq:2},
+      {t:"The hole is about two inches deep.", ok:false, tag:"Just a small detail", why:"A measurement inside the step, not the step."},
+      {t:"Sap is only a little sweeter than water.", ok:false, tag:"Just a small detail", why:"A description of the sap. The action is the tapping."}
+    ]}
+  ]
+},
+{
+  id:"blizzard", title:"The Blizzard of 1978", genre:"History article", ordering:true,
+  text:[
+    "On the night of January 25, 1978, two storm systems met over the Midwest and became the worst blizzard Indiana has on record.",
+    "The air pressure dropped lower than in most hurricanes. Snow fell fast, but wind was the bigger problem. Gusts over fifty miles an hour lifted the snow already on the ground and packed it into drifts taller than cars, some of them twenty feet high.",
+    "By morning nothing moved. Interstates closed for days. Drivers caught out overnight sheltered in farmhouses and truck stops, and plows sent to clear the roads got buried themselves.",
+    "Help arrived on tracks and skids. The National Guard used snowmobiles and helicopters to carry food, medicine, and doctors and to reach people stranded in cars. Farmers pulled ambulances with tractors.",
+    "Schools stayed closed a week or more. When the drifts finally melted, people found cars they had not seen since January. Indiana rewrote its snow emergency plans because of that storm."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Fifty mile an hour winds packed the snow into drifts twenty feet high.", ok:true, seq:2},
+      {t:"The air pressure dropped lower than in most hurricanes.", ok:false, tag:"Just a small detail", why:"A measurement of the storm, not what it did to the state."},
+      {t:"Blizzards are dangerous storms.", ok:false, tag:"Too broad", why:"True of every blizzard. Say what this one did."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Schools closed for a week or more, and the state rewrote its snow emergency plans.", ok:true, seq:4},
+      {t:"People found cars they had not seen since January.", ok:false, tag:"Just a small detail", why:"A memorable image, but not the lasting result."},
+      {t:"Indiana gets more snow than any other state.", ok:false, tag:"Not in the passage", why:"The article never makes that claim."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"In January 1978 two storms combined into a record blizzard over Indiana.", ok:true, seq:1},
+      {t:"The storm hit on the night of January 25.", ok:false, tag:"Only part of the story", why:"The date alone does not say what happened."},
+      {t:"That was the worst winter anyone had ever lived through.", ok:false, tag:"An opinion", why:"The article calls the storm a record, not the winter the worst ever."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Roads shut for days, and the National Guard delivered supplies by snowmobile and helicopter.", ok:true, seq:3},
+      {t:"Farmers pulled ambulances with tractors.", ok:false, tag:"Just a small detail", why:"One example of the help. Group the examples instead."},
+      {t:"Some of the plows got buried themselves.", ok:false, tag:"Just a small detail", why:"A vivid detail inside the bigger problem."}
+    ]}
+  ]
+},
+{
+  id:"monarch", title:"The Monarch's Four Lives", genre:"Science article", ordering:true,
+  text:[
+    "A monarch butterfly that leaves Indiana in September is not the butterfly that comes back in June. Getting home takes four generations.",
+    "The trip starts in the fall. That generation flies as far as two thousand miles to a handful of mountain forests in central Mexico, where millions of monarchs cover the fir trees and wait out the winter. These butterflies live about eight months, far longer than a monarch usually does.",
+    "In March they fly north into Texas, lay their eggs on milkweed, and die there. Their caterpillars become the second generation.",
+    "The second generation moves farther north and lays eggs. The third does the same. Each of these butterflies lives only two to six weeks, just long enough to carry the family a few hundred miles.",
+    "The fourth generation reaches the northern states in early summer. Its great grandchildren will make the long flight to Mexico in the fall, to a forest none of them has ever seen."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"In spring they fly north to Texas, lay eggs on milkweed, and die.", ok:true, seq:3},
+      {t:"Their caterpillars become the second generation.", ok:false, tag:"Only part of the story", why:"That is the result of the step. The step itself is the flight and the eggs."},
+      {t:"Caterpillars eat milkweed leaves.", ok:false, tag:"Not in the passage", why:"The article says eggs are laid on milkweed, nothing about eating."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Monarchs leaving the north in fall fly up to two thousand miles to forests in Mexico.", ok:true, seq:1},
+      {t:"Millions of monarchs cover the fir trees.", ok:false, tag:"Just a small detail", why:"A picture of the forest, not the journey itself."},
+      {t:"Monarchs are the most amazing insect alive.", ok:false, tag:"An opinion", why:"The article gives facts and lets you decide."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Three short lived generations move north in turn, and the last arrives in early summer.", ok:true, seq:4},
+      {t:"Each of those butterflies lives two to six weeks.", ok:false, tag:"Only part of the story", why:"The lifespan matters because of what it means for the trip north."},
+      {t:"Insects are excellent travelers.", ok:false, tag:"Too broad", why:"That covers all insects. Stay with the monarchs."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Those butterflies live about eight months and wait out the winter in the trees.", ok:true, seq:2},
+      {t:"The forests are in central Mexico.", ok:false, tag:"Just a small detail", why:"A location already covered by the sentence about the flight."},
+      {t:"A butterfly that leaves in September is not the one that returns.", ok:false, tag:"Only part of the story", why:"That is the author's hook. The summary needs the four generations behind it."}
+    ]}
+  ]
+},
+{
+  id:"talent", title:"Four Measures In", genre:"Realistic fiction", ordering:true,
+  text:[
+    "Marcus signed up for the talent show in a moment of confidence and regretted it for three weeks. He could play his trumpet fine at home. In front of people, his hands shook.",
+    "His band teacher had one suggestion. Play for somebody every single day, starting with somebody easy.",
+    "So Marcus played for his little sister. Then for his grandmother. Then for two friends at lunch, then for the whole band during warmups.",
+    "On the night of the show his hands still shook. Four measures into his song, his music slid off the stand and fanned out across the stage. He stopped. The gym went quiet.",
+    "Then he realized he knew the rest without looking, because he had played it for somebody every day for three weeks. He started again from the top and finished the whole piece from memory.",
+    "Afterward a sixth grader asked how he stayed so calm up there. Marcus laughed, because he had not been calm at all."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"His teacher told him to play for one person every day.", ok:true, seq:2},
+      {t:"He played for his little sister first.", ok:false, tag:"Just a small detail", why:"One person out of several. The advice is what matters."},
+      {t:"Marcus is the best trumpet player in his school.", ok:false, tag:"An opinion", why:"The story never says that about him."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"During the show his music slid off the stand and he had to stop.", ok:true, seq:3},
+      {t:"The gym went quiet when he stopped playing.", ok:false, tag:"Just a small detail", why:"The room's reaction, not the event."},
+      {t:"His hands still shook on the night of the show.", ok:false, tag:"Only part of the story", why:"True, but it is not what went wrong on stage."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Marcus signed up for the talent show but got nervous playing for people.", ok:true, seq:1},
+      {t:"Marcus had been playing trumpet for four years.", ok:false, tag:"Not in the passage", why:"The story never says how long he has played."},
+      {t:"Nobody should sign up for a talent show alone.", ok:false, tag:"An opinion", why:"That is advice, and the story does not give it."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"He finished the song from memory, because he had practiced it so many times.", ok:true, seq:4},
+      {t:"A sixth grader asked him how he stayed calm.", ok:false, tag:"Just a small detail", why:"A joke at the end, not the ending."},
+      {t:"Everyone gets nervous in front of a crowd.", ok:false, tag:"Too broad", why:"A general statement about people, not about Marcus."}
+    ]}
+  ]
+},
+{
+  id:"studebaker", title:"Wagons to Cars", genre:"History article", ordering:true,
+  text:[
+    "In 1852 two brothers, Henry and Clement Studebaker, opened a blacksmith shop in South Bend, Indiana, with two dollars and a forge. They shod horses and built wagons.",
+    "The wagons were good and the timing was better. Settlers heading west needed them, and during the Civil War the army bought them by the thousand. By the 1870s Studebaker was the largest wagon maker in the world.",
+    "Then the roads changed. The company built its first electric car in 1902 and its first gasoline car in 1904. For a while it sold wagons and automobiles side by side in the same catalog. The last Studebaker wagon rolled out in 1920.",
+    "For decades the South Bend plant was the city's biggest employer, and cars like the Champion and the Avanti came out of it.",
+    "In December 1963 the company shut the South Bend plant. Seven thousand people lost their jobs, and the city spent years rebuilding around the empty factory."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The plant closed in 1963 and seven thousand people lost their jobs.", ok:true, seq:4},
+      {t:"The Avanti was one of the cars built in South Bend.", ok:false, tag:"Just a small detail", why:"One model name. The summary needs what happened to the company."},
+      {t:"Factories should never be allowed to close.", ok:false, tag:"An opinion", why:"The article reports the closing without arguing about it."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Two Studebaker brothers opened a blacksmith shop in South Bend in 1852.", ok:true, seq:1},
+      {t:"They started with two dollars and a forge.", ok:false, tag:"Just a small detail", why:"A memorable detail about the start, but not the start itself."},
+      {t:"South Bend is a city in northern Indiana.", ok:false, tag:"Not in the passage", why:"You may know it, but the article does not say it."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The company switched to automobiles in the early 1900s and stopped making wagons in 1920.", ok:true, seq:3},
+      {t:"Its first gasoline car came out in 1904.", ok:false, tag:"Just a small detail", why:"One date inside the change. The change is the point."},
+      {t:"Cars replaced wagons everywhere in America.", ok:false, tag:"Too broad", why:"That is the whole country. Stay with this company."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Their wagon business grew until it was the largest in the world.", ok:true, seq:2},
+      {t:"The army bought Studebaker wagons during the Civil War.", ok:false, tag:"Only part of the story", why:"One reason they grew. The growth itself is what belongs."},
+      {t:"Studebaker built the best wagons anyone ever made.", ok:false, tag:"An opinion", why:"The article says largest, which is a fact, not best."}
+    ]}
+  ]
+},
+{
+  id:"cave", title:"How a Cave Gets Hollow", genre:"Science article", ordering:true,
+  text:[
+    "Southern Indiana sits on limestone, and limestone dissolves. That is why the region is full of caves.",
+    "It starts with rain. As a raindrop falls and then soaks down through soil, it picks up carbon dioxide and turns into a weak acid.",
+    "That slightly sour water sinks into cracks in the limestone. Over thousands of years it eats away the stone along those cracks, widening hairlines into passages a person could walk through, and carries the dissolved rock away with it.",
+    "Later the water table drops, often because a nearby river has cut its valley deeper. The passages drain, and for the first time the cave holds air instead of water.",
+    "Now drips take over. Water seeping through the ceiling leaves a speck of mineral behind each time a drop hangs there, and over centuries those specks grow into stalactites hanging down and stalagmites building up from the floor."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"When the water table drops, the passages drain and hold air instead of water.", ok:true, seq:3},
+      {t:"A nearby river cuts its valley deeper.", ok:false, tag:"Just a small detail", why:"One reason the water table falls, not the step itself."},
+      {t:"Caves are the most interesting places on earth.", ok:false, tag:"An opinion", why:"The article explains how caves form and makes no such claim."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Rain soaking through soil picks up carbon dioxide and becomes a weak acid.", ok:true, seq:1},
+      {t:"Southern Indiana sits on limestone.", ok:false, tag:"Only part of the story", why:"That is the setup. The summary needs the steps that follow."},
+      {t:"Water is the strongest force in nature.", ok:false, tag:"Too broad", why:"A big claim the article never makes."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Drips leave minerals behind that build stalactites and stalagmites.", ok:true, seq:4},
+      {t:"Stalactites hang down from the ceiling.", ok:false, tag:"Just a small detail", why:"A definition of one word inside the step."},
+      {t:"Limestone is quarried for buildings.", ok:false, tag:"Not in the passage", why:"True of Indiana limestone, but this article does not mention it."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"That acid water seeps into cracks and slowly dissolves them into passages.", ok:true, seq:2},
+      {t:"The water carries the dissolved rock away with it.", ok:false, tag:"Only part of the story", why:"That is what happens to the rock. The dissolving is the step."},
+      {t:"The cracks start out as thin as hairs.", ok:false, tag:"Just a small detail", why:"A description of the cracks, not the process."}
+    ]}
+  ]
+},
+{
+  id:"bus", title:"Last One Off the Bus", genre:"Realistic fiction", ordering:true,
+  text:[
+    "Theo fell asleep on the bus. He did that most days, but usually somebody elbowed him at his stop.",
+    "That afternoon his seatmate was absent. Theo woke up when the engine shut off. The windows had gone dark, and the bus was parked in a long row of other buses in a lot he had never seen before.",
+    "The driver was walking the aisle picking up trash, and she jumped when Theo sat up. She walked him into the garage office.",
+    "Theo gave the secretary his mom's cell number from memory. He had practiced it at the start of the year and had never once needed it. His mom was there in twenty minutes, not angry, just quiet in the way that meant she had been scared.",
+    "The next morning Theo set an alarm on his watch for three fifteen. It buzzes two stops before his. His seatmate thinks it is hilarious, and Theo has not missed his stop since."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The driver found him and walked him to the garage office.", ok:true, seq:2},
+      {t:"The driver was picking up trash in the aisle.", ok:false, tag:"Just a small detail", why:"What she was doing when she found him, not the important part."},
+      {t:"Bus drivers have a hard job.", ok:false, tag:"Too broad", why:"A general statement, not something from this story."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"He now sets a watch alarm two stops early and has not missed his stop since.", ok:true, seq:4},
+      {t:"His seatmate thinks the alarm is hilarious.", ok:false, tag:"Just a small detail", why:"A joke at the end. The fix is what matters."},
+      {t:"Kids should never fall asleep on the bus.", ok:false, tag:"An opinion", why:"That is a rule you added to the story."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Theo fell asleep on the bus and woke up parked in the bus lot.", ok:true, seq:1},
+      {t:"Theo's seatmate was absent that day.", ok:false, tag:"Only part of the story", why:"That is why nobody woke him, but it is not the event."},
+      {t:"Theo falls asleep on the bus most days.", ok:false, tag:"Just a small detail", why:"A habit, not the thing that happened this time."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"He gave the office his mom's number from memory, and she came to get him.", ok:true, seq:3},
+      {t:"Theo had memorized the number at the start of the year.", ok:false, tag:"Only part of the story", why:"The background to the step. The step is that he used it."},
+      {t:"His mom was quiet instead of angry.", ok:false, tag:"Just a small detail", why:"How she reacted, not what happened."}
+    ]}
+  ]
 }
 ];
 </script>
@@ -675,7 +1029,7 @@ const LETTERS = ["A","B","C","D"];
 const G = {
   story:null, storyIndex:0, row:0, scroll:0, crashes:0, collected:[],
   mode:"idle",            // idle | run | crash | yeti | pass | finish
-  t:0, gateY:GATE_DIST, skier:{x:500, vx:0, lean:0}, decor:[], order:[], lastLane:1,
+  t:0, gateY:GATE_DIST, skier:{x:500, vx:0, lean:0}, decor:[], order:[], orderTries:0, lastLane:1,
   keys:{left:false,right:false}, pointerX:null, speed:1, sound:true,
   yeti:{x:500,y:-80,got:false}, tumble:0
 };
@@ -731,7 +1085,7 @@ function buildMap(){
       '<button class="peakbtn"><span><span class="ttl"></span>' +
       '<span class="meta"></span></span><span class="flagmark"></span></button>';
     li.querySelector(".ttl").textContent = st.title;
-    li.querySelector(".meta").textContent = st.genre + " \u00b7 4 gates";
+    li.querySelector(".meta").textContent = st.genre + (st.ordering ? " \u00b7 4 gates, then put it in order" : " \u00b7 4 gates");
     const fm = li.querySelector(".flagmark");
     if (rec){ fm.textContent = rankLabel(rec.rank); if (rec.rank!=="gold") fm.classList.add("silver"); }
     li.querySelector(".peakbtn").addEventListener("click", ()=>openStory(i));
@@ -753,13 +1107,16 @@ function openStory(i){
   $("read-kicker").textContent = "Peak " + (i+1) + " \u00b7 " + G.story.genre;
   $("read-title").textContent = G.story.title;
   paras($("read-passage"), G.story);
+  $("read-hint").textContent = G.story.ordering
+    ? "Four gates are coming, but they arrive out of order. Collect the sentences, then put them in order at the bottom of the hill."
+    : "Four gates are coming. Steer into the lane whose sign belongs in the summary.";
   show("screen-read");
 }
 
 /* ---------- run setup ---------- */
 function startRun(){
   const st = G.story;
-  G.row = 0; G.crashes = 0; G.collected = []; G.order = [];
+  G.row = 0; G.crashes = 0; G.collected = []; G.order = []; G.orderTries = 0;
   st.rows.forEach(r=>{
     const idx = r.opts.map((_,i)=>i);
     for (let i=idx.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; }
@@ -776,7 +1133,7 @@ function buildStrip(){
   for (let i=0;i<4;i++){
     const d = document.createElement("div");
     d.className = "slot"; d.id = "slot"+i;
-    d.innerHTML = '<span class="n">Part '+(i+1)+'</span><span class="s">waiting</span>';
+    d.innerHTML = '<span class="n">'+(G.story.ordering ? "Found "+(i+1) : "Part "+(i+1))+'</span><span class="s">waiting</span>';
     strip.appendChild(d);
   }
 }
@@ -1062,7 +1419,7 @@ function resolve(lane){
   const signs = G.laneCount;
   if (opt.ok){
     for (let i=0;i<signs;i++){ const s=$("sign"+i); if(s){ s.classList.remove("lit"); if(i===lane) s.classList.add("right"); else s.classList.add("wrong"); } }
-    G.collected.push(opt.t);
+    G.collected.push({t:opt.t, seq:opt.seq || (G.row+1)});
     fillStrip(G.row, opt.t);
     $("live").textContent = "Clean line. " + opt.t;
     sfx.good();
@@ -1102,17 +1459,91 @@ function showCrash(){
   $("btn-retry").focus();
 }
 function rankFor(c){ return c===0 ? "gold" : c<=2 ? "silver" : "done"; }
+function rankOrder(c,t){
+  if (c===0 && t===1) return "gold";
+  if (c<=2 && t<=2) return "silver";
+  return "done";
+}
+
+/* ---------- the ordering puzzle (peaks 11 to 20) ---------- */
+let ORDER = [];
+function openOrder(){
+  ORDER = G.collected.slice();
+  $("order-hint").textContent = "You picked up four sentences on the way down, but the gates were out of order. Move them until they tell the story from beginning to end.";
+  drawOrder(null);
+  veil("veil-order", true);
+  $("btn-check").focus();
+}
+function drawOrder(marks){
+  const ol = $("orderlist"); ol.innerHTML = "";
+  ORDER.forEach((item,i)=>{
+    const li = document.createElement("li");
+    if (marks && marks[i]) li.classList.add("ok");
+    li.innerHTML = '<span class="pos">'+(marks && marks[i] ? "\u2713" : (i+1))+'</span>' +
+                   '<span class="txt"></span>' +
+                   '<span class="mv"><button class="up" aria-label="Move up">\u25b2</button>' +
+                   '<button class="dn" aria-label="Move down">\u25bc</button></span>';
+    li.querySelector(".txt").textContent = item.t;
+    const up = li.querySelector(".up"), dn = li.querySelector(".dn");
+    up.disabled = i === 0; dn.disabled = i === ORDER.length-1;
+    up.addEventListener("click", ()=>swapOrder(i, i-1));
+    dn.addEventListener("click", ()=>swapOrder(i, i+1));
+    ol.appendChild(li);
+  });
+}
+function swapOrder(a,b){
+  const tmp = ORDER[a]; ORDER[a] = ORDER[b]; ORDER[b] = tmp;
+  drawOrder(null);
+  const rows = $("orderlist").children;
+  const landed = rows[b];
+  if (landed){
+    const btn = landed.querySelector(b === 0 ? ".dn" : ".up");
+    if (btn && !btn.disabled) btn.focus();
+  }
+}
+$("btn-check").addEventListener("click", ()=>{
+  G.orderTries++;
+  const marks = ORDER.map((it,i)=> it.seq === i+1);
+  const right = marks.filter(Boolean).length;
+  if (right === ORDER.length){
+    sfx.good();
+    veil("veil-order", false);
+    awardAndShow();
+    return;
+  }
+  sfx.thud();
+  drawOrder(marks);
+  $("order-hint").textContent = right === 0
+    ? "Not yet. Ask yourself which sentence has to happen first, and move that one to the top."
+    : right + (right === 1 ? " sentence is" : " sentences are") + " in the right place, marked with a check. Move the others around them.";
+});
+
 function showFinish(){
-  const rank = rankFor(G.crashes);
+  if (G.story.ordering){ openOrder(); return; }
+  awardAndShow();
+}
+function awardAndShow(){
+  const ordering = G.story.ordering;
+  const rank = ordering ? rankOrder(G.crashes, G.orderTries) : rankFor(G.crashes);
   const prev = SAVE[G.story.id];
   const order = {done:0, silver:1, gold:2};
   if (!prev || order[rank] > order[prev.rank]) SAVE[G.story.id] = {rank, crashes:G.crashes};
   persist();
-  $("fin-medal").textContent =
-    rank==="gold" ? "Gold flag. Four clean gates, no crashes." :
-    rank==="silver" ? "Silver flag. " + G.crashes + (G.crashes===1?" crash":" crashes") + " on the way down." :
-    "You made it down after " + G.crashes + " crashes. Take the run again for a flag.";
-  $("fin-summary").textContent = G.collected.join(" ");
+  if (ordering){
+    $("fin-medal").textContent =
+      rank==="gold" ? "Gold flag. No crashes, and the summary in order on the first try." :
+      rank==="silver" ? "Silver flag. " + G.crashes + (G.crashes===1?" crash":" crashes") + " and " +
+        G.orderTries + (G.orderTries===1?" try":" tries") + " at the order." :
+      "You made it down and got the order right. Ski it again for a flag.";
+    $("fin-lead").textContent = "Here is the summary you put in order:";
+  } else {
+    $("fin-medal").textContent =
+      rank==="gold" ? "Gold flag. Four clean gates, no crashes." :
+      rank==="silver" ? "Silver flag. " + G.crashes + (G.crashes===1?" crash":" crashes") + " on the way down." :
+      "You made it down after " + G.crashes + " crashes. Take the run again for a flag.";
+    $("fin-lead").textContent = "Here is the summary you built:";
+  }
+  $("fin-summary").textContent = (ordering ? ORDER : G.collected).map(x=>x.t).join(" ");
   $("fin-note").textContent = "Now say that summary out loud in your own words, without looking.";
   veil("veil-finish", true);
   buildMap();
