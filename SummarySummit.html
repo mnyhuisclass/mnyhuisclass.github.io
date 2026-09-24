@@ -229,6 +229,24 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1000/420;border-radius:
 .orderlist .mv button:disabled{background:var(--snow-3);color:#8098A8;cursor:default}
 .orderlist .mv button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .orderhint{font-family:var(--read);font-size:15px;color:var(--slate);margin:0 0 14px}
+.typebox{margin:0 0 12px}
+.typebox label{display:block;font-family:var(--sans);font-size:15px;font-weight:500;color:var(--pine-dk);margin-bottom:4px}
+.typebox label .step{display:inline-block;min-width:22px;height:22px;border-radius:7px;background:var(--pine);color:var(--gold);
+  text-align:center;line-height:22px;font-size:13px;margin-right:7px}
+.typebox textarea{
+  width:100%;min-height:62px;resize:vertical;font-family:var(--read);font-size:15px;line-height:1.4;
+  padding:9px 11px;border-radius:10px;border:2px solid var(--snow-3);background:#fff;color:var(--ink);
+}
+.typebox textarea:focus{outline:none;border-color:var(--teal)}
+.typebox.ok textarea{border-color:var(--grow);background:#F1FAF5}
+.typebox.ok label .step{background:var(--grow);color:#fff}
+.typebox.no textarea{border-color:var(--crash)}
+.typebox .note{font-family:var(--read);font-size:13px;color:var(--slate);margin:4px 0 0}
+.typebox.ok .note{color:#1C7A4C}
+details.helper{margin:0 0 16px;font-family:var(--read);font-size:14px}
+details.helper summary{cursor:pointer;color:var(--slate);font-family:var(--sans);font-size:14px}
+details.helper ul{margin:8px 0 0;padding-left:20px;color:var(--slate)}
+details.helper li{margin-bottom:5px;line-height:1.35}
 .summaryout{
   font-family:var(--read);font-size:17px;line-height:1.6;background:var(--snow-2);
   border-radius:12px;padding:16px 18px;margin:0 0 16px;
@@ -325,11 +343,30 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1000/420;border-radius:
   <div class="actions"><button class="btn" id="btn-resume">Back to the run</button></div>
 </div></div>
 
+<div class="veil" id="veil-reset"><div class="card">
+  <h3>Clear every flag?</h3>
+  <p>This removes the flags and finished peaks saved in this browser, on this device only. The passages and the runs themselves are not affected.</p>
+  <div class="actions">
+    <button class="btn" id="btn-reset-yes">Clear them</button>
+    <button class="btn ghost small" id="btn-reset-no">Keep them</button>
+  </div>
+</div></div>
+
 <div class="veil" id="veil-order"><div class="card">
   <h3>Put the summary in order</h3>
   <p class="orderhint" id="order-hint"></p>
   <ol class="orderlist" id="orderlist"></ol>
-  <div class="actions"><button class="btn" id="btn-check">Check the order</button></div>
+  <div class="actions"><button class="btn" id="btn-check">Check the order</button>
+    <button class="btn ghost small" id="btn-order-quit">Leave without a flag</button></div>
+</div></div>
+
+<div class="veil" id="veil-type"><div class="card">
+  <h3>Write the summary</h3>
+  <p class="orderhint" id="type-hint"></p>
+  <details class="helper"><summary>Show the sentences I collected</summary><ul id="type-help"></ul></details>
+  <div id="typeboxes"></div>
+  <div class="actions"><button class="btn" id="btn-typecheck">Check my summary</button>
+    <button class="btn ghost small" id="btn-type-quit">Leave without a flag</button></div>
 </div></div>
 
 <div class="veil" id="veil-finish"><div class="card">
@@ -997,6 +1034,373 @@ const STORIES = [
       {t:"His mom was quiet instead of angry.", ok:false, tag:"Just a small detail", why:"How she reacted, not what happened."}
     ]}
   ]
+},
+/* ===================================================================
+   PEAKS 21 to 30  ~  writing runs
+   Gates arrive out of sequence. At the bottom the student types the four
+   events in order, in their own words. Each correct option carries seq
+   (its true place) and keys (the ideas a typed answer has to contain).
+   A key group matches if any of its words appears, spelling-forgiving.
+   =================================================================== */
+{
+  id:"mural", title:"The Cafeteria Wall", genre:"Realistic fiction", typing:true,
+  text:[
+    "Ava's class spent a month asking before the principal said yes. They could paint a mural on the blank back wall of the cafeteria, as long as it was finished by open house.",
+    "The first Saturday went badly. The wall was rough cinder block, and the paint sank into every pit and pore. Colors that looked bright in the can dried patchy and dull, and a whole morning of work looked like a mistake.",
+    "The custodian, Mr. Ellis, stopped to look at it on his way past. He told them the wall needed primer first, and he showed them how to load a thick roller.",
+    "Two coats of white primer went on the next Saturday. The class waited a full day for it to dry before touching a color.",
+    "After that the paint sat on top of the wall instead of sinking into it. They chalked a grid, painted one square at a time, and finished the last corner on the morning of open house."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The paint soaked into the rough block wall and dried patchy.", ok:true, seq:2,
+       keys:[["rough","soaked","sank","block","blocks","cinder"],["patchy","dull","muddy","bad","mistake","streaky"]]},
+      {t:"Colors looked bright in the can.", ok:false, tag:"Just a small detail", why:"A description of the paint, not what went wrong."},
+      {t:"The class is very good at painting.", ok:false, tag:"An opinion", why:"The story never says that, and the first try did not go well."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"They painted the mural square by square and finished it for open house.", ok:true, seq:4,
+       keys:[["square","squares","grid","section","sections"],["finish","finished","open house","done","time"]]},
+      {t:"They chalked a grid onto the wall.", ok:false, tag:"Only part of the story", why:"One step of the painting. The summary needs the painting and the finish."},
+      {t:"Open house is the best night of the year.", ok:false, tag:"An opinion", why:"Your feeling about open house, not the story's ending."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Ava's class got permission to paint a mural on the cafeteria wall.", ok:true, seq:1,
+       keys:[["mural"],["cafeteria","wall"],["paint","painting","painted","permission","allowed"]]},
+      {t:"The class asked the principal for a month.", ok:false, tag:"Just a small detail", why:"How long they asked is less important than the fact that they got to paint."},
+      {t:"Every school should have a mural.", ok:false, tag:"An opinion", why:"That is a recommendation you added."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The custodian told them to roll on white primer first.", ok:true, seq:3,
+       keys:[["primer","prime","primed"],["custodian","ellis","told","showed","first"]]},
+      {t:"Mr. Ellis showed them how to load a thick roller.", ok:false, tag:"Just a small detail", why:"A small piece of his advice. The primer is the fix."},
+      {t:"Primer is the most important part of painting.", ok:false, tag:"Too broad", why:"A rule about all painting, not what happened here."}
+    ]}
+  ]
+},
+{
+  id:"apollo", title:"The Flight That Turned Around", genre:"History article", typing:true,
+  text:[
+    "Apollo 13 left Earth on April 11, 1970, headed for the moon. Two days out, an astronaut flipped a switch to stir the oxygen tanks, and one of them exploded.",
+    "The blast tore open the side of the service module. Oxygen and electrical power drained away into space. The moon landing was finished before it started. Getting home alive became the mission.",
+    "The crew moved into the lunar module, the little lander built to keep two men alive for two days. Three men lived in it for four.",
+    "Carbon dioxide built up fast, because the lander's air scrubbers were round and the only spare canisters aboard were square. Engineers on the ground built a fix out of a hose, a sock, a plastic bag, and duct tape, then read the directions up to the crew step by step.",
+    "The ship swung around the far side of the moon and used the moon's gravity to slingshot back toward Earth. Four days after the explosion the capsule splashed down in the Pacific, and all three men climbed out."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The crew gave up the landing and moved into the small lunar module.", ok:true, seq:2,
+       keys:[["lunar","lander","module"],["moved","lived","crew","landing"]]},
+      {t:"The lander was built for two men for two days.", ok:false, tag:"Just a small detail", why:"A fact about the lander that supports the point without being the point."},
+      {t:"The astronauts were incredibly brave.", ok:false, tag:"An opinion", why:"You may think so, but the article reports rather than praises."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The ship looped around the moon and splashed down safely four days later.", ok:true, seq:4,
+       keys:[["splash","splashed","splashdown","landed","home"],["safe","safely","alive","pacific","four"]]},
+      {t:"The capsule came down in the Pacific Ocean.", ok:false, tag:"Only part of the story", why:"The location without the outcome. Did the crew make it?"},
+      {t:"Gravity is a powerful force.", ok:false, tag:"Too broad", why:"A general science statement, not this event."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Two days into the flight to the moon, an oxygen tank exploded.", ok:true, seq:1,
+       keys:[["explode","exploded","explosion","blew","burst"],["oxygen","tank","tanks"]]},
+      {t:"An astronaut flipped a switch to stir the tanks.", ok:false, tag:"Just a small detail", why:"The action right before the explosion. The explosion is the event."},
+      {t:"Apollo 13 launched on April 11, 1970.", ok:false, tag:"Only part of the story", why:"A launch date is not yet a problem or a story."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Engineers on the ground built a carbon dioxide filter out of spare parts and tape.", ok:true, seq:3,
+       keys:[["tape","duct","hose","sock","bag"],["carbon","dioxide","co2","air","filter","scrubber","scrubbers"]]},
+      {t:"The spare canisters were square and the scrubbers were round.", ok:false, tag:"Only part of the story", why:"That is the problem. The summary needs the fix."},
+      {t:"Duct tape can repair almost anything.", ok:false, tag:"Too broad", why:"A saying about duct tape, not what the engineers did."}
+    ]}
+  ]
+},
+{
+  id:"carver", title:"Peanuts and Poor Soil", genre:"Biography", typing:true,
+  text:[
+    "George Washington Carver was born into slavery in Missouri near the end of the Civil War. As a boy he was known around his county for being able to bring sick plants back, and neighbors carried theirs to him.",
+    "Getting an education was hard. One college accepted him by letter and turned him away when he showed up in person. He kept applying, and in 1894 he became the first Black student to graduate from Iowa State.",
+    "Then he went to Alabama to teach. The cotton farmers there were in trouble. Growing cotton in the same fields year after year had pulled the nitrogen out of the soil, and the plants were failing.",
+    "Carver told them to plant peanuts and sweet potatoes in the years between cotton crops. Those plants put nitrogen back into the ground. The soil recovered, and so did the cotton.",
+    "That left farmers with peanuts and nobody buying them. So Carver published bulletin after bulletin of ways to use a peanut, and he wrote in plain language on purpose, for readers who could not afford books."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"In Alabama he taught cotton farmers to plant peanuts to put nitrogen back in the soil.", ok:true, seq:3,
+       keys:[["peanut","peanuts"],["soil","nitrogen","ground","dirt"]]},
+      {t:"Sweet potatoes were one of the crops he suggested.", ok:false, tag:"Just a small detail", why:"One crop from the list. The idea is rebuilding the soil."},
+      {t:"Cotton is a difficult plant to grow.", ok:false, tag:"Too broad", why:"The article is about worn out soil, not about cotton in general."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"He was turned away by one college and became the first Black graduate of Iowa State.", ok:true, seq:2,
+       keys:[["college","iowa","school"],["first","graduate","graduated","degree"]]},
+      {t:"A college accepted him by letter.", ok:false, tag:"Only part of the story", why:"That half leaves out what happened when he arrived."},
+      {t:"That college treated him unfairly.", ok:false, tag:"An opinion", why:"The article states what happened and lets the reader judge."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"When nobody would buy the peanuts, he published hundreds of ways to use them.", ok:true, seq:4,
+       keys:[["use","uses","used","using"],["bulletin","bulletins","published","wrote","ways","hundreds"]]},
+      {t:"He wrote in plain language on purpose.", ok:false, tag:"Just a small detail", why:"How he wrote, not what he did about the peanut problem."},
+      {t:"Carver invented peanut butter.", ok:false, tag:"Not in the passage", why:"The article never says that, and it is a common mix up."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Carver was born into slavery and was known as a boy for saving sick plants.", ok:true, seq:1,
+       keys:[["slavery","enslaved","slave","born"],["plant","plants","sick"]]},
+      {t:"He was born in Missouri near the end of the Civil War.", ok:false, tag:"Only part of the story", why:"Where and when, but not the thing that made him remembered."},
+      {t:"Neighbors carried their plants to him.", ok:false, tag:"Just a small detail", why:"An example of his reputation rather than the reputation itself."}
+    ]}
+  ]
+},
+{
+  id:"tornado", title:"How a Tornado Starts", genre:"Science article", typing:true,
+  text:[
+    "Tornado weather begins with two winds that do not agree. Near the ground the wind blows one direction at one speed. Higher up it blows faster, or from a different direction. That mismatch is called wind shear, and it sets the air between the layers rolling like a log.",
+    "As long as that roll stays flat and horizontal, nothing much comes of it.",
+    "Then a thunderstorm's updraft, the column of warm air rushing upward inside the storm, catches the rolling air and tips it upright.",
+    "Now the storm itself is turning. Weather radar can see this spinning column, called a mesocyclone, long before anything reaches the ground.",
+    "Rain cooled air wraps around the back of the spinning column and squeezes it tighter. A tighter spin is a faster spin, the same way a skater speeds up by pulling her arms in. If that spin stretches down and touches the ground, it is a tornado. Most last only a few minutes."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"A thunderstorm's updraft tips that rolling air upright.", ok:true, seq:2,
+       keys:[["updraft","thunderstorm","storm"],["tip","tips","tipped","upright","vertical","up"]]},
+      {t:"An updraft is warm air rushing upward.", ok:false, tag:"Only part of the story", why:"That defines the word. The summary needs what the updraft does."},
+      {t:"Thunderstorms are the most dangerous weather.", ok:false, tag:"An opinion", why:"The article never ranks storms."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Cooler air tightens the spin, and if it reaches the ground it is a tornado.", ok:true, seq:4,
+       keys:[["tornado"],["ground","touch","touches","down","reaches"]]},
+      {t:"A skater spins faster by pulling her arms in.", ok:false, tag:"Just a small detail", why:"The comparison the author used to explain, not the step itself."},
+      {t:"Most tornadoes last only a few minutes.", ok:false, tag:"Just a small detail", why:"An interesting closing fact, but not one of the four steps."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Winds at different speeds set a tube of air rolling near the ground.", ok:true, seq:1,
+       keys:[["wind","winds","shear"],["roll","rolling","rolls","tube","log","spin","spinning"]]},
+      {t:"Wind shear is the name for that mismatch.", ok:false, tag:"Just a small detail", why:"A vocabulary word. The summary needs what the winds do."},
+      {t:"Wind is caused by the sun heating the earth.", ok:false, tag:"Not in the passage", why:"The article never explains where wind comes from."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The storm spins as a mesocyclone that radar can see before anything touches down.", ok:true, seq:3,
+       keys:[["mesocyclone","radar"],["spin","spinning","spins","turning","column","see"]]},
+      {t:"Radar is a useful tool for weather forecasters.", ok:false, tag:"Too broad", why:"A general statement about radar."},
+      {t:"The spinning column has a name.", ok:false, tag:"Only part of the story", why:"That says almost nothing. Name it and say what it means."}
+    ]}
+  ]
+},
+{
+  id:"eggdrop", title:"The Egg Drop", genre:"Realistic fiction", typing:true,
+  text:[
+    "The rules were short. One raw egg, one shoebox of materials, and a drop from the top of the gym bleachers.",
+    "Priya's group built a cage out of drinking straws and suspended the egg in the middle of it with rubber bands, so the egg would never touch a wall. It looked like something from a museum. On a practice drop from a chair, it worked.",
+    "From the bleachers it did not. The straws folded flat on impact and the egg cracked against the floor.",
+    "They had one more try. Instead of making the cage stronger, Priya's group decided to make the landing slower. They taped a plastic bag parachute to the top and packed crumpled paper under the egg.",
+    "The second drop took almost twice as long to fall. The box hit, bounced once, and the egg came out whole. Their teacher asked what they had changed, and Priya said they had stopped trying to win the crash and started trying to avoid it."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Their straw cage held the egg in the middle but folded flat on the real drop.", ok:true, seq:2,
+       keys:[["straw","straws","cage"],["fold","folded","flat","crack","cracked","broke","failed"]]},
+      {t:"The cage looked like something from a museum.", ok:false, tag:"Just a small detail", why:"How it looked does not matter once it failed."},
+      {t:"The practice drop from a chair worked.", ok:false, tag:"Only part of the story", why:"That is the test that did not count. The bleacher drop is the one that mattered."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The second drop was slower and the egg came out whole.", ok:true, seq:4,
+       keys:[["second","again","new"],["whole","survived","unbroken","safe","fine","ok","okay"]]},
+      {t:"The box bounced once when it hit.", ok:false, tag:"Just a small detail", why:"A small moment of the landing, not the result."},
+      {t:"Priya's group deserved to win.", ok:false, tag:"An opinion", why:"The story never says anything about winning."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Priya's group had to protect a raw egg dropped from the gym bleachers.", ok:true, seq:1,
+       keys:[["egg"],["bleachers","gym","shoebox","raw"]]},
+      {t:"They were given one shoebox of materials.", ok:false, tag:"Just a small detail", why:"One rule out of the set. The task is the bigger idea."},
+      {t:"Egg drops are the best science project.", ok:false, tag:"An opinion", why:"Your opinion, not the story's."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"They rebuilt it with a parachute and padding to slow the landing down.", ok:true, seq:3,
+       keys:[["parachute","bag"],["slow","slower","cushion","padding","paper","landing"]]},
+      {t:"They taped crumpled paper under the egg.", ok:false, tag:"Only part of the story", why:"Half the fix. The parachute was the other half."},
+      {t:"Making something stronger is always the answer.", ok:false, tag:"Too broad", why:"The story shows the opposite of that."}
+    ]}
+  ]
+},
+{
+  id:"firefly", title:"The Life of a Firefly", genre:"Science article", typing:true,
+  text:[
+    "A firefly spends nearly its whole life underground, and almost none of it flashing.",
+    "It begins as an egg laid in damp soil in early summer. The egg hatches into a larva that looks nothing like the adult, and that larva hunts snails and worms down in the dirt. It glows faintly the entire time, which is why some people call them glowworms.",
+    "The larva lives that way for a year or two, sometimes longer, growing and shedding its skin through the seasons.",
+    "Then it builds a small mud chamber and becomes a pupa, the way a caterpillar becomes a chrysalis. Two or three weeks later an adult firefly climbs out.",
+    "The adult has about three weeks and one job. It flashes a pattern that belongs only to its own species. A female waiting on the ground answers with a flash of her own at exactly the right beat. They find each other, she lays her eggs in damp soil, and the whole thing begins again."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The egg hatches into a glowing larva that hunts in the dirt for a year or more.", ok:true, seq:2,
+       keys:[["larva","larvae","glowworm","glowworms","grub"],["hunt","hunts","snail","snails","worms","dirt","underground","year"]]},
+      {t:"Some people call the larva a glowworm.", ok:false, tag:"Just a small detail", why:"A nickname. The summary needs what the larva does."},
+      {t:"Larvae shed their skin as they grow.", ok:false, tag:"Just a small detail", why:"One thing that happens during that long stage."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The adult has about three weeks to flash for a mate and lay eggs.", ok:true, seq:4,
+       keys:[["flash","flashes","flashing","flashed"],["mate","female","eggs","lay","lays","weeks"]]},
+      {t:"A female answers from the ground at the right beat.", ok:false, tag:"Only part of the story", why:"One half of the flashing. Put the whole job in one sentence."},
+      {t:"Fireflies are the best part of summer.", ok:false, tag:"An opinion", why:"The article never says that."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"A firefly starts as an egg laid in damp soil in early summer.", ok:true, seq:1,
+       keys:[["egg","eggs"],["soil","damp","summer"]]},
+      {t:"Fireflies spend almost no time flashing.", ok:false, tag:"Only part of the story", why:"That is the author's opening hook, not the first step."},
+      {t:"Fireflies live all over the world.", ok:false, tag:"Not in the passage", why:"The article never says where they live."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"It becomes a pupa in a mud chamber and climbs out as an adult weeks later.", ok:true, seq:3,
+       keys:[["pupa","chamber","mud","cocoon"],["adult","out","later"]]},
+      {t:"A caterpillar becomes a chrysalis the same way.", ok:false, tag:"Just a small detail", why:"The comparison the author used to explain it."},
+      {t:"The mud chamber is small.", ok:false, tag:"Just a small detail", why:"A description with no event in it."}
+    ]}
+  ]
+},
+{
+  id:"molasses", title:"The Molasses Flood", genre:"History article", typing:true,
+  text:[
+    "A steel tank fifty feet tall stood on the Boston waterfront holding more than two million gallons of molasses. It had been put up in a hurry in 1915, and it leaked from the day it was first filled. The company painted the tank brown so the drips would not show. Neighborhood children collected the leaks in pails.",
+    "On January 15, 1919, the temperature jumped about forty degrees in two days. The tank had just been refilled with warm molasses from a ship.",
+    "A little after noon, the tank tore itself apart. Witnesses said the rivets shooting out sounded like a machine gun.",
+    "A wave of molasses somewhere between fifteen and twenty five feet high moved through the streets faster than a person could run. It knocked a firehouse off its foundation, shoved a train car aside, and killed twenty one people.",
+    "The cleanup took months. The families of the victims sued, and the case helped lead to rules requiring that engineers sign and inspect building plans before construction."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Warm weather and a fresh refill put stress on the tank in January 1919.", ok:true, seq:2,
+       keys:[["warm","warmer","temperature","weather","hot","degrees"],["refill","refilled","filled","fresh","new"]]},
+      {t:"The temperature jumped about forty degrees in two days.", ok:false, tag:"Just a small detail", why:"The exact number. The change in weather is the idea."},
+      {t:"Winter weather in Boston is unpredictable.", ok:false, tag:"Too broad", why:"A general comment about a city's weather."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Cleanup took months, and lawsuits led to new rules for inspecting building plans.", ok:true, seq:4,
+       keys:[["rule","rules","law","laws","inspect","inspected","engineers","plans"],["sue","sued","lawsuit","court","families","cleanup"]]},
+      {t:"The cleanup took months.", ok:false, tag:"Only part of the story", why:"True, but the lasting result was the new rules."},
+      {t:"The company should have been punished more.", ok:false, tag:"An opinion", why:"Your judgment, not the article's ending."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"A huge molasses tank in Boston was built in a hurry and leaked from the start.", ok:true, seq:1,
+       keys:[["tank"],["leak","leaked","leaks","leaking","hurry","quickly"]]},
+      {t:"The company painted the tank brown.", ok:false, tag:"Just a small detail", why:"A detail that shows they knew, but it is not the setup itself."},
+      {t:"Children collected the drips in pails.", ok:false, tag:"Just a small detail", why:"A vivid image from the neighborhood, not part of the summary."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The tank burst and a wave of molasses swept the streets, killing twenty one people.", ok:true, seq:3,
+       keys:[["wave","burst","tore","broke","flood"],["killed","died","deaths","people","twenty"]]},
+      {t:"The rivets sounded like a machine gun.", ok:false, tag:"Just a small detail", why:"What witnesses heard, not what happened."},
+      {t:"The wave pushed a train car aside.", ok:false, tag:"Just a small detail", why:"One thing the wave hit. The summary needs the whole disaster."}
+    ]}
+  ]
+},
+{
+  id:"hamster", title:"The Missing Hamster", genre:"Realistic fiction", typing:true,
+  text:[
+    "Room 12 kept a hamster named Biscuit. On a Monday morning the cage door hung open and Biscuit was gone.",
+    "The class searched the obvious places first. Under the bookshelf. Behind the reading couch. Inside the recycling bin. Twice. Nothing.",
+    "So they got organized. Jonah said they should stop thinking like people and start thinking like a hamster, which meant dark, narrow, warm places close to the floor. They laid a line of sunflower seeds down the middle of the room and taped paper over the gaps under the doors so Biscuit could not wander into the hallway.",
+    "Tuesday morning the seeds were gone. A rain boot in the closet had a hamster asleep in the toe of it.",
+    "The latch on the cage door turned out to be worn smooth. Their teacher replaced it with a clip, and Jonah made a sign that says check the clip, which he checks himself every afternoon."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Searching the obvious places around the room turned up nothing.", ok:true, seq:2,
+       keys:[["search","searched","searching","look","looked","looking","hunt","hunted"],["nothing","obvious","first","anywhere","find"]]},
+      {t:"They checked the recycling bin twice.", ok:false, tag:"Just a small detail", why:"One hiding spot out of several."},
+      {t:"Classrooms are full of hiding places.", ok:false, tag:"Too broad", why:"A general statement about rooms, not this search."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"They found Biscuit asleep in a boot and replaced the worn cage latch.", ok:true, seq:4,
+       keys:[["boot","closet","found","asleep"],["latch","clip","fixed","replaced","cage"]]},
+      {t:"Jonah made a sign for the cage.", ok:false, tag:"Just a small detail", why:"A nice last touch, but the finding and the fix are the ending."},
+      {t:"The teacher should have checked the cage sooner.", ok:false, tag:"An opinion", why:"Blame you added. The story does not assign any."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Room 12's hamster was missing one Monday with the cage door open.", ok:true, seq:1,
+       keys:[["hamster","biscuit"],["missing","gone","escaped","disappeared","vanished"]]},
+      {t:"The hamster was named Biscuit.", ok:false, tag:"Just a small detail", why:"A name is not an event."},
+      {t:"Class pets are a lot of responsibility.", ok:false, tag:"Too broad", why:"A general lesson, not what happened in Room 12."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"They thought like a hamster and left seeds in dark spots near the floor.", ok:true, seq:3,
+       keys:[["seed","seeds","sunflower"],["dark","narrow","warm","floor","think","thought","hamster"]]},
+      {t:"They taped paper over the gaps under the doors.", ok:false, tag:"Only part of the story", why:"One half of the plan. The seeds were the part that worked."},
+      {t:"Jonah is the smartest kid in Room 12.", ok:false, tag:"An opinion", why:"He had a good idea, which is not the same as the story saying that."}
+    ]}
+  ]
+},
+{
+  id:"cacao", title:"From Pod to Chocolate Bar", genre:"Science article", typing:true,
+  text:[
+    "Chocolate starts as a seed inside a pod about the size of a football, growing straight out of the trunk of a cacao tree near the equator. Workers cut the pods down by hand, because a machine would tear up the bark the next crop needs.",
+    "Inside each pod sit thirty or forty pale seeds packed in white pulp. Split one open and taste a seed right there and it is bitter, nothing like chocolate at all.",
+    "The seeds and the pulp go into wooden boxes or into piles covered with banana leaves for about a week. They ferment. Heat builds, the pulp drains off, and the chemicals that will become chocolate flavor form inside the seed.",
+    "Next the beans dry in the sun for a week or more, then travel to a factory and get roasted.",
+    "Roasting brings the flavor forward. Machines crack off the shells, grind the beans into a thick brown liquid, and mix in sugar and milk. That mixture is stirred for hours until it turns smooth, and then it is poured into molds."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The seeds ferment for about a week, which builds the chocolate flavor.", ok:true, seq:2,
+       keys:[["ferment","fermented","fermenting","fermentation"],["flavor","flavour","week","taste"]]},
+      {t:"The seeds sit under banana leaves.", ok:false, tag:"Just a small detail", why:"One way it is done. The fermenting is the step."},
+      {t:"Heat builds up in the pile.", ok:false, tag:"Only part of the story", why:"Part of what happens while fermenting, without saying why it matters."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Machines grind the beans and mix in sugar and milk before it goes into molds.", ok:true, seq:4,
+       keys:[["grind","ground","grinding","crush","crushed"],["sugar","milk","mold","molds","molded","bar"]]},
+      {t:"The mixture is stirred for hours until it is smooth.", ok:false, tag:"Just a small detail", why:"One step inside the last stage."},
+      {t:"Chocolate tastes better with milk in it.", ok:false, tag:"An opinion", why:"The article explains and does not pick a favorite."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Cacao pods are cut down by hand, and the seeds inside are bitter.", ok:true, seq:1,
+       keys:[["pod","pods","cacao"],["bitter","seed","seeds","hand"]]},
+      {t:"A pod is about the size of a football.", ok:false, tag:"Just a small detail", why:"A size comparison, not a step in making chocolate."},
+      {t:"Cacao trees grow near the equator.", ok:false, tag:"Just a small detail", why:"Where they grow is background for the process."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"The beans dry in the sun, go to a factory, and get roasted.", ok:true, seq:3,
+       keys:[["dry","dried","drying","sun"],["roast","roasted","roasting","factory"]]},
+      {t:"The beans travel to a factory.", ok:false, tag:"Only part of the story", why:"The trip without the drying or the roasting around it."},
+      {t:"Roasting is the most important step.", ok:false, tag:"An opinion", why:"The article never ranks the steps."}
+    ]}
+  ]
+},
+{
+  id:"starter", title:"The Starter", genre:"Realistic fiction", typing:true,
+  text:[
+    "Marisol's aunt handed her a jar of sourdough starter and one rule. Feed it flour and water every week or it dies.",
+    "For two months Marisol fed it every Sunday. The starter doubled in the jar, smelled like green apples, and made two good loaves of bread.",
+    "Then came the last week of school, and a trip to her cousins, and a stretch where the jar sat in the back of the refrigerator for almost a month. When she finally pulled it out, there was gray liquid on top and it smelled like nail polish.",
+    "Her aunt said it was probably hungry, not dead. Marisol poured most of it out, kept two spoonfuls, and fed that with fresh flour and water every single day for a week.",
+    "On the fourth day it started to bubble. On the sixth it doubled again. She baked with it the Saturday her aunt came to dinner, and nobody at the table knew the starter had ever been in trouble."
+  ],
+  rows:[
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"She fed it for two months and baked good bread with it.", ok:true, seq:2,
+       keys:[["month","months","sunday","sundays"],["bread","loaf","loaves"]]},
+      {t:"The starter smelled like green apples.", ok:false, tag:"Just a small detail", why:"A description of a healthy starter, not an event."},
+      {t:"Sourdough is better than store bread.", ok:false, tag:"An opinion", why:"The story never compares them."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"She saved two spoonfuls, fed it daily for a week, and baked with it again.", ok:true, seq:4,
+       keys:[["spoon","spoonful","spoonfuls","saved","kept","poured"],["day","daily","week","bubble","bubbled","baked","again"]]},
+      {t:"On the fourth day it started to bubble.", ok:false, tag:"Just a small detail", why:"One day of the week of feeding."},
+      {t:"Nobody at dinner could tell the difference.", ok:false, tag:"Just a small detail", why:"A closing line, not the action that saved the starter."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"Marisol's aunt gave her a sourdough starter that had to be fed every week.", ok:true, seq:1,
+       keys:[["starter","sourdough"],["feed","fed","feeding","week","weekly","rule"]]},
+      {t:"Her aunt gave her one rule.", ok:false, tag:"Only part of the story", why:"Which rule? Say what she had to do."},
+      {t:"Aunts always give the best presents.", ok:false, tag:"An opinion", why:"Not something the story says."}
+    ]},
+    { q:"Which sentence belongs in the summary?", opts:[
+      {t:"After a busy stretch the jar sat in the fridge a month and went gray.", ok:true, seq:3,
+       keys:[["fridge","refrigerator","forgot","forgotten","sat","month","busy"],["gray","grey","liquid","smell","smelled","nail","polish"]]},
+      {t:"She went on a trip to her cousins.", ok:false, tag:"Just a small detail", why:"One reason she got busy, not the problem itself."},
+      {t:"Marisol was careless with the starter.", ok:false, tag:"An opinion", why:"The story shows a busy stretch without calling her careless."}
+    ]}
+  ]
 }
 ];
 </script>
@@ -1070,7 +1474,15 @@ function show(id){
   ["screen-map","screen-read","screen-run"].forEach(s => $(s).classList.toggle("on", s===id));
   window.scrollTo(0,0);
 }
-function veil(id,on){ $(id).classList.toggle("on", !!on); }
+function veil(id,on){
+  $(id).classList.toggle("on", !!on);
+  if (on){
+    G.keys.left = G.keys.right = false; G.pointerX = null;
+    const l = $("tp-left"), r = $("tp-right");
+    if (l) l.classList.remove("pressed");
+    if (r) r.classList.remove("pressed");
+  }
+}
 
 /* ---------- trail map ---------- */
 function rankLabel(r){ return r==="gold" ? "Gold flag planted" : r==="silver" ? "Silver flag planted" : r==="done" ? "Peak skied" : ""; }
@@ -1085,7 +1497,10 @@ function buildMap(){
       '<button class="peakbtn"><span><span class="ttl"></span>' +
       '<span class="meta"></span></span><span class="flagmark"></span></button>';
     li.querySelector(".ttl").textContent = st.title;
-    li.querySelector(".meta").textContent = st.genre + (st.ordering ? " \u00b7 4 gates, then put it in order" : " \u00b7 4 gates");
+    li.querySelector(".meta").textContent = st.genre +
+      (st.typing ? " \u00b7 4 gates, then write it in order"
+                 : st.ordering ? " \u00b7 4 gates, then put it in order"
+                 : " \u00b7 4 gates");
     const fm = li.querySelector(".flagmark");
     if (rec){ fm.textContent = rankLabel(rec.rank); if (rec.rank!=="gold") fm.classList.add("silver"); }
     li.querySelector(".peakbtn").addEventListener("click", ()=>openStory(i));
@@ -1107,7 +1522,9 @@ function openStory(i){
   $("read-kicker").textContent = "Peak " + (i+1) + " \u00b7 " + G.story.genre;
   $("read-title").textContent = G.story.title;
   paras($("read-passage"), G.story);
-  $("read-hint").textContent = G.story.ordering
+  $("read-hint").textContent = G.story.typing
+    ? "Four gates are coming, and they arrive out of order. At the bottom of the hill you will write the four events in order, in your own words."
+    : G.story.ordering
     ? "Four gates are coming, but they arrive out of order. Collect the sentences, then put them in order at the bottom of the hill."
     : "Four gates are coming. Steer into the lane whose sign belongs in the summary.";
   show("screen-read");
@@ -1133,7 +1550,7 @@ function buildStrip(){
   for (let i=0;i<4;i++){
     const d = document.createElement("div");
     d.className = "slot"; d.id = "slot"+i;
-    d.innerHTML = '<span class="n">'+(G.story.ordering ? "Found "+(i+1) : "Part "+(i+1))+'</span><span class="s">waiting</span>';
+    d.innerHTML = '<span class="n">'+((G.story.ordering || G.story.typing) ? "Found "+(i+1) : "Part "+(i+1))+'</span><span class="s">waiting</span>';
     strip.appendChild(d);
   }
 }
@@ -1419,7 +1836,7 @@ function resolve(lane){
   const signs = G.laneCount;
   if (opt.ok){
     for (let i=0;i<signs;i++){ const s=$("sign"+i); if(s){ s.classList.remove("lit"); if(i===lane) s.classList.add("right"); else s.classList.add("wrong"); } }
-    G.collected.push({t:opt.t, seq:opt.seq || (G.row+1)});
+    G.collected.push({t:opt.t, seq:opt.seq || (G.row+1), keys:opt.keys});
     fillStrip(G.row, opt.t);
     $("live").textContent = "Clean line. " + opt.t;
     sfx.good();
@@ -1518,18 +1935,115 @@ $("btn-check").addEventListener("click", ()=>{
     : right + (right === 1 ? " sentence is" : " sentences are") + " in the right place, marked with a check. Move the others around them.";
 });
 
+/* ---------- the writing puzzle (peaks 21 to 30) ---------- */
+let TYPED = [];
+const STEPS = ["First", "Next", "Then", "Last"];
+
+function tidy(t){ return (" " + String(t).toLowerCase().replace(/[^a-z0-9]+/g," ") + " ").replace(/\s+/g," "); }
+function lev(a,b){
+  const m = a.length, n2 = b.length;
+  if (Math.abs(m-n2) > 2) return 9;
+  const row = Array.from({length:n2+1}, (_,j)=>j);
+  for (let i=1;i<=m;i++){
+    let prev = row[0]; row[0] = i;
+    for (let j=1;j<=n2;j++){
+      const tmp = row[j];
+      row[j] = Math.min(row[j]+1, row[j-1]+1, prev + (a[i-1]===b[j-1] ? 0 : 1));
+      prev = tmp;
+    }
+  }
+  return row[n2];
+}
+function nearly(word, target){
+  if (word === target) return true;
+  const slack = target.length >= 8 ? 2 : target.length >= 5 ? 1 : 0;
+  return slack > 0 && lev(word, target) <= slack;
+}
+function hasKeyGroup(text, group){
+  const words = text.trim().split(" ");
+  return group.some(v=>{
+    const variant = v.toLowerCase();
+    if (variant.indexOf(" ") > -1) return text.indexOf(" "+variant+" ") > -1;
+    return words.some(wd => nearly(wd, variant));
+  });
+}
+function matchesSeq(text, item){
+  if (!item.keys) return false;
+  return item.keys.every(g => hasKeyGroup(text, g));
+}
+
+function openType(){
+  TYPED = ["","","",""];
+  const sorted = G.collected.slice().sort((a,b)=>a.seq-b.seq);
+  $("type-hint").textContent = "You collected four events on the way down, but the gates were out of order. Write them here in the order they happened. Your own words are fine.";
+  const help = $("type-help"); help.innerHTML = "";
+  G.collected.forEach(c=>{ const li = document.createElement("li"); li.textContent = c.t; help.appendChild(li); });
+  const box = $("typeboxes"); box.innerHTML = "";
+  for (let i=0;i<4;i++){
+    const wrap = document.createElement("div");
+    wrap.className = "typebox"; wrap.id = "tb"+i;
+    wrap.innerHTML = '<label for="ta'+i+'"><span class="step">'+(i+1)+'</span>' + STEPS[i] + '</label>' +
+                     '<textarea id="ta'+i+'" rows="2" spellcheck="true" autocomplete="off"></textarea>' +
+                     '<p class="note"></p>';
+    const ta = wrap.querySelector("textarea");
+    ta.addEventListener("input", ()=>{ TYPED[i] = ta.value; wrap.classList.remove("ok","no"); wrap.querySelector(".note").textContent = ""; });
+    box.appendChild(wrap);
+  }
+  veil("veil-type", true);
+  $("ta0").focus();
+  // keep the model order on hand for the finish card
+  G.model = sorted.map(x=>x.t).join(" ");
+}
+$("btn-typecheck").addEventListener("click", ()=>{
+  const sorted = G.collected.slice().sort((a,b)=>a.seq-b.seq);
+  let right = 0;
+  for (let i=0;i<4;i++){
+    const wrap = $("tb"+i), note = wrap.querySelector(".note");
+    const text = tidy(TYPED[i]);
+    wrap.classList.remove("ok","no");
+    if (text.trim() === ""){ wrap.classList.add("no"); note.textContent = "This box is still empty."; continue; }
+    if (matchesSeq(text, sorted[i])){ wrap.classList.add("ok"); note.textContent = "That is the one."; right++; continue; }
+    wrap.classList.add("no");
+    let elsewhere = -1;
+    for (let j=0;j<4;j++){ if (j!==i && matchesSeq(text, sorted[j])) { elsewhere = j; break; } }
+    note.textContent = elsewhere > -1
+      ? (elsewhere > i ? "This event happens later in the story. Try it further down."
+                       : "This event happens earlier in the story. Try it further up.")
+      : "Not quite. Which event is this, and did you leave out the important words?";
+  }
+  G.orderTries++;
+  if (right === 4){
+    sfx.good();
+    veil("veil-type", false);
+    awardAndShow();
+    return;
+  }
+  sfx.thud();
+  $("type-hint").textContent = right === 0
+    ? "Not yet. Start with the event that has to come first, and use the words that make it that event."
+    : right + (right===1 ? " box is" : " boxes are") + " right. Fix the ones marked in red.";
+});
+
 function showFinish(){
+  if (G.story.typing){ openType(); return; }
   if (G.story.ordering){ openOrder(); return; }
   awardAndShow();
 }
 function awardAndShow(){
-  const ordering = G.story.ordering;
-  const rank = ordering ? rankOrder(G.crashes, G.orderTries) : rankFor(G.crashes);
+  const ordering = G.story.ordering, typing = G.story.typing;
+  const rank = (ordering || typing) ? rankOrder(G.crashes, G.orderTries) : rankFor(G.crashes);
   const prev = SAVE[G.story.id];
   const order = {done:0, silver:1, gold:2};
   if (!prev || order[rank] > order[prev.rank]) SAVE[G.story.id] = {rank, crashes:G.crashes};
   persist();
-  if (ordering){
+  if (typing){
+    $("fin-medal").textContent =
+      rank==="gold" ? "Gold flag. No crashes, and you wrote the whole summary in order on the first try." :
+      rank==="silver" ? "Silver flag. " + G.crashes + (G.crashes===1?" crash":" crashes") + " and " +
+        G.orderTries + (G.orderTries===1?" try":" tries") + " at the writing." :
+      "You made it down and wrote the summary. Ski it again for a flag.";
+    $("fin-lead").textContent = "Here is the summary you wrote:";
+  } else if (ordering){
     $("fin-medal").textContent =
       rank==="gold" ? "Gold flag. No crashes, and the summary in order on the first try." :
       rank==="silver" ? "Silver flag. " + G.crashes + (G.crashes===1?" crash":" crashes") + " and " +
@@ -1543,23 +2057,36 @@ function awardAndShow(){
       "You made it down after " + G.crashes + " crashes. Take the run again for a flag.";
     $("fin-lead").textContent = "Here is the summary you built:";
   }
-  $("fin-summary").textContent = (ordering ? ORDER : G.collected).map(x=>x.t).join(" ");
-  $("fin-note").textContent = "Now say that summary out loud in your own words, without looking.";
+  if (typing){
+    $("fin-summary").textContent = TYPED.map(t=>t.trim()).join(" ");
+    $("fin-note").textContent = "Compare yours with the sentences from the hill. Did you leave anything important out?";
+  } else {
+    $("fin-summary").textContent = (ordering ? ORDER : G.collected).map(x=>x.t).join(" ");
+    $("fin-note").textContent = "Now say that summary out loud in your own words, without looking.";
+  }
   veil("veil-finish", true);
   buildMap();
   $("btn-next").focus();
 }
 
 /* ---------- input ---------- */
+/* Steering keys are only steering keys when the student is actually skiing.
+   In a textarea, or behind any open card, they are just letters. */
+function inField(e){
+  const el = e.target;
+  return !!el && (el.tagName === "TEXTAREA" || el.tagName === "INPUT" || el.isContentEditable);
+}
+function cardOpen(){ return !!document.querySelector(".veil.on"); }
 addEventListener("keydown", e=>{
+  if (inField(e) || cardOpen()) return;
   const k = e.key.toLowerCase();
   const onRun = $("screen-run").classList.contains("on");
-  const blocked = $("veil-crash").classList.contains("on") || $("veil-finish").classList.contains("on");
   if (k==="arrowleft"||k==="a"){ G.keys.left = true; if (onRun) e.preventDefault(); }
   if (k==="arrowright"||k==="d"){ G.keys.right = true; if (onRun) e.preventDefault(); }
-  if (k==="escape" && onRun && !blocked) toggleStory();
+  if (k==="escape" && onRun) toggleStory();
 });
 addEventListener("keyup", e=>{
+  if (inField(e)) return;
   const k = e.key.toLowerCase();
   if (k==="arrowleft"||k==="a") G.keys.left = false;
   if (k==="arrowright"||k==="d") G.keys.right = false;
@@ -1608,7 +2135,13 @@ $("btn-pad").addEventListener("click", ()=>{
 /* ---------- buttons ---------- */
 $("btn-drop").addEventListener("click", startRun);
 $("btn-back").addEventListener("click", ()=>{ buildMap(); show("screen-map"); });
-$("btn-quit").addEventListener("click", ()=>{ G.mode="idle"; buildMap(); show("screen-map"); });
+function leaveRun(){
+  ["veil-crash","veil-order","veil-type","veil-finish","veil-story"].forEach(v=>veil(v,false));
+  G.mode = "idle"; buildMap(); show("screen-map");
+}
+$("btn-quit").addEventListener("click", leaveRun);
+$("btn-order-quit").addEventListener("click", leaveRun);
+$("btn-type-quit").addEventListener("click", leaveRun);
 $("btn-retry").addEventListener("click", ()=>{
   veil("veil-crash", false);
   const n = G.laneCount;
@@ -1637,18 +2170,23 @@ $("btn-sound").addEventListener("click", ()=>{
   $("btn-sound").textContent = G.sound ? "Sound on" : "Sound off";
   try{ localStorage.setItem(STORE+"sound", G.sound ? "on" : "off"); }catch(e){}
 });
-$("btn-map").addEventListener("click", ()=>{ veil("veil-finish", false); G.mode="idle"; buildMap(); show("screen-map"); });
+$("btn-map").addEventListener("click", leaveRun);
 $("btn-next").addEventListener("click", ()=>{
-  veil("veil-finish", false);
+  ["veil-crash","veil-order","veil-type","veil-finish"].forEach(v=>veil(v,false));
   let i = (G.storyIndex+1) % STORIES.length, guard = 0;
   while (SAVE[STORIES[i].id] && guard++ < STORIES.length) i = (i+1) % STORIES.length;
   openStory(i);
 });
 
 /* ---------- go ---------- */
-$("btn-reset").addEventListener("click", ()=>{
-  if (!confirm("Clear every flag saved on this device and start the mountain over?")) return;
-  SAVE = {}; persist(); buildMap();
+$("btn-reset").addEventListener("click", ()=>{ veil("veil-reset", true); $("btn-reset-no").focus(); });
+$("btn-reset-no").addEventListener("click", ()=>{ veil("veil-reset", false); $("btn-reset").focus(); });
+$("btn-reset-yes").addEventListener("click", ()=>{
+  SAVE = {};
+  try{ localStorage.removeItem(STORE+"progress"); }catch(e){}
+  persist();
+  veil("veil-reset", false);
+  buildMap();
 });
 if (ARCADE_HOME){
   const hl = $("homelink");
