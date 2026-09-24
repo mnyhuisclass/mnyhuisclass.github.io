@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supernova Partial Products</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Atkinson+Hyperlegible+Mono:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E3F3F1; --bg2:#CBE9E5; --ink:#0E2A33; --paper:#FFFFFF; --muted:#4A676C;
+  --teal:#137A75; --teal-2:#2BB5AC; --gold:#E3A00F; --gold-ink:#3B2A00; --gold-soft:#FDEBB8;
+  --coral:#C8402F; --coral-soft:#FCE3DF; --ok:#137A56; --ok-soft:#DCF3EA; --line:#A7D3CE;
+  --star-off:#B7D6D2; --shadow:0 18px 40px -22px rgba(14,42,51,.45);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A2028; --bg2:#10323B; --ink:#EAF7F5; --paper:#13313A; --muted:#9FC0C2;
+    --teal:#46CFC5; --teal-2:#6BE3D9; --gold:#F5B82E; --gold-ink:#2B1F00; --gold-soft:#4A3912;
+    --coral:#FF8272; --coral-soft:#4A2320; --ok:#5BE0A8; --ok-soft:#173F33; --line:#2D5961;
+    --star-off:#2C5058; --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A2028; --bg2:#10323B; --ink:#EAF7F5; --paper:#13313A; --muted:#9FC0C2;
+  --teal:#46CFC5; --teal-2:#6BE3D9; --gold:#F5B82E; --gold-ink:#2B1F00; --gold-soft:#4A3912;
+  --coral:#FF8272; --coral-soft:#4A2320; --ok:#5BE0A8; --ok-soft:#173F33; --line:#2D5961;
+  --star-off:#2C5058; --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+}
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+body{
+  margin:0; min-height:100%; color:var(--ink);
+  font-family:"Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif; font-size:1.05rem; line-height:1.5;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, var(--teal-2) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 78% 9%, var(--gold) 50%, transparent 51%),
+    radial-gradient(1px 1px at 44% 70%, var(--teal-2) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90% 62%, var(--teal-2) 50%, transparent 51%),
+    radial-gradient(1px 1px at 22% 88%, var(--gold) 50%, transparent 51%),
+    radial-gradient(ellipse at 80% -10%, var(--bg2), transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+}
+.wrap{ max-width:980px; margin:0 auto; padding:24px 20px 48px; }
+header h1{
+  font-family:"Baloo 2", "Trebuchet MS", sans-serif; font-weight:800; font-size:clamp(2rem, 5vw, 2.9rem);
+  line-height:1; margin:0 0 6px; letter-spacing:-.01em;
+}
+header h1 .nova{ color:var(--teal); }
+header p{ margin:0; color:var(--muted); max-width:60ch; }
+
+.controls{ display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center; margin:22px 0 18px; }
+.seg{ display:inline-flex; background:var(--paper); border:2px solid var(--line); border-radius:14px; padding:4px; gap:4px; }
+.seg button{
+  font:700 1rem "Atkinson Hyperlegible", sans-serif; color:var(--ink); background:transparent; border:0;
+  padding:8px 14px; border-radius:10px; cursor:pointer;
+}
+.seg button[aria-pressed="true"]{ background:var(--teal); color:var(--paper); }
+.toggle{ display:inline-flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; user-select:none; }
+.toggle input{ position:absolute; opacity:0; width:1px; height:1px; }
+.toggle .track{ width:50px; height:28px; border-radius:20px; background:var(--star-off); position:relative; transition:background .15s; flex:none; }
+.toggle .track::after{ content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:var(--paper); transition:transform .15s; }
+.toggle input:checked + .track{ background:var(--teal); }
+.toggle input:checked + .track::after{ transform:translateX(22px); }
+.toggle input:focus-visible + .track{ outline:3px solid var(--gold); outline-offset:2px; }
+
+.layout{ display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:22px; align-items:start; }
+@media (max-width:760px){ .layout{ grid-template-columns:1fr; } }
+
+.card{ background:var(--paper); border-radius:26px; box-shadow:var(--shadow); padding:26px 22px 22px; position:relative; overflow:hidden; }
+.tag{ display:inline-block; font-weight:700; font-size:.9rem; color:var(--teal); background:var(--bg); border-radius:8px; padding:2px 10px; margin-bottom:10px; }
+
+.stack{
+  --digit:clamp(1.9rem, 6.2vw, 2.8rem);
+  font-family:"Atkinson Hyperlegible Mono", "Courier New", monospace; font-weight:700;
+  font-size:var(--digit); font-variant-numeric:tabular-nums;
+  display:grid; grid-template-columns:1.3ch 7.6ch minmax(0,auto); column-gap:.4ch; row-gap:8px;
+  justify-content:center; align-items:center; margin:6px auto 4px; width:max-content; max-width:100%;
+}
+.stack .sign{ text-align:center; color:var(--teal); }
+.stack .num{ text-align:right; padding:0 .3ch; border:3px solid transparent; letter-spacing:.06em; }
+.stack .rule{ grid-column:1 / 3; height:4px; background:var(--ink); border-radius:2px; margin:2px 0; }
+.stack .note{
+  font-family:"Atkinson Hyperlegible", sans-serif; font-size:.46em; font-weight:700; color:var(--muted);
+  white-space:nowrap; padding-left:.3ch; min-width:5.5ch;
+}
+.stack .note.hint{ color:var(--teal); }
+.stack input{
+  width:100%; font:inherit; letter-spacing:.06em; text-align:right; color:var(--ink);
+  background:var(--bg); border:3px solid var(--line); border-radius:12px; padding:0 .3ch; line-height:1.25;
+  caret-color:var(--gold);
+}
+.stack input:focus{ outline:none; border-color:var(--gold); background:var(--paper); box-shadow:0 0 0 4px var(--gold-soft); }
+.stack input.ok{ border-color:var(--ok); background:var(--ok-soft); }
+.stack input.bad{ border-color:var(--coral); background:var(--coral-soft); }
+.stack input.shown{ border-color:var(--teal); background:var(--bg); }
+.stack input.sum{ border-width:3px; }
+
+.feedback{ min-height:3.2em; margin:16px 4px 4px; font-size:1.08rem; font-weight:700; text-align:center; }
+.feedback.good{ color:var(--ok); }
+.feedback.fix{ color:var(--coral); }
+.feedback.info{ color:var(--teal); }
+
+.actions{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:8px; }
+.btn{
+  font:800 1.15rem "Baloo 2", sans-serif; border-radius:14px; border:3px solid transparent; padding:8px 24px 6px; cursor:pointer;
+}
+.btn.primary{ background:var(--gold); color:var(--gold-ink); box-shadow:0 4px 0 color-mix(in srgb, var(--gold) 60%, #000); }
+.btn.primary:active{ transform:translateY(3px); box-shadow:0 1px 0 color-mix(in srgb, var(--gold) 60%, #000); }
+.btn.ghost{ background:transparent; color:var(--teal); border-color:var(--line); }
+.btn:focus-visible, .seg button:focus-visible, summary:focus-visible{ outline:3px solid var(--teal); outline-offset:3px; }
+.hidden{ display:none !important; }
+
+details.how{ margin-top:18px; border-top:2px dashed var(--line); padding-top:12px; }
+details.how summary{ cursor:pointer; font-weight:700; color:var(--teal); }
+details.how ol{ margin:10px 0 0; padding-left:1.3em; }
+details.how li{ margin:4px 0; }
+
+.side{ display:grid; gap:16px; }
+.panel{ background:var(--paper); border-radius:22px; box-shadow:var(--shadow); padding:18px; }
+.panel h2{ font:800 1.3rem "Baloo 2", sans-serif; margin:0 0 4px; }
+.panel p{ margin:0; color:var(--muted); font-size:.95rem; }
+.sky{ width:100%; height:auto; display:block; margin-top:8px; }
+.sky line{ stroke:var(--gold); stroke-width:1.6; opacity:.8; }
+.sky .s{ fill:var(--star-off); transition:fill .3s; }
+.sky .s.lit{ fill:var(--gold); filter:drop-shadow(0 0 4px var(--gold)); }
+.sky .s.pop{ animation:pop .6s ease-out; transform-box:fill-box; transform-origin:center; }
+@keyframes pop{ 0%{transform:scale(.3)} 60%{transform:scale(1.6)} 100%{transform:scale(1)} }
+.stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; }
+.stats div{ background:var(--bg); border-radius:14px; padding:8px 4px; }
+.stats b{ display:block; font:800 1.7rem/1 "Baloo 2", sans-serif; color:var(--teal); }
+.stats span{ font-size:.85rem; color:var(--muted); }
+.novas{ margin-top:10px; font-weight:700; text-align:center; }
+.reset{ background:none; border:0; color:var(--muted); text-decoration:underline; cursor:pointer; font:inherit; font-size:.85rem; margin-top:8px; display:block; margin-inline:auto; }
+
+.burst{ position:absolute; left:50%; top:45%; width:40px; height:40px; margin:-20px 0 0 -20px; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, var(--gold) 0%, var(--gold) 30%, transparent 70%); animation:burst 1s ease-out forwards; }
+.burst.big{ background:radial-gradient(circle, #fff 0%, var(--gold) 25%, var(--teal-2) 55%, transparent 72%); animation-duration:1.6s; }
+@keyframes burst{ 0%{transform:scale(0); opacity:1} 100%{transform:scale(28); opacity:0} }
+@media (prefers-reduced-motion: reduce){ .burst{ display:none; } .sky .s.pop{ animation:none; } .toggle .track, .toggle .track::after{ transition:none; } }
+.screen{ max-width:560px; margin:10px auto 0; }
+.screen .card{ padding:28px 26px; }
+.screen h2{ font:800 1.8rem/1.1 "Baloo 2", sans-serif; margin:0 0 8px; }
+.screen p{ margin:0 0 14px; color:var(--muted); }
+.field label{ display:block; font-weight:700; margin-bottom:6px; }
+.field input{
+  width:100%; font:700 1.3rem "Atkinson Hyperlegible", sans-serif; color:var(--ink); background:var(--bg);
+  border:3px solid var(--line); border-radius:14px; padding:10px 14px;
+}
+.field input:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 4px var(--gold-soft); }
+.field .err{ color:var(--coral); font-weight:700; min-height:1.5em; margin-top:6px; }
+.plan{ display:flex; gap:10px; margin:6px 0 18px; }
+.plan div{ flex:1; background:var(--bg); border-radius:14px; padding:10px 12px; text-align:center; }
+.plan b{ display:block; font:800 1.5rem/1 "Baloo 2", sans-serif; color:var(--teal); }
+.plan span{ font-size:.9rem; color:var(--muted); }
+.who{ font-weight:700; color:var(--muted); margin:0 0 10px; }
+.big-score{ font:800 clamp(3rem,12vw,4.4rem)/1 "Baloo 2", sans-serif; color:var(--teal); margin:4px 0 2px; }
+.results-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:16px 0; }
+.results-grid div{ background:var(--bg); border-radius:14px; padding:10px 12px; }
+.results-grid b{ display:block; font:800 1.4rem/1.1 "Baloo 2", sans-serif; color:var(--ink); }
+.results-grid span{ font-size:.9rem; color:var(--muted); }
+.send{ border-radius:14px; padding:12px 14px; font-weight:700; margin:0 0 16px; }
+.send.wait{ background:var(--bg); color:var(--muted); }
+.send.sent{ background:var(--ok-soft); color:var(--ok); }
+.send.fail{ background:var(--coral-soft); color:var(--coral); }
+.review{ margin:0 0 18px; padding:0; list-style:none; display:grid; gap:6px; }
+.review li{ display:flex; justify-content:space-between; gap:10px; background:var(--bg); border-radius:10px; padding:6px 12px; font-size:.95rem; }
+.review .prob{ font-family:"Atkinson Hyperlegible Mono", "Courier New", monospace; font-weight:700; }
+.review .res.g{ color:var(--ok); font-weight:700; } .review .res.m{ color:var(--teal); font-weight:700; } .review .res.s{ color:var(--muted); font-weight:700; }
+.sky .s.try{ fill:var(--teal-2); }
+.sky .s.help{ fill:var(--muted); opacity:.55; }
+.sky .s.now{ stroke:var(--gold); stroke-width:1.5; fill:transparent; }
+.legend{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.82rem; color:var(--muted); margin-top:8px; }
+.legend i{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Supernova <span class="nova">Partial Products</span></h1>
+    <p>Multiply each place, stack the partial products, then add them to find the product.</p>
+  </header>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <section class="card">
+      <h2>Ready for a round?</h2>
+      <p>Each round has 10 problems. When you finish, your results go to Mr. Nyhuis.</p>
+      <div class="plan">
+        <div><b>5</b><span>1 × 4 digits</span></div>
+        <div><b>5</b><span>2 × 2 digits</span></div>
+      </div>
+      <div class="field">
+        <label for="nameInput">Your first name and last initial</label>
+        <input id="nameInput" maxlength="30" autocomplete="off" placeholder="Example: Maya R.">
+        <div class="err" id="nameErr" aria-live="polite"></div>
+      </div>
+      <div class="actions" style="justify-content:flex-start">
+        <button class="btn primary" id="startBtn" type="button">Start round</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Practice screen -->
+  <div id="practiceScreen" class="hidden">
+    <div class="controls">
+      <label class="toggle">
+        <input type="checkbox" id="hints" checked>
+        <span class="track" aria-hidden="true"></span>
+        Show what to multiply
+      </label>
+    </div>
+    <div class="layout">
+      <section class="card" id="card" aria-label="Practice problem">
+        <span class="tag" id="tag">Problem 1 of 10</span>
+        <div class="stack" id="stack"></div>
+        <div class="feedback" id="feedback" aria-live="polite"></div>
+        <div class="actions">
+          <button class="btn primary" id="checkBtn" type="button">Check my work</button>
+          <button class="btn primary hidden" id="nextBtn" type="button">Next problem</button>
+          <button class="btn ghost hidden" id="showBtn" type="button">Show me how</button>
+        </div>
+        <details class="how">
+          <summary>How stacked partial products work</summary>
+          <ol>
+            <li>Multiply one pair of digits at a time. Use the value of each digit, so the 4 in 45 means 40.</li>
+            <li>Write each answer on its own line, lined up by place value. These are the partial products.</li>
+            <li>Add all the partial products. The total is the product.</li>
+          </ol>
+        </details>
+      </section>
+      <aside class="side">
+        <div class="panel">
+          <p class="who" id="who"></p>
+          <h2>Build a constellation</h2>
+          <p>Each problem lights a star. Solve all 10 to make a supernova.</p>
+          <svg class="sky" id="sky" viewBox="0 0 220 150" role="img" aria-label="Round progress"></svg>
+          <div class="legend">
+            <span><i style="background:var(--gold)"></i>First try</span>
+            <span><i style="background:var(--teal-2)"></i>Kept trying</span>
+            <span><i style="background:var(--muted)"></i>Showed me</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Results screen -->
+  <div class="screen hidden" id="resultsScreen">
+    <section class="card" id="resultsCard">
+      <h2 id="resultsTitle">Round complete!</h2>
+      <p class="who" id="resultsWho"></p>
+      <div class="big-score" id="bigScore"></div>
+      <p>correct on the first try</p>
+      <div class="results-grid">
+        <div><b id="r14"></b><span>1 × 4 first try</span></div>
+        <div><b id="r22"></b><span>2 × 2 first try</span></div>
+        <div><b id="rSolved"></b><span>Solved on my own</span></div>
+        <div><b id="rTime"></b><span>Time</span></div>
+      </div>
+      <div class="send wait" id="sendStatus" aria-live="polite">Sending your results…</div>
+      <div class="actions" style="margin-bottom:16px">
+        <button class="btn ghost hidden" id="retrySend" type="button">Try sending again</button>
+      </div>
+      <ul class="review" id="review"></ul>
+      <div class="actions">
+        <button class="btn primary" id="againBtn" type="button">Practice another round</button>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+(function(){
+  /* ============================================================
+     TEACHER SETUP: paste your Google Apps Script web app URL here.
+     Leave it empty and results will only show on screen.
+     ============================================================ */
+  const RESULTS_URL = "";
+
+  const STORE = "supernova-partial-products-round-v2";
+  const STAR_POS = [[20,110],[45,80],[40,40],[78,25],[110,50],[140,30],[175,20],[200,55],[170,90],[130,120]];
+  const $ = id => document.getElementById(id);
+  const fmt = n => n.toLocaleString("en-US");
+  const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+
+  let hints = true, round = null, solved = false;
+
+  function save(){ try { localStorage.setItem(STORE, JSON.stringify({ hints, round })); } catch(e) {} }
+  try { const s = JSON.parse(localStorage.getItem(STORE) || "null"); if (s) { if (typeof s.hints === "boolean") hints = s.hints; round = s.round || null; } } catch(e) {}
+
+  function makeProblem(type){
+    let a, b, parts;
+    if (type === "1x4") {
+      const d = [rnd(1,9), rnd(1,9), rnd(1,9), rnd(1,9)];
+      a = d[0]*1000 + d[1]*100 + d[2]*10 + d[3];
+      b = rnd(2,9);
+      parts = [];
+      for (let i = 0; i < 4; i++) { const v = d[3-i] * 10**i; parts.push({ expr: b + " × " + v, value: b * v }); }
+    } else {
+      const at = rnd(1,9), ao = rnd(2,9), bt = rnd(1,9), bo = rnd(2,9);
+      a = at*10 + ao; b = bt*10 + bo;
+      parts = [
+        { expr: bo + " × " + ao, value: bo*ao },
+        { expr: bo + " × " + at*10, value: bo*at*10 },
+        { expr: bt*10 + " × " + ao, value: bt*10*ao },
+        { expr: bt*10 + " × " + at*10, value: bt*at*100 }
+      ];
+    }
+    return { type, a, b, parts, answer: a*b,
+      checks: 0, misses: 0, done: false, firstTry: false, shown: false, hintsOn: false,
+      errors: { zeros: 0, adding: 0, multiplying: 0 } };
+  }
+
+  function newRound(name){
+    const problems = [];
+    const seen = new Set();
+    ["1x4","1x4","1x4","1x4","1x4","2x2","2x2","2x2","2x2","2x2"].forEach(t => {
+      let p; do { p = makeProblem(t); } while (seen.has(p.a + "x" + p.b)); seen.add(p.a + "x" + p.b); problems.push(p);
+    });
+    return { name, started: Date.now(), finished: null, index: 0, problems, sent: false };
+  }
+
+  const cur = () => round.problems[round.index];
+
+  function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  function showScreen(id){ ["startScreen","practiceScreen","resultsScreen"].forEach(s => $(s).classList.toggle("hidden", s !== id)); }
+
+  /* ---------- practice ---------- */
+  function render(){
+    const p = cur();
+    const st = $("stack"); st.innerHTML = "";
+    st.append(el("span","sign",""), el("span","num", String(p.a)), el("span","note",""));
+    st.append(el("span","sign","×"), el("span","num", String(p.b)), el("span","note",""));
+    st.append(el("div","rule")); st.append(el("span","",""));
+    p.parts.forEach((part, i) => {
+      st.append(el("span","sign", i === p.parts.length - 1 ? "+" : ""));
+      const inp = el("input","part");
+      inp.inputMode = "numeric"; inp.autocomplete = "off"; inp.maxLength = 7;
+      st.append(inp);
+      st.append(el("span","note hint", hints ? part.expr : ""));
+    });
+    st.append(el("div","rule")); st.append(el("span","",""));
+    st.append(el("span","sign",""));
+    const sum = el("input","sum"); sum.inputMode = "numeric"; sum.autocomplete = "off"; sum.maxLength = 7;
+    st.append(sum);
+    st.append(el("span","note","product"));
+    labelInputs();
+    inputs().forEach((inp, idx, all) => {
+      inp.addEventListener("input", () => inp.classList.remove("ok","bad"));
+      inp.addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); if (solved) return next(); if (idx < all.length - 1) all[idx+1].focus(); else check(); }
+      });
+    });
+    $("tag").textContent = "Problem " + (round.index + 1) + " of 10, " + (p.type === "1x4" ? "1 × 4 digits" : "2 × 2 digits");
+    $("who").textContent = round.name;
+    say("", "");
+    solved = false;
+    $("checkBtn").classList.remove("hidden"); $("nextBtn").classList.add("hidden");
+    $("showBtn").classList.toggle("hidden", p.misses < 2);
+    drawSky();
+    const first = document.querySelector("#stack input"); if (first) first.focus({ preventScroll:true });
+  }
+
+  function labelInputs(){
+    const p = cur();
+    [...document.querySelectorAll("#stack input.part")].forEach((inp, i) =>
+      inp.setAttribute("aria-label", hints ? "Partial product for " + p.parts[i].expr : "Partial product " + (i+1)));
+    const s = document.querySelector("#stack input.sum"); if (s) s.setAttribute("aria-label", "Product, the sum of the partial products");
+  }
+
+  function inputs(){ return [...document.querySelectorAll("#stack input")]; }
+  const parse = v => { const t = v.replace(/[,\s]/g, ""); return /^\d+$/.test(t) ? Number(t) : NaN; };
+  function zeroIssue(val, target){
+    for (let k = 1; k <= 3; k++) { if (val * 10**k === target) return "missing"; if (val === target * 10**k) return "extra"; }
+    return null;
+  }
+  function say(msg, kind){ const f = $("feedback"); f.textContent = msg; f.className = "feedback " + (kind || ""); }
+
+  function check(){
+    if (solved) return;
+    const p = cur();
+    const partEls = [...document.querySelectorAll("#stack input.part")];
+    const sumEl = document.querySelector("#stack input.sum");
+    const vals = partEls.map(e => parse(e.value));
+    const sumVal = parse(sumEl.value);
+
+    if (vals.some(isNaN) || isNaN(sumVal)) {
+      say("Fill in every box before you check.", "fix");
+      const empty = inputs().find(e => isNaN(parse(e.value))); if (empty) empty.focus();
+      return;
+    }
+
+    p.checks++; if (hints) p.hintsOn = true;
+    const status = vals.map(() => "bad");
+    let zero = null;
+
+    if (hints) {
+      vals.forEach((v, i) => { if (v === p.parts[i].value) status[i] = "ok"; else zero = zero || zeroIssue(v, p.parts[i].value); });
+    } else {
+      const used = p.parts.map(() => false);
+      vals.forEach((v, i) => { const j = p.parts.findIndex((q, k) => !used[k] && q.value === v); if (j >= 0) { used[j] = true; status[i] = "ok"; } });
+      vals.forEach((v, i) => { if (status[i] === "bad") p.parts.forEach((q, k) => { if (!used[k]) zero = zero || zeroIssue(v, q.value); }); });
+    }
+
+    partEls.forEach((e, i) => { e.classList.remove("ok","bad"); e.classList.add(status[i] === "ok" ? "ok" : "bad"); });
+    const allParts = status.every(s => s === "ok");
+    const sumOk = sumVal === p.answer;
+    sumEl.classList.remove("ok","bad"); sumEl.classList.add(sumOk ? "ok" : "bad");
+
+    if (allParts && sumOk) return win();
+
+    p.misses++;
+    const studentSum = vals.reduce((a, b) => a + b, 0);
+    if (allParts) {
+      p.errors.adding++;
+      say("Your partial products are all correct. Add them again, lining up ones, tens, hundreds, and thousands.", "fix");
+    } else if (zero === "missing") {
+      p.errors.zeros++;
+      say("Check your zeros on the row marked in red. Think about the value of each digit, like 4 tens or 3 hundreds.", "fix");
+    } else if (zero === "extra") {
+      p.errors.zeros++;
+      say("A row marked in red has too many zeros. Think about the value of each digit you multiplied.", "fix");
+    } else {
+      p.errors.multiplying++;
+      if (sumVal === studentSum) say("Your adding is right! Fix the partial product marked in red, then add again.", "fix");
+      else if (!hints) say("A row marked in red isn't right yet. You need one partial product for each pair of digits.", "fix");
+      else say("A row marked in red isn't right yet. Multiply those two numbers again.", "fix");
+    }
+    if (p.misses >= 2) $("showBtn").classList.remove("hidden");
+    save();
+    const bad = inputs().find(e => e.classList.contains("bad")); if (bad) bad.focus();
+  }
+
+  function finishProblem(){
+    solved = true;
+    $("checkBtn").classList.add("hidden"); $("showBtn").classList.add("hidden");
+    $("nextBtn").textContent = round.index === 9 ? "See my results" : "Next problem";
+    $("nextBtn").classList.remove("hidden"); $("nextBtn").focus();
+    drawSky(round.index); save();
+  }
+
+  function win(){
+    const p = cur();
+    p.done = true; p.firstTry = p.checks === 1;
+    const praise = ["Correct!", "You got it!", "Stellar work!", "Nailed it!", "Out of this world!"][rnd(0,4)];
+    say(praise + " " + fmt(p.a) + " × " + fmt(p.b) + " = " + fmt(p.answer), "good");
+    burst(false);
+    finishProblem();
+  }
+
+  function showMe(){
+    const p = cur();
+    p.done = true; p.shown = true;
+    [...document.querySelectorAll("#stack input.part")].forEach((e, i) => { e.value = p.parts[i].value; e.className = "part shown"; });
+    document.querySelectorAll("#stack .note.hint").forEach((n, i) => { n.textContent = p.parts[i].expr; });
+    const s = document.querySelector("#stack input.sum"); s.value = p.answer; s.className = "sum shown";
+    say("Here is how it works. Read each row and the numbers beside it, then try the next problem.", "info");
+    finishProblem();
+  }
+
+  function next(){
+    if (round.index >= 9) { round.finished = Date.now(); save(); return showResults(); }
+    round.index++; save(); render();
+  }
+
+  function burst(big){
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const host = big ? $("resultsCard") : $("card");
+    const b = el("div", "burst" + (big ? " big" : "")); host.append(b);
+    setTimeout(() => b.remove(), big ? 1700 : 1100);
+  }
+
+  function starClass(p, i){
+    if (p.done) return p.shown ? "help" : (p.firstTry ? "lit" : "try");
+    return i === round.index ? "now" : "";
+  }
+
+  function drawSky(popIndex){
+    const svg = $("sky"); svg.innerHTML = "";
+    const ns = "http://www.w3.org/2000/svg";
+    const doneCount = round.problems.filter(p => p.done).length;
+    for (let i = 1; i < doneCount; i++) {
+      const l = document.createElementNS(ns, "line");
+      l.setAttribute("x1", STAR_POS[i-1][0]); l.setAttribute("y1", STAR_POS[i-1][1]);
+      l.setAttribute("x2", STAR_POS[i][0]); l.setAttribute("y2", STAR_POS[i][1]);
+      svg.append(l);
+    }
+    STAR_POS.forEach(([x, y], i) => {
+      const p = document.createElementNS(ns, "path");
+      const r = 9, r2 = 3.8; let d = "";
+      for (let k = 0; k < 10; k++) {
+        const ang = -Math.PI/2 + k * Math.PI/5, rr = k % 2 ? r2 : r;
+        d += (k ? "L" : "M") + (x + rr*Math.cos(ang)).toFixed(1) + " " + (y + rr*Math.sin(ang)).toFixed(1);
+      }
+      p.setAttribute("d", d + "Z");
+      p.setAttribute("class", ("s " + starClass(round.problems[i], i) + (i === popIndex ? " pop" : "")).trim());
+      svg.append(p);
+    });
+    svg.setAttribute("aria-label", doneCount + " of 10 problems done");
+  }
+
+  /* ---------- results ---------- */
+  function summary(){
+    const ps = round.problems;
+    const count = f => ps.filter(f).length;
+    const sumErr = k => ps.reduce((a, p) => a + p.errors[k], 0);
+    const mins = Math.max(1, Math.round((round.finished - round.started) / 60000));
+    const detail = ps.map((p, i) => {
+      let r = p.shown ? "showed me" : (p.firstTry ? "first try" : p.checks + " tries");
+      const errs = Object.entries(p.errors).filter(([, n]) => n).map(([k]) => k);
+      if (errs.length) r += " (" + errs.join(", ") + ")";
+      return (i + 1) + ") " + p.a + " × " + p.b + ": " + r;
+    }).join(" | ");
+    return {
+      student: round.name,
+      firstTry: count(p => p.firstTry),
+      solvedOnOwn: count(p => p.done && !p.shown),
+      oneByFour: count(p => p.type === "1x4" && p.firstTry),
+      twoByTwo: count(p => p.type === "2x2" && p.firstTry),
+      showMe: count(p => p.shown),
+      hintsOn: count(p => p.hintsOn),
+      zeroErrors: sumErr("zeros"),
+      addingErrors: sumErr("adding"),
+      multiplyingErrors: sumErr("multiplying"),
+      minutes: mins,
+      detail
+    };
+  }
+
+  function showResults(){
+    showScreen("resultsScreen");
+    const s = summary();
+    $("resultsWho").textContent = s.student;
+    $("bigScore").textContent = s.firstTry + " / 10";
+    $("r14").textContent = s.oneByFour + " / 5";
+    $("r22").textContent = s.twoByTwo + " / 5";
+    $("rSolved").textContent = s.solvedOnOwn + " / 10";
+    $("rTime").textContent = s.minutes + (s.minutes === 1 ? " minute" : " minutes");
+    $("resultsTitle").textContent = s.solvedOnOwn === 10 ? "Supernova! Round complete!" : "Round complete!";
+    const list = $("review"); list.innerHTML = "";
+    round.problems.forEach(p => {
+      const li = el("li");
+      li.append(el("span","prob", fmt(p.a) + " × " + fmt(p.b) + " = " + fmt(p.answer)));
+      const r = p.shown ? ["Showed me","s"] : p.firstTry ? ["First try","g"] : [p.checks + " tries","m"];
+      li.append(el("span","res " + r[1], r[0]));
+      list.append(li);
+    });
+    if (s.solvedOnOwn === 10) setTimeout(() => burst(true), 200);
+    sendResults();
+  }
+
+  async function sendResults(){
+    const box = $("sendStatus"), retry = $("retrySend");
+    retry.classList.add("hidden");
+    if (!RESULTS_URL) {
+      box.className = "send wait";
+      box.textContent = "Show this screen to Mr. Nyhuis.";
+      return;
+    }
+    if (round.sent) { box.className = "send sent"; box.textContent = "Your results were sent to Mr. Nyhuis."; return; }
+    box.className = "send wait"; box.textContent = "Sending your results…";
+    try {
+      await fetch(RESULTS_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(summary()) });
+      round.sent = true; save();
+      box.className = "send sent"; box.textContent = "Your results were sent to Mr. Nyhuis.";
+    } catch (e) {
+      box.className = "send fail"; box.textContent = "Your results didn't send. Check your internet, then try again. If it still doesn't work, show this screen to Mr. Nyhuis.";
+      retry.classList.remove("hidden");
+    }
+  }
+
+  /* ---------- wiring ---------- */
+  function startRound(){
+    const name = $("nameInput").value.trim().replace(/\s+/g, " ");
+    if (name.length < 2) { $("nameErr").textContent = "Type your first name and last initial to start."; $("nameInput").focus(); return; }
+    $("nameErr").textContent = "";
+    round = newRound(name); save();
+    showScreen("practiceScreen"); render();
+  }
+
+  $("startBtn").addEventListener("click", startRound);
+  $("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); startRound(); } });
+  $("hints").checked = hints;
+  $("hints").addEventListener("change", e => {
+    hints = e.target.checked; save();
+    if (!solved && round) document.querySelectorAll("#stack .note.hint").forEach((n, i) => { n.textContent = hints ? cur().parts[i].expr : ""; });
+    if (round) labelInputs();
+  });
+  $("checkBtn").addEventListener("click", check);
+  $("nextBtn").addEventListener("click", next);
+  $("showBtn").addEventListener("click", showMe);
+  $("retrySend").addEventListener("click", sendResults);
+  $("againBtn").addEventListener("click", () => {
+    const name = round ? round.name : "";
+    round = null; save();
+    $("nameInput").value = name;
+    showScreen("startScreen"); $("nameInput").focus();
+  });
+
+  // Resume a round after an accidental refresh
+  if (round && round.finished) { showResults(); }
+  else if (round) { showScreen("practiceScreen"); if (cur().done) { render(); finishProblem(); say("This problem is done. Go to the next one.", "info"); } else render(); }
+  else { showScreen("startScreen"); }
+})();
+</script>
+</body>
+</html>
