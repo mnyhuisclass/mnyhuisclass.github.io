@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supernova Orbit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#061321; --panel:#0f2740; --panel2:#153453; --line:#1f4a6e;
+  --teal:#1cc7b7; --teal-d:#0e8f85; --gold:#f5bd3c; --gold-d:#c48d17;
+  --ink:#ecf7f6; --muted:#9fbac6; --bad:#ff7070; --good:#5ee39a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:'Fredoka',system-ui,'Segoe UI',Roboto,Arial,sans-serif;color:var(--ink);
+  background:radial-gradient(ellipse at 50% -10%,#16395a 0%,var(--bg) 62%) fixed;font-size:17px}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.screen{position:relative;z-index:1}
+.hidden{display:none!important}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn{border:0;border-radius:12px;padding:.65em 1.1em;font-size:1rem;font-weight:600;background:var(--teal);color:#032421;transition:transform .08s}
+.btn:active{transform:translateY(2px)}
+.btn.gold{background:var(--gold);color:#2d1d00}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+/* Setup */
+.setup{display:flex;justify-content:center;padding:28px 16px}
+.setup-card{width:100%;max-width:620px;background:rgba(15,39,64,.92);border:2px solid var(--line);border-radius:22px;padding:28px}
+.logo{font-weight:700;line-height:.95;letter-spacing:.02em}
+.logo .a{display:block;color:var(--gold);font-size:3rem}
+.logo .b{display:block;color:var(--teal);font-size:3rem}
+.tagline{color:var(--muted);margin:10px 0 22px;font-size:1.1rem}
+.field{margin:18px 0}
+.field>label{display:block;font-weight:600;margin-bottom:8px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{border:2px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:10px;padding:.5em 1em;font-size:1rem;font-weight:600}
+.seg button.on{background:var(--teal);border-color:var(--teal);color:#032421}
+.note{color:var(--muted);font-size:.92rem;margin-top:6px}
+.prow{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.tokbtn{width:48px;height:48px;border-radius:12px;border:3px solid;background:var(--panel2);font-size:1.6rem;line-height:1}
+.prow input{flex:1;min-width:0;font:inherit;padding:.55em .8em;border-radius:10px;border:2px solid var(--line);background:#081b2e;color:var(--ink)}
+.howto{margin-top:22px;background:#0a1f34;border-radius:14px;padding:12px 16px}
+.howto summary{font-weight:600;cursor:pointer}
+.howto p,.howto li{color:var(--muted);line-height:1.45}
+.howto b{color:var(--ink)}
+
+/* Game layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;padding:16px;max-width:1340px;margin:0 auto;align-items:start}
+@media (max-width:960px){.layout{grid-template-columns:1fr}}
+.board-wrap{container-type:inline-size;width:100%;max-width:calc(100vh - 32px);margin:0 auto}
+.board{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);aspect-ratio:1/1;gap:.55cqi;
+  background:#0a1d31;border:.8cqi solid var(--teal-d);border-radius:2.4cqi;padding:.8cqi;
+  box-shadow:0 0 5cqi rgba(28,199,183,.25), inset 0 0 4cqi rgba(0,0,0,.5)}
+.cell{position:relative;overflow:hidden;background:var(--panel);border-radius:1.1cqi;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  text-align:center;padding:.6cqi;font-size:max(7px,1.75cqi);line-height:1.1;border:.3cqi solid transparent}
+.cell.prop{padding-top:2.8cqi}
+.cell.special{justify-content:center;background:#10304a}
+.cell.corner{background:linear-gradient(145deg,#15415e,#0d2a42);font-size:max(8px,2cqi)}
+.cell.here{border-color:var(--gold);box-shadow:0 0 2cqi rgba(245,189,60,.55)}
+.band{position:absolute;top:0;left:0;right:0;height:2.1cqi}
+.nm{font-weight:600}
+.pr{color:var(--gold);font-size:max(7px,1.6cqi);margin-top:.3cqi}
+.ic{font-size:max(12px,3.6cqi);line-height:1;margin-bottom:.4cqi}
+.own{position:absolute;top:2.4cqi;right:.3cqi;font-size:max(8px,2cqi);line-height:1}
+.toks{position:absolute;bottom:.3cqi;left:0;right:0;display:flex;justify-content:center;flex-wrap:wrap;gap:.1cqi}
+.tok{font-size:max(11px,3.1cqi);line-height:1;border-radius:50%;padding:.15cqi;background:rgba(0,0,0,.35);box-shadow:0 0 0 .35cqi var(--c)}
+.tok.hop{animation:hop .26s ease}
+@keyframes hop{50%{transform:translateY(-1.4cqi) scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.tok.hop{animation:none}}
+.center{grid-row:2/7;grid-column:2/7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4cqi;text-align:center;
+  background:radial-gradient(circle,rgba(28,199,183,.14) 0%,transparent 65%);border-radius:2cqi;position:relative}
+.center .logo .a,.center .logo .b{font-size:6.2cqi}
+.orbit-ring{position:absolute;width:62cqi;height:62cqi;border:.4cqi dashed rgba(245,189,60,.25);border-radius:50%;pointer-events:none}
+.cstat{font-size:max(10px,2.5cqi);color:var(--muted)}
+.cstat b{color:var(--ink)}
+.legend{display:flex;gap:1cqi;flex-wrap:wrap;justify-content:center}
+.legend span{font-size:max(9px,1.9cqi);background:var(--panel2);border-radius:1cqi;padding:.6cqi 1.2cqi}
+#endEarly{font-size:max(9px,1.8cqi);padding:.6cqi 1.6cqi}
+
+/* Side panel */
+.side{display:flex;flex-direction:column;gap:14px}
+.card{background:rgba(15,39,64,.94);border:2px solid var(--line);border-radius:18px;padding:16px}
+.card h3{margin:0 0 10px;font-size:1.05rem;color:var(--muted);font-weight:600}
+.turn{display:flex;align-items:center;gap:14px;border-color:var(--c)}
+.turn .big{font-size:2.6rem;line-height:1}
+.turn .who{font-size:1.35rem;font-weight:700}
+.turn .sub{color:var(--muted)}
+.action{min-height:180px}
+.action p{margin:.4em 0;line-height:1.45}
+.thr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%;text-align:left;border:2px solid var(--line);background:var(--panel2);
+  color:var(--ink);border-radius:14px;padding:12px 14px;margin-top:10px}
+.thr:hover{border-color:var(--teal)}
+.thr .lv{font-weight:700;font-size:1.5rem;color:var(--gold);width:1.6em;text-align:center}
+.thr .t{font-weight:600;font-size:1.08rem}
+.thr .d{font-size:.88rem;color:var(--muted)}
+.thr .mv{font-weight:700;background:var(--teal);color:#032421;border-radius:10px;padding:.3em .6em;white-space:nowrap}
+.badge{display:inline-block;font-weight:600;border-radius:10px;padding:.25em .7em;background:var(--gold);color:#2d1d00;margin-bottom:6px}
+.eq{font-size:1.45rem;line-height:2.3;font-weight:500;word-spacing:.05em}
+.eq.sm{font-size:1.1rem;line-height:1.6}
+.blank{font:inherit;font-size:1.3rem;text-align:center;border-radius:9px;border:2px solid var(--teal);background:#07192b;color:var(--ink);padding:0 4px;margin:0 3px;height:1.8em}
+.blank.right{border-color:var(--good);background:#0b3a28}
+.blank.wrong{border-color:var(--bad);background:#3b1418}
+.ans{color:var(--gold)}
+.fb-good{color:var(--good);font-weight:600}
+.fb-bad{color:var(--bad);font-weight:600}
+.warn{color:var(--gold)}
+.explain{background:#0a1f34;border-left:4px solid var(--gold);border-radius:8px;padding:8px 12px;color:var(--ink)}
+.choice{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:12px;padding:10px 14px;margin-top:8px;font-size:1.08rem}
+.choice.right{border-color:var(--good);background:#0b3a28}
+.choice.wrong{border-color:var(--bad);background:#3b1418}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border-radius:10px;padding:4px 10px;font-weight:600;margin-bottom:6px}
+.chip i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.plist li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--panel2);border:2px solid transparent}
+.plist li.now{border-color:var(--c)}
+.plist .tk{font-size:1.6rem}
+.plist .pn{font-weight:600}
+.plist .dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}
+.plist .dots i{width:10px;height:10px;border-radius:3px}
+.plist .m{font-weight:700;color:var(--gold);text-align:right}
+.plist .m small{display:block;color:var(--muted);font-weight:400;font-size:.8rem}
+.log ul{list-style:none;margin:0;padding:0;max-height:180px;overflow:auto;font-size:.92rem;color:var(--muted)}
+.log li{padding:4px 0;border-bottom:1px solid var(--line)}
+.log li:first-child{color:var(--ink)}
+
+/* End */
+.endwrap{display:flex;justify-content:center;padding:28px 16px}
+.endcard{width:100%;max-width:900px;background:rgba(15,39,64,.95);border:2px solid var(--line);border-radius:22px;padding:28px}
+.endcard h1{margin:0;color:var(--gold);font-size:2.4rem}
+.winner{font-size:1.4rem;margin:8px 0 20px}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:.92rem}
+td:first-child,th:first-child{text-align:left}
+tr.first td{color:var(--gold);font-weight:600}
+.acc-lo{color:var(--bad)} .acc-mid{color:var(--gold)} .acc-hi{color:var(--good)}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- SETUP -->
+<section id="setup" class="screen setup">
+  <div class="setup-card">
+    <div class="logo"><span class="a">Supernova</span><span class="b">Orbit</span></div>
+    <p class="tagline">Solve to fly. Buy planets. Build the richest galaxy!</p>
+
+    <div class="field"><label>How many players or teams?</label><div class="seg" id="countSeg"></div></div>
+    <div class="field"><label>Crew names <span class="note">(tap a token to change it)</span></label><div id="playerFields"></div></div>
+    <div class="field"><label>How many rounds?</label><div class="seg" id="roundSeg"></div><div class="note">About 2 to 3 minutes per round with 4 teams.</div></div>
+    <div class="field"><label>Mission level</label><div class="seg" id="levelSeg"></div><div class="note" id="levelNote"></div></div>
+
+    <button id="startBtn" class="btn gold" style="font-size:1.2rem;padding:.8em 1.6em;margin-top:6px">Launch game</button>
+
+    <details class="howto">
+      <summary>How to play</summary>
+      <ul>
+        <li>There are no dice. On your turn, pick a thruster and solve its problem to fly.
+          <b>Level 1 Commutative</b> moves 2 spaces, <b>Level 2 Associative</b> moves 3, and <b>Level 3 Distributive</b> moves 5.
+          Each button shows where you will land, so choose wisely!</li>
+        <li>Wrong answer? Your ship stays put, and you see the correct steps.</li>
+        <li>Land on an open planet to buy it. Other players pay you rent when they land there. Own all 3 planets in a system and rent doubles.</li>
+        <li><b>Comets</b>: name the property to catch 50 stardust. <b>Solar Flares</b> cost 50, which goes to the Cosmic Fund. Dock at the <b>Space Station</b> to collect the whole fund.</li>
+        <li>The <b>Wormhole</b> sends you to the Asteroid Belt. Solve a Distributive problem next turn to escape and fly right away.</li>
+        <li>Pass the Launch Pad to collect 100. After the last round, the highest total (stardust plus planet values) wins.</li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="screen hidden">
+  <div class="layout">
+    <div class="board-wrap"><div id="board" class="board"></div></div>
+    <aside class="side">
+      <div id="turnCard" class="card turn"></div>
+      <div id="action" class="card action" aria-live="polite"></div>
+      <div class="card"><h3>Crews</h3><ul id="plist" class="plist"></ul></div>
+      <div class="card log"><h3>Flight log</h3><ul id="log"></ul></div>
+    </aside>
+  </div>
+</section>
+
+<!-- END -->
+<section id="end" class="screen endwrap hidden">
+  <div class="endcard">
+    <h1>Mission complete!</h1>
+    <div class="winner" id="winner"></div>
+    <div class="tbl-wrap"><table id="results"></table></div>
+    <p class="note">Math columns show correct answers out of problems tried. Handy for spotting who needs another look at a property.</p>
+    <div class="row">
+      <button id="rematch" class="btn gold">Rematch with same crews</button>
+      <button id="newSetup" class="btn ghost">New setup</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ---------- Starfield ---------- */
+(function(){
+  const c=document.getElementById('stars'),x=c.getContext('2d');
+  function draw(){c.width=innerWidth;c.height=innerHeight;x.clearRect(0,0,c.width,c.height);
+    const n=Math.floor(c.width*c.height/5000);
+    for(let i=0;i<n;i++){const r=Math.random()*1.4+.2;x.globalAlpha=Math.random()*.7+.2;
+      x.fillStyle=Math.random()<.12?'#f5bd3c':(Math.random()<.2?'#1cc7b7':'#ffffff');
+      x.beginPath();x.arc(Math.random()*c.width,Math.random()*c.height,r,0,Math.PI*2);x.fill();}}
+  draw();addEventListener('resize',draw);
+})();
+
+/* ---------- Data ---------- */
+const $=id=>document.getElementById(id);
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+const TOKENS=['🚀','🛸','🪐','🌙','👽','☄️','🛰️','⭐'];
+const COLORS=['#1cc7b7','#f5bd3c','#ff7a8a','#a78bfa','#86efac'];
+const START_MONEY=600, PASS_BONUS=100, COMET_PRIZE=50, FLARE_COST=50;
+
+const SYS={
+  rocky:{name:'Rocky Moons',color:'#c08b62'},
+  ice:{name:'Ice Giants',color:'#7dd3fc'},
+  ring:{name:'Ring Worlds',color:'#c084fc'},
+  gas:{name:'Gas Giants',color:'#fb923c'},
+  nova:{name:'Nova Stars',color:'#fde047'}
+};
+const SPACES=[
+  {t:'launch',n:'Launch Pad',i:'🚀'},
+  {t:'prop',n:'Pebble Moon',s:'rocky',p:60},
+  {t:'prop',n:'Dusty Moon',s:'rocky',p:60},
+  {t:'comet',n:'Comet',i:'☄️'},
+  {t:'prop',n:'Crater Moon',s:'rocky',p:80},
+  {t:'flare',n:'Solar Flare',i:'🔥'},
+  {t:'belt',n:'Asteroid Belt',i:'🪨'},
+  {t:'prop',n:'Frost',s:'ice',p:100},
+  {t:'prop',n:'Glacia',s:'ice',p:100},
+  {t:'prop',n:'Hailstone',s:'ice',p:120},
+  {t:'comet',n:'Comet',i:'☄️'},
+  {t:'prop',n:'Halo',s:'ring',p:140},
+  {t:'station',n:'Space Station',i:'🛰️'},
+  {t:'prop',n:'Loop',s:'ring',p:140},
+  {t:'prop',n:'Orbit Ring',s:'ring',p:160},
+  {t:'flare',n:'Solar Flare',i:'🔥'},
+  {t:'prop',n:'Storm',s:'gas',p:180},
+  {t:'prop',n:'Swirl',s:'gas',p:180},
+  {t:'wormhole',n:'Wormhole',i:'🌀'},
+  {t:'prop',n:'Tempest',s:'gas',p:200},
+  {t:'comet',n:'Comet',i:'☄️'},
+  {t:'prop',n:'Ember',s:'nova',p:220},
+  {t:'prop',n:'Blaze',s:'nova',p:240},
+  {t:'prop',n:'Supernova',s:'nova',p:260}
+];
+const N=SPACES.length;
+const MOVE={Commutative:2,Associative:3,Distributive:5};
+const LV={Commutative:1,Associative:2,Distributive:3};
+const HINT={
+  Commutative:'Switch the order of the factors',
+  Associative:'Change the grouping',
+  Distributive:'Break apart, multiply, add'
+};
+const EXPLAIN={
+  Commutative:'Commutative Property: you can switch the order of the factors and the product stays the same. 4 × 7 is the same as 7 × 4.',
+  Associative:'Associative Property: you can change the grouping (where the parentheses go) and the product stays the same. Group a friendly pair first, like 2 × 5 = 10.',
+  Distributive:'Distributive Property: break one factor into parts, multiply each part, then add the products. 6 × 14 = (6 × 10) + (6 × 4) = 60 + 24 = 84.'
+};
+
+/* ---------- Problem generators ---------- */
+const B=a=>({a});
+function isChallenge(){return S.level==='challenge';}
+
+function genCommutative(){
+  const ch=isChallenge();
+  const a=ch?ri(12,99):ri(2,9); let b=ri(2,9); if(!ch&&b===a)b=a===9?8:a+1;
+  switch(ri(1,4)){
+    case 1:return[`${a} × ${b} = ${b} × `,B(a)];
+    case 2:return[B(b),` × ${a} = ${a} × ${b}`];
+    case 3:return[`If ${a} × ${b} = ${a*b}, then ${b} × ${a} = `,B(a*b)];
+    default:return[`${a} × ${b} = `,B(b),` × `,B(a)];
+  }
+}
+function genAssociative(){
+  const ch=isChallenge();
+  const pair=ch?pick([[4,5],[5,4],[5,6],[6,5],[2,5],[5,8]]):pick([[2,5],[5,2],[2,3],[3,2],[2,4]]);
+  const [p,q]=pair; const a=ch?ri(3,12):ri(2,9);
+  switch(ri(1,3)){
+    case 1:{const x=ri(2,ch?9:6),y=ri(2,ch?9:6),z=ri(2,ch?9:6);return[`(${x} × ${y}) × ${z} = ${x} × (${y} × `,B(z),`)`];}
+    case 2:return[`${a} × ${p} × ${q} = ${a} × (${p} × ${q}) = ${a} × `,B(p*q),` = `,B(a*p*q)];
+    default:return[`(${a} × ${p}) × ${q} = `,B(a),` × (${p} × ${q}) = `,B(a*p*q)];
+  }
+}
+function genDistributive(){
+  const ch=isChallenge();
+  const m=ri(2,9);
+  let n; do{n=ch?ri(21,99):ri(11,19);}while(n%10===0);
+  const o=n%10, t=n-o;
+  switch(ri(1,4)){
+    case 1:return[`${m} × ${n} = (${m} × ${t}) + (${m} × `,B(o),`)`];
+    case 2:return[`${m} × ${n} = ${m} × (${t} + ${o}) = `,B(m*t),` + `,B(m*o),` = `,B(m*n)];
+    case 3:return[`${m} × (${t} + ${o}) = (${m} × ${t}) + (${m} × ${o}) = `,B(m*n)];
+    default:{const k=ri(6,9);return[`${m} × ${k} = (${m} × 5) + (${m} × `,B(k-5),`) = `,B(m*k)];}
+  }
+}
+const GEN={Commutative:genCommutative,Associative:genAssociative,Distributive:genDistributive};
+
+function example(prop){
+  const a=ri(2,9);let b=ri(2,9);if(b===a)b=a===9?8:a+1;const c=ri(2,9),m=ri(2,9),n=ri(11,19);
+  if(prop==='Commutative')return `${a} × ${b} = ${b} × ${a}`;
+  if(prop==='Associative')return `(${a} × ${b}) × ${c} = ${a} × (${b} × ${c})`;
+  return `${m} × ${n} = (${m} × 10) + (${m} × ${n-10})`;
+}
+
+/* ---------- State ---------- */
+let S=null;
+const setupState={count:4,rounds:8,level:'core',players:[]};
+for(let i=0;i<5;i++)setupState.players.push({name:`Team ${i+1}`,token:TOKENS[i]});
+const cp=()=>S.players[S.cur];
+
+/* ---------- Setup screen ---------- */
+function seg(el,vals,cur,labels,onPick){
+  el.innerHTML=vals.map((v,k)=>`<button data-v="${v}" class="${v===cur?'on':''}">${labels?labels[k]:v}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{onPick(isNaN(b.dataset.v)?b.dataset.v:Number(b.dataset.v));});
+}
+function renderSetup(){
+  seg($('countSeg'),[2,3,4,5],setupState.count,null,v=>{setupState.count=v;renderSetup();});
+  seg($('roundSeg'),[6,8,10,12],setupState.rounds,null,v=>{setupState.rounds=v;renderSetup();});
+  seg($('levelSeg'),['core','challenge'],setupState.level,['Core','Challenge'],v=>{setupState.level=v;renderSetup();});
+  $('levelNote').textContent=setupState.level==='core'
+    ? 'Core: facts to 9 × 9, friendly pairs, and 1-digit × teen numbers for distributive.'
+    : 'Challenge: 2-digit factors, bigger friendly pairs, and 1-digit × 2-digit numbers up to 99.';
+  const pf=$('playerFields');pf.innerHTML='';
+  for(let i=0;i<setupState.count;i++){
+    const p=setupState.players[i];
+    const row=document.createElement('div');row.className='prow';
+    row.innerHTML=`<button class="tokbtn" style="border-color:${COLORS[i]}" aria-label="Change token">${p.token}</button>
+      <input maxlength="14" value="${p.name.replace(/"/g,'&quot;')}" aria-label="Name for crew ${i+1}">`;
+    row.querySelector('button').onclick=()=>{
+      const used=setupState.players.slice(0,setupState.count).map(x=>x.token);
+      let k=TOKENS.indexOf(p.token);
+      for(let s=0;s<TOKENS.length;s++){k=(k+1)%TOKENS.length;if(!used.includes(TOKENS[k]))break;}
+      p.token=TOKENS[k];renderSetup();
+    };
+    row.querySelector('input').oninput=e=>{p.name=e.target.value;};
+    pf.appendChild(row);
+  }
+}
+$('startBtn').onclick=startGame;
+$('rematch').onclick=startGame;
+$('newSetup').onclick=()=>{show('setup');};
+
+function show(id){['setup','game','end'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0);}
+
+function startGame(){
+  S={
+    players:setupState.players.slice(0,setupState.count).map((p,i)=>({
+      name:(p.name.trim()||`Team ${i+1}`).slice(0,14),token:p.token,color:COLORS[i],pos:0,money:START_MONEY,stuck:false,
+      stats:{Commutative:[0,0],Associative:[0,0],Distributive:[0,0],Identify:[0,0]}
+    })),
+    cur:0,round:1,maxRounds:setupState.rounds,level:setupState.level,fund:0,owner:{},moving:-1
+  };
+  $('log').innerHTML='';
+  buildBoard();show('game');
+  log(`Mission start! ${S.maxRounds} rounds. Everyone begins with ✦${START_MONEY}.`);
+  startTurn();
+}
+
+/* ---------- Board ---------- */
+function cellPos(i){ // [row,col] on a 7x7 grid, 0 is bottom-right, moving clockwise
+  if(i<=6)return[7,7-i];
+  if(i<=12)return[7-(i-6),1];
+  if(i<=18)return[1,1+(i-12)];
+  return[1+(i-18),7];
+}
+function buildBoard(){
+  const b=$('board');b.innerHTML='';
+  SPACES.forEach((s,i)=>{
+    const d=document.createElement('div');d.id='c'+i;
+    const [r,c]=cellPos(i);d.style.gridRow=r;d.style.gridColumn=c;
+    b.appendChild(d);
+  });
+  const ctr=document.createElement('div');ctr.className='center';
+  ctr.innerHTML=`<div class="orbit-ring"></div>
+    <div class="logo"><span class="a">Supernova</span><span class="b">Orbit</span></div>
+    <div class="cstat">Round <b id="rNum"></b> of <b id="rMax"></b></div>
+    <div class="cstat">Cosmic Fund: <b id="fundAmt"></b></div>
+    <div class="legend"><span>L1 Commutative: 2</span><span>L2 Associative: 3</span><span>L3 Distributive: 5</span></div>
+    <button id="endEarly" class="btn ghost">End game now</button>`;
+  b.appendChild(ctr);
+  $('endEarly').onclick=()=>{if(confirm('End the game now and see the results?'))endGame();};
+  renderBoard();
+}
+function ownsSystem(pi,sys){
+  return SPACES.every((s,i)=>s.s!==sys||S.owner[i]===pi);
+}
+function baseRent(i){return Math.round(SPACES[i].p/4/5)*5;}
+function rent(i){const o=S.owner[i];return baseRent(i)*(o!==undefined&&ownsSystem(o,SPACES[i].s)?2:1);}
+function renderBoard(){
+  const curPos=S.players[S.cur].pos;
+  SPACES.forEach((s,i)=>{
+    const d=$('c'+i);
+    const corner=[0,6,12,18].includes(i);
+    let cls='cell '+(s.t==='prop'?'prop':'special')+(corner?' corner':'')+(i===curPos?' here':'');
+    let html='';
+    if(s.t==='prop'){
+      html=`<div class="band" style="background:${SYS[s.s].color}"></div><div class="nm">${s.n}</div><div class="pr">✦${s.p}</div>`;
+      const o=S.owner[i];
+      if(o!==undefined){const op=S.players[o];html+=`<div class="own" title="Owned by ${op.name}">${op.token}</div>`;d.style.borderColor=op.color;}
+      else d.style.borderColor='';
+    }else{html=`<div class="ic">${s.i}</div><div class="nm">${s.n}</div>`;d.style.borderColor='';}
+    const here=S.players.map((p,k)=>({p,k})).filter(x=>x.p.pos===i);
+    if(here.length)html+=`<div class="toks">${here.map(x=>`<span class="tok${x.k===S.moving?' hop':''}" style="--c:${x.p.color}">${x.p.token}</span>`).join('')}</div>`;
+    d.className=cls;d.innerHTML=html;
+    d.title=s.t==='prop'?`${s.n} (${SYS[s.s].name}), price ${s.p}, rent ${baseRent(i)}`:s.n;
+  });
+  $('rNum').textContent=Math.min(S.round,S.maxRounds);$('rMax').textContent=S.maxRounds;$('fundAmt').textContent='✦'+S.fund;
+}
+function netWorth(pi){
+  let w=S.players[pi].money;for(const k in S.owner)if(S.owner[k]===pi)w+=SPACES[k].p;return w;
+}
+function renderPlayers(){
+  $('plist').innerHTML=S.players.map((p,k)=>{
+    const dots=SPACES.map((s,i)=>S.owner[i]===k?`<i style="background:${SYS[s.s].color}" title="${s.n}"></i>`:'').join('');
+    return `<li class="${k===S.cur?'now':''}" style="--c:${p.color}"><span class="tk">${p.token}</span>
+      <div><div class="pn" style="color:${p.color}">${esc(p.name)}${p.stuck?' 🪨':''}</div><div class="dots">${dots||'<span class="note">No planets yet</span>'}</div></div>
+      <div class="m">✦${p.money}<small>total ✦${netWorth(k)}</small></div></li>`;
+  }).join('');
+}
+function renderTurn(){
+  const p=cp();const t=$('turnCard');t.style.setProperty('--c',p.color);
+  t.innerHTML=`<span class="big">${p.token}</span><div><div class="who" style="color:${p.color}">${esc(p.name)}</div><div class="sub">Your turn. Stardust: ✦${p.money}</div></div>`;
+}
+function renderAll(){renderBoard();renderPlayers();renderTurn();}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function log(msg){const li=document.createElement('li');li.textContent=msg;const ul=$('log');ul.prepend(li);while(ul.children.length>50)ul.lastChild.remove();}
+
+/* ---------- Action panel helpers ---------- */
+function act(html,handlers={}){
+  $('action').innerHTML=html;
+  for(const id in handlers){const el=$(id);if(el)el.onclick=handlers[id];}
+  const first=$('action').querySelector('input,button');if(first)first.focus({preventScroll:true});
+}
+function spaceChip(i){
+  const s=SPACES[i];
+  return s.t==='prop'?`<span class="chip"><i style="background:${SYS[s.s].color}"></i>${s.n}</span>`:`<span class="chip">${s.i} ${s.n}</span>`;
+}
+function finish(msg){
+  renderAll();
+  act(`${spaceChip(cp().pos)}<p>${msg}</p><div class="row"><button id="endTurn" class="btn gold">End turn</button></div>`,{endTurn:nextTurn});
+}
+function rec(p,key,ok){p.stats[key][1]++;if(ok)p.stats[key][0]++;}
+
+/* ---------- Turn flow ---------- */
+function startTurn(){
+  const p=cp();renderAll();
+  if(p.stuck){
+    act(`<p><b>🪨 ${esc(p.name)} is stuck in the Asteroid Belt!</b></p><p>Solve a Distributive problem to blast free and fly this turn. If you miss, you drift free for next turn.</p>
+      <div class="row"><button id="go" class="btn gold">Try to escape</button></div>`,
+      {go:()=>askProblem('Distributive','Correct! You blasted free. Now pick a thruster.','The rocks hold you this turn. You will drift free next turn.',ok=>{
+        p.stuck=false;renderPlayers();
+        if(ok){log(`${p.token} ${p.name} escaped the Asteroid Belt.`);chooseThruster();}
+        else{log(`${p.token} ${p.name} is still stuck this turn.`);finish(`${esc(p.name)} waits in the Asteroid Belt this turn.`);}
+      })});
+    return;
+  }
+  chooseThruster();
+}
+function destInfo(i){
+  const s=SPACES[i];
+  if(s.t!=='prop')return `Lands on ${s.n}`;
+  const o=S.owner[i];
+  if(o===undefined)return `Lands on ${s.n} (for sale, ✦${s.p})`;
+  if(o===S.cur)return `Lands on ${s.n} (yours)`;
+  return `Lands on ${s.n} (rent ✦${rent(i)})`;
+}
+function chooseThruster(){
+  const p=cp();
+  const btn=prop=>{const dest=(p.pos+MOVE[prop])%N;
+    return `<button class="thr" data-p="${prop}"><span class="lv">${LV[prop]}</span>
+      <span><span class="t">${prop}</span><br><span class="d">${HINT[prop]}. ${destInfo(dest)}</span></span>
+      <span class="mv">+${MOVE[prop]}</span></button>`;};
+  act(`<p><b>Pick a thruster.</b> Harder problems fly farther.</p>${['Commutative','Associative','Distributive'].map(btn).join('')}`);
+  $('action').querySelectorAll('.thr').forEach(b=>b.onclick=()=>{
+    const prop=b.dataset.p;
+    askProblem(prop,`Correct! Thrusters firing: move ${MOVE[prop]} spaces.`,'Your ship stays in place this turn.',ok=>{
+      if(ok){log(`${p.token} ${p.name} solved a ${prop} problem and flew ${MOVE[prop]} spaces.`);move(MOVE[prop],land);}
+      else{log(`${p.token} ${p.name} missed a ${prop} problem.`);finish(`${esc(p.name)} stays in orbit. Better luck next turn!`);}
+    });
+  });
+}
+
+/* ---------- Problems ---------- */
+function eqHTML(parts){
+  let k=0;
+  return parts.map(x=>typeof x==='string'?esc(x):`<input class="blank" inputmode="numeric" autocomplete="off" aria-label="Answer box ${++k}" style="width:${String(x.a).length+2.2}ch">`).join('');
+}
+function solvedHTML(parts){return parts.map(x=>typeof x==='string'?esc(x):`<b class="ans">${x.a}</b>`).join('');}
+
+function askProblem(prop,okMsg,badMsg,cb){
+  const p=cp();const parts=GEN[prop]();
+  const answers=parts.filter(x=>typeof x!=='string').map(x=>x.a);
+  act(`<span class="badge">Level ${LV[prop]}: ${prop}</span>
+    <div class="eq" id="eq">${eqHTML(parts)}</div>
+    <div class="row"><button id="sub" class="btn gold">Check answer</button></div><div id="fb"></div>`);
+  const ins=[...document.querySelectorAll('#eq .blank')];
+  let done=false;
+  const check=()=>{
+    if(done)return;
+    const vals=ins.map(el=>el.value.trim());
+    if(vals.some(v=>v==='')){$('fb').innerHTML='<p class="warn">Fill in every box first.</p>';return;}
+    done=true;let ok=true;
+    ins.forEach((el,k)=>{const good=/^\d+$/.test(vals[k])&&Number(vals[k])===answers[k];el.classList.add(good?'right':'wrong');el.disabled=true;if(!good)ok=false;});
+    rec(p,prop,ok);$('sub').remove();
+    $('fb').innerHTML=ok
+      ? `<p class="fb-good">✅ ${okMsg}</p><div class="row"><button id="cont" class="btn gold">Continue</button></div>`
+      : `<p class="fb-bad">Not quite. ${badMsg}</p><p>Here are the correct steps:</p><div class="eq sm">${solvedHTML(parts)}</div>
+         <p class="explain">${EXPLAIN[prop]}</p><div class="row"><button id="cont" class="btn">Continue</button></div>`;
+    $('cont').onclick=()=>cb(ok);$('cont').focus();
+  };
+  $('sub').onclick=check;
+  ins.forEach((el,k)=>el.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();const nxt=ins.slice(k+1).find(x=>!x.value.trim());if(nxt)nxt.focus();else check();}
+  }));
+  ins[0].focus();
+}
+
+function askIdentify(cb){
+  const p=cp();
+  const props=['Commutative','Associative','Distributive'];
+  const target=pick(props);
+  let q,opts,correct;
+  if(Math.random()<.5){
+    q=`Which property does this equation show?<div class="eq sm" style="margin:6px 0">${example(target)}</div>`;
+    opts=shuffle(props.slice()).map(x=>({label:`${x} Property`,val:x}));correct=target;
+  }else{
+    q=`Which equation shows the <b>${target} Property</b>?`;
+    opts=shuffle(props.map(x=>({label:example(x),val:x})));correct=target;
+  }
+  act(`<span class="badge">☄️ Comet catch</span><p>${q}</p><div id="opts">${opts.map((o,k)=>`<button class="choice" data-v="${o.val}">${o.label}</button>`).join('')}</div><div id="fb"></div>`);
+  const btns=[...document.querySelectorAll('#opts .choice')];
+  btns.forEach(b=>b.onclick=()=>{
+    const ok=b.dataset.v===correct;rec(p,'Identify',ok);
+    btns.forEach(x=>{x.disabled=true;if(x.dataset.v===correct)x.classList.add('right');});
+    if(!ok)b.classList.add('wrong');
+    $('fb').innerHTML=(ok?`<p class="fb-good">✅ Correct!</p>`:`<p class="fb-bad">Not this time.</p>`)+`<p class="explain">${EXPLAIN[correct]}</p><div class="row"><button id="cont" class="btn gold">Continue</button></div>`;
+    $('cont').onclick=()=>cb(ok);$('cont').focus();
+  });
+}
+
+/* ---------- Movement and landing ---------- */
+function move(n,done){
+  const p=cp();S.moving=S.cur;$('action').innerHTML='<p><b>🚀 Flying...</b></p>';
+  let left=n;
+  const step=()=>{
+    p.pos=(p.pos+1)%N;
+    if(p.pos===0){p.money+=PASS_BONUS;log(`${p.token} ${p.name} passed the Launch Pad and collected ✦${PASS_BONUS}.`);}
+    renderBoard();renderPlayers();renderTurn();left--;
+    if(left>0)setTimeout(step,280);else{S.moving=-1;setTimeout(done,300);}
+  };
+  setTimeout(step,150);
+}
+function charge(pi,amt){
+  const p=S.players[pi];const sold=[];
+  while(p.money<amt){
+    const mine=Object.keys(S.owner).map(Number).filter(i=>S.owner[i]===pi).sort((a,b)=>SPACES[a].p-SPACES[b].p);
+    if(!mine.length)break;
+    const i=mine[0];delete S.owner[i];const back=SPACES[i].p/2;p.money+=back;sold.push(`${SPACES[i].n} (✦${back})`);
+  }
+  const paid=Math.min(amt,p.money);p.money-=paid;
+  if(sold.length)log(`${p.token} ${p.name} sold ${sold.join(', ')} back to the bank to pay.`);
+  return{paid,soldTxt:sold.length?` To pay, ${esc(p.name)} sold ${sold.join(', ')} back to the bank for half price.`:''};
+}
+function land(){
+  const p=cp(),i=p.pos,s=SPACES[i];renderAll();
+  const chip=spaceChip(i);
+  switch(s.t){
+    case 'prop':{
+      const o=S.owner[i];
+      if(o===undefined){
+        if(p.money>=s.p){
+          act(`${chip}<p><b>${s.n}</b> in the ${SYS[s.s].name} is for sale.</p><p>Price ✦${s.p}. Rent ✦${baseRent(i)}, doubled if you own all 3 ${SYS[s.s].name}.</p>
+            <div class="row"><button id="buy" class="btn gold">Buy for ✦${s.p}</button><button id="pass" class="btn ghost">No thanks</button></div>`,
+          {buy:()=>{p.money-=s.p;S.owner[i]=S.cur;log(`${p.token} ${p.name} bought ${s.n} for ✦${s.p}.`);
+              const full=ownsSystem(S.cur,s.s);if(full)log(`${p.token} ${p.name} owns all the ${SYS[s.s].name}!`);
+              finish(`${esc(p.name)} now owns ${s.n}!${full?` That completes the ${SYS[s.s].name}, so rent there doubles!`:''}`);},
+           pass:()=>finish(`${esc(p.name)} decided not to buy ${s.n}.`)});
+        }else finish(`${s.n} costs ✦${s.p}, but ${esc(p.name)} only has ✦${p.money}. Keep flying!`);
+      }else if(o===S.cur){finish(`Welcome home to ${s.n}! You already own this planet.`);}
+      else{
+        const owner=S.players[o],r=rent(i),full=ownsSystem(o,s.s);
+        const {paid,soldTxt}=charge(S.cur,r);owner.money+=paid;
+        log(`${p.token} ${p.name} paid ✦${paid} rent to ${owner.token} ${owner.name}.`);
+        finish(`${s.n} belongs to ${owner.token} ${esc(owner.name)}. ${esc(p.name)} pays ✦${paid} rent${full?' (full system, double rent!)':''}.${soldTxt}`);
+      }
+      break;}
+    case 'comet':
+      act(`${chip}<p>A comet streaks past! Name the property correctly to catch ✦${COMET_PRIZE}.</p><div class="row"><button id="go" class="btn gold">Catch the comet</button></div>`,
+        {go:()=>askIdentify(ok=>{if(ok){p.money+=COMET_PRIZE;log(`${p.token} ${p.name} caught a comet: +✦${COMET_PRIZE}.`);}
+          finish(ok?`${esc(p.name)} caught the comet: +✦${COMET_PRIZE}!`:'The comet got away this time.');})});
+      break;
+    case 'flare':{
+      const {paid,soldTxt}=charge(S.cur,FLARE_COST);S.fund+=paid;log(`${p.token} ${p.name} paid ✦${paid} to the Cosmic Fund.`);
+      finish(`Solar flare! ${esc(p.name)} pays ✦${paid} for shield repairs. It goes into the Cosmic Fund.${soldTxt}`);break;}
+    case 'station':{
+      const f=S.fund;p.money+=f;S.fund=0;if(f)log(`${p.token} ${p.name} collected the Cosmic Fund: +✦${f}.`);
+      finish(f?`${esc(p.name)} docks at the Space Station and collects the Cosmic Fund: +✦${f}!`:`${esc(p.name)} docks at the Space Station. The Cosmic Fund is empty, so enjoy the view.`);break;}
+    case 'wormhole':
+      act(`${chip}<p>🌀 A wormhole grabs ${esc(p.name)}'s ship and pulls it into the Asteroid Belt!</p><div class="row"><button id="go" class="btn">Get pulled in</button></div>`,
+        {go:()=>{p.pos=6;p.stuck=true;log(`${p.token} ${p.name} fell through the wormhole into the Asteroid Belt.`);
+          finish(`${esc(p.name)} is stuck in the Asteroid Belt. Next turn, solve a Distributive problem to escape.`);}});
+      break;
+    case 'belt':finish(`${esc(p.name)} is just flying past the Asteroid Belt. Safe!`);break;
+    default:finish(`${esc(p.name)} landed right on the Launch Pad.`);
+  }
+}
+function nextTurn(){
+  S.cur++;
+  if(S.cur>=S.players.length){S.cur=0;S.round++;if(S.round<=S.maxRounds)log(`Round ${S.round} begins.`);}
+  if(S.round>S.maxRounds)return endGame();
+  startTurn();
+}
+
+/* ---------- End ---------- */
+function endGame(){
+  const rows=S.players.map((p,k)=>({p,k,w:netWorth(k),planets:Object.values(S.owner).filter(o=>o===k).length})).sort((a,b)=>b.w-a.w);
+  const top=rows[0].w,winners=rows.filter(r=>r.w===top);
+  $('winner').innerHTML=winners.length>1
+    ? `It's a tie between ${winners.map(r=>`${r.p.token} <b style="color:${r.p.color}">${esc(r.p.name)}</b>`).join(' and ')} with ✦${top}!`
+    : `🏆 ${rows[0].p.token} <b style="color:${rows[0].p.color}">${esc(rows[0].p.name)}</b> builds the richest galaxy with ✦${top}!`;
+  const acc=([c,t])=>{if(!t)return '<span class="note">none</span>';const r=c/t;return `<span class="${r>=.8?'acc-hi':r>=.5?'acc-mid':'acc-lo'}">${c}/${t}</span>`;};
+  $('results').innerHTML=`<tr><th>Crew</th><th>Stardust</th><th>Planets</th><th>Total</th><th>Commutative</th><th>Associative</th><th>Distributive</th><th>Comet ID</th></tr>`+
+    rows.map(r=>`<tr class="${r.w===top?'first':''}"><td>${r.p.token} ${esc(r.p.name)}</td><td>✦${r.p.money}</td><td>${r.planets}</td><td>✦${r.w}</td>
+      <td>${acc(r.p.stats.Commutative)}</td><td>${acc(r.p.stats.Associative)}</td><td>${acc(r.p.stats.Distributive)}</td><td>${acc(r.p.stats.Identify)}</td></tr>`).join('');
+  show('end');
+}
+
+renderSetup();
+</script>
+</body>
+</html>
