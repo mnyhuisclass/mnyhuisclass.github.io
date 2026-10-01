@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chunk Blaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --space:#121a44; --space-2:#1b2660; --teal:#22b8aa; --teal-deep:#0f6e68;
+  --gold:#f6c445; --gold-soft:#ffe39a; --ink:#ecf7f6; --muted:#aac0db; --miss:#ff7a6b;
+  --display:'Bungee','Arial Black',Impact,sans-serif;
+  --body:'Nunito','Trebuchet MS',system-ui,sans-serif;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --space:#121a44; --space-2:#1b2660; } }
+:root[data-theme="dark"]{ --space:#121a44; --space-2:#1b2660; }
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--space);color:var(--ink);font-family:var(--body);overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto;padding:10px 14px 14px;gap:10px}
+
+.hud{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-size:1.2rem;color:var(--gold);line-height:1}
+.brand small{display:block;font-family:var(--body);font-size:.75rem;color:var(--muted);font-weight:600;margin-top:3px}
+.stats{display:flex;gap:20px;margin-left:auto;align-items:center}
+.stat{font-weight:800;text-align:center}
+.stat small{display:block;font-size:.72rem;color:var(--muted);font-weight:600}
+.stat b{font-size:1.15rem;font-variant-numeric:tabular-nums}
+.shields{letter-spacing:2px;font-size:1.25rem;color:var(--teal)}
+.shields .lost{color:#3a4680}
+.iconbtn{width:42px;height:42px;border-radius:12px;border:2px solid var(--teal-deep);background:var(--space-2);color:var(--ink);font-size:1.1rem;cursor:pointer}
+
+.prompt{background:var(--space-2);border:2px solid var(--teal-deep);border-radius:18px;padding:12px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center}
+.speak{grid-row:span 2;width:58px;height:58px;border-radius:50%;border:none;background:var(--teal);color:#06302c;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 0 var(--teal-deep)}
+.speak:active{transform:translateY(3px);box-shadow:0 1px 0 var(--teal-deep)}
+.word{font-family:var(--display);font-size:clamp(2rem,6vw,3.5rem);line-height:1.05;letter-spacing:.04em;min-height:1.1em}
+.gap{display:inline-block;min-width:1.5em;border-bottom:.11em solid var(--gold);margin:0 .06em;text-align:center;color:transparent;transition:color .2s}
+.gap.filled{color:var(--gold)}
+.gap.revealed{color:var(--miss);border-color:var(--miss)}
+.clue{color:var(--muted);font-size:1.05rem;font-weight:600}
+
+.stage{position:relative;flex:1;min-height:260px;border-radius:18px;overflow:hidden;border:2px solid var(--teal-deep)}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+
+.overlay{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;padding:22px;background:rgba(14,20,56,.88);overflow:auto}
+.overlay[hidden]{display:none}
+.panel{max-width:640px;width:100%;text-align:center;margin:auto}
+.title{font-family:var(--display);font-weight:400;font-size:clamp(2.4rem,8vw,4.4rem);color:var(--gold);margin:0;line-height:.95;text-shadow:0 5px 0 var(--teal-deep)}
+.lede{font-size:1.1rem;line-height:1.5;margin:14px auto 0;max-width:34em}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0 14px}
+.mode{background:var(--space-2);border:2px solid var(--teal);border-radius:14px;padding:14px 16px;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.mode strong{display:block;font-family:var(--display);font-weight:400;font-size:1.1rem;color:var(--gold);margin-bottom:4px}
+.mode span{color:var(--muted);font-size:.95rem;display:block}
+.mode em{font-style:normal;color:var(--teal);font-size:.85rem;font-weight:800;display:block;margin-top:6px}
+.mode:hover{background:#223074}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer}
+.toggle input{width:20px;height:20px;accent-color:var(--teal)}
+.controls{color:var(--muted);font-size:.92rem;margin-top:12px}
+.big{font-family:var(--display);font-size:1.05rem;padding:12px 22px;border-radius:14px;border:none;background:var(--gold);color:#3a2a00;cursor:pointer;box-shadow:0 4px 0 #b88a12;margin:6px}
+.big.alt{background:var(--teal);color:#06302c;box-shadow:0 4px 0 var(--teal-deep)}
+.starsline{font-size:3rem;color:var(--gold);letter-spacing:6px;margin:10px 0 0}
+.starsline .off{color:#36427a}
+.endstats{display:flex;justify-content:center;gap:28px;margin:14px 0;flex-wrap:wrap}
+.endstats div{font-weight:800;font-size:1.5rem}
+.endstats small{display:block;font-size:.8rem;color:var(--muted);font-weight:600}
+.review{text-align:left;background:var(--space-2);border-radius:14px;padding:12px 16px;margin:10px 0 14px}
+.review h3{margin:0 0 8px;font-size:1rem;color:var(--gold)}
+.review ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px 14px}
+.review li{font-size:1rem}
+.review b{font-family:var(--display);font-weight:400;font-size:1.15rem;letter-spacing:.03em}
+.review mark{background:none;color:var(--gold)}
+.review span{display:block;color:var(--muted);font-size:.85rem}
+
+@media (max-width:560px){
+  .modes{grid-template-columns:1fr}
+  .stats{gap:12px}
+  .brand small{display:none}
+  .speak{width:48px;height:48px;font-size:1.2rem}
+}
+@media (prefers-reduced-motion: reduce){ .gap{transition:none} }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hud">
+    <div class="brand">Chunk Blaster<small>A Supernova arcade game</small></div>
+    <div class="stats">
+      <div class="stat"><small>Score</small><b id="score">0</b></div>
+      <div class="stat"><small>Streak</small><b id="streak">0</b></div>
+      <div class="stat"><small>Word</small><b id="progress">0/12</b></div>
+      <div class="stat"><small>Shields</small><b class="shields" id="shields"></b></div>
+      <button class="iconbtn" id="pauseBtn" aria-label="Pause">❚❚</button>
+    </div>
+  </header>
+
+  <section class="prompt" aria-live="polite">
+    <button class="speak" id="speakBtn" aria-label="Hear the word">🔊</button>
+    <div class="word" id="word">Ready?</div>
+    <div class="clue" id="clue">Pick a mode to start.</div>
+  </section>
+
+  <div class="stage" id="stage">
+    <canvas id="c" aria-label="Game area"></canvas>
+
+    <div class="overlay" id="startScreen">
+      <div class="panel">
+        <h1 class="title">Chunk Blaster</h1>
+        <p class="lede">Read the clue and look at the word. Something is missing! Blast the asteroid with the letter team that finishes the word before it reaches your ship.</p>
+        <div class="modes" id="modes"></div>
+        <label class="toggle"><input type="checkbox" id="soundToggle" checked> Read words aloud and play sounds</label>
+        <p class="controls">Click or tap under an asteroid to fire. Keyboard: arrow keys to move, space bar to fire, P to pause.</p>
+      </div>
+    </div>
+
+    <div class="overlay" id="pauseScreen" hidden>
+      <div class="panel">
+        <h2 class="title">Paused</h2>
+        <p class="lede">Take a breath. Your asteroids will wait.</p>
+        <button class="big" id="resumeBtn">Resume</button>
+        <button class="big alt" id="quitBtn">Pick a new mode</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="endScreen" hidden>
+      <div class="panel">
+        <h2 class="title" id="endTitle">Round complete</h2>
+        <p class="starsline" id="endStars"></p>
+        <div class="endstats">
+          <div><small>Score</small><span id="endScore">0</span></div>
+          <div><small>Right on the first try</small><span id="endFirst">0</span></div>
+          <div><small>Best in this mode</small><span id="endBest">0</span></div>
+        </div>
+        <div class="review" id="review"></div>
+        <button class="big" id="againBtn">Play again</button>
+        <button class="big alt" id="menuBtn">Pick a new mode</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- Word bank ---------- */
+const RAW = {
+  digraphs: {
+    label: 'Digraphs',
+    sample: 'sh, ch, th, wh, ph, ck, ng, wr, kn, tch',
+    chunks: ['sh','ch','th','wh','ph','ck','ng','wr','kn','tch'],
+    words: `
+[sh]ark|An ocean hunter with rows of sharp teeth
+[ch]eese|A snack that mice love
+[th]umb|The short, thick finger on your hand
+[wh]ale|The biggest animal in the ocean
+[ph]one|You use it to call or text someone
+tru[ck]|A big vehicle that carries heavy loads
+ki[ng]|A ruler who wears a crown
+[wr]ist|It connects your hand to your arm
+[kn]ee|The joint in the middle of your leg
+ma[tch]|A small stick you strike to make a flame
+bru[sh]|You use it to clean your teeth or fix your hair
+tee[th]|You chew your food with these
+ben[ch]|A long seat at the park
+[wh]eel|A bike has two of these
+[kn]ock|Tap on a door so someone opens it
+[wr]ite|Put words on paper with a pencil
+dol[ph]in|A smart sea animal that clicks and whistles
+swi[tch]|Flip it to turn on the lights
+ja[ck]et|Wear it when it is chilly outside
+stro[ng]|Able to lift heavy things
+gra[ph]|A chart that shows data
+[wh]isper|Talk very, very quietly
+cra[sh]|What happens when two cars bump hard
+ki[tch]en|The room where you cook dinner`
+  },
+  blends: {
+    label: 'Vowel blends',
+    sample: 'oi, oy, ou, ow, au, aw, ew',
+    chunks: ['oi','oy','ou','ow','au','aw','ew'],
+    words: `
+c[oi]n|Round metal money
+t[oy]|Something fun to play with
+cl[ou]d|White and fluffy, floating in the sky
+cr[ow]n|A king or queen wears this on their head
+l[au]nch|Send a rocket up into space
+dr[aw]|Make a picture with a pencil
+n[ew]|The opposite of old
+s[oi]l|Dirt that plants grow in
+enj[oy]|To like doing something a lot
+m[ou]th|You eat and talk with it
+t[ow]el|Dry off with this after a bath
+s[au]ce|Pour this on top of pasta
+str[aw]|Sip a drink through this
+scr[ew]|A metal piece you twist into wood
+p[oi]nt|Show something with your finger
+r[oy]al|Belonging to a king or queen
+gr[ou]nd|The surface you walk on
+fr[ow]n|The opposite of a smile
+h[aw]k|A bird that hunts from high in the sky
+thr[ew]|Tossed a ball yesterday
+n[oi]se|A loud sound
+destr[oy]|To wreck something completely
+sh[ou]t|Yell very loudly
+[ow]l|A bird that hoots at night
+f[au]cet|Turn it on to get water at the sink
+cr[aw]l|Move on your hands and knees
+j[ew]el|A sparkly stone like a diamond`
+  },
+  teams: {
+    label: 'Vowel teams',
+    sample: 'ai, ay, ee, ea, oa, ow, ie, igh, ue, oo, ui',
+    chunks: ['ai','ay','ee','ea','oa','ow','ie','igh','ue','oo','ui'],
+    words: `
+tr[ai]n|It rides on railroad tracks
+pl[ay]|Have fun at recess
+tr[ee]|It has a trunk, branches, and leaves
+b[ea]ch|A sandy place by the ocean
+b[oa]t|It floats on the water
+sn[ow]|White flakes that fall in winter
+p[ie]|A round dessert with a crust
+n[igh]t|The time when the moon is out
+bl[ue]|The color of the sky
+m[oo]n|It glows in the night sky
+fr[ui]t|Apples and bananas are this
+r[ai]n|Water falling from the clouds
+cr[ay]on|A waxy stick for coloring
+sh[ee]p|A farm animal with woolly fur
+dr[ea]m|A story your brain tells while you sleep
+t[oa]st|Crunchy warm bread for breakfast
+gr[ow]|Get bigger over time
+t[ie]|Something worn around the neck with a dress shirt
+l[igh]t|Flip the switch to turn this on
+gl[ue]|Sticky stuff for crafts
+sp[oo]n|You eat soup with it
+s[ui]t|A fancy jacket and pants that match
+p[ai]nt|Brush this on a wall to change its color
+holid[ay]|A special day off, like Thanksgiving
+f[ee]t|You stand on these
+s[ea]l|An ocean animal that barks
+c[oa]t|A warm jacket for winter
+fl[igh]t|A trip on an airplane
+b[oo]k|You read one at bedtime`
+  }
+};
+
+const BANK = {};
+for (const [key, cat] of Object.entries(RAW)) {
+  BANK[key] = {
+    label: cat.label, sample: cat.sample, chunks: cat.chunks,
+    words: cat.words.trim().split('\n').map(line => {
+      const [w, clue] = line.split('|');
+      const m = w.trim().match(/^(.*)\[(.+)\](.*)$/);
+      return { pre: m[1], ans: m[2], post: m[3], clue: clue.trim(), word: m[1] + m[2] + m[3], cat: key };
+    })
+  };
+}
+const MODES = {
+  digraphs: { label: 'Digraphs', desc: 'Two letters, one sound: ' + RAW.digraphs.sample },
+  blends:   { label: 'Vowel blends', desc: 'Vowels that glide together: ' + RAW.blends.sample },
+  teams:    { label: 'Vowel teams', desc: 'Two vowels walking: ' + RAW.teams.sample },
+  mix:      { label: 'Mix it up', desc: 'All three skills in one round' }
+};
+const ROUND = 12;
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const rand = (a, b) => a + Math.random() * (b - a);
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+const bestKey = m => 'chunkBlaster.best.' + m;
+
+/* ---------- Sound ---------- */
+let soundOn = true, actx = null;
+function tone(freq, dur, type = 'sine', vol = 0.12, slideTo = null) {
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur);
+  } catch (e) {}
+}
+const sfx = {
+  fire() { tone(880, 0.08, 'square', 0.04, 1400); },
+  right() { tone(660, 0.12, 'triangle', 0.14); setTimeout(() => tone(990, 0.2, 'triangle', 0.14), 90); },
+  wrong() { tone(220, 0.3, 'sawtooth', 0.08, 110); },
+  miss() { tone(300, 0.4, 'sine', 0.12, 120); }
+};
+function say(text) {
+  if (!soundOn || !('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.85; u.lang = 'en-US';
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ---------- DOM ---------- */
+const canvas = $('#c'), ctx = canvas.getContext('2d'), stage = $('#stage');
+const el = {
+  score: $('#score'), streak: $('#streak'), progress: $('#progress'), shields: $('#shields'),
+  word: $('#word'), clue: $('#clue'), start: $('#startScreen'), pause: $('#pauseScreen'), end: $('#endScreen')
+};
+
+function buildModeButtons() {
+  const wrap = $('#modes'); wrap.innerHTML = '';
+  for (const [key, m] of Object.entries(MODES)) {
+    const b = document.createElement('button');
+    b.className = 'mode';
+    const best = parseInt(store.get(bestKey(key)) || '0', 10);
+    b.innerHTML = `<strong>${m.label}</strong><span>${m.desc}</span>${best ? `<em>Best score: ${best.toLocaleString()}</em>` : ''}`;
+    b.addEventListener('click', () => startGame(key));
+    wrap.appendChild(b);
+  }
+}
+
+/* ---------- Game state ---------- */
+let W = 800, H = 500, DPR = 1, R = 44;
+const S = {
+  mode: null, queue: [], idx: 0, score: 0, streak: 0, shields: 3, firstTry: 0,
+  missed: [], phase: 'menu', current: null, wrongThisWord: false,
+  asteroids: [], bolts: [], parts: [], floats: [], stars: [],
+  shipX: 400, targetX: null, cooldown: 0, betweenT: 0, shake: 0, keys: {}, time: 0
+};
+
+function resize() {
+  const r = stage.getBoundingClientRect();
+  W = Math.max(200, r.width); H = Math.max(200, r.height);
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  R = clamp(Math.min(W / 10, H / 6.5), 28, 52);
+  S.shipX = clamp(S.shipX, 20, W - 20);
+  if (!S.stars.length) {
+    for (let i = 0; i < 130; i++) S.stars.push({ x: Math.random(), y: Math.random(), z: rand(0.2, 1) });
+  }
+}
+window.addEventListener('resize', resize);
+
+function updateHud() {
+  el.score.textContent = S.score.toLocaleString();
+  el.streak.textContent = S.streak;
+  el.progress.textContent = `${Math.min(S.idx + 1, S.queue.length)}/${S.queue.length || ROUND}`;
+  el.shields.innerHTML = [0, 1, 2].map(i => `<span class="${i < S.shields ? '' : 'lost'}">⬢</span>`).join('');
+}
+
+function renderWord(state) {
+  const w = S.current;
+  if (!w) return;
+  const cls = state === 'filled' ? 'gap filled' : state === 'revealed' ? 'gap revealed' : 'gap';
+  el.word.innerHTML = `${w.pre}<span class="${cls}">${w.ans}</span>${w.post}`;
+  el.clue.textContent = w.clue;
+}
+
+function distractorsFor(w) {
+  const same = BANK[w.cat].chunks.filter(c => c !== w.ans);
+  let picks;
+  if (S.mode === 'mix') {
+    const all = [...new Set(Object.values(BANK).flatMap(b => b.chunks))].filter(c => c !== w.ans && !same.includes(c));
+    picks = [...shuffle(same).slice(0, 2), ...shuffle(all).slice(0, 1)];
+  } else {
+    picks = shuffle(same).slice(0, 3);
+  }
+  return [...new Set(picks)].slice(0, 3);
+}
+
+function startGame(mode) {
+  S.mode = mode;
+  let q;
+  if (mode === 'mix') {
+    q = shuffle([...shuffle(BANK.digraphs.words).slice(0, 4), ...shuffle(BANK.blends.words).slice(0, 4), ...shuffle(BANK.teams.words).slice(0, 4)]);
+  } else {
+    q = shuffle(BANK[mode].words).slice(0, ROUND);
+  }
+  Object.assign(S, { queue: q, idx: 0, score: 0, streak: 0, shields: 3, firstTry: 0, missed: [], asteroids: [], bolts: [], parts: [], floats: [], shipX: W / 2, targetX: null });
+  el.start.hidden = true; el.end.hidden = true; el.pause.hidden = true;
+  S.phase = 'playing';
+  nextWord();
+}
+
+function nextWord() {
+  S.current = S.queue[S.idx];
+  S.wrongThisWord = false;
+  renderWord('blank');
+  updateHud();
+  const chunks = shuffle([S.current.ans, ...distractorsFor(S.current)]);
+  const lanes = shuffle(chunks.map((_, i) => i));
+  const n = chunks.length;
+  const speedMult = 1 + S.idx * 0.055;
+  const base = H / 9.5;
+  S.asteroids = chunks.map((chunk, i) => {
+    const lane = lanes[i];
+    return {
+      chunk, correct: chunk === S.current.ans, alive: true, alpha: 1,
+      x: W * (lane + 0.5) / n + rand(-W * 0.03, W * 0.03),
+      y: -R - rand(0, 150),
+      vy: Math.min(base * speedMult * rand(0.9, 1.15), H / 4.5),
+      phase: rand(0, 6.28), rot: rand(0, 6.28), spin: rand(-0.6, 0.6),
+      verts: Array.from({ length: 10 }, (_, k) => { const a = k / 10 * Math.PI * 2, rr = rand(0.84, 1.04); return [Math.cos(a) * rr, Math.sin(a) * rr]; }),
+      craters: Array.from({ length: 3 }, () => [rand(-0.5, 0.5), rand(-0.5, 0.5), rand(0.1, 0.2)])
+    };
+  });
+  S.phase = 'playing';
+  setTimeout(() => { if (S.phase === 'playing') say(S.current.word); }, 250);
+}
+
+function fire() {
+  if (S.phase !== 'playing' || S.cooldown > 0) return;
+  S.cooldown = 0.22;
+  S.bolts.push({ x: S.shipX, y: H - 62 });
+  sfx.fire();
+}
+
+function burst(x, y, color, n) {
+  const count = RM ? Math.ceil(n / 3) : n;
+  for (let i = 0; i < count; i++) {
+    const a = rand(0, 6.28), sp = rand(60, 260);
+    S.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rand(0.5, 1), max: 1, color, size: rand(2, 5) });
+  }
+}
+function floatText(x, y, text, color) { S.floats.push({ x, y, text, color, life: 1.2 }); }
+
+function recordMiss() {
+  if (!S.wrongThisWord) { S.missed.push(S.current); }
+  S.wrongThisWord = true;
+}
+
+function hitCorrect(a) {
+  a.alive = false;
+  burst(a.x, a.y, '#f6c445', 28); burst(a.x, a.y, '#22b8aa', 12);
+  const gain = 100 + Math.min(S.streak, 10) * 15 + Math.round(clamp(1 - a.y / H, 0, 1) * 60);
+  S.score += gain; S.streak++;
+  if (!S.wrongThisWord) S.firstTry++;
+  floatText(a.x, a.y, '+' + gain, '#ffe39a');
+  renderWord('filled'); updateHud(); sfx.right();
+  endWord(1.1);
+}
+
+function hitWrong(a) {
+  a.alive = false;
+  burst(a.x, a.y, '#ff7a6b', 16);
+  floatText(a.x, a.y, `Not "${a.chunk}"`, '#ff7a6b');
+  S.shields--; S.streak = 0; recordMiss();
+  if (!RM) S.shake = 0.35;
+  sfx.wrong(); updateHud();
+  if (S.shields <= 0) { renderWord('revealed'); endWord(1.6); }
+}
+
+function missWord(a) {
+  a.alive = false;
+  S.shields--; S.streak = 0; recordMiss();
+  floatText(W / 2, H - 90, `The team was "${S.current.ans}"`, '#ff7a6b');
+  if (!RM) S.shake = 0.4;
+  renderWord('revealed'); sfx.miss(); updateHud();
+  endWord(1.8);
+}
+
+function endWord(t) { S.phase = 'between'; S.betweenT = t; }
+
+function endGame() {
+  S.phase = 'over';
+  const done = S.shields > 0;
+  const total = S.queue.length;
+  const ratio = S.firstTry / total;
+  const stars = done ? (ratio >= 0.9 ? 3 : ratio >= 0.7 ? 2 : 1) : 0;
+  const key = bestKey(S.mode);
+  const prev = parseInt(store.get(key) || '0', 10);
+  const best = Math.max(prev, S.score);
+  store.set(key, String(best));
+
+  $('#endTitle').textContent = done ? (stars === 3 ? 'Supernova!' : 'Round complete') : 'Shields down';
+  $('#endStars').innerHTML = done ? [0, 1, 2].map(i => `<span class="${i < stars ? '' : 'off'}">★</span>`).join('') : '';
+  $('#endScore').textContent = S.score.toLocaleString() + (S.score > prev && prev > 0 ? ' (new best)' : '');
+  $('#endFirst').textContent = `${S.firstTry} of ${total}`;
+  $('#endBest').textContent = best.toLocaleString();
+  const rev = $('#review');
+  if (S.missed.length) {
+    rev.hidden = false;
+    rev.innerHTML = `<h3>Practice these words</h3><ul>${S.missed.map(w => `<li><b>${w.pre}<mark>${w.ans}</mark>${w.post}</b><span>${w.clue}</span></li>`).join('')}</ul>`;
+  } else {
+    rev.hidden = true; rev.innerHTML = '';
+  }
+  el.end.hidden = false;
+  $('#againBtn').focus();
+}
+
+function showMenu() {
+  S.phase = 'menu';
+  S.asteroids = []; S.bolts = [];
+  el.end.hidden = true; el.pause.hidden = true;
+  buildModeButtons();
+  el.word.textContent = 'Ready?';
+  el.clue.textContent = 'Pick a mode to start.';
+  S.queue = []; S.idx = 0; S.score = 0; S.streak = 0; S.shields = 3;
+  updateHud();
+  el.start.hidden = false;
+}
+
+function setPaused(p) {
+  if (p && (S.phase === 'playing' || S.phase === 'between')) {
+    S.resumePhase = S.phase; S.phase = 'paused'; el.pause.hidden = false; $('#resumeBtn').focus();
+  } else if (!p && S.phase === 'paused') {
+    S.phase = S.resumePhase; el.pause.hidden = true; S.last = performance.now();
+  }
+}
+
+/* ---------- Update ---------- */
+function update(dt) {
+  S.time += dt;
+  for (const s of S.stars) { s.y += (RM ? 0.004 : 0.02) * s.z * dt; if (s.y > 1) { s.y = 0; s.x = Math.random(); } }
+
+  if (S.phase === 'paused' || S.phase === 'menu' || S.phase === 'over') return;
+
+  // Ship
+  const left = S.keys.ArrowLeft || S.keys.a, right = S.keys.ArrowRight || S.keys.d;
+  if (left || right) { S.shipX += (right ? 1 : -1) * W * 0.75 * dt; S.targetX = null; }
+  else if (S.targetX != null) S.shipX += (S.targetX - S.shipX) * Math.min(1, dt * 14);
+  S.shipX = clamp(S.shipX, 20, W - 20);
+  S.cooldown -= dt;
+  if (S.shake > 0) S.shake -= dt;
+
+  // Bolts
+  for (const b of S.bolts) b.y -= H * 1.8 * dt;
+  S.bolts = S.bolts.filter(b => b.y > -20 && !b.dead);
+
+  // Asteroids
+  for (const a of S.asteroids) {
+    if (!a.alive) continue;
+    a.y += a.vy * dt;
+    a.x += Math.sin(S.time * 1.2 + a.phase) * 12 * dt;
+    a.rot += a.spin * dt;
+    if (S.phase === 'between') { a.alpha -= dt * 2.2; if (a.alpha <= 0) a.alive = false; continue; }
+    for (const b of S.bolts) {
+      if (b.dead) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      if (dx * dx + dy * dy < (R * 0.95) * (R * 0.95)) {
+        b.dead = true;
+        a.correct ? hitCorrect(a) : hitWrong(a);
+        break;
+      }
+    }
+    if (a.alive && S.phase === 'playing' && a.y - R * 0.5 > H - 50) {
+      if (a.correct) missWord(a); else a.alive = false;
+    }
+  }
+
+  if (S.phase === 'between') {
+    S.betweenT -= dt;
+    if (S.betweenT <= 0) {
+      if (S.shields <= 0 || S.idx + 1 >= S.queue.length) { if (S.shields > 0) S.idx = S.queue.length - 1; endGame(); }
+      else { S.idx++; nextWord(); }
+    }
+  }
+
+  // Particles and floating text
+  for (const p of S.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.97; p.vy *= 0.97; p.life -= dt; }
+  S.parts = S.parts.filter(p => p.life > 0);
+  for (const f of S.floats) { f.y -= 40 * dt; f.life -= dt; }
+  S.floats = S.floats.filter(f => f.life > 0);
+}
+
+/* ---------- Draw ---------- */
+function drawAsteroid(a) {
+  ctx.save();
+  ctx.globalAlpha = clamp(a.alpha, 0, 1);
+  ctx.translate(a.x, a.y);
+  ctx.save();
+  ctx.rotate(a.rot);
+  ctx.beginPath();
+  a.verts.forEach(([vx, vy], i) => i ? ctx.lineTo(vx * R, vy * R) : ctx.moveTo(vx * R, vy * R));
+  ctx.closePath();
+  ctx.fillStyle = '#2c3974'; ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = '#22b8aa'; ctx.stroke();
+  ctx.fillStyle = 'rgba(10,16,48,.35)';
+  for (const [cx, cy, cr] of a.craters) { ctx.beginPath(); ctx.arc(cx * R, cy * R, cr * R, 0, 6.28); ctx.fill(); }
+  ctx.restore();
+  const fs = Math.round(R * (a.chunk.length > 2 ? 0.5 : 0.66));
+  ctx.font = `${fs}px Bungee, 'Arial Black', sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = 5; ctx.strokeStyle = '#121a44'; ctx.strokeText(a.chunk, 0, 2);
+  ctx.fillStyle = '#ecf7f6'; ctx.fillText(a.chunk, 0, 2);
+  ctx.restore();
+}
+
+function drawShip() {
+  const y = H - 36;
+  ctx.save();
+  ctx.translate(S.shipX, y);
+  const flick = RM ? 1 : rand(0.8, 1.2);
+  ctx.beginPath(); ctx.moveTo(-7, 14); ctx.lineTo(0, 14 + 16 * flick); ctx.lineTo(7, 14); ctx.closePath();
+  ctx.fillStyle = '#f6c445'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-14, 4); ctx.lineTo(-22, 16); ctx.lineTo(-9, 12); ctx.closePath();
+  ctx.moveTo(14, 4); ctx.lineTo(22, 16); ctx.lineTo(9, 12); ctx.closePath();
+  ctx.fillStyle = '#f6c445'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0, -28); ctx.quadraticCurveTo(15, -10, 13, 14); ctx.lineTo(-13, 14); ctx.quadraticCurveTo(-15, -10, 0, -28); ctx.closePath();
+  ctx.fillStyle = '#22b8aa'; ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = '#0f6e68'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, -7, 5.5, 0, 6.28); ctx.fillStyle = '#ffe39a'; ctx.fill();
+  ctx.restore();
+}
+
+function draw() {
+  ctx.save();
+  if (S.shake > 0) ctx.translate(rand(-6, 6) * S.shake, rand(-6, 6) * S.shake);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0f1640'); g.addColorStop(1, '#1b2660');
+  ctx.fillStyle = g; ctx.fillRect(-10, -10, W + 20, H + 20);
+
+  for (const s of S.stars) {
+    ctx.globalAlpha = 0.35 + s.z * 0.6;
+    ctx.fillStyle = s.z > 0.85 ? '#ffe39a' : '#ecf7f6';
+    ctx.fillRect(s.x * W, s.y * H, s.z * 2.2, s.z * 2.2);
+  }
+  ctx.globalAlpha = 1;
+
+  // Danger line
+  ctx.strokeStyle = 'rgba(34,184,170,.25)'; ctx.setLineDash([8, 10]); ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, H - 50); ctx.lineTo(W, H - 50); ctx.stroke(); ctx.setLineDash([]);
+
+  for (const a of S.asteroids) if (a.alive) drawAsteroid(a);
+
+  for (const b of S.bolts) {
+    ctx.fillStyle = '#f6c445';
+    ctx.shadowColor = '#f6c445'; ctx.shadowBlur = 12;
+    ctx.fillRect(b.x - 2.5, b.y - 10, 5, 18);
+    ctx.shadowBlur = 0;
+  }
+  for (const p of S.parts) {
+    ctx.globalAlpha = clamp(p.life, 0, 1);
+    ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+  if (S.phase !== 'menu') drawShip();
+
+  for (const f of S.floats) {
+    ctx.globalAlpha = clamp(f.life, 0, 1);
+    ctx.font = `${Math.round(clamp(W / 32, 16, 26))}px Bungee, 'Arial Black', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 5; ctx.strokeStyle = '#121a44'; ctx.strokeText(f.text, f.x, f.y);
+    ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function loop(now) {
+  const dt = Math.min(0.05, (now - (S.last || now)) / 1000);
+  S.last = now;
+  update(dt); draw();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- Input ---------- */
+function canvasX(e) { const r = canvas.getBoundingClientRect(); return e.clientX - r.left; }
+canvas.addEventListener('pointermove', e => { if (S.phase === 'playing' || S.phase === 'between') S.targetX = canvasX(e); });
+canvas.addEventListener('pointerdown', e => {
+  if (S.phase !== 'playing') return;
+  const x = canvasX(e); S.shipX = x; S.targetX = x; fire();
+});
+window.addEventListener('keydown', e => {
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (k === ' ' && (S.phase === 'playing' || S.phase === 'between')) { e.preventDefault(); fire(); return; }
+  if (k === 'p' || k === 'Escape') { if (S.phase === 'paused') setPaused(false); else setPaused(true); return; }
+  if (['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(k)) { S.keys[k] = true; if (S.phase === 'playing') e.preventDefault(); }
+});
+window.addEventListener('keyup', e => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; S.keys[k] = false; });
+window.addEventListener('blur', () => setPaused(true));
+
+$('#speakBtn').addEventListener('click', () => { if (S.current && S.phase !== 'menu') say(S.current.word); });
+$('#pauseBtn').addEventListener('click', () => S.phase === 'paused' ? setPaused(false) : setPaused(true));
+$('#resumeBtn').addEventListener('click', () => setPaused(false));
+$('#quitBtn').addEventListener('click', showMenu);
+$('#againBtn').addEventListener('click', () => startGame(S.mode));
+$('#menuBtn').addEventListener('click', showMenu);
+$('#soundToggle').addEventListener('change', e => { soundOn = e.target.checked; store.set('chunkBlaster.sound', soundOn ? '1' : '0'); });
+
+/* ---------- Boot ---------- */
+if (store.get('chunkBlaster.sound') === '0') { soundOn = false; $('#soundToggle').checked = false; }
+resize();
+buildModeButtons();
+updateHud();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
