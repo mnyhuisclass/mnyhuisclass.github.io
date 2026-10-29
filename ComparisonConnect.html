@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Connect 4: Multiplicative Comparison & Division</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['"Fredoka One"', 'cursive'],
+                        lexend: ['Lexend', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#2563eb',
+                            red: '#ef4444',
+                            yellow: '#eab308',
+                            board: '#1e40af',
+                            boardBg: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            touch-action: manipulation;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        
+        /* Grid slot inner shadow for board depth */
+        .board-slot {
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.4);
+        }
+
+        /* Checker animations */
+        @keyframes dropIn {
+            0% { transform: translateY(-300px); opacity: 0; }
+            70% { transform: translateY(10px); opacity: 1; }
+            85% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+
+        .animate-drop {
+            animation: dropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Pulse highlight for winning pieces */
+        @keyframes winPulse {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.1); filter: brightness(1.3); }
+        }
+
+        .win-piece {
+            animation: winPulse 1s infinite ease-in-out;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-yellow-400 selection:text-slate-900">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-800 border-b border-slate-700 py-3 px-4 shadow-lg sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-xl shadow-md">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl text-yellow-400 tracking-wide">CONNECT 4 <span class="text-white text-base font-normal">MATH DASH</span></h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Multiplicative Comparison & Division Challenge</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Mode Selector -->
+                <div class="bg-slate-700 p-1 rounded-xl flex items-center gap-1 text-xs font-semibold">
+                    <button id="modeMultBtn" onclick="setMathMode('multiplication')" class="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all">Mult</button>
+                    <button id="modeDivBtn" onclick="setMathMode('division')" class="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all">Div</button>
+                    <button id="modeBothBtn" onclick="setMathMode('both')" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow transition-all">Both</button>
+                </div>
+                <!-- Mute Toggle -->
+                <button id="muteBtn" onclick="toggleAudio()" class="p-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors" title="Toggle Sound">
+                    <i class="fa-solid fa-volume-high text-lg" id="muteIcon"></i>
+                </button>
+                <!-- Instructions Button -->
+                <button onclick="openModal('instructionsModal')" class="p-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-lg"></i>
+                    <span class="text-sm font-semibold hidden md:inline">How to Play</span>
+                </button>
+                <!-- Reset Game -->
+                <button onclick="resetGame()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-sm transition-all shadow-md active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">New Game</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="max-w-6xl mx-auto w-full px-3 py-4 flex-grow flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6">
+
+        <!-- Left Column: Player Stats & Turn Indicator -->
+        <div class="w-full lg:w-1/4 flex flex-col gap-4">
+            
+            <!-- Turn Card -->
+            <div id="turnCard" class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-center shadow-xl backdrop-blur-sm transition-all">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Current Turn</span>
+                <div class="flex items-center justify-center gap-3 mt-2">
+                    <div id="turnBadge" class="w-8 h-8 rounded-full bg-red-500 border-2 border-white/40 shadow-inner animate-bounce"></div>
+                    <h2 id="turnText" class="text-2xl font-bold text-red-400">Red Team</h2>
+                </div>
+                <p id="turnHint" class="text-xs text-slate-400 mt-2">Select a column to drop your checker!</p>
+            </div>
+
+            <!-- Scoreboard -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Red Team Score -->
+                <div class="bg-gradient-to-br from-red-950/60 to-slate-800 border-2 border-red-500/40 rounded-2xl p-3 text-center shadow-md">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <div class="w-4 h-4 rounded-full bg-red-500"></div>
+                        <span class="font-bold text-red-400 text-sm">Red Team</span>
+                    </div>
+                    <div id="redScore" class="text-3xl font-extrabold text-white">0</div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Wins</span>
+                </div>
+
+                <!-- Yellow Team Score -->
+                <div class="bg-gradient-to-br from-yellow-950/60 to-slate-800 border-2 border-yellow-500/40 rounded-2xl p-3 text-center shadow-md">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <div class="w-4 h-4 rounded-full bg-yellow-400"></div>
+                        <span class="font-bold text-yellow-400 text-sm">Yellow Team</span>
+                    </div>
+                    <div id="yellowScore" class="text-3xl font-extrabold text-white">0</div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Wins</span>
+                </div>
+            </div>
+
+            <!-- Streak Tracker -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 shadow-xl flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 text-xl">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-semibold text-slate-400">Math Streak</div>
+                        <div id="streakCounter" class="text-lg font-bold text-white">0 Solved</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-[11px] bg-indigo-500/20 text-indigo-300 font-semibold px-2.5 py-1 rounded-full border border-indigo-500/30">Accuracy: <span id="accuracyPercent">100%</span></span>
+                </div>
+            </div>
+
+            <!-- Quick Tip Box -->
+            <div class="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 text-xs text-slate-400 leading-relaxed">
+                <p class="font-semibold text-slate-300 mb-1"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1.5"></i> Math Strategy Tip:</p>
+                <p id="tipText">"<span class="text-yellow-300">4 times as many as 7</span>" means <span class="text-sky-300">4 × 7 = 28</span> or <span class="text-sky-300">28 ÷ 4 = 7</span>!</p>
+            </div>
+        </div>
+
+        <!-- Center Column: Connect 4 Grid Area -->
+        <div class="w-full lg:w-3/4 flex flex-col items-center">
+            
+            <!-- Column Select Buttons Header -->
+            <div class="grid grid-cols-7 gap-2 sm:gap-3 w-full max-w-[560px] mb-2 px-2">
+                <button onclick="handleColumnSelect(0)" class="col-btn h-10 rounded-t-xl bg-slate-700 hover:bg-blue-600 active:bg-blue-700 text-white font-bold transition-all flex items-center justify-center group shadow-md" title="Drop in Column 1">
+                    <i class="fa-solid fa-chevron-down text-sm group-hover:translate-y-0.5 transition-transform"></i>
+                </button>
+                <button onclick="handleColumnSelect(1)" class="col-btn h-10 rounded-t-xl bg-slate-700 hover:bg-blue-600 active:bg-blue-700 text-white font-bold transition-all flex items-center justify-center group shadow-md" title="Drop in Column 2">
+                    <i class="fa-solid fa-chevron-down text-sm group-hover:translate-y-0.5 transition-transform"></i>
+                </button>
+                <button onclick="handleColumnSelect(2)" class="col-btn h-10 rounded-t-xl bg-slate-700 hover:bg-blue-600 active:bg-blue-700 text-white font-bold transition-all flex items-center justify-center group shadow-md" title="Drop in Column 3">
+                    <i class="fa-solid fa-chevron-down text-sm group-hover:translate-y-0.5 transition-transform"></i>
+                </button>
+                <button onclick="handleColumnSelect(3)" class="col-btn h-10 rounded-t-xl bg-slate-700 hover:bg-blue-600 active:bg-blue-700 text-white font-bold transition-all flex items-center justify-center group shadow-md" title="Drop in Column 4">
+                    <i class="fa-solid fa-chevron-down text-sm group-hover:translate-y-0.5 transition-transform"></i>
+                </button>
+                <button onclick="handleColumnSelect(4)" class="col-btn h-10 rounded-t-xl bg-slate-700 hover:bg-blue-600 active:bg-blue-700 text-white font-bold transition-all flex items-center justify-center group shadow-md" title="Drop in Column 5">
+                    <i class="fa-solid fa-chevron-down text-sm group-hover:translate-y-0.5 transition-transform"></i>
+                </button>
+                <button onclick="handleColumnSelect(5)" class="col-btn h-10 rounded-t-xl bg-slate-700 hover:bg-blue-600 active:bg-blue-700 text-white font-bold transition-all flex items-center justify-center group shadow-md" title="Drop in Column 6">
+                    <i class="fa-solid fa-chevron-down text-sm group-hover:translate-y-0.5 transition-transform"></i>
+                </button>
+                <button onclick="handleColumnSelect(6)" class="col-btn h-10 rounded-t-xl bg-slate-700 hover:bg-blue-600 active:bg-blue-700 text-white font-bold transition-all flex items-center justify-center group shadow-md" title="Drop in Column 7">
+                    <i class="fa-solid fa-chevron-down text-sm group-hover:translate-y-0.5 transition-transform"></i>
+                </button>
+            </div>
+
+            <!-- Connect 4 Board Container -->
+            <div class="bg-blue-800 p-3 sm:p-5 rounded-3xl border-4 border-blue-900 shadow-2xl max-w-[560px] w-full relative">
+                <!-- The 6x7 Grid -->
+                <div id="board" class="grid grid-cols-7 gap-2 sm:gap-3 bg-blue-950 p-3 sm:p-4 rounded-2xl border-2 border-blue-700/50">
+                    <!-- Rendered programmatically -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-3 text-center text-xs text-slate-500 border-t border-slate-800">
+        4th Grade Multiplicative Comparison & Division Practice • Built for Interactive Classroom Play
+    </footer>
+
+    <!-- Math Challenge Modal -->
+    <div id="mathModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border-2 border-slate-700 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl transform transition-all relative overflow-hidden">
+            
+            <!-- Modal Header Badge -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span id="modalTeamBadge" class="w-4 h-4 rounded-full bg-red-500 inline-block"></span>
+                    <span id="modalTeamName" class="text-sm font-bold text-red-400 uppercase tracking-wider">Red Team Turn</span>
+                </div>
+                <span class="text-xs bg-slate-700 text-slate-300 font-semibold px-3 py-1 rounded-full"><i class="fa-solid fa-unlock mr-1"></i> Solve to Drop</span>
+            </div>
+
+            <!-- Question Body -->
+            <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-5 mb-6 text-center">
+                <span class="text-xs font-semibold text-indigo-400 uppercase tracking-widest block mb-2">Math Challenge</span>
+                <div id="questionText" class="text-lg sm:text-xl font-bold text-white leading-relaxed">
+                    <!-- Question injected here -->
+                </div>
+            </div>
+
+            <!-- Multiple Choice Options Grid -->
+            <div id="optionsGrid" class="grid grid-cols-2 gap-3 mb-4">
+                <!-- Options injected here -->
+            </div>
+
+            <!-- Immediate Feedback Message -->
+            <div id="feedbackBox" class="min-h-[44px] flex items-center justify-center rounded-xl text-sm font-bold text-center px-4 py-2 transition-all opacity-0">
+                <!-- Feedback injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="instructionsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative">
+            <button onclick="closeModal('instructionsModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-2xl text-yellow-400 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-gamepad text-blue-400"></i> How to Play
+            </h2>
+            <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                <div class="flex items-start gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">1</span>
+                    <p><strong>Partner Up:</strong> Divide into Red Team and Yellow Team on a shared device.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">2</span>
+                    <p><strong>Select a Column:</strong> Click any column arrow at the top to choose where you want to drop your checker.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">3</span>
+                    <p><strong>Solve to Drop:</strong> Correctly answer the multiplicative comparison or division problem to place your piece!</p>
+                </div>
+                <div class="flex items-start gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">4</span>
+                    <p><strong>Connect 4 to Win:</strong> Connect 4 of your team's checkers vertically, horizontally, or diagonally!</p>
+                </div>
+            </div>
+            <button onclick="closeModal('instructionsModal')" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg">
+                Got It, Let's Play!
+            </button>
+        </div>
+    </div>
+
+    <!-- Winner / Victory Modal -->
+    <div id="victoryModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-lg z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border-2 border-yellow-500/50 rounded-3xl max-w-md w-full p-8 text-center shadow-2xl relative overflow-hidden">
+            <div class="w-20 h-20 rounded-full bg-yellow-500/20 text-yellow-400 text-4xl flex items-center justify-center mx-auto mb-4 border border-yellow-500/30">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 id="winnerTitle" class="text-3xl text-yellow-400 mb-2">RED TEAM WINS!</h2>
+            <p id="winnerSubtitle" class="text-sm text-slate-300 mb-6">Mastered Connect 4 and Division thinking!</p>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="restartGameKeepScores()" class="w-full bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-slate-950 font-extrabold py-3.5 rounded-xl shadow-lg transition-all active:scale-95">
+                    <i class="fa-solid fa-play mr-2"></i> Play Next Round
+                </button>
+                <button onclick="resetGame()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-3 rounded-xl transition-all">
+                    Reset Full Game & Scores
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        // --- Game Configuration & Constants ---
+        const ROWS = 6;
+        const COLS = 7;
+        const PLAYER_RED = 'R';
+        const PLAYER_YELLOW = 'Y';
+        const EMPTY = null;
+
+        let mathMode = 'both'; // 'multiplication', 'division', 'both'
+        let lastQuestionIndex = -1; // Prevent back-to-back question repeats
+
+        // Sound System (Web Audio API synthesis for zero external sound dependencies)
+        let soundEnabled = true;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function setMathMode(mode) {
+            mathMode = mode;
+            const multBtn = document.getElementById('modeMultBtn');
+            const divBtn = document.getElementById('modeDivBtn');
+            const bothBtn = document.getElementById('modeBothBtn');
+
+            // Reset button styles
+            [multBtn, divBtn, bothBtn].forEach(btn => {
+                btn.className = "px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all";
+            });
+
+            if (mode === 'multiplication') {
+                multBtn.className = "px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow transition-all";
+                document.getElementById('tipText').innerHTML = `"<span class="text-yellow-300">3 times as many as 8</span>" means <span class="text-sky-300">3 × 8 = 24</span>!`;
+            } else if (mode === 'division') {
+                divBtn.className = "px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow transition-all";
+                document.getElementById('tipText').innerHTML = `"<span class="text-yellow-300">28 is 4 times as many as 7</span>" means <span class="text-sky-300">28 ÷ 4 = 7</span>!`;
+            } else {
+                bothBtn.className = "px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white shadow transition-all";
+                document.getElementById('tipText').innerHTML = `"<span class="text-yellow-300">4 times as many as 7</span>" means <span class="text-sky-300">4 × 7 = 28</span> or <span class="text-sky-300">28 ÷ 4 = 7</span>!`;
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'drop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1);
+                    osc.frequency.setValueAtTime(659.25, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'win') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        noteOsc.frequency.value = freq;
+                        noteGain.gain.setValueAtTime(0.2, now + idx * 0.12);
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
+                        noteOsc.start(now + idx * 0.12);
+                        noteOsc.stop(now + idx * 0.12 + 0.3);
+                    });
+                }
+            } catch(e) {
+                console.log("Audio playback error:", e);
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('muteIcon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-lg';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-lg text-rose-400';
+            }
+        }
+
+        // --- Math Question Bank Categorized ---
+        const mathQuestionsBank = {
+            multiplication: [
+                {
+                    q: "Leo has 6 stickers. Maya has 4 times as many stickers as Leo. How many stickers does Maya have?",
+                    options: ["24", "10", "20", "18"],
+                    correct: 0,
+                    explanation: "6 × 4 = 24"
+                },
+                {
+                    q: "A small book costs $7. A board game costs 5 times as much as the book. How much does the game cost?",
+                    options: ["$35", "$12", "$30", "$42"],
+                    correct: 0,
+                    explanation: "$7 × 5 = $35"
+                },
+                {
+                    q: "Sam ran 8 miles. Alex ran 3 times as many miles as Sam. How many miles did Alex run?",
+                    options: ["24 miles", "11 miles", "16 miles", "32 miles"],
+                    correct: 0,
+                    explanation: "8 × 3 = 24 miles"
+                },
+                {
+                    q: "A string is 9 inches long. A rope is 6 times as long as the string. How long is the rope?",
+                    options: ["54 inches", "15 inches", "45 inches", "63 inches"],
+                    correct: 0,
+                    explanation: "9 × 6 = 54 inches"
+                },
+                {
+                    q: "Which multiplication equation matches: '40 is 5 times as many as 8'?",
+                    options: ["5 × 8 = 40", "40 + 5 = 45", "5 + 8 = 13", "8 × 8 = 64"],
+                    correct: 0,
+                    explanation: "5 × 8 = 40"
+                },
+                {
+                    q: "Mia read 9 pages. Jake read 4 times as many pages as Mia. How many pages did Jake read?",
+                    options: ["36", "13", "32", "45"],
+                    correct: 0,
+                    explanation: "9 × 4 = 36"
+                },
+                {
+                    q: "A marker costs $2. A backpack costs 9 times as much as the marker. How much does the backpack cost?",
+                    options: ["$18", "$11", "$16", "$20"],
+                    correct: 0,
+                    explanation: "$2 × 9 = $18"
+                },
+                {
+                    q: "Farmer Todd has 7 cows. He has 8 times as many chickens as cows. How many chickens does he have?",
+                    options: ["56", "15", "48", "64"],
+                    correct: 0,
+                    explanation: "7 × 8 = 56"
+                },
+                {
+                    q: "Complete the statement: 9 times as many as 7 is ___.",
+                    options: ["63", "56", "16", "72"],
+                    correct: 0,
+                    explanation: "9 × 7 = 63"
+                },
+                {
+                    q: "A baby palm tree is 4 feet tall. A full-grown palm tree is 7 times as tall. How tall is the full-grown tree?",
+                    options: ["28 feet", "11 feet", "24 feet", "32 feet"],
+                    correct: 0,
+                    explanation: "4 × 7 = 28 feet"
+                }
+            ],
+            division: [
+                {
+                    q: "A book costs $24. That is 4 times as much as a marker. How much does the marker cost?",
+                    options: ["$6", "$8", "$20", "$96"],
+                    correct: 0,
+                    explanation: "$24 ÷ 4 = $6"
+                },
+                {
+                    q: "Leo counted 35 red cars. That is 5 times as many as blue cars. How many blue cars did Leo count?",
+                    options: ["7", "6", "30", "40"],
+                    correct: 0,
+                    explanation: "35 ÷ 5 = 7"
+                },
+                {
+                    q: "A rope is 42 feet long. That is 6 times as long as a piece of string. How long is the string?",
+                    options: ["7 feet", "8 feet", "36 feet", "48 feet"],
+                    correct: 0,
+                    explanation: "42 ÷ 6 = 7 feet"
+                },
+                {
+                    q: "Sam earned 45 points in a game. That is 9 times as many points as Maya earned. How many points did Maya earn?",
+                    options: ["5", "6", "36", "54"],
+                    correct: 0,
+                    explanation: "45 ÷ 9 = 5"
+                },
+                {
+                    q: "Which division equation matches: '32 is 8 times as many as 4'?",
+                    options: ["32 ÷ 8 = 4", "32 - 8 = 24", "8 × 4 = 32", "32 ÷ 2 = 16"],
+                    correct: 0,
+                    explanation: "32 ÷ 8 = 4"
+                },
+                {
+                    q: "A tree is 27 feet tall. A bush is 3 feet tall. How many times taller is the tree than the bush?",
+                    options: ["9 times", "8 times", "24 times", "30 times"],
+                    correct: 0,
+                    explanation: "27 ÷ 3 = 9"
+                },
+                {
+                    q: "Farmer Dan has 48 apples. That is 6 times as many as the oranges he has. How many oranges does he have?",
+                    options: ["8", "7", "42", "54"],
+                    correct: 0,
+                    explanation: "48 ÷ 6 = 8"
+                },
+                {
+                    q: "A giant slice of pizza has 600 calories. That is 3 times as many as a small slice. How many calories is the small slice?",
+                    options: ["200", "300", "1800", "150"],
+                    correct: 0,
+                    explanation: "600 ÷ 3 = 200"
+                },
+                {
+                    q: "Mia ran 36 laps. That is 4 times as many laps as Jake ran. How many laps did Jake run?",
+                    options: ["9", "8", "32", "40"],
+                    correct: 0,
+                    explanation: "36 ÷ 4 = 9"
+                },
+                {
+                    q: "What missing number makes this comparison true? 56 is ___ times as many as 7.",
+                    options: ["8", "7", "9", "6"],
+                    correct: 0,
+                    explanation: "56 ÷ 7 = 8"
+                }
+            ]
+        };
+
+        // --- State Variables ---
+        let boardState = [];
+        let currentPlayer = PLAYER_RED;
+        let pendingColumn = null;
+        let currentQuestion = null;
+        let redWins = 0;
+        let yellowWins = 0;
+        let totalAttempts = 0;
+        let correctAttempts = 0;
+        let currentStreak = 0;
+        let isGameActive = true;
+
+        // --- Core Functions ---
+
+        function openMathChallenge() {
+            // Determine question pool based on selected mode
+            let pool = [];
+            if (mathMode === 'multiplication') {
+                pool = mathQuestionsBank.multiplication;
+            } else if (mathMode === 'division') {
+                pool = mathQuestionsBank.division;
+            } else {
+                pool = [...mathQuestionsBank.multiplication, ...mathQuestionsBank.division];
+            }
+
+            // Select random question without back-to-back repeats
+            let qIndex;
+            if (pool.length > 1) {
+                do {
+                    qIndex = Math.floor(Math.random() * pool.length);
+                } while (qIndex === lastQuestionIndex);
+            } else {
+                qIndex = 0;
+            }
+            
+            lastQuestionIndex = qIndex;
+            currentQuestion = pool[qIndex];
+
+            // Setup team branding on modal
+            const teamBadge = document.getElementById('modalTeamBadge');
+            const teamName = document.getElementById('modalTeamName');
+            
+            if (currentPlayer === PLAYER_RED) {
+                teamBadge.className = "w-4 h-4 rounded-full bg-red-500 inline-block";
+                teamName.className = "text-sm font-bold text-red-400 uppercase tracking-wider";
+                teamName.textContent = "Red Team Turn";
+            } else {
+                teamBadge.className = "w-4 h-4 rounded-full bg-yellow-400 inline-block";
+                teamName.className = "text-sm font-bold text-yellow-400 uppercase tracking-wider";
+                teamName.textContent = "Yellow Team Turn";
+            }
+
+            document.getElementById('questionText').textContent = currentQuestion.q;
+
+            // Shuffle options for display
+            const options = [...currentQuestion.options];
+            const originalCorrectText = options[currentQuestion.correct];
+            
+            // Shuffle array
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+
+            const newCorrectIndex = options.indexOf(originalCorrectText);
+
+            const optionsGrid = document.getElementById('optionsGrid');
+            optionsGrid.innerHTML = '';
+
+            options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full py-3.5 px-4 rounded-xl bg-slate-700/80 hover:bg-slate-600 active:bg-blue-600 text-white font-semibold text-sm transition-all border border-slate-600/50 hover:border-slate-400 text-center shadow-md active:scale-95 flex items-center justify-center gap-2";
+                btn.innerHTML = `<span class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 text-xs flex items-center justify-center font-bold">${String.fromCharCode(65 + idx)}</span> <span>${optText}</span>`;
+                btn.onclick = () => submitAnswer(idx === newCorrectIndex, btn);
+                optionsGrid.appendChild(btn);
+            });
+
+            // Reset feedback box
+            const fbBox = document.getElementById('feedbackBox');
+            fbBox.className = 'min-h-[44px] flex items-center justify-center rounded-xl text-sm font-bold text-center px-4 py-2 transition-all opacity-0';
+            fbBox.textContent = '';
+
+            openModal('mathModal');
+        }
+
+        function submitAnswer(isCorrect, clickedBtn) {
+            totalAttempts++;
+            const fbBox = document.getElementById('feedbackBox');
+
+            // Disable all option buttons temporarily
+            const btns = document.querySelectorAll('#optionsGrid button');
+            btns.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                correctAttempts++;
+                currentStreak++;
+                playSound('correct');
+                
+                clickedBtn.className = "w-full py-3.5 px-4 rounded-xl bg-emerald-600 text-white font-bold text-sm transition-all border border-emerald-400 text-center shadow-md flex items-center justify-center gap-2";
+                
+                fbBox.className = "min-h-[44px] bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold rounded-xl text-sm text-center px-4 py-2 opacity-100";
+                fbBox.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> Correct! ${currentQuestion.explanation}`;
+
+                updateStats();
+
+                setTimeout(() => {
+                    closeModal('mathModal');
+                    dropChecker(pendingColumn, currentPlayer);
+                }, 1100);
+
+            } else {
+                currentStreak = 0;
+                playSound('wrong');
+
+                clickedBtn.className = "w-full py-3.5 px-4 rounded-xl bg-rose-600 text-white font-bold text-sm transition-all border border-rose-400 text-center shadow-md flex items-center justify-center gap-2";
+
+                fbBox.className = "min-h-[44px] bg-rose-950/80 border border-rose-500/40 text-rose-300 font-bold rounded-xl text-sm text-center px-4 py-2 opacity-100";
+                fbBox.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2"></i> Incorrect! Turn forfeited. (${currentQuestion.explanation})`;
+
+                updateStats();
+
+                setTimeout(() => {
+                    closeModal('mathModal');
+                    switchTurn(); // Turn forfeited on wrong answer
+                }, 1800);
+            }
+        }
+
+        function dropChecker(col, player) {
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (boardState[r][col] === EMPTY) {
+                    boardState[r][col] = player;
+                    playSound('drop');
+                    renderBoard();
+
+                    if (checkWin(r, col, player)) {
+                        handleVictory(player);
+                    } else if (checkDraw()) {
+                        handleDraw();
+                    } else {
+                        switchTurn();
+                    }
+                    break;
+                }
+            }
+        }
+
+        function switchTurn() {
+            currentPlayer = (currentPlayer === PLAYER_RED) ? PLAYER_YELLOW : PLAYER_RED;
+            
+            const turnText = document.getElementById('turnText');
+            const turnBadge = document.getElementById('turnBadge');
+
+            if (currentPlayer === PLAYER_RED) {
+                turnText.textContent = "Red Team";
+                turnText.className = "text-2xl font-bold text-red-400";
+                turnBadge.className = "w-8 h-8 rounded-full bg-red-500 border-2 border-white/40 shadow-inner animate-bounce";
+            } else {
+                turnText.textContent = "Yellow Team";
+                turnText.className = "text-2xl font-bold text-yellow-400";
+                turnBadge.className = "w-8 h-8 rounded-full bg-yellow-400 border-2 border-white/40 shadow-inner animate-bounce";
+            }
+        }
+
+        function checkWin(r, c, player) {
+            // Check directions: horizontal, vertical, diagonal-up, diagonal-down
+            const directions = [
+                [[0, 1], [0, -1]],  // Horizontal
+                [[1, 0], [-1, 0]],  // Vertical
+                [[1, 1], [-1, -1]], // Diagonal /
+                [[1, -1], [-1, 1]]  // Diagonal \
+            ];
+
+            for (let d = 0; d < directions.length; d++) {
+                const [dir1, dir2] = directions[d];
+                let winningCells = [[r, c]];
+
+                // Check direction 1
+                let nr = r + dir1[0];
+                let nc = c + dir1[1];
+                while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && boardState[nr][nc] === player) {
+                    winningCells.push([nr, nc]);
+                    nr += dir1[0];
+                    nc += dir1[1];
+                }
+
+                // Check direction 2
+                nr = r + dir2[0];
+                nc = c + dir2[1];
+                while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && boardState[nr][nc] === player) {
+                    winningCells.push([nr, nc]);
+                    nr += dir2[0];
+                    nc += dir2[1];
+                }
+
+                if (winningCells.length >= 4) {
+                    highlightWinningCells(winningCells);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function highlightWinningCells(cells) {
+            cells.forEach(([r, c]) => {
+                const slot = document.querySelector(`[data-row="${r}"][data-col="${c}"] > div`);
+                if (slot) {
+                    slot.classList.add('win-piece', 'ring-4', 'ring-white');
+                }
+            });
+        }
+
+        function checkDraw() {
+            return boardState.every(row => row.every(cell => cell !== EMPTY));
+        }
+
+        function handleVictory(player) {
+            isGameActive = false;
+            playSound('win');
+
+            if (player === PLAYER_RED) {
+                redWins++;
+                document.getElementById('winnerTitle').textContent = "RED TEAM WINS!";
+                document.getElementById('winnerTitle').className = "text-3xl text-red-400 mb-2 font-bold";
+            } else {
+                yellowWins++;
+                document.getElementById('winnerTitle').textContent = "YELLOW TEAM WINS!";
+                document.getElementById('winnerTitle').className = "text-3xl text-yellow-400 mb-2 font-bold";
+            }
+
+            document.getElementById('redScore').textContent = redWins;
+            document.getElementById('yellowScore').textContent = yellowWins;
+
+            // Trigger Confetti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            setTimeout(() => {
+                openModal('victoryModal');
+            }, 800);
+        }
+
+        function handleDraw() {
+            isGameActive = false;
+            document.getElementById('winnerTitle').textContent = "IT'S A DRAW!";
+            document.getElementById('winnerTitle').className = "text-3xl text-indigo-400 mb-2 font-bold";
+            document.getElementById('winnerSubtitle').textContent = "Great math skills by both teams!";
+            openModal('victoryModal');
+        }
+
+        function updateStats() {
+            document.getElementById('streakCounter').textContent = `${currentStreak} Solved`;
+            const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 100;
+            document.getElementById('accuracyPercent').textContent = `${accuracy}%`;
+        }
+
+        function restartGameKeepScores() {
+            closeModal('victoryModal');
+            initBoard();
+            isGameActive = true;
+            currentPlayer = PLAYER_RED;
+            switchTurn();
+        }
+
+        function resetGame() {
+            closeModal('victoryModal');
+            redWins = 0;
+            yellowWins = 0;
+            totalAttempts = 0;
+            correctAttempts = 0;
+            currentStreak = 0;
+            document.getElementById('redScore').textContent = "0";
+            document.getElementById('yellowScore').textContent = "0";
+            updateStats();
+            initBoard();
+            isGameActive = true;
+            currentPlayer = PLAYER_RED;
+            switchTurn();
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // --- Board Initialization & Rendering Functions ---
+        function initBoard() {
+            boardState = [];
+            for (let r = 0; r < ROWS; r++) {
+                let row = [];
+                for (let c = 0; c < COLS; c++) {
+                    row.push(EMPTY);
+                }
+                boardState.push(row);
+            }
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const boardContainer = document.getElementById('board');
+            if (!boardContainer) return;
+            boardContainer.innerHTML = '';
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cellVal = boardState[r][c];
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'board-slot w-full aspect-square bg-blue-900 rounded-full flex items-center justify-center p-1 cursor-pointer overflow-hidden';
+                    slotDiv.dataset.row = r;
+                    slotDiv.dataset.col = c;
+                    slotDiv.onclick = () => handleColumnSelect(c);
+
+                    const piece = document.createElement('div');
+                    if (cellVal === PLAYER_RED) {
+                        piece.className = 'w-full h-full rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-lg animate-drop';
+                    } else if (cellVal === PLAYER_YELLOW) {
+                        piece.className = 'w-full h-full rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 shadow-lg animate-drop';
+                    } else {
+                        piece.className = 'w-full h-full rounded-full bg-blue-950/60 hover:bg-blue-800/50 transition-colors';
+                    }
+
+                    slotDiv.appendChild(piece);
+                    boardContainer.appendChild(slotDiv);
+                }
+            }
+        }
+
+        function handleColumnSelect(col) {
+            if (!isGameActive) return;
+
+            // Check if column is full
+            if (boardState[0][col] !== EMPTY) {
+                const fbBox = document.getElementById('feedbackBox');
+                fbBox.className = "min-h-[44px] bg-amber-950/80 border border-amber-500/40 text-amber-300 font-bold rounded-xl text-sm text-center px-4 py-2 opacity-100";
+                fbBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i> Column ${col + 1} is full! Pick another column.`;
+                return;
+            }
+
+            pendingColumn = col;
+            openMathChallenge();
+        }
+
+        // --- Initialization ---
+        window.onload = function() {
+            initBoard();
+        };
+    </script>
+</body>
+</html>
