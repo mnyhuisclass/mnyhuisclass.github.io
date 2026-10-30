@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4th Grade ELA Assessment Builder</title>
+<style>
+    :root {
+        --teal-900: #0d4448;
+        --teal-700: #14676a;
+        --teal-500: #1f8f8c;
+        --teal-50:  #e9f4f3;
+        --gold-500: #e2a52c;
+        --gold-100: #fbf0d6;
+        --ink:      #1d2a2c;
+        --muted:    #5d6e70;
+        --line:     #cbd9d8;
+        --paper:    #ffffff;
+        --desk:     #eef3f2;
+        --warn:     #8a5a00;
+        --ui: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        --read: Georgia, "Times New Roman", serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.45; }
+    button, input, select { font: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid var(--gold-500); outline-offset: 2px; }
+
+    /* ---------- Builder panel ---------- */
+    #builder { max-width: 1080px; margin: 24px auto; background: var(--paper); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 0 var(--line), 0 8px 24px rgba(13, 68, 72, .08); }
+    .band { background: var(--teal-900); color: #fff; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+    .brand svg { width: 34px; height: 34px; flex: none; }
+    .brand h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: .2px; }
+    .brand small { display: block; font-size: 13px; font-weight: 400; color: #b9dcda; }
+    .modes { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 999px; padding: 4px; }
+    .modes button { border: 0; background: transparent; color: #d7ecea; padding: 8px 18px; border-radius: 999px; cursor: pointer; font-weight: 600; }
+    .modes button[aria-pressed="true"] { background: var(--gold-500); color: var(--teal-900); }
+
+    .panel { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+    .col { padding: 20px 24px 24px; }
+    .col + .col { border-left: 1px solid var(--line); background: #fbfdfd; }
+    h2 { font-size: 16px; margin: 0 0 4px; color: var(--teal-900); }
+    .hint { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+
+    .std-list { border: 1px solid var(--line); border-radius: 10px; max-height: 460px; overflow-y: auto; }
+    .std-head, .std-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 74px 74px; gap: 8px; align-items: center; padding: 8px 12px; }
+    .std-head { position: sticky; top: 0; background: var(--teal-50); font-size: 12px; font-weight: 600; color: var(--teal-700); z-index: 1; }
+    .std-head span:nth-child(n+3) { text-align: center; }
+    .std-row { border-top: 1px solid var(--line); }
+    .std-row.on { background: var(--gold-100); }
+    .std-row input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--teal-700); }
+    .std-name { font-weight: 600; font-size: 14px; }
+    .std-name b { color: var(--teal-700); }
+    .std-desc { font-size: 12px; color: var(--muted); }
+    .std-row input[type=number], .std-row select { width: 100%; padding: 5px 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; text-align: center; }
+    .std-row:not(.on) input[type=number], .std-row:not(.on) select { opacity: .35; }
+    .list-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .linkish { border: 0; background: none; color: var(--teal-700); text-decoration: underline; cursor: pointer; padding: 0; }
+
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--teal-900); }
+    .field input[type=text], .field select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .field .hint { margin: 0; }
+    .checks { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 16px; font-size: 14px; }
+    .checks label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+    .checks input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--teal-700); }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--line); align-items: center; }
+    .btn { border: 1px solid var(--teal-700); background: #fff; color: var(--teal-900); padding: 9px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn.primary { background: var(--teal-700); color: #fff; }
+    .btn.primary:hover { background: var(--teal-900); }
+    .btn.key[aria-pressed="true"] { background: var(--gold-500); border-color: var(--gold-500); color: var(--teal-900); }
+    .version { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 13px; color: var(--muted); }
+    .version input { color: var(--ink); width: 78px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+    #notices { padding: 0 24px; }
+    #notices:not(:empty) { padding: 12px 24px 16px; border-top: 1px solid var(--line); background: #fffaf0; }
+    #notices p { margin: 4px 0; font-size: 13px; color: var(--warn); }
+
+    @media (max-width: 820px) {
+        .panel { grid-template-columns: 1fr; }
+        .col + .col { border-left: 0; border-top: 1px solid var(--line); }
+        .version { margin-left: 0; }
+    }
+
+    /* ---------- Printable test ---------- */
+    #sheet { max-width: 8.5in; margin: 0 auto 48px; background: var(--paper); padding: .6in .65in; box-shadow: 0 8px 24px rgba(13, 68, 72, .08); color: #000; }
+    .t-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding-bottom: 10px; border-bottom: 3px solid var(--teal-700); position: relative; }
+    .t-head::after { content: ""; position: absolute; left: 0; bottom: -7px; width: 64px; height: 4px; background: var(--gold-500); }
+    .t-title { font-size: 24px; font-weight: 800; margin: 0; line-height: 1.15; }
+    .t-sub { font-size: 15px; margin: 2px 0 0; }
+    .t-std { font-size: 12px; margin: 6px 0 0; color: #333; }
+    .t-lines { flex: 0 0 2.6in; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+    .t-lines div { display: flex; gap: 6px; }
+    .t-lines span.fill { flex: 1; border-bottom: 1px solid #000; }
+    .t-meta { display: flex; justify-content: space-between; font-size: 11px; color: #555; margin: 12px 0 18px; }
+    .t-badge { font-weight: 700; color: #000; background: var(--gold-100); border: 1px solid var(--gold-500); padding: 1px 8px; border-radius: 4px; }
+
+    .section + .section { margin-top: 26px; }
+    .sec-label { font-size: 12px; font-weight: 700; color: var(--teal-700); margin: 0 0 8px; }
+    .passage { border: 1.5px solid #999; border-radius: 6px; padding: 14px 18px; margin-bottom: 18px; font-family: var(--read); font-size: 15px; line-height: 1.6; break-inside: avoid; }
+    .passage h3 { font-family: var(--ui); font-size: 16px; margin: 0 0 6px; }
+    .passage p { margin: 0 0 8px; }
+    .passage p:last-child { margin-bottom: 0; }
+    .q { display: grid; grid-template-columns: 28px 1fr; margin-bottom: 18px; break-inside: avoid; }
+    .q-num { font-weight: 700; }
+    .q-stem { font-weight: 600; margin-bottom: 8px; }
+    .opts { display: grid; gap: 6px; }
+    .opt { display: grid; grid-template-columns: 26px 1fr; align-items: start; }
+    .bubble { width: 21px; height: 21px; border: 1.5px solid #555; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .opt.correct .bubble { background: #000; border-color: #000; color: #fff; }
+    .opt.correct .opt-text { font-weight: 700; }
+    .tag { display: inline-block; font-size: 11px; color: #444; border: 1px solid #aaa; border-radius: 3px; padding: 0 5px; margin-left: 6px; font-weight: 400; vertical-align: 1px; }
+    .wr-head { font-size: 13px; font-weight: 700; margin: 6px 0 10px; padding-bottom: 3px; border-bottom: 1px solid #999; }
+    .wlines { display: grid; gap: 22px; margin-top: 18px; }
+    .wlines span { border-bottom: 1px solid #999; display: block; }
+    .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
+    .newpage { break-before: page; }
+    table.grid { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+    table.grid th, table.grid td { border: 1px solid #888; padding: 5px 8px; text-align: left; }
+    table.grid th { background: var(--teal-50); }
+    .end-block { margin-top: 26px; break-inside: avoid; }
+    .end-block h3 { font-size: 15px; margin: 0; }
+    .empty { text-align: center; color: var(--muted); padding: 48px 0; }
+
+    @media print {
+        @page { size: letter portrait; margin: .45in; }
+        body { background: #fff; }
+        #builder { display: none !important; }
+        #sheet { box-shadow: none; padding: 0; margin: 0; max-width: none; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+</style>
+</head>
+<body>
+
+<div id="builder">
+    <div class="band">
+        <div class="brand">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#14676a"/><path d="M20 5l3.6 10.2L34 16.4l-8.2 6.6L28.6 34 20 27.8 11.4 34l2.8-11L6 16.4l10.4-1.2z" fill="#e2a52c"/></svg>
+            <div><h1>4th Grade ELA Assessment Builder</h1><small>4th grade reading standards, 4.RC.1 to 4.RC.13</small></div>
+        </div>
+        <div class="modes" role="group" aria-label="Assessment type">
+            <button type="button" data-mode="cfa" aria-pressed="true">Quick CFA</button>
+            <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="col">
+            <h2>Standards</h2>
+            <p class="hint" id="std-hint"></p>
+            <div class="std-list" id="std-list"></div>
+            <div class="list-tools">
+                <span id="totals"></span>
+                <button type="button" class="linkish" id="clear-all">Clear all</button>
+            </div>
+        </div>
+        <div class="col">
+            <h2>Settings</h2>
+            <p class="hint">Changes rebuild the same version. Use New version for different questions.</p>
+            <div class="field">
+                <label for="f-title">Title</label>
+                <input type="text" id="f-title">
+            </div>
+            <div class="field">
+                <label for="f-sub">Unit or subtitle (optional)</label>
+                <input type="text" id="f-sub" placeholder="Example: Unit 3, Text Structure">
+            </div>
+            <div class="field">
+                <label for="f-genre">Passage type</label>
+                <select id="f-genre">
+                    <option value="auto">Auto (whatever fits each standard)</option>
+                    <option value="fiction">Fiction / literary</option>
+                    <option value="nonfiction">Nonfiction / informational</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="f-rigor">Question level</label>
+                <select id="f-rigor">
+                    <option value="mix">Balanced mix, easiest first</option>
+                    <option value="all">Any level, random</option>
+                    <option value="basic">Level 1: Developing (recall)</option>
+                    <option value="on-grade">Level 2: On grade (analysis)</option>
+                    <option value="advanced">Level 3: Extension (high DOK)</option>
+                </select>
+            </div>
+            <div class="checks">
+                <label><input type="checkbox" id="f-newpage"> Start each standard on a new page</label>
+                <label><input type="checkbox" id="f-score"> Add a score-by-standard table at the end</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button type="button" class="btn primary" id="btn-new">New version</button>
+        <button type="button" class="btn key" id="btn-key" aria-pressed="false">Teacher key</button>
+        <button type="button" class="btn" id="btn-print">Print</button>
+        <div class="version">
+            <label for="f-code">Version code</label>
+            <input type="text" id="f-code" maxlength="6" spellcheck="false">
+            <button type="button" class="btn" id="btn-load">Load</button>
+        </div>
+    </div>
+    <div id="notices" aria-live="polite"></div>
+</div>
+
+<div id="sheet"></div>
+
+<script>
+const STANDARDS = [
+            { id: '4.RC.1', label: '4.RC.1: Explicit Details & Inferences', desc: 'Refer to details and examples in a text when explaining what a text says explicitly and when drawing inferences.' },
+            { id: '4.RC.2', label: '4.RC.2: Summarize & Theme in Fiction', desc: 'Paraphrase or summarize main events in a story/myth/legend; identify theme and provide evidence.' },
+            { id: '4.RC.3', label: '4.RC.3: Character, Setting & Plot Impact', desc: 'Describe a character, setting, or event in a story or play using details and explain impact on plot.' },
+            { id: '4.RC.4', label: '4.RC.4: Compare Point of View', desc: 'Compare and contrast the point of view from which different stories are narrated (1st vs 3rd person).' },
+            { id: '4.RC.5', label: '4.RC.5: Main Idea & Summarize Nonfiction', desc: 'Determine the main idea of a text and explain how it is supported by key details; summarize.' },
+            { id: '4.RC.6', label: '4.RC.6: Text Features', desc: 'Apply knowledge of text features to locate information and gain meaning (charts, tables, headings, fonts).' },
+            { id: '4.RC.7', label: '4.RC.7: Text Structure', desc: 'Describe organizational structure (chronological, problem-solution, cause/effect, compare/contrast, etc.).' },
+            { id: '4.RC.8', label: '4.RC.8: Fact/Opinion & Author Claims', desc: 'Distinguish between fact and opinion; explain how an author uses reasons/evidence to support a claim.' },
+            { id: '4.RC.9', label: '4.RC.9: Integrating Information Across Texts', desc: 'Combine information from two texts on the same topic to demonstrate knowledge.' },
+            { id: '4.RC.10', label: '4.RC.10: Context Clues for Word Meaning', desc: 'Apply context clues and text features to determine the meanings of unknown words.' },
+            { id: '4.RC.11', label: '4.RC.11: Word Relationships & Multiple Meanings', desc: 'Identify relationships among words, including homographs, homonyms, synonyms, antonyms, multiple meanings.' },
+            { id: '4.RC.12', label: '4.RC.12: Word Structure & Affixes/Roots', desc: 'Apply knowledge of prefixes, suffixes, Greek/Latin roots, and word patterns to determine meaning.' },
+            { id: '4.RC.13', label: '4.RC.13: Figurative Language & Meaning', desc: 'Determine how words provide meaning in literature, including figurative language (similes, metaphors, hyperbole).' }
+        ];
+
+        const PASSAGES = {
+            '4.RC.1': {
+                fiction: { title: 'Story: The Midnight Rescue', text: ['Maya peered out her bedroom window into the storm. Heavy rain pelted the glass, and the old oak tree in the front yard swayed wildly in the wind. Suddenly, a bright flash of lightning illuminated the lawn, and Maya gasped.', 'A small puppy was shivering inside an overturned cardboard box near the sidewalk. Maya grabbed her raincoat and flashlight from the closet without hesitation. She knew she had to act quickly before the rising rainwater flooded the box.'] },
+                nonfiction: { title: 'Informational Text: Deep Sea Explorers', text: ['Deep on the ocean floor, sunlight cannot penetrate the pitch-black water. Oceanographers use specialized submarines called submersibles to explore these extreme depth environments.', 'In 1977, researchers discovered hydrothermal vents spewing superheated water full of minerals. Surprising scientists everywhere, whole ecosystems of tube worms and blind white crabs were thriving in total darkness without sunlight energy.'] }
+            },
+            '4.RC.2': {
+                fiction: { title: 'Story: The Great Oak Tree', text: ['Leo loved playing near the old oak tree at the edge of the schoolyard. When a heavy thunderstorm broke several branches, the principal announced that the tree might need to be removed for safety reasons.', 'Leo refused to give up on the oak. He organized a group of classmates to write letters explaining how much the tree meant to the school. They also raised money to hire an arborist to trim the damaged branches safely. After weeks of hard work, the tree was saved. Leo learned that even a young person can make a big difference when they stand up for what they care about.'] }
+            },
+            '4.RC.3': {
+                fiction: { title: 'Story: The Mystery of Whispering Woods', text: ['Clara and Ethan followed the narrow trail into Whispering Woods as dusk began to fall. Shadows stretched like long fingers across the pine needles. Suddenly, a strange clicking noise echoed from inside a hollow cedar tree.', 'Ethan froze in fear, but Clara stepped forward bravely. Using her stick, she gently tapped the trunk. Out swooped a small barn owl, blinking in the twilight. Ethan released a deep breath and laughed at his mistake.'] }
+            },
+            '4.RC.4': {
+                fiction: { title: 'Story: The Science Fair Swap', text: ['<strong>Narrator A (Julian):</strong> I spent three weeks perfecting my volcanic eruption model. When Maya accidentally bumped my table, red lava splattered across my poster.', '<strong>Narrator B (Maya):</strong> The cafeteria was crowded and chaotic. As I turned around with my presentation board, my foot tripped on an electrical cord, sending me tumbling directly into Julian\'s table.'] }
+            },
+            '4.RC.5': {
+                nonfiction: { title: 'Informational Text: Monarch Butterfly Migration', text: ['Every autumn, millions of monarch butterflies embark on an extraordinary journey across North America. Travelling over 2,000 miles, these delicate insects fly south from Canada and the United States all the way to the warm forests of central Mexico.', 'Because individual monarchs live only a few weeks, it takes four generations of butterflies to complete the annual round-trip cycle. Scientists track their flight paths using lightweight tags placed on their wings to better understand how habitat loss impacts their survival.'] }
+            },
+            '4.RC.6': {
+                nonfiction: { title: 'Informational Text: Navigating Maps & Diagrams', text: ['Maps contain several key features that help travelers locate destinations. The compass rose shows cardinal directions (North, South, East, West), while the map key explains symbols.', 'Elevation charts use shaded colors to represent land height above sea level. Reading cross-section diagrams allows geologists to examine layers of rock hidden beneath Earth\'s surface.'] }
+            },
+            '4.RC.7': {
+                nonfiction: { title: 'Informational Text: Tornadoes and Hurricanes', text: ['Tornadoes and hurricanes are both powerful storm systems with rotating winds, but they differ significantly in scale. Tornadoes form quickly over land during severe thunderstorms and last a short time.', 'In contrast, hurricanes form over warm ocean waters, stretch hundreds of miles wide, and can last for days. Consequently, coastal communities receive early evacuation warnings, whereas tornado alerts give residents only minutes to seek shelter.'] }
+            },
+            '4.RC.8': {
+                nonfiction: { title: 'Persuasive Article: Why Recess Matters', text: ['Daily physical exercise is essential for growing children. Research proves that 30 minutes of unstructured outdoor play improves classroom focus and reduces student stress.', 'Although some school boards believe cutting recess increases academic instruction time, evidence clearly shows that active breaks lead to higher test scores and better social behavior. Recess is undeniably the best part of the school day.'] }
+            },
+            '4.RC.9': {
+                nonfiction: { title: 'Paired Passages on Solar Energy', text: ['<strong>Text A:</strong> Solar panels turn sunlight into electricity without burning fossil fuels. They produce clean energy and help keep our air clean.', '<strong>Text B:</strong> Installing solar panels can be expensive at first, but over time, homes save money on electricity bills because sunlight is completely free.'] }
+            },
+            '4.RC.10': {
+                fiction: { title: 'Story: The Lost Compass', text: ['Liam searched frantically through his backpack for the ancient compass. The fog was growing dense, and the dimly lit forest paths were becoming treacherous.', 'He realized he was in a perilous situation. Taking a slow, calming breath, Liam resolved not to panic and instead searched for recognizable landmarks.'] }
+            },
+            '4.RC.11': {
+                both: { title: 'Passage: Word Power in Action', text: ['Language is full of interesting relationships. Words that sound the same can have entirely different meanings, like the bark of a dog versus the bark of a tree.', 'Understanding synonyms and antonyms helps writers expand their vocabulary and express exact ideas clearly.'] }
+            },
+            '4.RC.12': {
+                both: { title: 'Informational Text: Understanding Word Building', text: ['Many English words originate from ancient Greek and Latin roots. For example, the root "bio" means life, while "geo" means earth.', 'Attaching prefixes like "un-" or suffixes like "-able" alters a word\'s core meaning, turning "break" into "unbreakable".'] }
+            },
+            '4.RC.13': {
+                fiction: { title: 'Poem / Story: Nature\'s Symphony', text: ['The wind whispered secrets through the swaying pine branches. Outside my bedroom window, rain tapped gently on the glass like a playful visitor.', 'My blanket was as warm as a sunbeam, wrapping me in comfort while the thunderstorm played its noisy midnight symphony outside.'] }
+            }
+        };
+
+        const QUESTION_POOLS = {
+            '4.RC.1': [
+                { genre: 'fiction', rigor: 'basic', q: "Based on 'The Midnight Rescue', why did Maya leave her room during the storm?", c: "She saw a shivering puppy outside in an overturned box.", d: ["She wanted to play in the rain with her flashlight.", "Her principal called to tell her about a dangerous tree.", "She needed to trim damaged oak tree branches."] },
+                { genre: 'fiction', rigor: 'basic', q: "Which detail explicitly tells the reader what the weather was like outside?", c: "'Heavy rain pelted the glass, and the old oak tree... swayed wildly'", d: ["'Maya grabbed her raincoat and flashlight from the closet'", "'A small puppy was shivering inside an overturned cardboard box'", "'After weeks of hard work, the tree was saved'"] },
+                { genre: 'fiction', rigor: 'on-grade', q: "What can you infer about Maya's character based on her actions in the text?", c: "She is caring and brave when an animal needs help.", d: ["She is fearful and prefers staying indoors.", "She is careless about her safety in bad weather.", "She is impatient when solving problems."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "What event explicitly caused Maya to gasp?", c: "A bright flash of lightning illuminated the lawn.", d: ["The puppy barked loudly.", "The oak tree fell over.", "The power went out in her bedroom."] },
+                { genre: 'fiction', rigor: 'advanced', q: "What can you infer would have happened if Maya did not act quickly?", c: "The puppy's box would have flooded with rainwater.", d: ["The puppy would have run away.", "The oak tree would have crushed the box.", "Maya would have gone to sleep."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "In 'Deep Sea Explorers', what tool do oceanographers use to explore pitch-black water?", c: "Specialized submarines called submersibles.", d: ["Flashlights and raincoats.", "Lightweight wing tags.", "Deep sea diving suits without boats."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "Where were hydrothermal vents discovered according to the text?", c: "On the deep ocean floor.", d: ["In warm lakes in Mexico.", "In coastal rivers.", "In polar glaciers."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "What can you infer about the sea creatures discovered near hydrothermal vents?", c: "They do not rely on sunlight energy to survive.", d: ["They migrate thousands of miles every winter.", "They prefer living near the top of the ocean.", "They are damaged by superheated minerals."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Which explicit detail explains why sunlight cannot reach the hydrothermal vents?", c: "Sunlight cannot penetrate pitch-black water at extreme depths.", d: ["Submersibles block the light from reaching the vents.", "Tube worms absorb all the available light.", "The minerals in the water absorb the light."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Why were scientists surprised by the discovery of hydrothermal vent ecosystems?", c: "They previously believed life required sunlight energy to survive.", d: ["They thought blind crabs could only live in shallow water.", "They did not expect submersibles to work at deep levels.", "They thought the vents produced ice water."] }
+            ],
+            '4.RC.2': [
+                { genre: 'fiction', rigor: 'basic', q: "What is the central theme of the story 'The Great Oak Tree'?", c: "Working together and being persistent can create positive change.", d: ["Storms are dangerous to schoolyard trees.", "Children should let adults solve community problems.", "Old trees always survive heavy rainstorms."] },
+                { genre: 'fiction', rigor: 'basic', q: "Which sentence provides the best summary of the story's main plot?", c: "When a beloved schoolyard tree is damaged, a boy mobilizes his classmates to raise funds and save it.", d: ["A principal decides to remove an oak tree after a thunderstorm breaks its branches.", "A boy named Leo writes letters to his principal during a heavy rainstorm.", "An arborist comes to school to give a talk on tree care."] },
+                { genre: 'fiction', rigor: 'basic', q: "What event happened at the beginning of 'The Great Oak Tree'?", c: "A heavy thunderstorm broke branches on the old oak tree.", d: ["Leo raised money to hire an arborist.", "Students wrote letters to the principal.", "An arborist trimmed the branches."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "Which detail best supports the theme that young people can make a difference?", c: "Leo organized a group of classmates to write letters and raise money.", d: ["Leo loved playing near the old oak tree.", "A thunderstorm broke several branches.", "The principal announced the tree might need to be removed."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "How did the classmates show they cared about the tree?", c: "They wrote letters and raised money.", d: ["They planted a new tree.", "They asked their parents to fix it.", "They protested outside the principal's office."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "What is the best summary of the middle portion of the story?", c: "Leo organized students to write letters and raise money for an arborist.", d: ["The principal ordered the tree cut down immediately.", "Leo played under the oak tree with his best friends.", "A storm knocked down three other trees on school grounds."] },
+                { genre: 'fiction', rigor: 'advanced', q: "What lesson did Leo learn by the end of the story?", c: "Persistence and organization can help overcome community challenges.", d: ["Thunderstorms always ruin schoolyards.", "Principals never listen to students unless parents intervene.", "Arborists are too expensive for school boards."] },
+                { genre: 'fiction', rigor: 'advanced', q: "Which universal theme is reflected in Leo's journey?", c: "Stand up for what you believe in, even when faced with obstacles.", d: ["Nature is superior to human construction.", "Rules should never be questioned by students.", "Safety is more important than sentiment."] },
+                { genre: 'fiction', rigor: 'advanced', q: "How does the resolution of 'The Great Oak Tree' reinforce its main theme?", c: "It shows that collective student effort successfully changed the principal's plan.", d: ["It demonstrates that old trees eventually need to be cut down.", "It proves that hiring professionals is always free.", "It shows that storms are rare events."] },
+                { genre: 'fiction', rigor: 'advanced', q: "Which key event belongs in an objective summary of 'The Great Oak Tree'?", c: "Leo hired an arborist using raised funds to safely trim the oak tree.", d: ["Leo felt sad while looking out his bedroom window during the storm.", "The arborist drove a big truck into the school yard.", "Classmates used blue pens to write letters."] }
+            ],
+            '4.RC.3': [
+                { genre: 'fiction', rigor: 'basic', q: "In 'Whispering Woods', what setting detail creates suspense at the start?", c: "Dusk was falling and shadows stretched like long fingers.", d: ["The sun was shining brightly over a meadow.", "Students were sitting in a bright classroom.", "Rain pelted against Maya's bedroom glass."] },
+                { genre: 'fiction', rigor: 'basic', q: "What character trait does Ethan demonstrate when he hears the clicking noise?", c: "Fear and caution", d: ["Curiosity and courage", "Anger and hostility", "Joy and excitement"] },
+                { genre: 'fiction', rigor: 'basic', q: "How does Clara react when she hears the noise in the hollow tree?", c: "She steps forward bravely and taps the trunk.", d: ["She runs back down the trail shouting.", "She hides behind Ethan and cries.", "She calls her parents on her phone."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "How does the setting of Whispering Woods at dusk impact the plot?", c: "It creates an eerie atmosphere that makes the owl's noise seem scary.", d: ["It allows the characters to see clearly into the tree.", "It forces the characters to set up a tent.", "It causes Clara to lose her compass."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "Which event causes Ethan's mood to change from fear to relief?", c: "A small barn owl swoops out of the tree trunk.", d: ["Clara drops her wooden stick.", "The sun comes back out.", "They find a paved sidewalk."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "How does Clara's courage affect the plot's resolution?", c: "Her willingness to tap the tree reveals the harmless owl and relieves Ethan's fear.", d: ["Her courage causes Ethan to run away into the woods.", "She captures the owl and takes it home.", "She discovers a chest of buried gold."] },
+                { genre: 'fiction', rigor: 'advanced', q: "How do Clara's and Ethan's contrasting character traits drive the story forward?", c: "Ethan's fear creates tension, while Clara's brave action resolves the mystery.", d: ["Ethan's courage saves Clara from a dangerous predator.", "Both characters run away before solving the mystery.", "Their disagreement causes them to get lost."] },
+                { genre: 'fiction', rigor: 'advanced', q: "How does the author use character interaction to show the conflict's solution?", c: "Ethan laughs at his mistake after Clara reveals the harmless owl.", d: ["Ethan scolds Clara for tapping the hollow trunk.", "Clara admits she was secretly terrified.", "They decide never to enter the woods again."] },
+                { genre: 'fiction', rigor: 'advanced', q: "Which statement best describes how the setting influences character behavior?", c: "The dimming light and strange sounds heighten Ethan's anxiety.", d: ["The sunny afternoon makes Clara want to sleep.", "The heavy snow causes Ethan to build a shelter.", "The open field allows Clara to run fast."] },
+                { genre: 'fiction', rigor: 'advanced', q: "What does Clara's action reveal about her problem-solving style?", c: "She relies on direct investigation rather than letting fear stop her.", d: ["She panics and waits for someone else to act.", "She guesses randomly without looking.", "She prefers to avoid difficult situations."] }
+            ],
+            '4.RC.4': [
+                { genre: 'fiction', rigor: 'basic', q: "In 'The Science Fair Swap', what point of view is used in Narrator A's account?", c: "First-person point of view ('I')", d: ["Third-person limited point of view", "Third-person omniscient point of view", "Second-person point of view"] },
+                { genre: 'fiction', rigor: 'basic', q: "What point of view is used in Narrator B's account?", c: "First-person point of view ('I')", d: ["Third-person point of view ('She')", "Second-person point of view ('You')", "Third-person omniscient"] },
+                { genre: 'fiction', rigor: 'basic', q: "Which pronoun in Julian's text proves it is written in first person?", c: "I", d: ["He", "She", "They"] },
+                { genre: 'fiction', rigor: 'on-grade', q: "How does Julian's perspective differ from Maya's perspective regarding the spill?", c: "Julian thinks Maya accidentally bumped him, while Maya explains she tripped on an electrical cord.", d: ["Julian thinks Maya ruined his poster on purpose, while Maya blames Julian.", "Julian admits he tripped, while Maya says she pushed him.", "Both narrators believe the principal knocked over the table."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "What detail is included in Maya's account that is missing from Julian's account?", c: "Her foot tripped on an electrical cord in the crowded cafeteria.", d: ["Lava splattered across Julian's poster.", "Julian spent three weeks on his project.", "The lava was red."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "Why do the two accounts of the accident differ?", c: "Each character experienced the event from a different position and perspective.", d: ["One character is lying to get out of trouble.", "The accident happened on two different days.", "Neither character was actually present during the spill."] },
+                { genre: 'fiction', rigor: 'advanced', q: "What advantage does reading both Narrator A and Narrator B give the reader?", c: "It provides a complete, unbiased understanding of how the accident happened.", d: ["It proves that Julian is a better scientist than Maya.", "It shows that science fairs are too dangerous.", "It allows the reader to decide who gets a grade."] },
+                { genre: 'fiction', rigor: 'advanced', q: "How would the story change if narrated by an omniscient third-person narrator?", c: "The narrator could explain both Julian's hard work and Maya's trip simultaneously.", d: ["The story would only show Julian's inner thoughts.", "Maya's feelings would remain a total secret.", "The story would be written using the pronoun 'you'."] },
+                { genre: 'fiction', rigor: 'advanced', q: "Which statement best summarizes the difference in emotional tone between Julian and Maya?", c: "Julian feels frustrated about his ruined work, while Maya feels embarrassed about tripping.", d: ["Julian feels amused, while Maya feels angry.", "Julian feels guilty, while Maya feels proud.", "Both characters feel completely indifferent."] },
+                { genre: 'fiction', rigor: 'advanced', q: "How does the author use point of view to build empathy for both characters?", c: "By showing Julian's lost effort and Maya's unavoidable accident.", d: ["By making Julian look careless and Maya look mean.", "By having a teacher punish both students.", "By focusing only on the damage to the cafeteria."] }
+            ],
+            '4.RC.5': [
+                { genre: 'nonfiction', rigor: 'basic', q: "What is the main idea of 'Monarch Butterfly Migration'?", c: "Monarch butterflies complete an extraordinary multi-generational journey of over 2,000 miles each year.", d: ["Scientists use lightweight wing tags to identify different species of insects.", "Canada and Mexico have different winter climates.", "Butterflies only live for a few days during the summer months."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "Which key detail supports the main idea that the monarch migration is unusually long?", c: "The butterflies travel more than 2,000 miles across North America.", d: ["Butterflies have thin, colorful wings.", "Forests in Mexico are warm during the winter.", "Tagging insects is a common scientific practice."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "Where do monarchs travel to spend the winter?", c: "Warm forests in central Mexico.", d: ["Cold mountains in Canada.", "Deserts in Arizona.", "Swamps in Florida."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Why do scientists track monarch butterflies using lightweight wing tags?", c: "To better understand how habitat loss impacts their survival.", d: ["To count exactly how many butterflies there are.", "To see which butterfly flies the fastest.", "To capture them for zoos."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "What is the best summary of the second paragraph?", c: "It takes four generations of monarchs to complete the migration, and scientists track them to study their survival.", d: ["Monarchs only live a few weeks.", "Tags are placed on butterfly wings.", "Habitat loss is a major problem for insects."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Which key detail explains why one single monarch cannot complete the entire round-trip?", c: "Individual monarchs live only a few weeks.", d: ["Their wings are too delicate for wind storms.", "They get lost without tags.", "Forests in Mexico are too far."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Which summary best captures the entire article without including minor details?", c: "Monarchs complete a multi-generational 2,000-mile migration that scientists study to help protect their habitat.", d: ["Monarchs fly from Canada to Mexico every fall because Mexico is warm and has green forests.", "Scientists attach small tags to butterfly wings so they can see them fly over Canadian houses.", "Butterflies live short lives and die quickly after four generations."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "How does the second paragraph build upon the main idea introduced in the first paragraph?", c: "It explains the remarkable multi-generational process required to complete the journey.", d: ["It proves that butterflies travel faster than birds.", "It refutes the claim that monarchs migrate south.", "It describes the climate of central Mexico in detail."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Which detail provides evidence that habitat loss threatens monarchs?", c: "Scientists use tags to monitor how environment changes affect survival rates.", d: ["Monarchs have bright orange and black wings.", "Canada has cold winters.", "Mexico is located south of the United States."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "What makes the monarch migration unique among insect behaviors according to the text?", c: "The round-trip cycle spans four separate generations of living insects.", d: ["Monarchs travel without stopping for food.", "Monarchs fly at night using moonlight.", "Monarchs migrate in underwater streams."] }
+            ],
+            '4.RC.6': [
+                { genre: 'nonfiction', rigor: 'basic', q: "What map feature shows cardinal directions like North, South, East, and West?", c: "A compass rose", d: ["An elevation chart", "A map key", "A cross-section diagram"] },
+                { genre: 'nonfiction', rigor: 'basic', q: "How does a bold subheading help a reader gain meaning from an informational article?", c: "It signals the main topic of the section that follows.", d: ["It provides a dictionary definition for difficult words.", "It lists all the sources the author used.", "It explains what happens at the end of the text."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "Where should a reader look to find explanations for symbols on a map?", c: "In the map key or legend", d: ["Under the compass rose", "In the elevation chart", "In the index"] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "What information does an elevation chart provide using shaded colors?", c: "Land height above sea level", d: ["Ocean temperature changes", "Road distance between cities", "Population density of towns"] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "How does a cross-section diagram assist geologists?", c: "It allows them to examine layers of rock hidden beneath Earth's surface.", d: ["It shows weather patterns across mountains.", "It lists capital cities in alphabetical order.", "It measures mountain peak heights."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "What text feature would be best to quickly find specific topics and page numbers at the end of a book?", c: "An index", d: ["A glossary", "A table of contents", "A title page"] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Why would an author include both a map key and an elevation chart in an article on geography?", c: "To provide complementary data on both land features and terrain height.", d: ["Because map keys are too difficult for fourth graders to read alone.", "To replace the need for written paragraphs entirely.", "To show historical changes in country borders."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "How do text features like diagrams and charts enhance a reader's comprehension of dense text?", c: "They visually display complex data that might be confusing in paragraph form.", d: ["They make the article longer so it looks more professional.", "They summarize the author's personal opinions.", "They replace key vocabulary words."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "If a student wants to learn what rock layers exist under a volcano, which text feature is most useful?", c: "A labeled cross-section diagram", d: ["A compass rose", "A bold subheading", "A glossary entry"] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Which statement best describes the relationship between subheadings and the main text?", c: "Subheadings organize information into logical categories for easier scanning.", d: ["Subheadings give away the ending of stories.", "Subheadings define scientific terms.", "Subheadings list author credits."] }
+            ],
+            '4.RC.7': [
+                { genre: 'nonfiction', rigor: 'basic', q: "Read: 'Heavy snow blocked the mountain pass; consequently, the delivery trucks were delayed by three days.' What text structure is used?", c: "Cause and Effect", d: ["Compare and Contrast", "Chronological Order", "Problem and Solution"] },
+                { genre: 'nonfiction', rigor: 'basic', q: "Read: 'First, gather your materials. Next, measure two cups of flour. Finally, stir gently.' Which organizational structure is shown?", c: "Procedural / Sequential", d: ["Cause and Effect", "Comparison and Contrast", "Description"] },
+                { genre: 'nonfiction', rigor: 'basic', q: "In 'Tornadoes and Hurricanes', how are the two storm types compared at the start?", c: "Both are powerful storm systems with rotating winds.", d: ["Both form over warm ocean waters.", "Both last for several days.", "Both give residents early warnings."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Which signal word in the text indicates a contrast between tornadoes and hurricanes?", c: "In contrast", d: ["Consequently", "First", "Because"] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Read: 'The river was polluted with trash. To fix this, the town organized a clean-up crew.' What structure is this?", c: "Problem and Solution", d: ["Chronological Order", "Cause and Effect", "Description"] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Why do hurricane warnings give coastal residents more time to prepare than tornado alerts?", c: "Hurricanes stretch hundreds of miles wide and last for days.", d: ["Tornadoes only happen over ocean water.", "Hurricanes form in seconds.", "Tornadoes travel slower than hurricanes."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "How does the author structure the passage 'Tornadoes and Hurricanes' to inform the reader?", c: "By combining comparison/contrast with cause/effect relationships.", d: ["By presenting events in strict chronological order from 1900 to present.", "By listing steps in a procedural scientific experiment.", "By posing a problem and describing three failed solutions."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Which organizational structure would be best for an article explaining how a caterpillar turns into a butterfly?", c: "Sequential / Chronological Order", d: ["Problem and Solution", "Compare and Contrast", "Cause and Effect"] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "What effect does the signal word 'Consequently' have in the text?", c: "It connects the size/duration of hurricanes to the early warnings residents receive.", d: ["It compares tornado speed to hurricane speed.", "It introduces a step-by-step recipe.", "It marks the conclusion of the article."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "How does recognizing text structure help a reader comprehend informational text?", c: "It helps the reader predict how ideas and details are logically organized.", d: ["It allows the reader to skip reading paragraphs.", "It reveals the author's hidden personal bias.", "It defines unknown vocabulary words."] }
+            ],
+            '4.RC.8': [
+                { genre: 'nonfiction', rigor: 'basic', q: "Which statement from 'Why Recess Matters' is a FACT?", c: "Research proves that 30 minutes of unstructured outdoor play improves focus.", d: ["Recess is undeniably the best part of the school day.", "Playing soccer is more fun than sitting at a desk.", "All students love outdoor breaks."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "Which statement expresses an OPINION?", c: "Recess is undeniably the best part of the school day.", d: ["30 minutes of physical play improves focus.", "Some school boards reduce recess time.", "Active breaks lead to higher test scores."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "What claim does the author make in 'Why Recess Matters'?", c: "Daily physical exercise and recess are essential for growing children.", d: ["Schools should eliminate academic instruction.", "Recess causes test scores to decrease.", "Children prefer staying indoors during breaks."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "What evidence does the author provide to support the claim that recess improves learning?", c: "Research studies showing higher test scores and better social behavior.", d: ["The author's personal memories of childhood play.", "A list of playground equipment prices.", "Quotes from students who dislike math."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "How does the author address the opposing view regarding recess?", c: "By acknowledging some boards cut recess, then refuting it with research evidence.", d: ["By agreeing that academic instruction time should be doubled.", "By ignoring alternative opinions completely.", "By insulting school board members."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Which detail would be considered weak evidence for supporting daily recess?", c: "A student saying they like playing tag with friends.", d: ["Data showing a 15% increase in focus after breaks.", "Medical reports on reduced childhood stress levels.", "Teacher surveys confirming improved classroom behavior."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Why is scientific research stronger evidence than student quotes when supporting an educational claim?", c: "Research provides objective, measurable data rather than subjective personal preference.", d: ["Student quotes are always false.", "Research papers are shorter to read.", "Adults dislike listening to children."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "How does the author's word choice ('undeniably') reveal their point of view?", c: "It shows a strong persuasive bias in favor of recess.", d: ["It shows the author is neutral on the topic.", "It indicates uncertainty in the evidence.", "It proves the statement is a scientific fact."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Which statement best distinguishes a fact from an opinion?", c: "A fact can be verified with objective evidence, while an opinion reflects personal belief.", d: ["Facts are always long sentences; opinions are short.", "Facts are written by scientists; opinions are written by teachers.", "Facts change constantly; opinions never change."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "What logical argument does the author use to counter cutting recess?", c: "Cutting recess hurts test scores because children need physical breaks to focus.", d: ["Cutting recess saves schools too much money.", "Recess teaches kids how to become professional athletes.", "Teachers need extra nap time during the day."] }
+            ],
+            '4.RC.9': [
+                { genre: 'nonfiction', rigor: 'basic', q: "What topic do both Text A and Text B address in 'Paired Passages on Solar Energy'?", c: "The benefits and features of solar energy.", d: ["The history of wind turbines.", "How fossil fuels are mined.", "The cost of ocean water power."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "What piece of information is found in Text A but NOT in Text B?", c: "Solar panels produce clean energy without burning fossil fuels.", d: ["Solar panels save money on electricity bills.", "Sunlight is free.", "Installing solar panels can be expensive."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "What piece of information is found in Text B but NOT in Text A?", c: "Installing panels can be expensive at first.", d: ["Solar energy keeps air clean.", "Solar panels turn sunlight into electricity.", "Fossil fuels pollute the air."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "By combining information from Text A and Text B, what overall conclusion can be drawn?", c: "Solar energy provides clean power that saves money over time despite high upfront costs.", d: ["Solar energy is too expensive to ever be practical.", "Fossil fuels are cleaner and cheaper than solar energy.", "Sunlight is only usable in warm countries."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "How do Text A and Text B complement each other?", c: "Text A explains environmental benefits, while Text B explains financial impacts.", d: ["Text A argues against solar power, while Text B supports it.", "Text A gives instructions on building panels, while Text B lists prices.", "Text A is fiction, while Text B is nonfiction."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Which statement is supported by BOTH Text A and Text B?", c: "Solar panels rely on sunlight to function.", d: ["Solar panels cost $10,000 to buy.", "Fossil fuels are running out.", "Electricity bills are rising every year."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "If a family is deciding whether to buy solar panels, why should they read BOTH texts?", c: "To weigh both the environmental advantages and long-term financial costs.", d: ["To learn how to manufacture glass panels.", "To find out which electric company is cheapest.", "To read competing fictional stories."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "How does integrating information from multiple sources create a better understanding?", c: "It synthesizes different facets of a topic into a comprehensive view.", d: ["It allows readers to memorize facts twice as fast.", "It eliminates all opinions from the texts.", "It makes short texts longer."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Which detail added to Text B would best connect with Text A's environmental focus?", c: "Financial incentives offered by governments to reduce carbon emissions.", d: ["A history of electricity bills in Texas.", "The weight of glass solar panels.", "How to clean roof shingles."] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Which synthesis statement best combines the key ideas of both passages?", c: "Switching to solar power protects the environment while offering long-term financial savings.", d: ["Solar power is expensive, dangerous, and hard to maintain.", "Fossil fuels remain superior to solar energy in every category.", "Sunlight is free, so solar panels cost nothing to install."] }
+            ],
+            '4.RC.10': [
+                { genre: 'fiction', rigor: 'basic', q: "Read: 'The hiker found the trail treacherous, with steep cliffs on one side and loose, slippery gravel on the other.' What does 'treacherous' mean?", c: "Dangerous or hazardous", d: ["Smooth and easy to walk", "Short and pleasant", "Paved and flat"] },
+                { genre: 'fiction', rigor: 'basic', q: "Read: 'He realized he was in a perilous situation.' What clue helps define 'perilous'?", c: "Dense fog and treacherous paths.", d: ["Sunny sky and green grass.", "A warm bed and blanket.", "A paved highway."] },
+                { genre: 'nonfiction', rigor: 'basic', q: "Read: 'The scientist observed the nocturnal animal sleeping soundly during the daylight hours.' What does 'nocturnal' mean?", c: "Active during the night", d: ["Living in water", "Very small in size", "Fast moving"] },
+                { genre: 'fiction', rigor: 'on-grade', q: "Read: 'The old, dilapidated barn looked like it would collapse in the next windstorm.' What does 'dilapidated' mean?", c: "In a state of ruin or disrepair", d: ["Brand new and sturdy", "Painted bright red", "Full of healthy animals"] },
+                { genre: 'fiction', rigor: 'on-grade', q: "Read: 'Her benevolent smile made everyone in the room feel welcomed and loved.' What does 'benevolent' mean?", c: "Kind and well-meaning", d: ["Angry and cruel", "Confused and lost", "Loud and noisy"] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Read: 'The water in the lake was so murky that I couldn't see my feet at the bottom.' What does 'murky' mean?", c: "Dark and cloudy", d: ["Crystal clear", "Freezing cold", "Full of fast fish"] },
+                { genre: 'fiction', rigor: 'advanced', q: "Read: 'Taking a slow breath, Liam resolved not to panic and instead searched for recognizable landmarks.' What does 'resolved' mean in this context?", c: "Made a firm decision", d: ["Failed completely", "Asked for help", "Forgot his plan"] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Read: 'Arid regions receive less than ten inches of rainfall annually, making plant life scarce.' What does 'arid' mean?", c: "Extremely dry", d: ["Cold and snowy", "Tropical and humid", "Deep underwater"] },
+                { genre: 'fiction', rigor: 'advanced', q: "Read: 'The king was known for his ostentatious displays, wearing gold robes and diamond crowns every day.' What does 'ostentatious' mean?", c: "Showy and extravagant", d: ["Simple and modest", "Secretive and quiet", "Poor and needy"] },
+                { genre: 'nonfiction', rigor: 'advanced', q: "Read: 'The team worked in tandem, coordinating every movement to win the rowing race.' What does 'in tandem' mean?", c: "Together in unison", d: ["Against each other", "One at a time slowly", "Without practice"] }
+            ],
+            '4.RC.11': [
+                { genre: 'both', rigor: 'basic', q: "In which sentence is the word 'bark' used with the same meaning as: 'The dog began to bark at the mail truck'?", c: "Our puppy has a loud bark when someone knocks on the door.", d: ["The bark of the birch tree was rough and peeling.", "We stripped the bark off the log to build a shelter.", "The rough bark protects the tree from insects."] },
+                { genre: 'both', rigor: 'basic', q: "Which pair of words are SYNONYMS?", c: "Huge and enormous", d: ["Ancient and modern", "Loud and quiet", "Fast and slow"] },
+                { genre: 'both', rigor: 'basic', q: "Which pair of words are ANTONYMS?", c: "Generous and selfish", d: ["Happy and joyful", "Tired and sleepy", "Quick and fast"] },
+                { genre: 'both', rigor: 'on-grade', q: "In which sentence is the word 'bat' used as a piece of sports equipment?", c: "He swung the bat and hit a home run.", d: ["The brown bat flew out of the cave at dusk.", "I saw a bat hanging upside down from the tree.", "The bat ate several mosquitoes in the night."] },
+                { genre: 'both', rigor: 'on-grade', q: "Which definition matches 'fly' in: 'A tiny fly landed on the picnic table'?", c: "A small two-winged insect", d: ["To move through the air with wings", "To travel in an airplane", "To wave in the wind like a flag"] },
+                { genre: 'both', rigor: 'on-grade', q: "Which pair of homophones correctly completes the sentence: 'We _____ the whole pizza at _____ o\'clock.'?", c: "ate / eight", d: ["eight / ate", "ate / ate", "eight / eight"] },
+                { genre: 'both', rigor: 'advanced', q: "Which word has multiple meanings depending on whether it is used as a noun or a verb?", c: "Bank", d: ["Elephant", "Calculator", "Thermometer"] },
+                { genre: 'both', rigor: 'advanced', q: "Identify the relationship between 'fragile' and 'sturdy'.", c: "Antonyms", d: ["Synonyms", "Homographs", "Homophones"] },
+                { genre: 'both', rigor: 'advanced', q: "In which sentence does 'scale' mean to climb up something high?", c: "The mountaineers planned to scale the icy cliff before dark.", d: ["She weighed the apples on the kitchen scale.", "The fish had shiny silver scales on its back.", "The map used a scale of one inch per mile."] },
+                { genre: 'both', rigor: 'advanced', q: "Which choice best explains homographs?", c: "Words spelled the same but with different meanings and sometimes origins.", d: ["Words that rhyme with each other.", "Words with opposite meanings.", "Words borrowed from Latin roots."] }
+            ],
+            '4.RC.12': [
+                { genre: 'both', rigor: 'basic', q: "The root 'tele' means 'far away' and 'scope' means 'viewing instrument'. What does 'telescope' mean?", c: "An instrument used to view distant objects", d: ["A device used to write long letters", "An instrument that measures temperature", "A machine that moves heavy items"] },
+                { genre: 'both', rigor: 'basic', q: "The prefix 'un-' means 'not' and the suffix '-able' means 'able to be'. What does 'unbreakable' mean?", c: "Not able to be broken", d: ["Easily broken into pieces", "Broken into two parts", "Able to be repaired"] },
+                { genre: 'both', rigor: 'basic', q: "The prefix 're-' means 'again'. What does the word 'rebuild' mean?", c: "To build something again", d: ["To destroy something", "To build something for the first time", "To paint a building"] },
+                { genre: 'both', rigor: 'on-grade', q: "The suffix '-less' means 'without'. What does 'fearless' mean?", c: "Without fear", d: ["Full of fear", "Causing fear", "A type of fear"] },
+                { genre: 'both', rigor: 'on-grade', q: "The root 'bio' means 'life' and '-ology' means 'the study of'. What is 'biology'?", c: "The study of living things", d: ["The study of rocks", "The study of space", "The study of numbers"] },
+                { genre: 'both', rigor: 'on-grade', q: "The prefix 'pre-' means 'before'. What does 'preheat' mean?", c: "To heat before using", d: ["To cool down completely", "To heat twice", "To heat slowly"] },
+                { genre: 'both', rigor: 'advanced', q: "The root 'geo' means 'earth' and 'graphy' means 'writing/mapping'. What is 'geography'?", c: "The study and mapping of Earth's surface features.", d: ["Writing stories about space.", "The study of ancient sea animals.", "A machine that measures earthquakes."] },
+                { genre: 'both', rigor: 'advanced', q: "The prefix 'sub-' means 'under' and 'marine' relates to 'sea'. What is a 'submarine'?", c: "A vessel operating underwater in the sea", d: ["A bird flying high over water", "A boat that stays on top of waves", "A bridge built over a river"] },
+                { genre: 'both', rigor: 'advanced', q: "The suffix '-ful' means 'full of'. What does 'thoughtful' mean?", c: "Full of care and consideration for others", d: ["Without any thoughts", "Thinking too quickly", "Unable to think clearly"] },
+                { genre: 'both', rigor: 'advanced', q: "The root 'aud' means 'hear'. Which word refers to a group of people gathered to hear a performance?", c: "Audience", d: ["Auditorium", "Audiobook", "Audition"] }
+            ],
+            '4.RC.13': [
+                { genre: 'fiction', rigor: 'basic', q: "Which sentence contains a SIMILE?", c: "His hands were as cold as ice after playing in the snow.", d: ["The wind whispered gently through the trees.", "My backpack weighs a million pounds today.", "Time is a thief that slips away."] },
+                { genre: 'fiction', rigor: 'basic', q: "Read sentence: 'My backpack weighs a million pounds today!' What type of figurative language is used?", c: "Hyperbole (exaggeration)", d: ["Simile", "Personification", "Metaphor"] },
+                { genre: 'fiction', rigor: 'basic', q: "Which choice is an example of PERSONIFICATION?", c: "The wind whispered secrets through the branches.", d: ["He ran like a lightning bolt.", "She is a shining star.", "I've told you a hundred times."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "What does the metaphor 'The classroom was a zoo' suggest?", c: "The classroom was chaotic and noisy.", d: ["The classroom was full of wild animals in cages.", "The students were visiting a park.", "The teacher was taking attendance."] },
+                { genre: 'fiction', rigor: 'on-grade', q: "Read: 'My blanket was as warm as a sunbeam.' What two things are being compared?", c: "A blanket and a sunbeam", d: ["A sunbeam and a window", "Rain and glass", "A thunderstorm and a blanket"] },
+                { genre: 'fiction', rigor: 'on-grade', q: "What does the hyperbole 'I\'m so hungry I could eat a horse' mean?", c: "The speaker is extremely hungry.", d: ["The speaker wants to visit a farm.", "The speaker prefers eating meat.", "The speaker is ready for lunch tomorrow."] },
+                { genre: 'fiction', rigor: 'advanced', q: "In 'Nature\'s Symphony', the rain tapped on the glass 'like a playful visitor.' What feeling does this simile create?", c: "It makes the storm seem friendly and harmless.", d: ["It warns the reader of a dangerous hurricane.", "It proves the window is broken.", "It explains how much rain fell that night."] },
+                { genre: 'fiction', rigor: 'advanced', q: "What does the metaphor 'Time is a thief' imply about time?", c: "Time seems to pass quickly and quietly without us noticing.", d: ["Time steals physical objects from houses.", "Clocks are dangerous devices.", "Time moves slowly when you are bored."] },
+                { genre: 'fiction', rigor: 'advanced', q: "Which sentence contains both a SIMILE and vivid sensory imagery?", c: "The lightning flashed like a jagged silver sword across the dark night sky.", d: ["Thunder is loud.", "The storm ended at 3 AM.", "It rained heavily all night long."] },
+                { genre: 'fiction', rigor: 'advanced', q: "Why do poets and storytellers use figurative language instead of literal language?", c: "To paint vivid mental pictures and evoke emotion in the reader.", d: ["To make stories easier to translate into other languages.", "To state facts clearly for textbooks.", "To keep sentences as short as possible."] }
+            ]
+        };
+
+        // Written (constructed response) bank.
+        // genre tells which passage a prompt needs: 'fiction' / 'nonfiction' / 'both' match a passage
+        // for that standard; 'any' means the prompt stands on its own.
+        const WRITTEN_QUESTION_POOLS = {
+            '4.RC.1': [
+                { genre: 'fiction', q: "Explain what Maya did when she saw the puppy in the storm. Use at least TWO details from the text to support your answer.", key: "Look for: she grabbed her raincoat and flashlight without hesitation; she went to help before rainwater flooded the box." },
+                { genre: 'fiction', q: "What can you infer about how Maya feels about animals? Explain using evidence from the text.", key: "Inference: she cares about animals and is brave. Evidence: she went out into a storm right away to help a shivering puppy." },
+                { genre: 'nonfiction', q: "In 'Deep Sea Explorers', how are living things able to survive near hydrothermal vents? Use details from the text.", key: "Look for: vents spew superheated water full of minerals; tube worms and blind white crabs thrive in total darkness without sunlight energy." },
+                { genre: 'nonfiction', q: "Why do oceanographers need submersibles to explore the deep ocean? Use a detail from the text to explain.", key: "Sunlight cannot reach the pitch-black water at extreme depths, so explorers need specialized submarines to get there." }
+            ],
+            '4.RC.2': [
+                { genre: 'fiction', q: "What is the theme of 'The Great Oak Tree'? Explain how Leo's actions throughout the story help develop this theme.", key: "Theme: persistence / young people can make a difference. Evidence: organized classmates, wrote letters, raised money, tree was saved." },
+                { genre: 'fiction', q: "Summarize the plot of 'The Great Oak Tree' in 3 to 4 sentences. Include the beginning, middle, and end.", key: "Storm breaks branches; principal says the tree may be removed; Leo organizes letters and fundraising; an arborist trims the tree and it is saved." },
+                { genre: 'fiction', q: "Which detail from 'The Great Oak Tree' best shows the theme of the story? Explain why you chose it.", key: "Strong choices: Leo organized classmates to write letters, or they raised money for an arborist. Explanation should connect the detail to the theme." }
+            ],
+            '4.RC.3': [
+                { genre: 'fiction', q: "Describe the setting at the start of 'The Mystery of Whispering Woods.' How does the setting make the clicking noise seem scary?", key: "Dusk is falling and shadows stretch like long fingers. The growing darkness makes an unknown sound feel spooky and builds suspense." },
+                { genre: 'fiction', q: "Contrast Clara's and Ethan's reactions to the noise. How do their character traits affect the way the story ends?", key: "Ethan freezes in fear while Clara bravely investigates, which reveals the owl and resolves the mystery." },
+                { genre: 'fiction', q: "How does Ethan change from the beginning to the end of the story? What event causes the change?", key: "He goes from frozen with fear to relieved and laughing at himself after the barn owl swoops out of the tree." }
+            ],
+            '4.RC.4': [
+                { genre: 'fiction', q: "How does Julian's account of the accident differ from Maya's account in 'The Science Fair Swap'?", key: "Julian says Maya bumped his table; Maya explains she tripped on an electrical cord in the crowded cafeteria." },
+                { genre: 'fiction', q: "Why is it helpful to read both Julian's and Maya's points of view? Use text evidence.", key: "Reading both gives a fuller, fairer picture of how the accident happened (the bump vs. the cord she tripped on)." },
+                { genre: 'fiction', q: "Julian's account is told in first person. Rewrite his first sentence in third person. Then explain what changed.", key: "Example: 'Julian spent three weeks perfecting his volcanic eruption model.' Pronouns change from I/my to he/his; the narrator is now outside the story." }
+            ],
+            '4.RC.5': [
+                { genre: 'nonfiction', q: "State the main idea of 'Monarch Butterfly Migration' and give TWO key details from the article that support it.", key: "Main idea: monarchs make a long migration of over 2,000 miles. Details: fly from Canada and the U.S. to Mexico; takes four generations." },
+                { genre: 'nonfiction', q: "Summarize how scientists track monarch butterflies and explain why this research matters.", key: "Scientists place lightweight tags on wings to track flight paths and learn how habitat loss affects monarchs." }
+            ],
+            '4.RC.6': [
+                { genre: 'any', q: "Why do nonfiction authors use text features like subheadings, bold words, and diagrams? Explain how these features help a reader.", key: "Subheadings organize topics; bold words highlight key vocabulary; diagrams show information visually." },
+                { genre: 'any', q: "Explain how a map key and a compass rose work together to help someone read a map.", key: "The compass rose shows direction (N, S, E, W); the map key explains what the symbols mean." }
+            ],
+            '4.RC.7': [
+                { genre: 'any', q: "Compare cause and effect structure with problem and solution structure. How can a reader tell the difference using signal words?", key: "Cause/effect explains why something happened (because, as a result, consequently); problem/solution presents a challenge and a fix (to solve this, one answer is)." },
+                { genre: 'nonfiction', q: "Explain how the author organizes 'Tornadoes and Hurricanes' to compare the two storm types. Use signal words from the text.", key: "Compares a shared feature (rotating winds), then contrasts formation, size, and duration ('In contrast'); uses 'Consequently' to explain warning times." }
+            ],
+            '4.RC.8': [
+                { genre: 'nonfiction', q: "Explain the difference between a fact and an opinion. Then find one fact and one opinion in 'Why Recess Matters.'", key: "A fact can be proven; an opinion is a belief or feeling. Fact: research shows 30 minutes of outdoor play improves focus. Opinion: recess is undeniably the best part of the school day." },
+                { genre: 'nonfiction', q: "What claim does the author make in 'Why Recess Matters'? Identify two pieces of evidence used to support this claim.", key: "Claim: recess is essential. Evidence: improves focus, reduces stress, leads to higher test scores and better behavior." }
+            ],
+            '4.RC.9': [
+                { genre: 'nonfiction', q: "Use information from BOTH Text A and Text B to explain one advantage and one drawback of solar panels.", key: "Advantage: clean energy (A) or saves money over time (B). Drawback: expensive to install at first (B)." },
+                { genre: 'nonfiction', q: "What overall conclusion can you draw by combining Text A and Text B? Explain in your own words.", key: "Solar power is clean and saves money over time, even though it costs a lot at first." }
+            ],
+            '4.RC.10': [
+                { genre: 'any', q: "Read: 'The hiker found the trail treacherous, with steep cliffs on one side and loose, slippery gravel on the other.' What does 'treacherous' mean? Which context clues helped you?", key: "Dangerous. Clues: 'steep cliffs' and 'loose, slippery gravel'." },
+                { genre: 'any', q: "Read: 'The old, dilapidated barn looked like it would collapse in the next windstorm.' What does 'dilapidated' mean? Explain which context clues helped you.", key: "Falling apart / in disrepair. Clues: 'old' and 'looked like it would collapse'." },
+                { genre: 'fiction', q: "In 'The Lost Compass', Liam is in a 'perilous situation.' What does 'perilous' mean? Which words in the story help you figure it out?", key: "Dangerous. Clues: fog growing dense, paths becoming treacherous, searched frantically." }
+            ],
+            '4.RC.11': [
+                { genre: 'any', q: "Explain two different meanings for the homograph 'bark'. Write a complete sentence for each meaning.", key: "Meaning 1: the sound a dog makes. Meaning 2: the outer covering of a tree." },
+                { genre: 'any', q: "Define synonyms and antonyms. Give one pair of synonyms and one pair of antonyms.", key: "Synonyms have similar meanings (huge/enormous). Antonyms have opposite meanings (hot/cold)." }
+            ],
+            '4.RC.12': [
+                { genre: 'any', q: "Break the word 'unbreakable' into its prefix, base word, and suffix. Explain how each part adds to the word's meaning.", key: "un- (not) + break + -able (able to be) = not able to be broken." },
+                { genre: 'any', q: "How does adding the prefix 'pre-' change the meaning of the word 'heat'? Explain using an example.", key: "Pre- means before, so preheat means to heat something before using it (preheat the oven)." }
+            ],
+            '4.RC.13': [
+                { genre: 'any', q: "Identify the figurative language in 'My backpack weighs a million pounds today!' Explain what the speaker actually means.", key: "Hyperbole (exaggeration). The backpack feels very heavy." },
+                { genre: 'any', q: "Explain the difference between a simile and a metaphor. Write one original example of each.", key: "A simile compares using 'like' or 'as'; a metaphor compares directly without them." },
+                { genre: 'fiction', q: "Find one example of personification in 'Nature's Symphony.' Explain what is given a human quality and what the author wants you to picture.", key: "The wind whispered secrets (wind cannot whisper) or the thunderstorm played its noisy symphony (storms cannot play music)." }
+            ]
+        };
+
+        // =====================================================================
+        // App
+        // =====================================================================
+        const LEVEL_NAME = { basic: 'Level 1', 'on-grade': 'Level 2', advanced: 'Level 3' };
+        const LEVEL_ORDER = { basic: 0, 'on-grade': 1, advanced: 2 };
+        const CFA_MAX_STANDARDS = 2;
+
+        const MODE_DEFAULTS = {
+            cfa: {
+                title: 'ELA Common Formative Assessment', sub: '',
+                genre: 'auto', rigor: 'on-grade', newPage: false, score: false,
+                sel: { '4.RC.1': { mc: 3, wr: 1 } },
+                defaultCounts: { mc: 3, wr: 1 }
+            },
+            eou: {
+                title: 'ELA End of Unit Assessment', sub: '',
+                genre: 'auto', rigor: 'mix', newPage: true, score: true,
+                sel: { '4.RC.1': { mc: 5, wr: 1 }, '4.RC.2': { mc: 5, wr: 1 }, '4.RC.3': { mc: 5, wr: 1 }, '4.RC.10': { mc: 5, wr: 1 } },
+                defaultCounts: { mc: 5, wr: 1 }
+            }
+        };
+
+        const state = {
+            mode: 'cfa',
+            settings: JSON.parse(JSON.stringify(MODE_DEFAULTS)),
+            showKey: false,
+            code: newCode(),
+            built: null
+        };
+        const S = () => state.settings[state.mode];
+        const $ = id => document.getElementById(id);
+
+        // ---------- Seeded randomness (same code + same settings = same test) ----------
+        function newCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let c = '';
+            for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
+            return c;
+        }
+        function makeRng(seedText) {
+            let h = 1779033703 ^ seedText.length;
+            for (let i = 0; i < seedText.length; i++) {
+                h = Math.imul(h ^ seedText.charCodeAt(i), 3432918353);
+                h = (h << 13) | (h >>> 19);
+            }
+            let a = h >>> 0;
+            return function () {
+                a = (a + 0x6D2B79F5) | 0;
+                let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+        function shuffle(arr, rng) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // ---------- Question selection ----------
+        // A question "needs" a passage when the standard has a passage of the question's genre.
+        function passageNeeded(stdId, genre) {
+            const group = PASSAGES[stdId] || {};
+            return group[genre] ? genre : null;
+        }
+
+        function orderForLevel(pool, rigor, genrePref, rng) {
+            const prefer = q => (genrePref !== 'auto' && q.genre === genrePref) ? 0 : 1;
+            const byGenre = list => shuffle(list, rng).sort((a, b) => prefer(a) - prefer(b));
+            if (rigor === 'all') return byGenre(pool);
+            if (rigor === 'mix') {
+                const tiers = ['basic', 'on-grade', 'advanced'].map(l => byGenre(pool.filter(q => q.rigor === l)));
+                const out = [];
+                while (tiers.some(t => t.length)) tiers.forEach(t => { if (t.length) out.push(t.shift()); });
+                return out;
+            }
+            const tierOrder = { basic: ['basic', 'on-grade', 'advanced'], 'on-grade': ['on-grade', 'advanced', 'basic'], advanced: ['advanced', 'on-grade', 'basic'] }[rigor];
+            return tierOrder.flatMap(l => byGenre(pool.filter(q => q.rigor === l)));
+        }
+
+        function shuffleOptions(correct, distractors, rng) {
+            const unique = Array.from(new Set(distractors.map(String))).filter(d => d !== String(correct)).slice(0, 3);
+            const all = shuffle([String(correct), ...unique], rng);
+            const letters = ['A', 'B', 'C', 'D'];
+            return {
+                options: all.map((text, i) => ({ label: letters[i], text })),
+                correctLetter: letters[all.indexOf(String(correct))]
+            };
+        }
+
+        function buildSection(stdId, mcWanted, wrWanted, genre, rigor, rng, notices) {
+            const group = PASSAGES[stdId] || {};
+            const available = Object.keys(group);
+            // Which passages may be used, in the order they should be tried
+            let allowed;
+            if (genre !== 'auto' && group[genre]) allowed = [genre];
+            else if (genre !== 'auto' && available.length && !group[genre] && !group.both) {
+                allowed = available;
+                notices.swap.push(stdId);
+            } else allowed = shuffle(available, rng);
+
+            const bank = (QUESTION_POOLS[stdId] || []).map(q => ({ ...q, need: passageNeeded(stdId, q.genre) }));
+
+            // Multiple choice: start with the first passage, open the next one only if the bank runs short
+            const chosen = [];
+            const opened = [];
+            const take = () => {
+                const pool = bank.filter(q => !chosen.includes(q) && (q.need === null || opened.includes(q.need)));
+                chosen.push(...orderForLevel(pool, rigor, genre, rng).slice(0, mcWanted - chosen.length));
+            };
+            if (!allowed.length) take();
+            for (const g of allowed) {
+                if (chosen.length >= mcWanted) break;
+                opened.push(g);
+                take();
+            }
+            if (chosen.length < mcWanted) {
+                notices.short.push(`${stdId}: ${chosen.length} of ${mcWanted} multiple-choice questions added. The bank has no more that fit${genre !== 'auto' ? ' this passage type' : ''}.`);
+            }
+            if (rigor !== 'all' && rigor !== 'mix') {
+                const off = chosen.filter(q => q.rigor !== rigor).length;
+                if (off) notices.level.push(`${stdId} (${off})`);
+            }
+
+            // Written: prefer prompts tied to passages already on the page, then standalone ones
+            const used = new Set(chosen.map(q => q.need).filter(Boolean));
+            const wBank = (WRITTEN_QUESTION_POOLS[stdId] || []).map(w => ({ ...w, need: w.genre === 'any' ? null : passageNeeded(stdId, w.genre) }));
+            const wFits = w => w.need === null || used.has(w.need) || (used.size === 0 && allowed.includes(w.need));
+            const linked = shuffle(wBank.filter(w => wFits(w) && w.need), rng);
+            const loose = shuffle(wBank.filter(w => wFits(w) && !w.need), rng);
+            const written = [...linked, ...loose].slice(0, wrWanted);
+            written.forEach(w => { if (w.need) used.add(w.need); });
+            if (written.length < wrWanted) {
+                notices.short.push(`${stdId}: ${written.length} of ${wrWanted} written prompts added. The bank has no more that fit.`);
+            }
+
+            // Group into passage blocks, easiest questions first inside each block
+            const byLevel = (a, b) => LEVEL_ORDER[a.rigor] - LEVEL_ORDER[b.rigor];
+            const blocks = allowed.filter(g => used.has(g)).map(g => ({
+                passage: group[g],
+                questions: chosen.filter(q => q.need === g).sort(byLevel)
+            }));
+            const loneQs = chosen.filter(q => q.need === null).sort(byLevel);
+            if (loneQs.length) blocks.push({ passage: null, questions: loneQs });
+
+            blocks.forEach(b => {
+                b.questions = b.questions.map(q => ({ ...q, ...shuffleOptions(q.c, q.d, rng) }));
+            });
+            return { stdId, blocks, written };
+        }
+
+        function build() {
+            const s = S();
+            const notices = { swap: [], level: [], short: [] };
+            const rng = makeRng(state.code + '|' + state.mode);
+            const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id]);
+            const sections = ids.map(id => buildSection(id, s.sel[id].mc, s.sel[id].wr, s.genre, s.rigor, rng, notices));
+            const msgs = [...notices.short];
+            const other = s.genre === 'fiction' ? 'nonfiction' : 'fiction';
+            if (notices.swap.length) msgs.push(`No ${s.genre} passage exists for ${notices.swap.join(', ')}, so ${notices.swap.length > 1 ? 'those use their' : 'it uses its'} ${other} passage.`);
+            if (notices.level.length) msgs.push(`The ${LEVEL_NAME[s.rigor]} bank ran short, so some questions came from a neighboring level: ${notices.level.join(', ')}. The teacher key tags each question's level.`);
+            state.built = { sections, notices: msgs };
+            renderNotices();
+            renderSheet();
+        }
+
+        // ---------- Builder panel ----------
+        function renderControls() {
+            const s = S();
+            document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
+            $('std-hint').textContent = state.mode === 'cfa'
+                ? `Pick up to ${CFA_MAX_STANDARDS} standards: one main target and an optional second. Set how many of each question type.`
+                : 'Pick every standard the unit covered. Each one gets its own passage and section.';
+            $('f-title').value = s.title;
+            $('f-sub').value = s.sub;
+            $('f-genre').value = s.genre;
+            $('f-rigor').value = s.rigor;
+            $('f-newpage').checked = s.newPage;
+            $('f-score').checked = s.score;
+            $('f-code').value = state.code;
+            $('btn-key').setAttribute('aria-pressed', String(state.showKey));
+
+            const list = $('std-list');
+            list.innerHTML = '<div class="std-head"><span></span><span>Standard</span><span>Multiple choice</span><span>Written</span></div>';
+            STANDARDS.forEach(std => {
+                const pick = s.sel[std.id];
+                const row = document.createElement('div');
+                row.className = 'std-row' + (pick ? ' on' : '');
+                const name = std.label.replace(std.id + ': ', '');
+                const mcMax = (QUESTION_POOLS[std.id] || []).length;
+                const wrMax = (WRITTEN_QUESTION_POOLS[std.id] || []).length;
+                row.innerHTML = `
+                    <input type="checkbox" aria-label="Include ${std.id}" ${pick ? 'checked' : ''}>
+                    <div><div class="std-name"><b>${std.id}</b> ${name}</div><div class="std-desc">${std.desc}</div></div>
+                    <input type="number" min="1" max="${mcMax}" aria-label="${std.id} multiple-choice count" value="${pick ? pick.mc : s.defaultCounts.mc}" ${pick ? '' : 'disabled'}>
+                    <select aria-label="${std.id} written count" ${pick ? '' : 'disabled'}>
+                        ${Array.from({ length: wrMax + 1 }, (_, n) => `<option value="${n}" ${(pick ? pick.wr : s.defaultCounts.wr) === n ? 'selected' : ''}>${n}</option>`).join('')}
+                    </select>`;
+                const [box, num, sel] = [row.querySelector('input[type=checkbox]'), row.querySelector('input[type=number]'), row.querySelector('select')];
+                box.addEventListener('change', () => {
+                    if (box.checked) {
+                        if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
+                            box.checked = false;
+                            flash(`A Quick CFA covers up to ${CFA_MAX_STANDARDS} standards. Switch to End of Unit to include more.`);
+                            return;
+                        }
+                        s.sel[std.id] = { mc: clampInt(num.value, 1, mcMax, s.defaultCounts.mc), wr: parseInt(sel.value, 10) };
+                    } else {
+                        delete s.sel[std.id];
+                    }
+                    renderControls(); build();
+                });
+                num.addEventListener('change', () => {
+                    num.value = clampInt(num.value, 1, mcMax, s.defaultCounts.mc);
+                    if (s.sel[std.id]) { s.sel[std.id].mc = parseInt(num.value, 10); updateTotals(); build(); }
+                });
+                sel.addEventListener('change', () => {
+                    if (s.sel[std.id]) { s.sel[std.id].wr = parseInt(sel.value, 10); updateTotals(); build(); }
+                });
+                list.appendChild(row);
+            });
+            updateTotals();
+        }
+
+        function updateTotals() {
+            const s = S();
+            const picks = Object.values(s.sel);
+            const mc = picks.reduce((n, p) => n + p.mc, 0);
+            const wr = picks.reduce((n, p) => n + p.wr, 0);
+            $('totals').textContent = picks.length
+                ? `${picks.length} standard${picks.length > 1 ? 's' : ''}, ${mc} multiple choice, ${wr} written`
+                : 'No standards picked yet';
+        }
+
+        function clampInt(v, lo, hi, fallback) {
+            const n = parseInt(v, 10);
+            if (isNaN(n)) return fallback;
+            return Math.min(hi, Math.max(lo, n));
+        }
+
+        let flashMsg = '';
+        function flash(msg) { flashMsg = msg; renderNotices(); }
+        function renderNotices() {
+            const box = $('notices');
+            const msgs = [...(flashMsg ? [flashMsg] : []), ...((state.built && state.built.notices) || [])];
+            flashMsg = '';
+            box.innerHTML = msgs.map(m => `<p>${m}</p>`).join('');
+        }
+
+        // ---------- Printable sheet ----------
+        function el(tag, cls, text) {
+            const e = document.createElement(tag);
+            if (cls) e.className = cls;
+            if (text !== undefined) e.textContent = text;
+            return e;
+        }
+
+        function renderSheet() {
+            const s = S();
+            const sheet = $('sheet');
+            sheet.innerHTML = '';
+            const { sections } = state.built;
+
+            // Header
+            const head = el('div', 't-head');
+            const left = el('div');
+            left.appendChild(el('h1', 't-title', s.title || 'ELA Assessment'));
+            if (s.sub) left.appendChild(el('p', 't-sub', s.sub));
+            left.appendChild(el('p', 't-std', 'Standards: ' + (sections.map(x => x.stdId).join(', ') || 'none picked')));
+            const right = el('div', 't-lines');
+            right.innerHTML = '<div>Name:<span class="fill"></span></div><div>Date:<span class="fill"></span></div>';
+            head.append(left, right);
+            sheet.appendChild(head);
+
+            const meta = el('div', 't-meta');
+            const v = el('span', '', 'Version ' + state.code);
+            meta.appendChild(v);
+            if (state.showKey) meta.appendChild(el('span', 't-badge', 'TEACHER KEY'));
+            sheet.appendChild(meta);
+
+            if (!sections.length) {
+                sheet.appendChild(el('p', 'empty', 'Pick at least one standard to build an assessment.'));
+                return;
+            }
+
+            let n = 1;
+            const keyRows = [];
+            const perStd = [];
+
+            sections.forEach((sec, i) => {
+                const std = STANDARDS.find(x => x.id === sec.stdId);
+                const wrap = el('div', 'section' + (s.newPage && i > 0 ? ' newpage' : ''));
+                wrap.appendChild(el('p', 'sec-label', std.label));
+                const first = n;
+                let mcCount = 0;
+
+                sec.blocks.forEach(block => {
+                    if (block.passage) {
+                        const p = el('div', 'passage');
+                        p.appendChild(el('h3', '', block.passage.title));
+                        block.passage.text.forEach(t => { const para = el('p'); para.innerHTML = t; p.appendChild(para); });
+                        wrap.appendChild(p);
+                    }
+                    block.questions.forEach(q => {
+                        const qd = el('div', 'q');
+                        qd.appendChild(el('div', 'q-num', n + '.'));
+                        const body = el('div');
+                        const stem = el('div', 'q-stem', q.q);
+                        if (state.showKey) stem.appendChild(el('span', 'tag', LEVEL_NAME[q.rigor]));
+                        body.appendChild(stem);
+                        const opts = el('div', 'opts');
+                        q.options.forEach(o => {
+                            const row = el('div', 'opt' + (state.showKey && o.label === q.correctLetter ? ' correct' : ''));
+                            row.appendChild(el('span', 'bubble', o.label));
+                            row.appendChild(el('span', 'opt-text', o.text));
+                            opts.appendChild(row);
+                        });
+                        body.appendChild(opts);
+                        qd.appendChild(body);
+                        wrap.appendChild(qd);
+                        keyRows.push([n, q.correctLetter, sec.stdId, LEVEL_NAME[q.rigor]]);
+                        n++; mcCount++;
+                    });
+                });
+
+                if (sec.written.length) {
+                    wrap.appendChild(el('div', 'wr-head', 'Written response'));
+                    sec.written.forEach(w => {
+                        const qd = el('div', 'q');
+                        qd.appendChild(el('div', 'q-num', n + '.'));
+                        const body = el('div');
+                        body.appendChild(el('div', 'q-stem', w.q));
+                        if (state.showKey) {
+                            const lf = el('div', 'lookfor');
+                            lf.innerHTML = '<b>Look for:</b> ';
+                            lf.appendChild(document.createTextNode(w.key.replace(/^Look for:\s*/i, '')));
+                            body.appendChild(lf);
+                        } else {
+                            const lines = el('div', 'wlines');
+                            for (let k = 0; k < 5; k++) lines.appendChild(el('span'));
+                            body.appendChild(lines);
+                        }
+                        qd.appendChild(body);
+                        wrap.appendChild(qd);
+                        keyRows.push([n, 'Written', sec.stdId, '']);
+                        n++;
+                    });
+                }
+                perStd.push({ id: sec.stdId, from: first, to: n - 1, mc: mcCount, wr: sec.written.length });
+                sheet.appendChild(wrap);
+            });
+
+            // Score-by-standard table (student copy and key)
+            if (s.score) {
+                const blockEl = el('div', 'end-block');
+                blockEl.appendChild(el('h3', '', 'Score by standard (teacher use)'));
+                const t = el('table', 'grid');
+                t.innerHTML = '<tr><th>Standard</th><th>Questions</th><th>Multiple choice</th><th>Written</th></tr>' +
+                    perStd.map(r => `<tr><td>${r.id}</td><td>${r.from === r.to ? r.from : r.from + ' to ' + r.to}</td><td>_____ / ${r.mc}</td><td>${r.wr ? '_____' : ''}</td></tr>`).join('');
+                blockEl.appendChild(t);
+                sheet.appendChild(blockEl);
+            }
+
+            // Answer key page (key only)
+            if (state.showKey) {
+                const page = el('div', 'end-block newpage');
+                page.appendChild(el('h3', '', `Answer key, version ${state.code}`));
+                const t = el('table', 'grid');
+                t.innerHTML = '<tr><th>#</th><th>Answer</th><th>Standard</th><th>Level</th></tr>' +
+                    keyRows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+                page.appendChild(t);
+                sheet.appendChild(page);
+            }
+        }
+
+        // ---------- Wiring ----------
+        function bindField(id, key, evt = 'input') {
+            $(id).addEventListener(evt, e => {
+                S()[key] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+                key === 'title' || key === 'sub' ? renderSheet() : build();
+            });
+        }
+
+        function init() {
+            document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => {
+                state.mode = b.dataset.mode;
+                renderControls(); build();
+            }));
+            bindField('f-title', 'title');
+            bindField('f-sub', 'sub');
+            bindField('f-genre', 'genre', 'change');
+            bindField('f-rigor', 'rigor', 'change');
+            bindField('f-newpage', 'newPage', 'change');
+            bindField('f-score', 'score', 'change');
+            $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
+            $('btn-new').addEventListener('click', () => { state.code = newCode(); $('f-code').value = state.code; build(); });
+            $('btn-key').addEventListener('click', () => {
+                state.showKey = !state.showKey;
+                $('btn-key').setAttribute('aria-pressed', String(state.showKey));
+                renderSheet();
+            });
+            $('btn-print').addEventListener('click', () => window.print());
+            const loadCode = () => {
+                const c = $('f-code').value.trim().toUpperCase();
+                if (!c) return;
+                state.code = c; $('f-code').value = c; build();
+            };
+            $('btn-load').addEventListener('click', loadCode);
+            $('f-code').addEventListener('keydown', e => { if (e.key === 'Enter') loadCode(); });
+
+            renderControls();
+            build();
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+    </script>
+</body>
+</html>

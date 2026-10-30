@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4th Grade Math Assessment Builder</title>
+<style>
+    :root {
+        --teal-900: #0d4448;
+        --teal-700: #14676a;
+        --teal-500: #1f8f8c;
+        --teal-50:  #e9f4f3;
+        --gold-500: #e2a52c;
+        --gold-100: #fbf0d6;
+        --ink:      #1d2a2c;
+        --muted:    #5d6e70;
+        --line:     #cbd9d8;
+        --paper:    #ffffff;
+        --desk:     #eef3f2;
+        --warn:     #8a5a00;
+        --ui: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        --read: Georgia, "Times New Roman", serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.45; }
+    button, input, select { font: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid var(--gold-500); outline-offset: 2px; }
+
+    /* ---------- Builder panel ---------- */
+    #builder { max-width: 1080px; margin: 24px auto; background: var(--paper); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 0 var(--line), 0 8px 24px rgba(13, 68, 72, .08); }
+    .band { background: var(--teal-900); color: #fff; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+    .brand svg { width: 34px; height: 34px; flex: none; }
+    .brand h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: .2px; }
+    .brand small { display: block; font-size: 13px; font-weight: 400; color: #b9dcda; }
+    .modes { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 999px; padding: 4px; }
+    .modes button { border: 0; background: transparent; color: #d7ecea; padding: 8px 18px; border-radius: 999px; cursor: pointer; font-weight: 600; }
+    .modes button[aria-pressed="true"] { background: var(--gold-500); color: var(--teal-900); }
+
+    .panel { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+    .col { padding: 20px 24px 24px; }
+    .col + .col { border-left: 1px solid var(--line); background: #fbfdfd; }
+    h2 { font-size: 16px; margin: 0 0 4px; color: var(--teal-900); }
+    .hint { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+
+    .std-list { border: 1px solid var(--line); border-radius: 10px; max-height: 460px; overflow-y: auto; }
+    .std-head, .std-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 84px; gap: 8px; align-items: center; padding: 8px 12px; }
+    .std-head { position: sticky; top: 0; background: var(--teal-50); font-size: 12px; font-weight: 600; color: var(--teal-700); z-index: 1; }
+    .std-head span:nth-child(n+3) { text-align: center; }
+    .std-row { border-top: 1px solid var(--line); }
+    .std-row.on { background: var(--gold-100); }
+    .std-row input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--teal-700); }
+    .std-name { font-weight: 600; font-size: 14px; }
+    .std-name b { color: var(--teal-700); }
+    .std-desc { font-size: 12px; color: var(--muted); }
+    .std-row input[type=number], .std-row select { width: 100%; padding: 5px 6px; border: 1px solid var(--line); border-radius: 6px; background: #fff; text-align: center; }
+    .std-row:not(.on) input[type=number], .std-row:not(.on) select { opacity: .35; }
+    .list-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .linkish { border: 0; background: none; color: var(--teal-700); text-decoration: underline; cursor: pointer; padding: 0; }
+
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--teal-900); }
+    .field input[type=text], .field select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .field .hint { margin: 0; }
+    .checks { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 16px; font-size: 14px; }
+    .checks label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+    .checks input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--teal-700); }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--line); align-items: center; }
+    .btn { border: 1px solid var(--teal-700); background: #fff; color: var(--teal-900); padding: 9px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn.primary { background: var(--teal-700); color: #fff; }
+    .btn.primary:hover { background: var(--teal-900); }
+    .btn.key[aria-pressed="true"] { background: var(--gold-500); border-color: var(--gold-500); color: var(--teal-900); }
+    .version { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 13px; color: var(--muted); }
+    .version input { color: var(--ink); width: 78px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+    #notices { padding: 0 24px; }
+    #notices:not(:empty) { padding: 12px 24px 16px; border-top: 1px solid var(--line); background: #fffaf0; }
+    #notices p { margin: 4px 0; font-size: 13px; color: var(--warn); }
+
+    @media (max-width: 820px) {
+        .panel { grid-template-columns: 1fr; }
+        .col + .col { border-left: 0; border-top: 1px solid var(--line); }
+        .version { margin-left: 0; }
+    }
+
+    /* ---------- Printable test ---------- */
+    #sheet { max-width: 8.5in; margin: 0 auto 48px; background: var(--paper); padding: .6in .65in; box-shadow: 0 8px 24px rgba(13, 68, 72, .08); color: #000; }
+    .t-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding-bottom: 10px; border-bottom: 3px solid var(--teal-700); position: relative; }
+    .t-head::after { content: ""; position: absolute; left: 0; bottom: -7px; width: 64px; height: 4px; background: var(--gold-500); }
+    .t-title { font-size: 24px; font-weight: 800; margin: 0; line-height: 1.15; }
+    .t-sub { font-size: 15px; margin: 2px 0 0; }
+    .t-std { font-size: 12px; margin: 6px 0 0; color: #333; }
+    .t-lines { flex: 0 0 2.6in; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+    .t-lines div { display: flex; gap: 6px; }
+    .t-lines span.fill { flex: 1; border-bottom: 1px solid #000; }
+    .t-meta { display: flex; justify-content: space-between; font-size: 11px; color: #555; margin: 12px 0 18px; }
+    .t-badge { font-weight: 700; color: #000; background: var(--gold-100); border: 1px solid var(--gold-500); padding: 1px 8px; border-radius: 4px; }
+
+    .section + .section { margin-top: 26px; }
+    .sec-label { font-size: 12px; font-weight: 700; color: var(--teal-700); margin: 0 0 8px; }
+    .passage { border: 1.5px solid #999; border-radius: 6px; padding: 14px 18px; margin-bottom: 18px; font-family: var(--read); font-size: 15px; line-height: 1.6; break-inside: avoid; }
+    .passage h3 { font-family: var(--ui); font-size: 16px; margin: 0 0 6px; }
+    .passage p { margin: 0 0 8px; }
+    .passage p:last-child { margin-bottom: 0; }
+    .q { display: grid; grid-template-columns: 36px 1fr; margin-bottom: 18px; break-inside: avoid; }
+    .q-num { font-weight: 700; }
+    .q-stem { font-weight: 600; margin-bottom: 8px; }
+    .opts { display: grid; gap: 6px; }
+    .opt { display: grid; grid-template-columns: 26px 1fr; align-items: start; }
+    .bubble { width: 21px; height: 21px; border: 1.5px solid #555; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .opt.correct .bubble { background: #000; border-color: #000; color: #fff; }
+    .opt.correct .opt-text { font-weight: 700; }
+    .tag { display: inline-block; font-size: 11px; color: #444; border: 1px solid #aaa; border-radius: 3px; padding: 0 5px; margin-left: 6px; font-weight: 400; vertical-align: 1px; }
+    .wr-head { font-size: 13px; font-weight: 700; margin: 6px 0 10px; padding-bottom: 3px; border-bottom: 1px solid #999; }
+    .wlines { display: grid; gap: 22px; margin-top: 18px; }
+    .wlines span { border-bottom: 1px solid #999; display: block; }
+    .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
+    .newpage { break-before: page; }
+    .page { display: flex; flex-direction: column; }
+    .page.spaced { min-height: 9.4in; }
+    .page.spaced.first { min-height: 8.3in; }
+    .page.spaced .q { margin-bottom: auto; padding-bottom: 18px; }
+    .page + .page { break-before: page; }
+    .opts.two { grid-template-columns: 1fr 1fr; column-gap: 24px; }
+    .fig { margin: 2px 0 10px; }
+    .fig svg { max-width: 100%; height: auto; display: block; }
+    table.freq { border-collapse: collapse; font-size: 14px; }
+    table.freq th, table.freq td { border: 1px solid #555; padding: 4px 14px; text-align: center; }
+    table.freq th { background: #f0f0f0; }
+    .ref { border: 1.5px solid #555; border-radius: 6px; padding: 8px 12px; margin-bottom: 14px; font-size: 13px; break-inside: avoid; }
+    .ref b { display: block; margin-bottom: 4px; }
+    .ref div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 16px; }
+    @media screen { .page.spaced { min-height: 0; } .page.spaced .q { margin-bottom: 30px; } .page + .page { border-top: 2px dashed var(--line); padding-top: 22px; margin-top: 8px; } }
+    table.grid { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+    table.grid th, table.grid td { border: 1px solid #888; padding: 5px 8px; text-align: left; }
+    table.grid th { background: var(--teal-50); }
+    .end-block { margin-top: 26px; break-inside: avoid; }
+    .end-block h3 { font-size: 15px; margin: 0; }
+    .empty { text-align: center; color: var(--muted); padding: 48px 0; }
+
+    @media print {
+        @page { size: letter portrait; margin: .45in; }
+        body { background: #fff; }
+        #builder { display: none !important; }
+        #sheet { box-shadow: none; padding: 0; margin: 0; max-width: none; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+</style>
+</head>
+<body>
+
+<div id="builder">
+    <div class="band">
+        <div class="brand">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#14676a"/><path d="M20 5l3.6 10.2L34 16.4l-8.2 6.6L28.6 34 20 27.8 11.4 34l2.8-11L6 16.4l10.4-1.2z" fill="#e2a52c"/></svg>
+            <div><h1>4th Grade Math Assessment Builder</h1><small>Indiana 4th grade math standards</small></div>
+        </div>
+        <div class="modes" role="group" aria-label="Assessment type">
+            <button type="button" data-mode="cfa" aria-pressed="true">Quick CFA</button>
+            <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="col">
+            <h2>Standards</h2>
+            <p class="hint" id="std-hint"></p>
+            <div class="std-list" id="std-list"></div>
+            <div class="list-tools">
+                <span id="totals"></span>
+                <button type="button" class="linkish" id="clear-all">Clear all</button>
+            </div>
+        </div>
+        <div class="col">
+            <h2>Settings</h2>
+            <p class="hint">Changes rebuild the same version. Use New version for different questions.</p>
+            <div class="field">
+                <label for="f-title">Title</label>
+                <input type="text" id="f-title">
+            </div>
+            <div class="field">
+                <label for="f-sub">Unit or subtitle (optional)</label>
+                <input type="text" id="f-sub" placeholder="Example: Unit 2, Multiplication">
+            </div>
+            <div class="field">
+                <label for="f-layout">Page layout</label>
+                <select id="f-layout">
+                    <option value="4">4 questions per page (most work space)</option>
+                    <option value="5">5 questions per page</option>
+                    <option value="6">6 questions per page</option>
+                    <option value="compact">Compact (no extra work space)</option>
+                </select>
+                <p class="hint">Questions with a ruler, table, or line plot count as two.</p>
+            </div>
+            <div class="checks">
+                <label><input type="checkbox" id="f-newpage"> Start each standard on a new page</label>
+                <label><input type="checkbox" id="f-score"> Add a score-by-standard table at the end</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button type="button" class="btn primary" id="btn-new">New version</button>
+        <button type="button" class="btn key" id="btn-key" aria-pressed="false">Teacher key</button>
+        <button type="button" class="btn" id="btn-print">Print</button>
+        <div class="version">
+            <label for="f-code">Version code</label>
+            <input type="text" id="f-code" maxlength="6" spellcheck="false">
+            <button type="button" class="btn" id="btn-load">Load</button>
+        </div>
+    </div>
+    <div id="notices" aria-live="polite"></div>
+</div>
+
+<div id="sheet"></div>
+
+<script>
+
+        const STANDARDS = [
+            { id: '4.NS.1', label: '4.NS.1: Read/write numbers to 1,000,000', desc: 'Read and write whole numbers up to 1,000,000.' },
+            { id: '4.NS.7', label: '4.NS.7: Round multi-digit numbers', desc: 'Use place value understanding to round multi-digit whole numbers.' },
+            { id: '4.CA.1', label: '4.CA.1: Multiply whole numbers', desc: 'Multiply up to 4-digit by 1-digit, or two 2-digit numbers.' },
+            { id: '4.CA.3', label: '4.CA.3: Properties of multiplication', desc: 'Commutative, associative, and distributive properties.' },
+            { id: '4.CA.4', label: '4.CA.4: Factors and multiples', desc: 'Find factors and multiples for numbers 1-100; prime and composite.' },
+            { id: '4.CA.5', label: '4.CA.5: Multiplicative comparison', desc: 'Solve real-world problems with multiplicative comparison.' },
+            { id: '4.CA.2', label: '4.CA.2: Quotients and remainders', desc: 'Divide up to 4-digit dividends by 1-digit divisors.' },
+            { id: '4.M.4', label: '4.M.4: Area and perimeter', desc: 'Apply area and perimeter formulas for rectangles.' },
+            { id: '4.M.1', label: '4.M.1: Measure length', desc: 'Measure length to quarter/eighth inches or mm.' },
+            { id: '4.M.2', label: '4.M.2: Unit conversions', desc: 'Convert larger units to smaller units (km/m, kg/g, hr/min).' },
+            { id: '4.NS.3', label: '4.NS.3: Equivalent fractions', desc: 'Generate and identify equivalent fractions.' },
+            { id: '4.NS.4', label: '4.NS.4: Compare two fractions', desc: 'Compare fractions using <, >, =.' },
+            { id: '4.CA.6', label: '4.CA.6: Add/subtract fractions', desc: 'Add and subtract fractions with common denominators.' },
+            { id: '4.CA.8', label: '4.CA.8: Fraction word problems', desc: 'Real-world addition/subtraction of fractions.' },
+            { id: '4.NS.2', label: '4.NS.2: Mixed & improper fractions', desc: 'Model and convert mixed numbers and improper fractions.' },
+            { id: '4.NS.5', label: '4.NS.5: Decimals and fractions', desc: 'Write tenths and hundredths in decimal and fraction notation.' },
+            { id: '4.NS.6', label: '4.NS.6: Compare decimals', desc: 'Compare decimals to hundredths.' },
+            { id: '4.DA.1', label: '4.DA.1: Data and graphs', desc: 'Analyze data using frequency tables and graphs.' },
+            { id: '4.DA.2', label: '4.DA.2: Line plots with fractions', desc: 'Solve problems using data on line plots in fractions of a unit.' },
+            { id: '4.M.3', label: '4.M.3: Four ops with measurement', desc: 'Solve measurement word problems (distance, time, volume, money).' }
+        ];
+        const NEEDS_REFERENCE = ['4.M.2', '4.M.3'];
+        const MAX_PER_STANDARD = 20;
+
+        // ---------- Random helpers (R is swapped for a seeded generator while building) ----------
+        let R = Math.random;
+        const randInt = (min, max) => Math.floor(R() * (max - min + 1)) + min;
+        const pick = arr => arr[Math.floor(R() * arr.length)];
+        const pickN = (arr, n) => shuffle(arr, R).slice(0, n);
+        const fmt = n => n.toLocaleString('en-US');
+
+        const NAMES = ['Maya', 'Carlos', 'Liam', 'Sophia', 'Ethan', 'Ava', 'Lucas', 'Harper', 'Jackson', 'Ella', 'Mateo', 'Aria', 'Leo', 'Mia', 'Noah', 'Zoe'];
+        const ITEMS = ['stickers', 'marbles', 'trading cards', 'books', 'pencils', 'origami cranes', 'canned goods', 'raffle tickets'];
+
+        // ---------- Number helpers ----------
+        const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+        function fracStr(n, d) {               // simplest form, mixed if needed: 6/4 -> "1 1/2"
+            if (n === 0) return '0';
+            const g = gcd(n, d); n /= g; d /= g;
+            const whole = Math.floor(n / d), r = n % d;
+            if (r === 0) return String(whole);
+            return whole ? `${whole} ${r}/${d}` : `${r}/${d}`;
+        }
+        const expanded = num => String(num).split('').map((dg, i, a) => dg === '0' ? null : dg + '0'.repeat(a.length - 1 - i)).filter(Boolean).map(Number).map(fmt).join(' + ');
+        const factorsOf = n => { const f = []; for (let i = 1; i <= n; i++) if (n % i === 0) f.push(i); return f; };
+        const isPrime = n => n > 1 && factorsOf(n).length === 2;
+
+        const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        function under1000(n) {
+            const parts = [];
+            if (n >= 100) { parts.push(ONES[Math.floor(n / 100)] + ' hundred'); n %= 100; }
+            if (n >= 20) parts.push(TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : ''));
+            else if (n > 0) parts.push(ONES[n]);
+            return parts.join(' ');
+        }
+        function words(n) {
+            const t = Math.floor(n / 1000), r = n % 1000;
+            if (!t) return under1000(r);
+            return under1000(t) + ' thousand' + (r ? ', ' + under1000(r) : '');
+        }
+
+        // ---------- Figures ----------
+        function rulerSVG(startEighths, lengthEighths) {
+            const px = 64, left = 20, inches = 6;
+            const X = e => left + (e / 8) * px;
+            let ticks = '', labels = '';
+            for (let t = 0; t <= inches * 8; t++) {
+                const h = t % 8 === 0 ? 26 : t % 4 === 0 ? 19 : t % 2 === 0 ? 14 : 9;
+                ticks += `<line x1="${X(t)}" y1="34" x2="${X(t)}" y2="${34 + h}" stroke="#000" stroke-width="${t % 8 === 0 ? 1.6 : 1}"/>`;
+                if (t % 8 === 0) labels += `<text x="${X(t)}" y="76" font-size="13" text-anchor="middle" font-family="Arial">${t / 8}</text>`;
+            }
+            return `<svg viewBox="0 0 ${left * 2 + inches * px} 86" width="${left * 2 + inches * px}" role="img" aria-label="ruler">
+                <rect x="${X(startEighths)}" y="8" width="${(lengthEighths / 8) * px}" height="16" fill="#bbb" stroke="#000"/>
+                <line x1="${X(startEighths)}" y1="4" x2="${X(startEighths)}" y2="34" stroke="#000" stroke-dasharray="2 2"/>
+                <line x1="${X(startEighths + lengthEighths)}" y1="4" x2="${X(startEighths + lengthEighths)}" y2="34" stroke="#000" stroke-dasharray="2 2"/>
+                <rect x="${left - 6}" y="34" width="${inches * px + 12}" height="50" fill="none" stroke="#000"/>
+                ${ticks}${labels}
+            </svg>`;
+        }
+
+        function linePlotSVG(counts, title) {         // counts[q] = number of X marks at q/4, q = 0..4
+            const px = 90, left = 40, base = 40 + 4 * 22;
+            const X = q => left + q * px;
+            const lbl = ['0', '1/4', '1/2', '3/4', '1'];
+            let s = `<line x1="${left - 20}" y1="${base}" x2="${X(4) + 20}" y2="${base}" stroke="#000" stroke-width="1.5"/>`;
+            for (let q = 0; q <= 4; q++) {
+                s += `<line x1="${X(q)}" y1="${base - 6}" x2="${X(q)}" y2="${base + 6}" stroke="#000"/>`;
+                s += `<text x="${X(q)}" y="${base + 22}" font-size="13" text-anchor="middle" font-family="Arial">${lbl[q]}</text>`;
+                for (let k = 0; k < counts[q]; k++) s += `<text x="${X(q)}" y="${base - 12 - k * 22}" font-size="18" text-anchor="middle" font-family="Arial">X</text>`;
+            }
+            s += `<text x="${X(2)}" y="${base + 42}" font-size="13" text-anchor="middle" font-family="Arial" font-weight="bold">${title}</text>`;
+            return `<svg viewBox="0 0 ${X(4) + 40} ${base + 50}" width="${X(4) + 40}" role="img" aria-label="line plot">${s}</svg>`;
+        }
+
+        function freqTable(head, rows) {
+            return `<table class="freq"><tr><th>${head[0]}</th><th>${head[1]}</th></tr>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+        }
+
+        // ---------- Question generators ----------
+        // Each returns { q, c (correct), d (distractor candidates), fig? (HTML) }.
+        // Subtypes rotate by index so a set of questions covers the whole standard.
+        const GEN = {
+            '4.NS.1': [
+                () => {
+                    const num = randInt(10000, 999999);
+                    const terms = String(num).split('').map((dg, i, a) => [Number(dg), a.length - 1 - i]).filter(t => t[0]);
+                    const shift = dir => {
+                        const k = pick(terms.map((t, i) => i).filter(i => dir > 0 || terms[i][1] > 0));
+                        return terms.map((t, i) => fmt(t[0] * 10 ** (t[1] + (i === k ? dir : 0)))).join(' + ');
+                    };
+                    return { q: `Which shows ${fmt(num)} in expanded form?`, c: expanded(num), d: [shift(1), shift(-1), expanded(num + 1000), expanded(num + 10000)] };
+                },
+                () => {
+                    let num, idx;
+                    do {
+                        num = randInt(10000, 999999);
+                        const s = String(num);
+                        const ok = s.split('').map((dg, i) => i).filter(i => s[i] !== '0' && i < s.length - 1 && s.split(s[i]).length === 2);
+                        idx = ok.length ? pick(ok) : -1;
+                    } while (idx < 0);
+                    const s = String(num), dg = Number(s[idx]), p = s.length - 1 - idx, val = dg * 10 ** p;
+                    return { q: `What is the value of the digit ${dg} in ${fmt(num)}?`, c: fmt(val), d: [fmt(val * 10), fmt(val / 10), String(dg), fmt(val * 100)] };
+                },
+                () => {
+                    let num;
+                    do { num = randInt(10000, 999999); } while (!String(num).includes('0'));
+                    const squashed = Number(String(num).replace(/0/g, ''));
+                    return { q: `Which number is equal to ${expanded(num)}?`, c: fmt(num), d: [fmt(squashed), fmt(num + 1000), fmt(num - 100), fmt(num * 10)] };
+                },
+                () => {
+                    const num = randInt(10000, 999999), t = Math.floor(num / 1000), r = num % 1000;
+                    return { q: `Which is the word form of ${fmt(num)}?`, c: words(num), d: [under1000(t) + ' ' + under1000(r), words(num + 10000), words(num + 100), words(r * 1000 + (t % 1000))] };
+                }
+            ],
+            '4.NS.7': [0, 1, 2, 3, 4].map(k => () => {
+                const place = [10, 100, 1000, 10000, 100000][k];
+                const name = { 10: 'ten', 100: 'hundred', 1000: 'thousand', 10000: 'ten thousand', 100000: 'hundred thousand' }[place];
+                let num;
+                do { num = place === 100000 ? randInt(120000, 899999) : randInt(Math.max(2500, place * 4), 899999); } while (num % place === 0);
+                const c = Math.round(num / place) * place;
+                const ctx = pick([`A total of ${fmt(num)} people attended a concert.`, `An online video has ${fmt(num)} views.`, `A city has a population of ${fmt(num)}.`, `A stadium sold ${fmt(num)} tickets this season.`]);
+                const d = [Math.floor(num / place) * place, Math.ceil(num / place) * place, c + place, c - place, c + 2 * place, c - 2 * place, Math.round(num / (place * 10)) * place * 10];
+                if (place >= 100) d.push(Math.round(num / (place / 10)) * (place / 10));
+                return { q: `${ctx} What is ${fmt(num)} rounded to the nearest ${name}?`, c: fmt(c), d: d.filter(v => v > 0).map(fmt) };
+            }),
+            '4.CA.1': [
+                () => {
+                    const n1 = randInt(1025, 4875), n2 = randInt(3, 9), p = n1 * n2;
+                    const where = pick(['school library', 'grocery store', 'bakery', 'warehouse']);
+                    return { q: `A ${where} orders ${fmt(n1)} packages of supplies. Each package holds ${n2} items. How many items were ordered in all?`, c: fmt(p), d: [fmt(p + 100), fmt(p - 100), fmt(n1 * (n2 - 1)), fmt(p + 1000)] };
+                },
+                () => {
+                    const name = pick(NAMES), n1 = randInt(14, 68), n2 = randInt(12, 45), p = n1 * n2;
+                    const noZero = n1 * (n2 % 10) + n1 * Math.floor(n2 / 10);   // forgot the place-value zero
+                    return { q: `${name} bought ${n1} boxes of cards. Each box has ${n2} cards. How many cards does ${name} have in all?`, c: fmt(p), d: [fmt(noZero), fmt(p + 100), fmt(p - 10), fmt((n1 + 10) * n2)] };
+                },
+                () => {
+                    const n1 = randInt(215, 890), n2 = randInt(4, 8), p = n1 * n2;
+                    return { q: `Find the product: ${n1} × ${n2}`, c: fmt(p), d: [fmt(p + 10), fmt(p - 40), fmt(p + 100), fmt(n1 * (n2 + 1))] };
+                },
+                () => {
+                    const n1 = randInt(23, 89), n2 = randInt(21, 79), p = n1 * n2;
+                    return { q: `Find the product: ${n1} × ${n2}`, c: fmt(p), d: [fmt(n1 * (n2 % 10) + n1 * Math.floor(n2 / 10)), fmt(p + 100), fmt(p - 20), fmt((n1 % 10) * (n2 % 10) + Math.floor(n1 / 10) * Math.floor(n2 / 10) * 100)] };
+                }
+            ],
+            '4.CA.3': [
+                () => {
+                    const a = randInt(3, 8), b = randInt(4, 9), c = randInt(2, 5);
+                    return { q: 'Which equation shows the associative property of multiplication?', c: `(${a} × ${b}) × ${c} = ${a} × (${b} × ${c})`, d: [`${a} × ${b} = ${b} × ${a}`, `${a} × (${b} + ${c}) = (${a} × ${b}) + (${a} × ${c})`, `(${a} + ${b}) + ${c} = ${a} + (${b} + ${c})`] };
+                },
+                () => {
+                    const a = randInt(3, 9), b = randInt(11, 19), r = b - 10;
+                    return { q: `Which expression uses the distributive property to find ${a} × ${b}?`, c: `(${a} × 10) + (${a} × ${r})`, d: [`(${a} + 10) × (${a} + ${r})`, `(${a} × 10) + ${r}`, `${a} + 10 + ${r}`] };
+                },
+                () => {
+                    const a = randInt(6, 12), b = randInt(5, 15);
+                    return { q: `Which equation shows the commutative property of multiplication?`, c: `${a} × ${b} = ${b} × ${a}`, d: [`${a} + ${b} = ${b} + ${a}`, `${a} × 1 = ${a}`, `${a} × (${b} × 1) = (${a} × ${b}) × 1`] };
+                },
+                () => {
+                    const a = randInt(3, 9), b = randInt(2, 6), c = randInt(2, 6);
+                    return { q: `${a} × (${b} + ${c}) has the same value as which expression?`, c: `(${a} × ${b}) + (${a} × ${c})`, d: [`(${a} × ${b}) + ${c}`, `${a} + (${b} × ${c})`, `(${a} + ${b}) × (${a} + ${c})`] };
+                }
+            ],
+            '4.CA.4': [
+                () => {
+                    const n = pick([24, 30, 36, 40, 42, 48, 54, 56, 60, 72, 84, 90]), f = factorsOf(n);
+                    const mid = Math.floor(f.length / 2), pairGone = f.filter(x => x !== f[mid] && x !== n / f[mid]);
+                    return { q: `Which list shows ALL the factors of ${n}?`, c: f.join(', '), d: [pairGone.join(', '), f.filter((_, i) => i % 2 === 0).join(', '), `1, ${n}`, f.concat([n * 2]).join(', ')] };
+                },
+                () => {
+                    const n = randInt(4, 9);
+                    return { q: `Which list shows the first 5 multiples of ${n}?`, c: [1, 2, 3, 4, 5].map(k => n * k).join(', '), d: [[1, 2, 3, 4, 5].map(k => n + k).join(', '), [1, 3, 5, 7, 9].map(k => n * k).join(', '), [2, 3, 4, 5, 6].map(k => n * k).join(', '), factorsOf(n * 4).slice(0, 5).join(', ')] };
+                },
+                () => {
+                    const p = pick([7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]);
+                    return { q: 'Which number is prime?', c: String(p), d: pickN([9, 15, 21, 25, 27, 33, 35, 39, 45, 49, 51, 57, 63, 69, 77, 81, 87, 91, 93], 3).map(String) };
+                },
+                () => {
+                    const c = pick([9, 15, 21, 25, 27, 33, 35, 39, 49, 51, 57, 63, 69, 77, 87, 91]);
+                    return { q: 'Which number is composite?', c: String(c), d: pickN([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97], 3).map(String) };
+                },
+                () => {
+                    const k = randInt(3, 9), m = k * randInt(4, Math.floor(100 / k));
+                    const non = [m + 1, m - 1, m + 2, m - 2, m + k - 1].filter(x => x % k && x > 0 && x <= 100);
+                    return { q: `Which number is a multiple of ${k}?`, c: String(m), d: non.map(String) };
+                },
+                () => {
+                    const n = pick([36, 42, 48, 54, 56, 60, 64, 72, 80, 84, 90, 96]);
+                    const f = factorsOf(n).filter(x => x > 2 && x < n);
+                    const non = [5, 7, 9, 10, 11, 13, 14, 15, 18, 22, 25].filter(x => n % x);
+                    return { q: `Which number is a factor of ${n}?`, c: String(pick(f)), d: pickN(non, 4).map(String) };
+                }
+            ],
+            '4.CA.5': [
+                () => {
+                    const [a, b] = pickN(NAMES, 2), base = randInt(4, 12), m = 4, ans = base * m;
+                    return { q: `${a} scored ${base} goals this season. ${b} scored ${m} times as many goals. How many goals did ${b} score?`, c: `${ans} goals`, d: [`${base + m} goals`, `${ans + m} goals`, `${ans - base} goals`] };
+                },
+                () => {
+                    const base = randInt(6, 12), m = 6, ans = base * m;
+                    return { q: `A small dog weighs ${base} pounds. A golden retriever weighs ${m} times as much. How much does the golden retriever weigh?`, c: `${ans} pounds`, d: [`${base + m} pounds`, `${ans + base} pounds`, `${ans - base} pounds`] };
+                },
+                () => {
+                    const name = pick(NAMES), base = randInt(5, 15), m = 3, ans = base * m;
+                    return { q: `${name} read ${base} pages on Monday. On Tuesday, ${name} read ${m} times as many pages. How many pages did ${name} read on Tuesday?`, c: `${ans} pages`, d: [`${base + m} pages`, `${ans + base} pages`, `${ans - m} pages`] };
+                },
+                () => {
+                    const [a, b] = pickN(NAMES, 2), base = randInt(15, 35), m = 5, ans = base * m;
+                    return { q: `${a} has $${base} saved. ${b} has ${m} times as much money saved. How much money does ${b} have?`, c: `$${ans}`, d: [`$${base + m}`, `$${ans + 10}`, `$${ans - base}`] };
+                },
+                () => {
+                    const [a, b] = pickN(NAMES, 2), small = randInt(3, 9), m = randInt(3, 8), big = small * m;
+                    return { q: `${a} has ${big} stickers. That is ${m} times as many stickers as ${b} has. How many stickers does ${b} have?`, c: `${small} stickers`, d: [`${big - m} stickers`, `${big * m} stickers`, `${big + m} stickers`] };
+                },
+                () => {
+                    const small = randInt(3, 9), m = randInt(3, 8), big = small * m;
+                    return { q: `Which equation shows "${big} is ${m} times as many as ${small}"?`, c: `${big} = ${m} × ${small}`, d: [`${big} = ${m} + ${small}`, `${m} = ${big} × ${small}`, `${small} = ${m} × ${big}`] };
+                }
+            ],
+            '4.CA.2': [
+                () => {
+                    let dv, ds;
+                    do { dv = randInt(125, 4985); ds = randInt(3, 9); } while (dv % ds === 0);
+                    const q0 = Math.floor(dv / ds), r = dv % ds;
+                    return { q: `What is ${fmt(dv)} ÷ ${ds}?`, c: `${fmt(q0)} R${r}`, d: [`${fmt(q0 + 1)} R${r}`, `${fmt(q0)} R${r + 1}`, `${fmt(q0 - 1)} R${r}`, `${fmt(q0)}`] };
+                },
+                () => {
+                    let dv, ds;
+                    do { dv = randInt(125, 985); ds = randInt(3, 9); } while (dv % ds === 0);
+                    const item = pick(ITEMS), q0 = Math.floor(dv / ds), r = dv % ds;
+                    return { q: `A teacher shares ${dv} ${item} equally among ${ds} groups. How many ${item} are left over?`, c: String(r), d: [String(q0), String(r + 1), String(ds), String(ds - r)] };
+                },
+                () => {
+                    const ds = randInt(3, 9), q0 = randInt(105, 899), dv = ds * q0;
+                    return { q: `A farm packs ${fmt(dv)} eggs equally into ${ds} crates. How many eggs go in each crate?`, c: fmt(q0), d: [fmt(q0 + 10), fmt(q0 - 1), fmt(dv - ds), fmt(Math.floor(q0 / 10) || 1)] };
+                },
+                () => {
+                    let n, cap;
+                    do { n = randInt(40, 160); cap = randInt(6, 9); } while (n % cap === 0);
+                    const q0 = Math.floor(n / cap);
+                    return { q: `${n} students are going on a field trip. Each van holds ${cap} students. How many vans are needed so every student has a seat?`, c: String(q0 + 1), d: [String(q0), String(n % cap), String(q0 + 2)] };
+                }
+            ],
+            '4.M.4': [
+                () => {
+                    const l = randInt(8, 20), w = randInt(4, 12);
+                    return { q: `A rectangular playground is ${l} meters long and ${w} meters wide. What is the AREA of the playground?`, c: `${l * w} square meters`, d: [`${2 * (l + w)} square meters`, `${l + w} square meters`, `${l * w + 10} square meters`] };
+                },
+                () => {
+                    const l = randInt(8, 20), w = randInt(4, 12);
+                    return { q: `A rectangular picture frame is ${l} inches long and ${w} inches wide. What is the PERIMETER of the frame?`, c: `${2 * (l + w)} inches`, d: [`${l * w} inches`, `${l + w} inches`, `${2 * l + w} inches`] };
+                },
+                () => {
+                    const l = randInt(8, 20), w = randInt(4, 12);
+                    return { q: `A rectangular garden has an area of ${l * w} square feet. Its length is ${l} feet. What is its width?`, c: `${w} feet`, d: [`${l * w - l} feet`, `${2 * (l + w)} feet`, `${w + 2} feet`] };
+                },
+                () => {
+                    const l = randInt(8, 20), w = randInt(4, 12), p = 2 * (l + w);
+                    return { q: `A rectangular rug has a perimeter of ${p} feet. Its length is ${l} feet. What is its width?`, c: `${w} feet`, d: [`${p - l} feet`, `${p - 2 * l} feet`, `${Math.floor(p / l)} feet`] };
+                }
+            ],
+            '4.M.1': [
+                () => {
+                    const E = randInt(1, 4) * 8 + randInt(1, 7);
+                    const s = e => fracStr(e, 8) + ' inches';
+                    return { q: 'What is the length of the gray bar to the nearest 1/8 inch?', fig: rulerSVG(0, E), c: s(E), d: [s(E + 1), s(E - 1), s(E + 2), s(E + 8)] };
+                },
+                () => {
+                    const E = randInt(1, 3) * 8 + 2 * randInt(1, 3);       // quarter-inch length starting at the 1 inch mark
+                    const s = e => fracStr(e, 8) + ' inches';
+                    return { q: 'The gray bar starts at the 1 inch mark. How long is the bar?', fig: rulerSVG(8, E), c: s(E), d: [s(E + 8), s(E + 2), s(E - 2), s(E - 8 > 0 ? E - 8 : E + 4)] };
+                },
+                () => {
+                    const name = pick(NAMES), whole = randInt(5, 12), fr = pick([[1, 4], [1, 2], [3, 4], [3, 8], [5, 8]]), cut = randInt(1, 3);
+                    const f = `${fr[0]}/${fr[1]}`;
+                    return { q: `${name} measured a craft stick as ${whole} ${f} inches long. ${name} cut ${cut} inch${cut > 1 ? 'es' : ''} off the end. How long is the stick now?`, c: `${whole - cut} ${f} inches`, d: [`${whole - cut} inches`, `${whole + cut} ${f} inches`, `${whole} ${f} inches`] };
+                }
+            ],
+            '4.M.2': [
+                ['kilometers', 'meters', 1000], ['meters', 'centimeters', 100], ['kilograms', 'grams', 1000], ['liters', 'milliliters', 1000],
+                ['hours', 'minutes', 60], ['minutes', 'seconds', 60], ['feet', 'inches', 12], ['yards', 'feet', 3], ['pounds', 'ounces', 16]
+            ].map(([from, to, m]) => () => {
+                const v = randInt(3, 15), a = v * m;
+                const wrong = [1000, 100, 60, 12, 16, 10, 3].filter(x => x !== m).map(x => v * x);
+                return { q: `${v} ${from} = ______ ${to}`, c: `${fmt(a)} ${to}`, d: [...pickN(wrong, 2), v + m, a * 10].map(x => `${fmt(x)} ${to}`) };
+            }),
+            '4.NS.3': [
+                () => {
+                    const [n, d] = pick([[1, 2], [1, 3], [2, 5], [3, 4], [2, 3], [3, 5], [1, 4], [5, 6]]), m = randInt(2, 5);
+                    return { q: `Which fraction is equivalent to ${n}/${d}?`, c: `${n * m}/${d * m}`, d: [`${n + m}/${d + m}`, `${n * m}/${d}`, `${n}/${d * m}`, `${n * m}/${d * m + 1}`] };
+                },
+                () => {
+                    const [n, d] = pick([[1, 2], [1, 3], [2, 5], [3, 4], [2, 3], [3, 5]]), m = randInt(2, 6);
+                    return { q: `${n}/${d} = ?/${d * m}. What number belongs in the numerator?`, c: String(n * m), d: [n + m, n * d, d * m - n, n * m + 1, n * m - 1, n + (d * m - d), d * m].map(String) };
+                },
+                () => {
+                    const [n, d] = pick([[1, 2], [1, 3], [2, 5], [3, 4], [2, 3], [3, 5]]), [m1, m2] = pickN([2, 3, 4, 5], 2);
+                    return { q: `Which pair of fractions is equivalent?`, c: `${n * m1}/${d * m1} and ${n * m2}/${d * m2}`, d: [`${n * m1}/${d * m1} and ${n * m2 + 1}/${d * m2}`, `${n}/${d} and ${n + m1}/${d + m1}`, `${n}/${d} and ${d}/${n}`] };
+                }
+            ],
+            '4.NS.4': [
+                () => {
+                    let n1, d1, n2, d2;
+                    do { d1 = pick([3, 4, 5, 6, 8, 10, 12]); d2 = pick([2, 3, 4, 5, 6, 8, 10, 12]); n1 = randInt(1, d1 - 1); n2 = randInt(1, d2 - 1); } while (d1 === d2 && n1 === n2);
+                    const v = n1 * d2 - n2 * d1, sym = v > 0 ? '>' : v < 0 ? '<' : '=';
+                    return { q: `Which symbol makes this true?   ${n1}/${d1} ___ ${n2}/${d2}`, c: sym, d: ['>', '<', '='].filter(s => s !== sym), three: true };
+                },
+                () => {
+                    const d = pick([4, 6, 8, 10, 12]), n = pick([1, d - 1].concat(randInt(1, d - 1)));
+                    const half = n * 2 - d, ans = half > 0 ? 'greater than 1/2' : half < 0 ? 'less than 1/2' : 'equal to 1/2';
+                    return { q: `Compare ${n}/${d} to the benchmark fraction 1/2. Which is true?`, c: `${n}/${d} is ${ans}`, d: ['greater than 1/2', 'less than 1/2', 'equal to 1/2'].filter(x => x !== ans).map(x => `${n}/${d} is ${x}`), three: true };
+                },
+                () => {
+                    const n = randInt(1, 5), [da, db] = pickN([3, 4, 5, 6, 8, 10, 12].filter(x => x > n), 2);
+                    const big = da < db ? da : db;
+                    return { q: `Which fraction is greater: ${n}/${da} or ${n}/${db}?`, c: `${n}/${big}, because its pieces are larger`, d: [`${n}/${da + db - big}, because its denominator is larger`, `They are equal, because the numerators are the same`, `${n}/${da + db - big}, because its pieces are larger`] };
+                }
+            ],
+            '4.CA.6': [
+                () => {
+                    const d = pick([5, 6, 8, 10, 12]), a = randInt(1, Math.floor(d / 2)), b = randInt(1, Math.floor(d / 2));
+                    return { q: `Solve: ${a}/${d} + ${b}/${d}`, c: `${a + b}/${d}`, d: [`${a + b}/${d * 2}`, `${a * b}/${d}`, `${a + b + 1}/${d}`] };
+                },
+                () => {
+                    const d = pick([5, 6, 8, 10, 12]), b = randInt(1, Math.floor(d / 2)), a = b + randInt(1, Math.floor(d / 2));
+                    return { q: `Solve: ${a}/${d} − ${b}/${d}`, c: `${a - b}/${d}`, d: [`${a - b}/0`, `${a + b}/${d}`, `${a - b + 1}/${d}`, `${a}/${d}`] };
+                },
+                () => {
+                    const d = pick([4, 5, 6, 8]), w1 = randInt(1, 4), w2 = randInt(1, 3), n1 = randInt(1, d - 2), n2 = randInt(1, d - 1 - n1);
+                    return { q: `Solve: ${w1} ${n1}/${d} + ${w2} ${n2}/${d}`, c: `${w1 + w2} ${n1 + n2}/${d}`, d: [`${w1 + w2} ${n1 + n2}/${d * 2}`, `${w1 * w2} ${n1 + n2}/${d}`, `${w1 + w2 + 1} ${n1 + n2}/${d}`] };
+                },
+                () => {
+                    const d = pick([3, 4, 5, 6, 8]), n = randInt(2, d - 1);
+                    const parts = Array.from({ length: n }, () => `1/${d}`).join(' + ');
+                    return { q: `Which shows ${n}/${d} written as a sum of unit fractions?`, c: parts, d: [`${n}/${d} + 1/${d}`, Array.from({ length: n }, () => `1/${n}`).join(' + '), `1/${d} + ${n}/${d}`] };
+                }
+            ],
+            '4.CA.8': [
+                () => {
+                    const [a, b] = pickN(NAMES, 2), d = pick([6, 8, 10, 12]), n1 = randInt(1, 3), n2 = randInt(1, 3);
+                    const item = pick(['pizza', 'fruit tart', 'pan of brownies', 'loaf of banana bread']);
+                    return { q: `${a} ate ${n1}/${d} of a ${item}. ${b} ate ${n2}/${d} of the same ${item}. What fraction of the ${item} did they eat altogether?`, c: `${n1 + n2}/${d}`, d: [`${n1 + n2}/${d * 2}`, `${n1 * n2}/${d}`, `${d - n1 - n2}/${d}`, `${n1 + n2 + 1}/${d}`, `${n1 + n2}/${d + d}`] };
+                },
+                () => {
+                    const name = pick(NAMES), d = pick([4, 8]), w = randInt(3, 6), n = randInt(2, d - 1), u = randInt(1, n - 1);
+                    return { q: `${name} had a ribbon ${w} ${n}/${d} feet long. ${name} used ${u}/${d} foot for a bow. How much ribbon is left?`, c: `${w} ${n - u}/${d} feet`, d: [`${w} ${n + u}/${d} feet`, `${w - 1} ${n - u}/${d} feet`, `${n - u}/${d} feet`] };
+                },
+                () => {
+                    const name = pick(NAMES), d = pick([3, 4, 5]), cups = randInt(2, 4), n = 1;
+                    const cupStr = k => fracStr(k, d) + (k > d ? ' cups' : ' cup');
+                    return { q: `A recipe uses ${n}/${d} cup of sugar for each batch. ${name} makes ${cups} batches. How much sugar does ${name} need?`, c: cupStr(n * cups), d: [`${n}/${d * cups} cup`, `${cups} cups`, cupStr(n * cups + 1), cupStr(n * cups - 1 || n * cups + 2)] };
+                }
+            ],
+            '4.NS.2': [
+                () => {
+                    const w = randInt(1, 5), d = pick([3, 4, 5, 6, 8]), n = randInt(1, d - 1), imp = w * d + n;
+                    const cand = [`${w + 1} ${n}/${d}`, `${w} ${n}/${imp}`];
+                    if (w > 1) cand.push(`${w - 1} ${n}/${d}`);
+                    if (d - n !== n) cand.push(`${w} ${d - n}/${d}`);
+                    if (n !== w) cand.push(`${n} ${w}/${d}`);
+                    return { q: `Which mixed number is equal to ${imp}/${d}?`, c: `${w} ${n}/${d}`, d: cand };
+                },
+                () => {
+                    const w = randInt(1, 5), d = pick([3, 4, 5, 6, 8]), n = randInt(1, d - 1), imp = w * d + n;
+                    return { q: `Which improper fraction is equal to ${w} ${n}/${d}?`, c: `${imp}/${d}`, d: [`${w * n + d}/${d}`, `${w + n}/${d}`, `${w * d}/${d}`, `${imp}/${d * w}`, `${imp + 1}/${d}`, `${imp - 1}/${d}`, `${w * d + n}/${n}`] };
+                }
+            ],
+            '4.NS.5': [
+                () => {
+                    const n = randInt(1, 99);
+                    return { q: `Which decimal is equal to ${n}/100?`, c: (n / 100).toFixed(2), d: [n < 10 ? (n / 10).toFixed(1) : (n / 10).toFixed(1), (n / 1000).toFixed(3), `${n}.0`] };
+                },
+                () => {
+                    const n = randInt(1, 9);
+                    return { q: `Which fraction is equal to the decimal ${(n / 10).toFixed(1)}?`, c: `${n}/10`, d: [`${n}/100`, `${n}/1`, `1/${n}`] };
+                },
+                () => {
+                    const n = randInt(1, 9);
+                    return { q: `${n}/10 = ?/100. What number belongs in the numerator?`, c: String(n * 10), d: [String(n), String(n * 100), String(n + 10)] };
+                },
+                () => {
+                    const n = randInt(11, 99);
+                    return { q: `Which shows ${(n / 100).toFixed(2)} as a fraction?`, c: `${n}/100`, d: [`${n}/10`, `${n}/1,000`, `${Math.floor(n / 10)}/10`] };
+                }
+            ],
+            '4.NS.6': [
+                () => {
+                    let a, b; do { a = randInt(10, 95); b = randInt(10, 95); } while (a === b);
+                    const sym = a > b ? '>' : '<';
+                    return { q: `Which symbol makes this true?   ${(a / 100).toFixed(2)} ___ ${(b / 100).toFixed(2)}`, c: sym, d: ['>', '<', '='].filter(s => s !== sym), three: true };
+                },
+                () => {
+                    let t, h; do { t = randInt(2, 8); h = randInt(11, 99); } while (Math.floor(h / 10) === t || h % 10 === 0);
+                    const sym = t * 10 > h ? '>' : '<';
+                    return { q: `Which symbol makes this true?   0.${t} ___ ${(h / 100).toFixed(2)}`, c: sym, d: ['>', '<', '='].filter(s => s !== sym), three: true };
+                },
+                () => {
+                    const t = randInt(3, 8);
+                    let hs;                                         // values in hundredths; one is a tenths-only decimal
+                    do { hs = [t * 10, ...pickN([-15, -13, -11, -9, -7, -5, -4, -3, 3, 4, 5, 7, 9, 11, 13], 3).map(k => t * 10 + k)]; } while (new Set(hs).size < 4);
+                    const str = h => (h % 10 === 0 ? (h / 100).toFixed(1) : (h / 100).toFixed(2));
+                    const max = Math.max(...hs);
+                    return { q: 'Which decimal has the greatest value?', c: str(max), d: hs.filter(h => h !== max).map(str), exact: true };
+                }
+            ],
+            '4.DA.1': [0, 1, 2].map(k => () => {
+                const sets = [['Favorite sport', ['Soccer', 'Basketball', 'Baseball', 'Swimming']], ['Favorite pet', ['Dogs', 'Cats', 'Birds', 'Fish']], ['Favorite fruit', ['Apples', 'Bananas', 'Grapes', 'Oranges']]];
+                const [head, cats] = pick(sets);
+                const vals = pickN([6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19, 21, 23], 4);
+                const fig = freqTable([head, 'Number of students'], cats.map((c, i) => [c, vals[i]]));
+                const hi = vals.indexOf(Math.max(...vals)), lo = vals.indexOf(Math.min(...vals)), total = vals.reduce((a, b) => a + b, 0);
+                if (k === 0) return { fig, q: `How many MORE students chose ${cats[hi]} than ${cats[lo]}?`, c: String(vals[hi] - vals[lo]), d: [String(vals[hi] + vals[lo]), String(vals[hi]), String(vals[hi] - vals[lo] + 2), String(vals[lo])] };
+                if (k === 1) return { fig, q: 'How many students were surveyed in all?', c: String(total), d: [String(total - vals[0]), String(total + 10), String(vals[hi] + vals[lo]), String(total - 10)] };
+                const [i, j] = pickN([0, 1, 2, 3], 2);
+                return { fig, q: `How many students chose ${cats[i]} or ${cats[j]}?`, c: String(vals[i] + vals[j]), d: [String(Math.abs(vals[i] - vals[j])), String(total), String(vals[i] + vals[j] + 1), String(vals[i])] };
+            }),
+            '4.DA.2': [0, 1, 2].map(k => () => {
+                let counts;
+                do { counts = [0, randInt(0, 4), randInt(0, 4), randInt(0, 4), randInt(0, 3)]; } while (counts.filter(Boolean).length < 3 || counts.reduce((a, b) => a + b) < 6);
+                const fig = linePlotSVG(counts, 'Plant growth in one week (inches)');
+                const present = counts.map((c, q) => c ? q : null).filter(q => q !== null);
+                const lo = Math.min(...present), hi = Math.max(...present);
+                const inch = q => fracStr(q, 4) + (q > 4 ? ' inches' : ' inch');
+                const inches = q => inch(q);
+                if (k === 0) return { fig, q: 'What is the difference between the greatest and least growth shown on the line plot?', c: inch(hi - lo), d: [inch(hi + lo), inch(hi), inch(Math.max(1, hi - lo - 1)), inch(hi - lo + 1)] };
+                if (k === 1) {
+                    const q = pick(present.filter(x => counts[x] > 1).concat(present)), c = counts[q];
+                    const tot = q * c;
+                    return { fig, q: `What is the total growth of all the plants that grew ${fracStr(q, 4)} inch?`, c: inches(tot), d: [inches(c), inches(q), inches(tot + 1), inches(tot + 2), inches(Math.max(1, tot - 1))] };
+                }
+                const more = counts[3] + counts[4];
+                return { fig, q: 'How many plants grew MORE than 1/2 inch?', c: String(more), d: [more + counts[2], counts.reduce((a, b) => a + b) - more, counts[4], counts[3], more + 1, more - 1].filter(x => x > 0).map(String) };
+            }),
+            '4.M.3': [
+                () => {
+                    const name = pick(NAMES), h = randInt(1, 5), dh = randInt(1, 2), dm = pick([15, 20, 30, 45]);
+                    return { q: `${name} started a project at ${h}:00 PM and worked for ${dh} hour${dh > 1 ? 's' : ''} and ${dm} minutes. What time did ${name} finish?`, c: `${h + dh}:${dm} PM`, d: [`${h + dh}:${dm - 10} PM`, `${h}:${dm} PM`, `${h + dh + 1}:${dm} PM`] };
+                },
+                () => {
+                    const name = pick(NAMES), dollars = randInt(3, 14), cents = pick([15, 25, 35, 45, 60, 75, 85]), paid = 20;
+                    const cost = dollars * 100 + cents, change = paid * 100 - cost;
+                    const m = c => '$' + (c / 100).toFixed(2);
+                    return { q: `${name} buys a book for ${m(cost)} and pays with a $20 bill. How much change should ${name} get?`, c: m(change), d: [m(change + 100), m(change - 10 > 0 ? change - 10 : change + 20), m(paid * 100 - dollars * 100), m(cost)] };
+                },
+                () => {
+                    const L = randInt(2, 6), cup = pick([200, 250, 500]);
+                    const n = (L * 1000) / cup;
+                    return { q: `A pitcher holds ${L} liters of juice. Each cup holds ${cup} milliliters. How many cups can be filled?`, c: String(n), d: [fmt(L * cup), String(n * 10), String(Math.round(n / 2)), String(n + L)] };
+                },
+                () => {
+                    const name = pick(NAMES), m = pick([250, 400, 500, 750]), days = randInt(4, 8), tot = m * days;
+                    return { q: `${name} runs ${m} meters every day for ${days} days. How many meters does ${name} run in all?`, c: `${fmt(tot)} meters`, d: [`${fmt(m + days)} meters`, `${fmt(tot - m)} meters`, `${fmt(tot + m)} meters`] };
+                }
+            ]
+        };
+
+        // =====================================================================
+        // App
+        // =====================================================================
+        const CFA_MAX_STANDARDS = 2;
+        const MODE_DEFAULTS = {
+            cfa: { title: 'Math Common Formative Assessment', sub: '', layout: '5', newPage: false, score: false, sel: { '4.CA.4': 10 }, defaultCount: 10 },
+            eou: { title: 'Math End of Unit Assessment', sub: '', layout: '5', newPage: true, score: true, sel: { '4.NS.1': 5, '4.NS.7': 5 }, defaultCount: 5 }
+        };
+        const state = { mode: 'cfa', settings: JSON.parse(JSON.stringify(MODE_DEFAULTS)), showKey: false, code: newCode(), built: null };
+        const S = () => state.settings[state.mode];
+        const $ = id => document.getElementById(id);
+
+        // ---------- Seeded randomness (same code + same settings = same test) ----------
+        function newCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let c = '';
+            for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
+            return c;
+        }
+        function makeRng(seedText) {
+            let h = 1779033703 ^ seedText.length;
+            for (let i = 0; i < seedText.length; i++) { h = Math.imul(h ^ seedText.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
+            let a = h >>> 0;
+            return function () {
+                a = (a + 0x6D2B79F5) | 0;
+                let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+        function shuffle(arr, rng) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+            return a;
+        }
+
+        // ---------- Answer choices ----------
+        // Reads "3", "1,250", "2 3/4 inches", "5/8", "$4.25" as a number so equal-valued choices can be dropped.
+        function numericValue(str) {
+            const m = String(str).replace(/[$,]/g, '').trim().match(/^(-?\d+(?:\.\d+)?)?(?:\s*(\d+)\/(\d+))?(?:\s+[a-z ]+)?$/i);
+            if (!m || (!m[1] && !m[2])) return null;
+            if (m[3] === '0') return null;
+            const whole = m[1] ? parseFloat(m[1]) : 0;
+            if (m[2] && m[1] && !m[1].includes('.')) return whole + m[2] / m[3];
+            if (m[2] && !m[1]) return m[2] / m[3];
+            if (m[2]) return null;
+            return whole;
+        }
+        function makeChoices(correct, candidates, three, exact) {
+            const cVal = numericValue(correct);
+            const seen = new Set([String(correct)]);
+            const pool = [];
+            shuffle(candidates.map(String), R).forEach(d => {
+                if (seen.has(d) || d.includes('NaN') || d.startsWith('-')) return;
+                const v = numericValue(d);
+                if (cVal !== null && v !== null && Math.abs(v - cVal) < 1e-9) return;
+                seen.add(d); pool.push(d);
+            });
+            const need = three ? 2 : 3;
+            // Top up with near misses in the same format if the generator's list ran short
+            for (const d of (exact || three ? [] : neighbors(String(correct)))) {
+                if (pool.length >= need) break;
+                const v = numericValue(d);
+                if (seen.has(d) || d.startsWith('-') || (cVal !== null && v !== null && Math.abs(v - cVal) < 1e-9)) continue;
+                seen.add(d); pool.push(d);
+            }
+            const all = shuffle([String(correct), ...pool.slice(0, need)], R);
+            const letters = ['A', 'B', 'C', 'D'];
+            return { options: all.map((text, i) => ({ label: letters[i], text })), correctLetter: letters[all.indexOf(String(correct))] };
+        }
+
+        function neighbors(str) {
+            const m = str.match(/^(\$?)([\d,]+(?:\.\d+)?)?(?:\s*(\d+)\/(\d+))?(\s+[a-z ]+)?$/i);
+            if (!m) return [];
+            const [, cur, whole, n, d, unit = ''] = m;
+            const out = [];
+            if (n) {
+                const N = +n, D = +d, W = whole ? +whole.replace(/,/g, '') : null;
+                const f = (w, nn) => (w !== null && w > 0 ? w + ' ' : '') + nn + '/' + D + unit;
+                [[W, N + 1], [W, N - 1], [W === null ? null : W + 1, N], [W === null ? null : W - 1, N], [W, N + 2], [W, N - 2]]
+                    .forEach(([w, nn]) => { if (nn > 0) out.push(f(w, nn)); });
+            } else if (whole) {
+                const dec = whole.includes('.') ? whole.split('.')[1].length : 0;
+                const v = parseFloat(whole.replace(/,/g, ''));
+                const step = dec ? 10 ** -dec : 1;
+                [1, -1, 2, -2, 10, -10].forEach(k => {
+                    const x = v + k * step;
+                    if (x > 0) out.push(cur + (dec ? x.toFixed(dec) : fmt(x)) + unit);
+                });
+            }
+            return out;
+        }
+
+        // ---------- Building ----------
+        function buildSection(stdId, count, notices) {
+            const gens = GEN[stdId];
+            const offset = Math.floor(R() * gens.length);
+            const seen = new Set();
+            const questions = [];
+            for (let i = 0; questions.length < count && i < count * 6; i++) {
+                const g = gens[(offset + questions.length) % gens.length]();
+                if (seen.has(g.q + '|' + g.c)) continue;
+                seen.add(g.q + '|' + g.c);
+                questions.push({ ...g, ...makeChoices(g.c, g.d, g.three, g.exact) });
+            }
+            if (questions.length < count) notices.push(`${stdId}: ${questions.length} of ${count} questions added. The generator ran out of different questions.`);
+            return { stdId, questions };
+        }
+
+        function build() {
+            const s = S();
+            const notices = [];
+            R = makeRng(state.code + '|' + state.mode);
+            const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id]);
+            const sections = ids.map(id => buildSection(id, s.sel[id], notices));
+            R = Math.random;
+            state.built = { sections, notices };
+            renderNotices();
+            renderSheet();
+        }
+
+        // ---------- Builder panel ----------
+        function renderControls() {
+            const s = S();
+            document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
+            $('std-hint').textContent = state.mode === 'cfa'
+                ? `Pick up to ${CFA_MAX_STANDARDS} standards: one main target and an optional second.`
+                : 'Pick every standard the unit covered. Each one gets its own section.';
+            $('f-title').value = s.title;
+            $('f-sub').value = s.sub;
+            $('f-layout').value = s.layout;
+            $('f-newpage').checked = s.newPage;
+                        $('f-score').checked = s.score;
+            $('f-code').value = state.code;
+            $('btn-key').setAttribute('aria-pressed', String(state.showKey));
+
+            const list = $('std-list');
+            list.innerHTML = '<div class="std-head"><span></span><span>Standard</span><span>Questions</span></div>';
+            STANDARDS.forEach(std => {
+                const on = s.sel[std.id] !== undefined;
+                const row = el('div', 'std-row' + (on ? ' on' : ''));
+                row.innerHTML = `
+                    <input type="checkbox" aria-label="Include ${std.id}" ${on ? 'checked' : ''}>
+                    <div><div class="std-name"><b>${std.id}</b> ${std.label.replace(std.id + ': ', '')}</div><div class="std-desc">${std.desc}</div></div>
+                    <input type="number" min="1" max="${MAX_PER_STANDARD}" aria-label="${std.id} question count" value="${on ? s.sel[std.id] : s.defaultCount}" ${on ? '' : 'disabled'}>`;
+                const box = row.querySelector('input[type=checkbox]'), num = row.querySelector('input[type=number]');
+                box.addEventListener('change', () => {
+                    if (box.checked) {
+                        if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
+                            box.checked = false;
+                            flash(`A Quick CFA covers up to ${CFA_MAX_STANDARDS} standards. Switch to End of Unit to include more.`);
+                            return;
+                        }
+                        s.sel[std.id] = clampInt(num.value, 1, MAX_PER_STANDARD, s.defaultCount);
+                    } else delete s.sel[std.id];
+                    renderControls(); build();
+                });
+                num.addEventListener('change', () => {
+                    num.value = clampInt(num.value, 1, MAX_PER_STANDARD, s.defaultCount);
+                    if (s.sel[std.id] !== undefined) { s.sel[std.id] = parseInt(num.value, 10); updateTotals(); build(); }
+                });
+                list.appendChild(row);
+            });
+            updateTotals();
+        }
+        function updateTotals() {
+            const vals = Object.values(S().sel);
+            const n = vals.reduce((a, b) => a + b, 0);
+            $('totals').textContent = vals.length ? `${vals.length} standard${vals.length > 1 ? 's' : ''}, ${n} questions` : 'No standards picked yet';
+        }
+        function clampInt(v, lo, hi, fallback) { const n = parseInt(v, 10); return isNaN(n) ? fallback : Math.min(hi, Math.max(lo, n)); }
+
+        let flashMsg = '';
+        function flash(msg) { flashMsg = msg; renderNotices(); }
+        function renderNotices() {
+            const msgs = [...(flashMsg ? [flashMsg] : []), ...((state.built && state.built.notices) || [])];
+            flashMsg = '';
+            $('notices').innerHTML = msgs.map(m => `<p>${m}</p>`).join('');
+        }
+
+        // ---------- Printable sheet ----------
+        function el(tag, cls, text) {
+            const e = document.createElement(tag);
+            if (cls) e.className = cls;
+            if (text !== undefined) e.textContent = text;
+            return e;
+        }
+
+        function questionEl(q, n) {
+            const qd = el('div', 'q');
+            qd.appendChild(el('div', 'q-num', n + '.'));
+            const body = el('div');
+            body.appendChild(el('div', 'q-stem', q.q));
+            if (q.fig) { const f = el('div', 'fig'); f.innerHTML = q.fig; body.appendChild(f); }
+            const short = q.options.every(o => o.text.length <= 26);
+            const opts = el('div', 'opts' + (short ? ' two' : ''));
+            q.options.forEach(o => {
+                const row = el('div', 'opt' + (state.showKey && o.label === q.correctLetter ? ' correct' : ''));
+                row.appendChild(el('span', 'bubble', o.label));
+                row.appendChild(el('span', 'opt-text', o.text));
+                opts.appendChild(row);
+            });
+            body.appendChild(opts);
+            qd.appendChild(body);
+            return qd;
+        }
+
+        function referenceChart() {
+            const r = el('div', 'ref');
+            r.innerHTML = '<b>Measurement conversion chart</b><div>' + [
+                '1 km = 1,000 m', '1 m = 100 cm', '1 kg = 1,000 g', '1 L = 1,000 mL', '1 hr = 60 min', '1 min = 60 sec',
+                '1 ft = 12 in', '1 yd = 3 ft', '1 lb = 16 oz'
+            ].map(t => `<span>${t}</span>`).join('') + '</div>';
+            return r;
+        }
+
+        function renderSheet() {
+            const s = S();
+            const sheet = $('sheet');
+            sheet.innerHTML = '';
+            const { sections } = state.built;
+
+            const top = el('div');
+            const head = el('div', 't-head');
+            const left = el('div');
+            left.appendChild(el('h1', 't-title', s.title || 'Math Assessment'));
+            if (s.sub) left.appendChild(el('p', 't-sub', s.sub));
+            left.appendChild(el('p', 't-std', 'Standards: ' + (sections.map(x => x.stdId).join(', ') || 'none picked')));
+            const right = el('div', 't-lines');
+            right.innerHTML = '<div>Name:<span class="fill"></span></div><div>Date:<span class="fill"></span></div>';
+            head.append(left, right);
+            top.appendChild(head);
+            const meta = el('div', 't-meta');
+            meta.appendChild(el('span', '', 'Version ' + state.code));
+            if (state.showKey) meta.appendChild(el('span', 't-badge', 'TEACHER KEY'));
+            top.appendChild(meta);
+
+            if (!sections.length) {
+                sheet.appendChild(top);
+                sheet.appendChild(el('p', 'empty', 'Pick at least one standard to build an assessment.'));
+                return;
+            }
+
+            const spaced = s.layout !== 'compact';
+            const perPage = spaced ? parseInt(s.layout, 10) : Infinity;
+            let n = 1, pageCount = 0;
+            const keyRows = [], perStd = [];
+            let page = null, used = 0;
+            const newPage = () => {
+                page = el('div', 'page' + (spaced ? ' spaced' : '') + (pageCount === 0 ? ' first' : ''));
+                if (pageCount === 0) page.appendChild(top);
+                sheet.appendChild(page);
+                pageCount++; used = 0;
+            };
+
+            sections.forEach((sec, i) => {
+                const std = STANDARDS.find(x => x.id === sec.stdId);
+                if (!page || (s.newPage && i > 0)) newPage();
+                else if (spaced && used + 1 > perPage) newPage();
+                const first = n;
+                const label = el('p', 'sec-label', std.label);
+                page.appendChild(label);
+                if (NEEDS_REFERENCE.includes(sec.stdId)) { page.appendChild(referenceChart()); used += 1; }
+                sec.questions.forEach((q, k) => {
+                    const w = q.fig ? 2 : 1;
+                    const cap = perPage;
+                    if (spaced && used + w > cap && used > 0) {
+                        newPage();
+                        page.appendChild(el('p', 'sec-label', std.label + ' (continued)'));
+                    }
+                    page.appendChild(questionEl(q, n));
+                    keyRows.push([n, q.correctLetter, q.c, sec.stdId]);
+                    used += w; n++;
+                });
+                perStd.push({ id: sec.stdId, from: first, to: n - 1, count: sec.questions.length });
+            });
+
+            if (s.score) {
+                const b = el('div', 'end-block');
+                b.appendChild(el('h3', '', 'Score by standard (teacher use)'));
+                const t = el('table', 'grid');
+                t.innerHTML = '<tr><th>Standard</th><th>Questions</th><th>Score</th></tr>' +
+                    perStd.map(r => `<tr><td>${r.id}</td><td>${r.from === r.to ? r.from : r.from + ' to ' + r.to}</td><td>_____ / ${r.count}</td></tr>`).join('');
+                b.appendChild(t);
+                (spaced ? sheet : page).appendChild(b);
+            }
+
+            if (state.showKey) {
+                const k = el('div', 'end-block newpage');
+                k.appendChild(el('h3', '', `Answer key, version ${state.code}`));
+                const t = el('table', 'grid');
+                t.innerHTML = '<tr><th>#</th><th>Answer</th><th>Correct choice</th><th>Standard</th></tr>' +
+                    keyRows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td></td><td>${r[3]}</td></tr>`).join('');
+                t.querySelectorAll('tr').forEach((tr, i) => { if (i) tr.children[2].textContent = keyRows[i - 1][2]; });
+                k.appendChild(t);
+                sheet.appendChild(k);
+            }
+        }
+
+        // ---------- Wiring ----------
+        function bindField(id, key, evt = 'input') {
+            $(id).addEventListener(evt, e => {
+                S()[key] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+                renderSheet();
+            });
+        }
+        function init() {
+            document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => { state.mode = b.dataset.mode; renderControls(); build(); }));
+            bindField('f-title', 'title');
+            bindField('f-sub', 'sub');
+            bindField('f-layout', 'layout', 'change');
+            bindField('f-newpage', 'newPage', 'change');
+            bindField('f-score', 'score', 'change');
+            $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
+            $('btn-new').addEventListener('click', () => { state.code = newCode(); $('f-code').value = state.code; build(); });
+            $('btn-key').addEventListener('click', () => { state.showKey = !state.showKey; $('btn-key').setAttribute('aria-pressed', String(state.showKey)); renderSheet(); });
+            $('btn-print').addEventListener('click', () => window.print());
+            const loadCode = () => { const c = $('f-code').value.trim().toUpperCase(); if (!c) return; state.code = c; $('f-code').value = c; build(); };
+            $('btn-load').addEventListener('click', loadCode);
+            $('f-code').addEventListener('keydown', e => { if (e.key === 'Enter') loadCode(); });
+            renderControls();
+            build();
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    </script>
+</body>
+</html>
