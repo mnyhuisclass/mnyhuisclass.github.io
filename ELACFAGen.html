@@ -118,6 +118,27 @@
     .wlines span { border-bottom: 1px solid #999; display: block; }
     .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
     .newpage { break-before: page; }
+    body:not([data-mode="exit"]) .exit-only { display: none; }
+    body[data-mode="exit"] .test-only { display: none; }
+    .ticket { border: 2px solid #333; border-radius: 10px; padding: 10px 16px 4px; break-inside: avoid; }
+    .ticket + .ticket { margin-top: 0.4in; position: relative; }
+    .ticket + .ticket::before { content: "\2702  cut here"; position: absolute; left: 0; right: 0; top: -0.25in; border-top: 1.5px dashed #888; font-size: 10px; color: #666; padding-top: 2px; text-align: center; }
+    .ticket.alone { break-before: page; margin-top: 0; }
+    .ticket.alone::before { display: none; }
+    .x-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-bottom: 3px solid var(--teal-700); padding-bottom: 6px; margin-bottom: 10px; }
+    .x-title { font-size: 18px; font-weight: 800; margin: 0; }
+    .x-std { font-size: 11px; color: #333; margin: 2px 0 0; }
+    .x-name { flex: 0 0 2.4in; display: flex; gap: 6px; font-size: 14px; }
+    .x-name span { flex: 1; border-bottom: 1px solid #000; }
+    .x-note { font-size: 13px; font-style: italic; margin: 0 0 10px; }
+    .ticket { font-size: 13.5px; line-height: 1.35; }
+    .ticket .q { margin-bottom: 10px; }
+    .ticket .q-stem { margin-bottom: 4px; }
+    .ticket .opts { gap: 2px; }
+    .ticket .bubble { width: 18px; height: 18px; font-size: 10px; }
+    .ticket .wr-head { margin: 2px 0 6px; }
+    .ticket .wlines { gap: 18px; margin-top: 10px; }
+    .ticket .lookfor { margin-top: 4px; }
     table.grid { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
     table.grid th, table.grid td { border: 1px solid #888; padding: 5px 8px; text-align: left; }
     table.grid th { background: var(--teal-50); }
@@ -145,6 +166,7 @@
         <div class="modes" role="group" aria-label="Assessment type">
             <button type="button" data-mode="cfa" aria-pressed="true">Quick CFA</button>
             <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
+            <button type="button" data-mode="exit" aria-pressed="false">Exit Ticket</button>
         </div>
     </div>
 
@@ -187,7 +209,17 @@
                     <option value="advanced">Level 3: Extension (high DOK)</option>
                 </select>
             </div>
-            <div class="checks">
+            <div class="field exit-only">
+                <label for="f-copies">Copies per page</label>
+                <select id="f-copies">
+                    <option value="1">1 (full page)</option>
+                    <option value="2">2 (half sheets to cut apart)</option>
+                </select>
+            </div>
+            <div class="checks exit-only">
+                <label><input type="checkbox" id="f-passage"> Print the passage on the ticket (leave off if students already have it from the lesson)</label>
+            </div>
+            <div class="checks test-only">
                 <label><input type="checkbox" id="f-newpage"> Start each standard on a new page</label>
                 <label><input type="checkbox" id="f-score"> Add a score-by-standard table at the end</label>
             </div>
@@ -1293,6 +1325,12 @@ const STANDARDS = [
                 genre: 'auto', rigor: 'mix', newPage: true, score: true,
                 sel: { '4.RC.1': { mc: 5, wr: 1 }, '4.RC.2': { mc: 5, wr: 1 }, '4.RC.3': { mc: 5, wr: 1 }, '4.RC.10': { mc: 5, wr: 1 } },
                 defaultCounts: { mc: 5, wr: 1 }
+            },
+            exit: {
+                title: 'Exit Ticket', sub: '',
+                genre: 'auto', rigor: 'mix', newPage: false, score: false, copies: '2', passage: false,
+                sel: { '4.RC.1': { mc: 2, wr: 1 } },
+                defaultCounts: { mc: 2, wr: 1 }
             }
         };
 
@@ -1510,7 +1548,12 @@ const STANDARDS = [
         function renderControls() {
             const s = S();
             document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
-            $('std-hint').textContent = state.mode === 'cfa'
+            document.body.dataset.mode = state.mode;
+            $('f-copies').value = s.copies || '2';
+            $('f-passage').checked = !!s.passage;
+            $('std-hint').textContent = state.mode === 'exit'
+                ? 'Pick one standard (4.RC.10 can be added to it). Two or three questions is plenty for an exit ticket.'
+                : state.mode === 'cfa'
                 ? `Pick up to ${CFA_MAX_STANDARDS} standards: one main target and an optional second. Set how many of each question type.`
                 : 'Pick every standard the unit covered. Each one gets its own passage and section, except 4.RC.10, which uses words from the other passages.';
             $('f-title').value = s.title;
@@ -1541,7 +1584,10 @@ const STANDARDS = [
                 const [box, num, sel] = [row.querySelector('input[type=checkbox]'), row.querySelector('input[type=number]'), row.querySelector('select')];
                 box.addEventListener('change', () => {
                     if (box.checked) {
-                        if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
+                        if (state.mode === 'exit') {
+                            // One standard at a time: picking a new one replaces the old one (4.RC.10 can ride along)
+                            if (std.id !== CONTEXT_STD) Object.keys(s.sel).forEach(id => { if (id !== CONTEXT_STD) delete s.sel[id]; });
+                        } else if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
                             box.checked = false;
                             flash(`A Quick CFA covers up to ${CFA_MAX_STANDARDS} standards. Switch to End of Unit to include more.`);
                             return;
@@ -1622,23 +1668,33 @@ const STANDARDS = [
             sheet.innerHTML = '';
             const { sections } = state.built;
 
-            // Header
-            const head = el('div', 't-head');
-            const left = el('div');
-            left.appendChild(el('h1', 't-title', s.title || 'ELA Assessment'));
-            if (s.sub) left.appendChild(el('p', 't-sub', s.sub));
+            const exit = state.mode === 'exit';
+            const out = exit ? el('div', 'ticket') : sheet;   // an exit ticket is built once, then copied
             const stdIds = STANDARDS.map(x => x.id).filter(id => sections.some(x => x.stdId === id || (id === CONTEXT_STD && x.hasContext)));
-            left.appendChild(el('p', 't-std', 'Standards: ' + (stdIds.join(', ') || 'none picked')));
-            const right = el('div', 't-lines');
-            right.innerHTML = '<div>Name:<span class="fill"></span></div><div>Date:<span class="fill"></span></div>';
-            head.append(left, right);
-            sheet.appendChild(head);
 
-            const meta = el('div', 't-meta');
-            const v = el('span', '', 'Version ' + state.code);
-            meta.appendChild(v);
-            if (state.showKey) meta.appendChild(el('span', 't-badge', 'TEACHER KEY'));
-            sheet.appendChild(meta);
+            if (exit) {
+                const head = el('div', 'x-head');
+                const left = el('div');
+                left.appendChild(el('h1', 'x-title', (s.title || 'Exit Ticket') + (state.showKey ? ' (Teacher Key)' : '')));
+                left.appendChild(el('p', 'x-std', (stdIds.map(id => STANDARDS.find(x => x.id === id).label).join('; ') || 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + state.code));
+                const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
+                head.append(left, nm);
+                out.appendChild(head);
+            } else {
+                const head = el('div', 't-head');
+                const left = el('div');
+                left.appendChild(el('h1', 't-title', s.title || 'ELA Assessment'));
+                if (s.sub) left.appendChild(el('p', 't-sub', s.sub));
+                left.appendChild(el('p', 't-std', 'Standards: ' + (stdIds.join(', ') || 'none picked')));
+                const right = el('div', 't-lines');
+                right.innerHTML = '<div>Name:<span class="fill"></span></div><div>Date:<span class="fill"></span></div>';
+                head.append(left, right);
+                sheet.appendChild(head);
+                const meta = el('div', 't-meta');
+                meta.appendChild(el('span', '', 'Version ' + state.code));
+                if (state.showKey) meta.appendChild(el('span', 't-badge', 'TEACHER KEY'));
+                sheet.appendChild(meta);
+            }
 
             if (!sections.length) {
                 sheet.appendChild(el('p', 'empty', 'Pick at least one standard to build an assessment.'));
@@ -1651,8 +1707,8 @@ const STANDARDS = [
 
             sections.forEach((sec, i) => {
                 const std = STANDARDS.find(x => x.id === sec.stdId);
-                const wrap = el('div', 'section' + (s.newPage && i > 0 ? ' newpage' : ''));
-                wrap.appendChild(el('p', 'sec-label', std.label + (sec.hasContext && sec.stdId !== CONTEXT_STD ? ', with 4.RC.10: Context Clues' : '')));
+                const wrap = el('div', 'section' + (!exit && s.newPage && i > 0 ? ' newpage' : ''));
+                if (!exit) wrap.appendChild(el('p', 'sec-label', std.label + (sec.hasContext && sec.stdId !== CONTEXT_STD ? ', with 4.RC.10: Context Clues' : '')));
                 const tally = (id, kind) => {
                     let r = perStd.find(x => x.id === id);
                     if (!r) { r = { id, nums: [], mc: 0, wr: 0 }; perStd.push(r); }
@@ -1660,7 +1716,10 @@ const STANDARDS = [
                 };
 
                 sec.blocks.forEach(block => {
-                    if (block.passage) {
+                    if (block.passage && exit && !s.passage) {
+                        const k = block.questions.length;
+                        wrap.appendChild(el('p', 'x-note', `Use "${block.passage.title.replace(/^[^:]*:\s*/, '')}" to answer ${k > 1 ? `questions ${n} to ${n + k - 1}` : `question ${n}`}${sec.written.length ? ' and the written response' : ''}.`));
+                    } else if (block.passage) {
                         const p = el('div', 'passage');
                         p.appendChild(el('h3', '', block.passage.title));
                         passageParagraphs(block.passage).forEach((t, k) => {
@@ -1710,7 +1769,7 @@ const STANDARDS = [
                             body.appendChild(lf);
                         } else {
                             const lines = el('div', 'wlines');
-                            for (let k = 0; k < 5; k++) lines.appendChild(el('span'));
+                            for (let k = 0; k < (exit ? 3 : 5); k++) lines.appendChild(el('span'));
                             body.appendChild(lines);
                         }
                         qd.appendChild(body);
@@ -1720,8 +1779,22 @@ const STANDARDS = [
                         n++;
                     });
                 }
-                sheet.appendChild(wrap);
+                out.appendChild(wrap);
             });
+
+            if (exit) {
+                // Student copies repeat the same ticket; the key prints one copy with answers marked
+                const copies = state.showKey ? 1 : Number(s.copies || 2);
+                sheet.appendChild(out);
+                const tooTall = copies > 1 && out.getBoundingClientRect().height / 96 > 4.8;
+                for (let c = 1; c < copies; c++) {
+                    const copy = out.cloneNode(true);
+                    if (tooTall) copy.classList.add('alone');
+                    sheet.appendChild(copy);
+                }
+                if (tooTall) flash('This ticket is too long for two per page, so each copy prints on its own page. Use fewer questions or leave the passage off to fit two.');
+                return;
+            }
 
             // Score-by-standard table (student copy and key)
             if (s.score) {
@@ -1765,6 +1838,8 @@ const STANDARDS = [
             bindField('f-rigor', 'rigor', 'change');
             bindField('f-newpage', 'newPage', 'change');
             bindField('f-score', 'score', 'change');
+            bindField('f-copies', 'copies', 'change');
+            bindField('f-passage', 'passage', 'change');
             $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
             $('btn-new').addEventListener('click', () => { state.code = newCode(); $('f-code').value = state.code; build(); });
             $('btn-key').addEventListener('click', () => {
