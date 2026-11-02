@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Starbridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --space:#0D2236; --space2:#14324D; --space3:#1C4262;
+  --teal:#1FB5A8; --teal-deep:#0F7E75; --teal-glow:#A3E8E0;
+  --gold:#F2B630; --gold-soft:#FCE6A6;
+  --paper:#FFFBF0; --ink:#1B2B3A; --ink-muted:#5B6B78;
+  --on-space:#EAF6F5; --on-space-muted:#A9C4CC;
+  --good:#2E9E5B; --good-soft:#CDEFD8; --bad:#D9534F; --bad-soft:#F8D6D4;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --space:#07172A; --space2:#0F2840; --space3:#173957; --paper:#F4ECD8; color-scheme: dark; }
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+body{
+  font-family:"Atkinson Hyperlegible",Verdana,Arial,sans-serif;
+  color:var(--on-space); min-height:100vh;
+  background-color:var(--space);
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #ffffffaa 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 12%, #ffffff88 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 85% 64%, #ffffff99 50%, transparent 51%),
+    radial-gradient(1px 1px at 33% 78%, #ffffff77 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 40%, #ffffff66 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 92% 30%, #f2b630aa 50%, transparent 51%),
+    radial-gradient(1px 1px at 5% 55%, #ffffff77 50%, transparent 51%);
+  background-size:420px 420px;
+}
+h1,h2,h3,.brand{font-family:"Baloo 2","Trebuchet MS",sans-serif}
+button{font:inherit;cursor:pointer}
+button:focus-visible,.sent:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 20px 40px}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{font-size:2rem;font-weight:800;color:var(--gold);margin:0;letter-spacing:.5px;line-height:1}
+.brand small{display:block;font-size:.9rem;color:var(--teal);font-weight:600;letter-spacing:0}
+.hdr-right{display:flex;gap:10px;align-items:center}
+.chip{background:var(--space2);border:1px solid var(--space3);border-radius:999px;padding:8px 16px;font-weight:700}
+.chip .st{color:var(--gold);margin-left:8px}
+.chip.pop .st{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.5)}}
+.st{display:inline-block}
+
+.btn{border:none;border-radius:12px;padding:12px 20px;font-weight:700;font-size:1.05rem}
+.btn.gold{background:var(--gold);color:#2A1F00}
+.btn.teal{background:var(--teal);color:#032B27}
+.btn.ghost{background:transparent;color:var(--on-space);border:2px solid var(--space3)}
+.btn.small{padding:8px 14px;font-size:.95rem}
+
+/* pick */
+.pick-title{font-size:2.4rem;margin:30px 0 6px;text-align:center}
+.pick-sub{text-align:center;color:var(--on-space-muted);margin:0 0 26px}
+.login{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:560px;margin:0 auto}
+.login input{flex:1 1 260px;font-family:"Baloo 2","Trebuchet MS",sans-serif;font-size:1.8rem;font-weight:600;background:var(--paper);color:var(--ink);border:3px solid var(--teal);border-radius:16px;padding:10px 18px}
+.login input::placeholder{color:var(--ink-muted);font-weight:400}
+.login .btn{font-size:1.3rem;padding:14px 26px}
+.login-msg{flex-basis:100%;text-align:center;min-height:1.4em;margin:4px 0 0;color:var(--gold)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.teacher-link{display:block;margin:34px auto 0}
+
+/* hub */
+.hub{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.sky{text-align:center}
+.sky svg{width:100%;max-width:440px;height:auto}
+.sky h2{font-size:2rem;margin:0}
+.sky p{color:var(--on-space-muted);margin:4px 0 0}
+.missions{display:flex;flex-direction:column;gap:14px}
+.mission{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:center;text-align:left;background:var(--space2);color:var(--on-space);border:2px solid var(--space3);border-radius:18px;padding:18px}
+.mission:hover{border-color:var(--teal)}
+.mission .ic{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:2rem;background:var(--space3)}
+.mission h3{margin:0;font-size:1.5rem;color:var(--gold)}
+.mission p{margin:2px 0 0;color:var(--on-space-muted)}
+.hub-greet{font-size:1.15rem;margin:0 0 4px}
+
+/* play */
+.play{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+.reading{background:var(--paper);color:var(--ink);border-radius:20px;padding:24px 28px 28px;box-shadow:0 0 0 4px var(--space3)}
+.reading h2{margin:0;font-size:1.8rem;color:var(--ink)}
+.ptype{color:var(--teal-deep);font-weight:700;margin:0 0 10px}
+.passage{font-size:1.3rem;line-height:1.85;max-width:62ch}
+.sent{border-radius:6px;padding:2px 1px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.passage.tappable .sent{cursor:pointer;background:#1FB5A814;border-bottom:2px dotted #0F7E7566}
+.passage.tappable .sent:hover{background:#1FB5A833}
+.sent.sel{background:var(--gold-soft)!important;box-shadow:0 0 0 2px var(--gold)}
+.sent.good{background:var(--good-soft)!important;box-shadow:0 0 0 2px var(--good)}
+.sent.bad{background:var(--bad-soft)!important;box-shadow:0 0 0 2px var(--bad)}
+.sent.hint{box-shadow:0 0 0 3px var(--teal-deep);border-bottom:none}
+.w.glow{background:var(--teal-glow);border-radius:4px;box-shadow:0 0 0 2px var(--teal-glow)}
+.task{background:var(--space2);border:2px solid var(--space3);border-radius:20px;padding:20px 22px;position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+.prog{display:flex;gap:6px;margin-bottom:12px}
+.dot{width:28px;height:8px;border-radius:4px;background:var(--space3)}
+.dot.done{background:var(--teal)}
+.dot.now{background:var(--gold)}
+.mlabel{color:var(--teal);font-weight:700;margin:0 0 8px}
+.question{font-size:1.35rem;font-weight:700;line-height:1.6;margin:0 0 10px}
+.qw{background:transparent;color:inherit;border:none;border-bottom:2px dashed #ffffff55;padding:0 2px;font-weight:700;border-radius:4px}
+.qw.on{background:var(--teal-glow);color:var(--ink);border-bottom-color:transparent}
+.instr{color:var(--on-space-muted);margin:6px 0 12px;line-height:1.5}
+.choices{display:grid;gap:10px;margin-bottom:12px}
+.choice{text-align:left;background:var(--space3);color:var(--on-space);border:2px solid transparent;border-radius:12px;padding:14px 16px;font-size:1.1rem}
+.choice:hover:not(:disabled){border-color:var(--teal)}
+.choice.quote{font-style:italic;border-left:6px solid var(--teal)}
+.choice.out{opacity:.4;text-decoration:line-through;cursor:default}
+.locked{background:var(--space3);border-radius:12px;padding:12px 16px;margin-bottom:8px}
+.locked span{display:block;color:var(--on-space-muted);font-size:.9rem}
+.locked b{font-size:1.15rem;color:var(--gold)}
+.claim{background:var(--paper);color:var(--ink);border-radius:14px;padding:14px 18px;margin-bottom:10px;border-left:8px solid var(--gold)}
+.claim-label{display:block;font-weight:700;color:var(--teal-deep);font-size:.95rem}
+.claim-text{font-size:1.25rem;font-weight:700;margin:4px 0 0;line-height:1.45}
+.judge{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.judge .btn{padding:16px 12px;font-size:1.1rem}
+.fb{min-height:1.5em;margin:10px 0 12px;line-height:1.5;font-size:1.08rem;border-radius:12px}
+.fb.good,.fb.bad,.fb.info{padding:12px 14px}
+.fb.good{background:#2E9E5B33;border:2px solid var(--good)}
+.fb.bad{background:#D9534F2E;border:2px solid var(--bad)}
+.fb.info{background:#1FB5A826;border:2px solid var(--teal)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* summary */
+.summary{text-align:center;max-width:620px;margin:40px auto}
+.summary h2{font-size:2.6rem;margin:0;color:var(--gold)}
+.big-stars{font-size:3rem;color:var(--gold);margin:10px 0}
+.summary .actions{justify-content:center;margin-top:20px}
+
+/* teacher */
+.tbl-wrap{overflow-x:auto;background:var(--space2);border-radius:16px;border:2px solid var(--space3)}
+table{border-collapse:collapse;width:100%;min-width:860px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--space3)}
+th{color:var(--teal);font-weight:700}
+td input{font:inherit;background:var(--space3);color:var(--on-space);border:1px solid var(--space3);border-radius:8px;padding:6px 10px;width:150px}
+.pct{font-weight:700}
+.pct.lo{color:#FF9A96}.pct.mid{color:var(--gold)}.pct.hi{color:#7BE0A4}
+.note{color:var(--on-space-muted);line-height:1.5}
+
+.sec-h{font-family:"Baloo 2","Trebuchet MS",sans-serif;font-size:1.25rem;color:var(--teal-deep);margin:16px 0 2px}
+.sec-h:first-child{margin-top:4px}
+.passage p{margin:0}
+.opt-sec{display:block;font-style:normal;font-size:.85rem;color:var(--on-space-muted);margin-bottom:2px}
+.choice.picked{border-color:var(--gold);background:#F2B63033}
+.choice.wrong{border-color:var(--bad)}
+.choice.hint{border-color:var(--teal);border-style:dashed}
+.pair{display:grid;gap:8px;margin-bottom:10px}
+.pair .claim{margin:0;border-left-color:var(--teal)}
+.pair .claim-text{font-weight:400;font-style:italic;font-size:1.1rem}
+.plus{text-align:center;color:var(--gold);font-size:1.4rem;font-weight:800;line-height:1}
+textarea{width:100%;min-height:130px;font:inherit;font-size:1.1rem;line-height:1.5;background:var(--paper);color:var(--ink);border:3px solid var(--teal);border-radius:12px;padding:12px;resize:vertical}
+.wc{color:var(--on-space-muted);font-size:.95rem;margin:6px 0 10px}
+#respPanel{margin-top:20px;background:var(--space2);border:2px solid var(--space3);border-radius:16px;padding:18px 20px}
+#respPanel h2{margin:0 0 10px}
+.resp{border-top:1px solid var(--space3);padding:12px 0}
+.resp .meta{color:var(--teal);font-weight:700}
+.resp .rq{color:var(--on-space-muted);margin:2px 0 6px}
+.resp .ra{background:var(--paper);color:var(--ink);border-radius:10px;padding:10px 14px;margin:0;line-height:1.5}
+[hidden]{display:none!important}
+@media (max-width:860px){
+  .hub,.play{grid-template-columns:1fr}
+  .task{position:static}
+  .passage{font-size:1.2rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="brand">Starbridge<small>Supernova Reading Station</small></p>
+    <div class="hdr-right">
+    <a class="btn ghost small" href="ReadingLaunchPad.html" style="text-decoration:none">Launch pad</a>
+    <div class="hdr-right" id="hdrRight" hidden>
+      <span class="chip" id="chip"><span id="chipName"></span><span class="st" id="chipStars">★ 0</span></span>
+      <button class="btn ghost small" id="homeBtn">Station</button>
+      <button class="btn ghost small" id="switchBtn">Switch pilot</button>
+    </div>
+    </div>
+  </header>
+
+  <!-- PICK -->
+  <section class="screen" id="pick">
+    <h1 class="pick-title">Who’s flying today?</h1>
+    <p class="pick-sub">Type your first name to start your mission.</p>
+    <div class="login">
+      <label for="nameIn" class="sr">Your first name</label>
+      <input id="nameIn" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="24" placeholder="Your first name">
+      <button class="btn gold" id="loginBtn">Blast off</button>
+      <p class="login-msg" id="loginMsg" aria-live="polite"></p>
+    </div>
+    <button class="btn ghost small teacher-link" id="teacherBtn">Teacher view</button>
+  </section>
+
+  <!-- HUB -->
+  <section class="screen" id="hub" hidden>
+    <div class="hub">
+      <div class="sky">
+        <div id="constellation"></div>
+        <h2 id="skyCount"></h2>
+        <p id="skySub"></p>
+      </div>
+      <div>
+        <p class="hub-greet">Pick a mission, <b id="hubName"></b>. Every star you earn lights up your sky.</p>
+        <div class="missions">
+          <button class="mission" data-m="1"><span class="ic">🧠</span><span><h3>Infer and Prove It All</h3><p>Make an inference, find every detail that supports it, then explain your thinking.</p></span></button>
+          <button class="mission" data-m="2"><span class="ic">🔗</span><span><h3>Section Link</h3><p>Pick two details from different sections that together support an inference.</p></span></button>
+          <button class="mission" data-m="3"><span class="ic">✨</span><span><h3>Connect the Stars</h3><p>Two details from different sections are linked. Figure out what they prove together.</p></span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section class="screen" id="play" hidden>
+    <div class="play">
+      <article class="reading">
+        <h2 id="pTitle"></h2>
+        <p class="ptype" id="pType"></p>
+        <div class="passage" id="passage"></div>
+      </article>
+      <aside class="task" id="task"></aside>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="screen" id="summary" hidden>
+    <div class="summary">
+      <h2>Passage complete!</h2>
+      <div class="big-stars" id="sumStars"></div>
+      <p id="sumText"></p>
+      <div class="actions">
+        <button class="btn gold" id="againBtn">Read another passage</button>
+        <button class="btn ghost" id="backBtn">Back to the station</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEACHER -->
+  <section class="screen" id="teacher" hidden>
+    <h1 style="margin:10px 0 4px">Teacher view</h1>
+    <p class="note">Students write a short explanation after each Infer and Prove It All question. Tap View to read them. Percentages count first tries only, so they show what each student can do without hints. Students appear here the first time they type their name. Fix a misspelled name by editing its box, so the student’s progress follows them next time. Progress is saved in this browser.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Student</th><th>Make an inference</th><th>Find all support</th><th>Section link</th><th>Connect the stars</th><th>Written responses</th><th>Stars</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div id="respPanel" hidden></div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn ghost" id="tBackBtn">Done</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- PASSAGES ----------
+   Sentences are numbered across the whole passage in order (section 1 starts at 0).
+   inf:     c[0] correct. sup = details that MUST be chosen, ok = extra details that are also fine.
+   link:    opts = six sentence numbers shown as choices. pairs = correct two-detail answers (always from different sections).
+   connect: pair = two linked details. c[0] correct inference. n = why each wrong choice falls short. */
+const PASSAGES = [
+{ id:'wolves', title:'The Return of the Wolves', type:'Informational',
+  sec:[
+   {h:'Missing Hunters', s:[
+    'By the 1920s, gray wolves had disappeared from Yellowstone National Park.',
+    'Without wolves to hunt them, elk herds grew larger every year.',
+    'The elk spent long hours grazing along rivers, eating young willow and aspen trees.',
+    'Over time, the riverbanks became bare and muddy.']},
+   {h:'The Wolves Come Back', s:[
+    'In 1995, scientists brought 31 wolves from Canada into the park.',
+    'The wolves began hunting elk again.',
+    'Elk started moving more often and avoided open riverbanks where they could be trapped.',
+    'Within a few years, young willow trees grew tall along the rivers again.']},
+   {h:'A Chain of Changes', s:[
+    'Beavers use willow branches for food and to build their dams.',
+    'After the willows returned, the number of beaver colonies grew from one to nine.',
+    'Beaver dams made ponds that became homes for fish, frogs, and birds.',
+    'Scientists still study how one animal changed so much of the park.']}],
+  inf:[
+   {q:'What would most likely have happened to the beavers if the wolves had never returned?', c:['There would still be very few beaver colonies.','The beavers would have hunted the elk.','The beavers would have built more dams.','The beavers would have moved to Canada.'],
+    sup:[8,9], ok:[2,7], why:'Beavers depend on willows, and the willows only grew back after the wolves returned. Without wolves, the elk would keep eating the willows.'},
+   {q:'How did the wolves help the willow trees grow back?', c:['They kept the elk moving, so the elk spent less time eating near rivers.','They ate the insects that harmed the willows.','They dug holes that helped new trees grow.','They chased the beavers away from the trees.'],
+    sup:[6,7], ok:[2,5], why:'Once the elk had to keep moving and avoid the riverbanks, the young willows finally had a chance to grow.'}],
+  link:[
+   {t:'Bringing back the wolves helped animals that wolves do not hunt.', opts:[7,10,4,1,8,11], pairs:[[7,10]],
+    why:'Willows grew back after the wolves returned, and that led to ponds full of fish, frogs, and birds.'},
+   {t:'Elk changed their behavior because of the wolves.', opts:[2,6,4,5,1,9], pairs:[[2,6]],
+    why:'Before the wolves, elk spent long hours on the riverbanks. After, they avoided them. Comparing the two shows the change.'}],
+  connect:[
+   {pair:[3,7], c:['The wolves’ return helped the riverbanks recover.','Wolves planted willow trees along the rivers.','The riverbanks stayed bare and muddy.','The elk planted new trees after the wolves arrived.'],
+    n:['','Neither detail says wolves planted anything. The willows grew back on their own.','The second detail shows young willows growing tall again.','Neither detail says the elk planted anything.'],
+    why:'Before the wolves came back, the banks were bare and muddy. After they returned, willows grew tall along the rivers again.'},
+   {pair:[4,9], c:['Bringing back the wolves led to more beavers.','The beavers came from Canada with the wolves.','Wolves help beavers build dams.','Scientists brought nine beaver colonies into the park.'],
+    n:['','Only the wolves came from Canada.','Neither detail says wolves help with dams.','The scientists brought wolves. The beaver colonies grew on their own.'],
+    why:'The wolves arrived in 1995, and later the beaver colonies grew from one to nine. The wolves started a chain that helped the beavers.'}]},
+
+{ id:'spelling', title:'Ana’s Voice', type:'Story',
+  sec:[
+   {h:'Monday', s:[
+    'When Ms. Carter announced the class spelling bee, Ana slid lower in her chair.',
+    'She could spell almost any word on paper, but speaking in front of people made her hands shake.',
+    'Her best friend Rosa raised her hand right away to sign up.',
+    'Ana pretended to be busy sharpening her pencil.']},
+   {h:'Wednesday', s:[
+    'At lunch, Rosa asked Ana to quiz her on the practice list.',
+    'Rosa missed “necessary” and “rhythm,” but Ana spelled both without even looking.',
+    '“You should be in the bee,” Rosa said. “You know these better than anyone.”',
+    'That night, Ana practiced spelling words out loud to her cat, first in a whisper and then in a normal voice.']},
+   {h:'Friday', s:[
+    'On Friday morning, Ana walked to Ms. Carter’s desk and wrote her name at the bottom of the list.',
+    'During the bee, her voice was quiet, but it did not shake.',
+    'She made it to the final round before missing the word “chrysanthemum.”',
+    'Rosa clapped the loudest of anyone in the room.']}],
+  inf:[
+   {q:'Why did Ana pretend to be busy sharpening her pencil?', c:['She was nervous and didn’t want to be asked to sign up.','Her pencil was broken.','She was upset with Rosa.','She didn’t know how to spell.'],
+    sup:[1,3], ok:[0], why:'Ana gets nervous speaking in front of people. Looking busy was a way to avoid the sign-up.'},
+   {q:'What helped Ana change her mind about the spelling bee?', c:['Rosa’s encouragement and practicing out loud','Ms. Carter made her sign up.','She wanted to beat Rosa.','She heard there was a big prize.'],
+    sup:[6,7], ok:[5], why:'Rosa told her she knew the words better than anyone, and Ana practiced speaking until her voice felt normal.'}],
+  link:[
+   {t:'Ana grew braver over the week.', opts:[0,9,5,3,10,11], pairs:[[0,9],[3,9]],
+    why:'On Monday, Ana hid from the sign-up. By Friday, her voice didn’t shake in front of everyone.'},
+   {t:'Rosa is a supportive friend.', opts:[6,11,2,4,5,10], pairs:[[6,11]],
+    why:'Rosa encouraged Ana to join on Wednesday and cheered the loudest for her on Friday.'}],
+  connect:[
+   {pair:[1,9], c:['Ana’s fear of speaking was getting smaller.','Ana is a better speller than Rosa.','Ana won the spelling bee.','Ana’s hands shake whenever she writes.'],
+    n:['','That may be true, but these two details are about speaking, not spelling.','Neither detail says she won.','The first detail says she can spell on paper just fine.'],
+    why:'At first, speaking made her hands shake. During the bee, her voice did not shake. Her fear was shrinking.'},
+   {pair:[5,10], c:['Ana is a very strong speller.','Ana practiced harder than anyone else.','Rosa is bad at spelling.','Ana was the last student left in the bee.'],
+    n:['','Neither detail tells how much anyone practiced.','Missing two words doesn’t make Rosa a bad speller.','She missed a word in the final round, so we can’t tell she was last.'],
+    why:'She spelled hard words without looking and made it to the final round. Both show strong spelling.'}]},
+
+{ id:'turtles', title:'Lights Out for Sea Turtles', type:'Informational',
+  sec:[
+   {h:'Born on the Beach', s:[
+    'Sea turtles lay their eggs in sandy nests on beaches.',
+    'About two months later, the babies hatch, usually at night.',
+    'Hatchlings find the ocean by crawling toward the brightest horizon.',
+    'On a natural beach, that bright horizon is the moonlight shining on the water.']},
+   {h:'City Lights', s:[
+    'Many beaches now have hotels, homes, and streetlights nearby.',
+    'Bright lights on land can confuse hatchlings.',
+    'Some crawl toward roads or parking lots instead of the sea.',
+    'In some places, thousands of hatchlings are lost this way each year.']},
+   {h:'Turning Down the Lights', s:[
+    'Many beach towns now have rules about lighting during nesting season.',
+    'Homes and hotels close their curtains or use dim, red-colored lights that turtles have trouble seeing.',
+    'Volunteers mark nests with stakes and tape so people do not step on them.',
+    'On beaches with lighting rules, far more hatchlings reach the ocean.']}],
+  inf:[
+   {q:'Why do beach towns ask people to use red lights?', c:['Hatchlings are less likely to be confused by them.','Red lights scare away birds that eat hatchlings.','Red lights help volunteers find the nests.','Red lights cost less money.'],
+    sup:[5,9], ok:[6,11], why:'Bright lights confuse hatchlings, but turtles have trouble seeing red light, so they aren’t pulled toward it.'},
+   {q:'Why would a hatchling on a dark, natural beach be safer than one near a hotel?', c:['It would crawl toward the moonlit water instead of toward land.','Dark beaches have fewer birds.','Hotels are too loud for turtles.','Natural beaches have warmer sand.'],
+    sup:[3,5], ok:[2,6], why:'On a natural beach, the brightest thing is moonlight on the water. Near a hotel, bright lights on land can lead hatchlings the wrong way.'}],
+  link:[
+   {t:'People caused a problem for sea turtles, and people are also helping to fix it.', opts:[5,8,2,11,0,1], pairs:[[5,8],[5,11]],
+    why:'Lights from buildings confuse hatchlings, and towns now make lighting rules to protect them.'},
+   {t:'Hatchlings depend on light to find their way.', opts:[2,6,4,9,10,0], pairs:[[2,6]],
+    why:'They crawl toward the brightest horizon, and when land lights are brighter, they crawl toward roads instead.'}],
+  connect:[
+   {pair:[3,6], c:['Hatchlings head toward whatever light is brightest.','Hatchlings like parking lots.','Hatchlings only hatch during a full moon.','Turtles lay their eggs near roads.'],
+    n:['','They end up there by mistake, not because they like it.','Neither detail mentions a full moon.','Neither detail says where the eggs are laid.'],
+    why:'On a natural beach they follow moonlight. Near buildings they follow land lights. Either way, they follow the brightest light.'},
+   {pair:[7,11], c:['Lighting rules save many hatchlings’ lives.','Every hatchling now reaches the ocean.','Volunteers carry hatchlings to the water.','Lighting rules work in only a few towns.'],
+    n:['','“Far more” is not the same as every one.','Neither detail mentions carrying hatchlings.','Neither detail says how many towns the rules work in.'],
+    why:'Thousands were being lost to lights, and beaches with lighting rules have far more hatchlings reach the ocean.'}]},
+
+{ id:'map', title:'Our Spot', type:'Story',
+  sec:[
+   {h:'The Attic', s:[
+    'While helping Grandma Jean clean the attic, Owen found a folded map inside an old tin box.',
+    'It showed a winding creek, a crooked tree, and a red X with the words “Our Spot.”',
+    'Grandma Jean’s eyes went wide when she saw it, and she sat down slowly on a trunk.',
+    '“I haven’t seen that in sixty years,” she said quietly.']},
+   {h:'The Library', s:[
+    'Owen wanted to find the place, so he took the map to the town library.',
+    'The librarian showed him an old photo of Pine Creek, with a tall, bent oak tree beside it.',
+    'The tree in the photo looked just like the one on the map.',
+    'Owen copied the directions onto his notepad and checked them twice.']},
+   {h:'Pine Creek', s:[
+    'On Saturday, Owen and Grandma Jean walked along Pine Creek until they found the bent oak.',
+    'Carved into the bark were two sets of letters: J.M. and E.M.',
+    'Grandma Jean touched the letters and told Owen about her sister Ellie, who had moved away long ago.',
+    'That evening, Grandma Jean dialed a phone number she had not called in years.']}],
+  inf:[
+   {q:'How did Grandma Jean feel when she saw the map?', c:['Surprised and full of old memories','Angry that Owen opened the box','Confused about what it was','Bored by it'],
+    sup:[2,3], ok:[], why:'Her eyes went wide, she sat down slowly, and she spoke quietly about sixty years ago. The map brought back memories.'},
+   {q:'Who most likely made the map with Grandma Jean?', c:['Her sister Ellie','Owen','The librarian','Her teacher'],
+    sup:[9,10], ok:[1], why:'“Our Spot” means it belonged to two people. The letters J.M. and E.M. match Jean and Ellie.'}],
+  link:[
+   {t:'Owen worked hard to find the place on the map.', opts:[4,7,8,0,2,11], pairs:[[4,8],[7,8]],
+    why:'Owen researched at the library and checked the directions, and then he really found the bent oak.'},
+   {t:'Finding the map helped Grandma Jean reconnect with someone from her past.', opts:[3,11,0,6,5,8], pairs:[[3,11],[0,11]],
+    why:'She hadn’t seen the map in sixty years, and after the trip she called a number she hadn’t called in years.'}],
+  connect:[
+   {pair:[3,11], c:['The map reminded Grandma Jean of someone she missed.','Grandma Jean forgot about the attic.','Grandma Jean called the librarian.','Grandma Jean wanted to sell the map.'],
+    n:['','Neither detail is about forgetting the attic.','Nothing says who she called, and the librarian isn’t someone from long ago.','Neither detail mentions selling anything.'],
+    why:'The map was from sixty years ago, and afterward she called someone she hadn’t talked to in years. The map made her miss them.'},
+   {pair:[1,9], c:['Jean and Ellie shared a special place as children.','Owen carved the letters into the tree.','Ellie still lives near Pine Creek.','The red X marked buried treasure.'],
+    n:['','The letters were carved long ago, and they aren’t Owen’s initials.','The story says Ellie moved away.','Nothing in these details mentions treasure.'],
+    why:'The map calls it “Our Spot,” and the tree has both sisters’ initials. It was their special place.'}]},
+
+{ id:'tardigrades', title:'Tiny Toughs', type:'Informational',
+  sec:[
+   {h:'Meet the Water Bear', s:[
+    'Tardigrades are tiny animals, usually smaller than a grain of sand.',
+    'Under a microscope, they look like chubby bears with eight stubby legs.',
+    'They live almost everywhere, from mountaintops to the deep sea.',
+    'Most of them live in the thin layer of water on moss and leaves.']},
+   {h:'Drying Out', s:[
+    'When its home dries up, a tardigrade pulls in its legs and curls into a tiny ball called a tun.',
+    'In this state, its body loses almost all of its water.',
+    'It stops moving and uses almost no energy at all.',
+    'A tun can stay this way for years.']},
+   {h:'Extreme Tests', s:[
+    'Scientists have frozen tuns to temperatures colder than anywhere on Earth.',
+    'Others have been sent into space and left in the open vacuum.',
+    'When the tuns were given water again, many of them uncurled and began to move.',
+    'Scientists hope that studying tardigrades will help them protect medicines and food.']}],
+  inf:[
+   {q:'Why does a tardigrade curl into a tun?', c:['To survive until water comes back','To hunt for food','To stay warm in the sun','To hide from scientists'],
+    sup:[4], ok:[5,6,7,10], why:'It curls up when its home dries out, waits, and uncurls when water returns.'},
+   {q:'What do the extreme tests show about tardigrades?', c:['They can survive conditions that would kill most animals.','They prefer to live in space.','They must be frozen to stay alive.','They grow larger in space.'],
+    sup:[8,9,10], ok:[], why:'Even after being frozen or sent into space, many tuns came back to life when given water.'}],
+  link:[
+   {t:'Becoming a tun is how tardigrades survive the extreme tests.', opts:[4,10,1,2,3,0], pairs:[[4,10]],
+    why:'One section explains how a tardigrade becomes a tun. Another shows tuns coming back to life after the tests.'},
+   {t:'Tardigrades can survive in very different places.', opts:[2,9,8,1,6,11], pairs:[[2,9],[2,8]],
+    why:'They live from mountaintops to the deep sea, and they’ve even survived space or extreme cold.'}],
+  connect:[
+   {pair:[3,4], c:['A dry spell is a big danger that tardigrades have a way to survive.','Tardigrades live only on moss.','Tardigrades eat moss and leaves.','A tun is a kind of leaf.'],
+    n:['','The detail says most, not all, of them live there.','Neither detail says what tardigrades eat.','A tun is the curled-up tardigrade, not a leaf.'],
+    why:'They need a thin layer of water, and when it dries up they turn into tuns. Drying out is a danger they’re built for.'},
+   {pair:[7,11], c:['Scientists may want to copy how a tun stays unchanged for a long time.','Tardigrades are used as food.','A tun is a kind of medicine.','Scientists want to send more tuns into space.'],
+    n:['','Protecting food doesn’t mean tardigrades are food.','Tuns might help protect medicines. They aren’t medicine.','Neither detail mentions space.'],
+    why:'A tun can stay the same for years, and scientists want to protect medicines and food. They may want to learn its secret.'}]}
+];
+/* flatten sections */
+PASSAGES.forEach(p => { p.s = []; p.secOf = []; p.sec.forEach((sec, k) => sec.s.forEach(t => { p.s.push(t); p.secOf.push(k); })); });
+
+const MNAMES = {1:'Infer and Prove It All', 2:'Section Link', 3:'Connect the Stars'};
+
+/* ---------- STORAGE ---------- */
+const KEY = 'starbridge.v1';
+const SKILLS = ['infer','all','link','connect'];
+const blankStats = () => Object.fromEntries(SKILLS.map(k => [k, {c:0, t:0}]));
+const blankStudent = n => ({name:n, stars:0, stats:blankStats(), done:{m1:[],m2:[],m3:[]}, resp:[]});
+let store = null;
+try { store = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
+if (!store || !Array.isArray(store.students)) store = {students:[]};
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e) {} }
+
+/* ---------- HELPERS ---------- */
+const $ = s => document.querySelector(s);
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.hidden = s.id !== id); window.scrollTo(0, 0); }
+function currentScreen(){ const s = [...document.querySelectorAll('.screen')].find(x => !x.hidden); return s ? s.id : ''; }
+const me = () => store.students[cur];
+const stat = k => me().stats[k];
+const plural = n => n + ' ' + (n === 1 ? 'star' : 'stars');
+const words = t => t.trim().split(/\s+/).filter(Boolean).length;
+
+let cur = null, round = null;
+
+/* ---------- HEADER ---------- */
+function updHeader(pop){
+  const on = cur !== null && !['pick','teacher'].includes(currentScreen());
+  $('#hdrRight').hidden = !on;
+  if (cur !== null){ $('#chipName').textContent = me().name; $('#chipStars').textContent = '★ ' + me().stars; }
+  if (pop){ const c = $('#chip'); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
+}
+
+/* ---------- LOGIN ---------- */
+const nameKey = n => n.toLowerCase().replace(/[^a-z]/g, '');
+function tidyName(n){ n = n.trim().replace(/\s+/g, ' '); return n.charAt(0).toUpperCase() + n.slice(1); }
+function renderPick(){
+  cur = null;
+  $('#nameIn').value = ''; $('#loginMsg').textContent = '';
+  show('pick'); updHeader();
+  setTimeout(() => $('#nameIn').focus(), 30);
+}
+function login(){
+  const typed = $('#nameIn').value, k = nameKey(typed);
+  if (k.length < 2){ $('#loginMsg').textContent = 'Type your first name, then tap Blast off.'; $('#nameIn').focus(); return; }
+  let i = store.students.findIndex(s => nameKey(s.name) === k);
+  if (i === -1){ store.students.push(blankStudent(tidyName(typed))); i = store.students.length - 1; save(); }
+  if (!store.students[i].resp) store.students[i].resp = [];
+  cur = i; goHub();
+}
+
+/* ---------- HUB + CONSTELLATION ---------- */
+function starPoints(){
+  const cx = 200, cy = 200, R = 170, r = 70, V = [], pts = [];
+  for (let k = 0; k < 10; k++){ const ang = -Math.PI / 2 + k * Math.PI / 5, rad = k % 2 ? r : R; V.push([cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)]); }
+  for (let k = 0; k < 10; k++){ const a = V[k], b = V[(k + 1) % 10]; for (let t = 0; t < 3; t++) pts.push([a[0] + (b[0] - a[0]) * t / 3, a[1] + (b[1] - a[1]) * t / 3]); }
+  return pts;
+}
+const PTS = starPoints();
+function drawConstellation(stars){
+  const full = Math.floor(stars / 30), lit = stars % 30;
+  let svg = '<svg viewBox="0 0 400 400" role="img" aria-label="Your star map: ' + lit + ' of 30 stars lit"><defs><filter id="gl" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  for (let i = 1; i < lit; i++){ const a = PTS[i - 1], b = PTS[i]; svg += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#1FB5A8" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>`; }
+  PTS.forEach((p, i) => {
+    svg += i < lit
+      ? `<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="#F2B630" filter="url(#gl)"/>`
+      : `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#A9C4CC" opacity=".45"/>`;
+  });
+  if (full) svg += `<text x="200" y="212" text-anchor="middle" font-family="Baloo 2, sans-serif" font-size="38" font-weight="800" fill="#F2B630">${'✦'.repeat(Math.min(full, 5))}</text>`;
+  svg += '</svg>';
+  $('#constellation').innerHTML = svg;
+  $('#skyCount').textContent = plural(stars);
+  $('#skySub').textContent = (30 - lit) + ' more to finish this supernova' + (full ? ` · ${full} finished so far` : '');
+}
+function goHub(){
+  $('#hubName').textContent = me().name;
+  drawConstellation(me().stars);
+  show('hub'); updHeader();
+}
+
+/* ---------- MISSIONS ---------- */
+function startMission(m){
+  const s = me(), key = 'm' + m;
+  let pool = PASSAGES.filter(p => !s.done[key].includes(p.id));
+  if (!pool.length){ s.done[key] = []; pool = PASSAGES.slice(); save(); }
+  const p = pool[Math.floor(Math.random() * pool.length)];
+  const src = m === 1 ? p.inf : m === 2 ? p.link : p.connect;
+  round = {m, p, items:shuffle(src.map(x => ({...x}))), i:0, earned:0};
+  startItem();
+  show('play'); updHeader();
+}
+function startItem(){
+  const it = round.items[round.i];
+  Object.assign(round, {tries:0, sel:new Set(), marks:{}, msg:'', msgType:'', out:new Set(), firstA:true, hinted:false, draft:''});
+  if (round.m === 1){ round.stage = 'answer'; round.order = shuffle(it.c.map((_, k) => k)); }
+  if (round.m === 2){ round.stage = 'pick'; round.order = shuffle(it.opts.slice()); round.hintSet = new Set(); }
+  if (round.m === 3){ round.stage = 'pick'; round.order = shuffle(it.c.map((_, k) => k)); it.pair.forEach(x => round.marks[x] = 'sel'); }
+  render();
+}
+function tappable(){ return round.m === 1 && round.stage === 'prove'; }
+function award(n){ me().stars += n; round.earned += n; save(); updHeader(true); }
+function setMsg(t, type){ round.msg = t; round.msgType = type; }
+
+/* ---------- RENDER ---------- */
+function render(){
+  const {p, items, i, m} = round, it = items[i];
+  $('#pTitle').textContent = p.title;
+  $('#pType').textContent = p.type;
+  renderPassage();
+  const t = $('#task'); t.innerHTML = '';
+  const prog = el('div', 'prog');
+  items.forEach((_, k) => prog.appendChild(el('span', 'dot' + (k < i ? ' done' : k === i ? ' now' : ''))));
+  t.appendChild(prog);
+  t.appendChild(el('p', 'mlabel', MNAMES[m] + ' · ' + (i + 1) + ' of ' + items.length));
+  if (m === 1) renderInfer(t, it); else if (m === 2) renderLink(t, it); else renderConnect(t, it);
+  const fb = el('div', 'fb' + (round.msgType ? ' ' + round.msgType : ''), round.msg);
+  fb.setAttribute('aria-live', 'polite');
+  t.appendChild(fb);
+  if (round.stage === 'done'){
+    const nb = el('button', 'btn gold', i < items.length - 1 ? 'Next' : 'Finish passage');
+    nb.onclick = next; t.appendChild(nb);
+    setTimeout(() => nb.focus({preventScroll:true}), 30);
+  }
+}
+function renderPassage(){
+  const box = $('#passage'); box.innerHTML = '';
+  const tap = tappable();
+  box.classList.toggle('tappable', tap);
+  let n = 0;
+  round.p.sec.forEach(sec => {
+    box.appendChild(el('h3', 'sec-h', sec.h));
+    const para = el('p');
+    sec.s.forEach(sent => {
+      const idx = n++;
+      const sp = el('span', 'sent', sent); sp.dataset.i = idx;
+      if (round.sel.has(idx)) sp.classList.add('sel');
+      if (round.marks[idx]) sp.classList.add(round.marks[idx]);
+      if (tap){ sp.tabIndex = 0; sp.setAttribute('role', 'button'); sp.setAttribute('aria-pressed', round.sel.has(idx)); }
+      para.append(sp, document.createTextNode(' '));
+    });
+    box.appendChild(para);
+  });
+}
+function claimBox(label, text){
+  const b = el('div', 'claim'); b.appendChild(el('span', 'claim-label', label)); b.appendChild(el('p', 'claim-text', text)); return b;
+}
+const secName = i => round.p.sec[round.p.secOf[i]].h;
+
+/* Mission 1: Infer and Prove It All */
+function renderInfer(t, it){
+  t.appendChild(el('p', 'question', it.q));
+  if (round.stage === 'answer'){
+    t.appendChild(el('p', 'instr', 'The text doesn’t say this straight out. Think about the clues across the whole passage, then pick the best answer.'));
+    const ch = el('div', 'choices');
+    round.order.forEach(ci => {
+      const b = el('button', 'choice', it.c[ci]);
+      if (round.out.has(ci)){ b.disabled = true; b.classList.add('out'); }
+      b.onclick = () => pickInfer(ci);
+      ch.appendChild(b);
+    });
+    t.appendChild(ch);
+    return;
+  }
+  const lk = el('div', 'locked'); lk.appendChild(el('span', '', 'Your inference')); lk.appendChild(el('b', '', it.c[0])); t.appendChild(lk);
+  if (round.stage === 'prove'){
+    t.appendChild(el('p', 'instr', 'Tap EVERY sentence in the text that supports your inference. It could be one, or it could be more. Nobody will tell you how many. Tap again to unselect.'));
+    const c = el('button', 'btn gold', `Check my details (${round.sel.size} picked)`);
+    c.onclick = checkAll; t.appendChild(c);
+  }
+  if (round.stage === 'explain'){
+    t.appendChild(el('p', 'instr', 'Explain in your own words how your details support the inference. Use the word “because,” and try to connect at least two details.'));
+    const ta = el('textarea'); ta.value = round.draft; ta.setAttribute('aria-label', 'Your explanation');
+    const wc = el('p', 'wc');
+    const upd = () => { round.draft = ta.value; const w = words(ta.value); wc.textContent = w + ' words' + (w < 15 ? ' · write at least 15' : ' · ready to submit'); };
+    ta.oninput = upd; upd();
+    const sb = el('button', 'btn gold', 'Submit my explanation'); sb.onclick = submitExplain;
+    t.append(ta, wc, sb);
+    setTimeout(() => ta.focus({preventScroll:true}), 30);
+  }
+}
+function pickInfer(ci){
+  if (ci === 0){
+    stat('infer').t++; if (round.tries === 0) stat('infer').c++;
+    round.firstA = round.tries === 0;
+    round.stage = 'prove'; round.tries = 0;
+    setMsg('Strong inference! Now prove it with every detail that supports it.', 'good');
+  } else {
+    round.tries++; round.out.add(ci);
+    setMsg('The evidence doesn’t point there. Which answer do the clues in more than one place support?', 'bad');
+  }
+  save(); render();
+}
+function onSentence(i){
+  if (!tappable()) return;
+  Object.keys(round.marks).forEach(k => { if (round.marks[k] === 'bad') delete round.marks[k]; });
+  round.sel.has(i) ? round.sel.delete(i) : round.sel.add(i);
+  round.msg = ''; round.msgType = '';
+  render();
+}
+function checkAll(){
+  const it = round.items[round.i], valid = [...it.sup, ...(it.ok || [])];
+  if (!round.sel.size){ setMsg('Tap the sentences that support your inference first.', 'info'); render(); return; }
+  const wrong = [...round.sel].filter(x => !valid.includes(x));
+  const missing = it.sup.filter(x => !round.sel.has(x));
+  if (!wrong.length && !missing.length){
+    Object.keys(round.marks).forEach(k => delete round.marks[k]);
+    round.sel.forEach(x => round.marks[x] = 'good');
+    stat('all').t++; if (round.tries === 0) stat('all').c++;
+    const n = (round.firstA ? 1 : 0) + (round.tries === 0 ? 1 : 0);
+    if (n) award(n);
+    round.sel = new Set(); round.stage = 'explain';
+    setMsg('You found all the key support' + (n ? ` (+${plural(n)})` : '') + '. Now explain it for one more star.', 'good');
+  } else {
+    round.tries++;
+    let msg = '';
+    if (wrong.length){
+      wrong.forEach(x => { round.marks[x] = 'bad'; round.sel.delete(x); });
+      msg = (wrong.length === 1 ? 'The red sentence is true, but it doesn’t support this inference.' : 'The red sentences are true, but they don’t support this inference.') + ' ';
+    }
+    if (missing.length) msg += 'There’s still important support you haven’t picked. Check the other sections too.';
+    if (round.tries >= 2 && missing.length){ missing.forEach(x => round.marks[x] = 'hint'); msg += ' Look at the outlined sentence.'; }
+    setMsg(msg.trim(), 'bad');
+  }
+  save(); render();
+}
+function submitExplain(){
+  const it = round.items[round.i], text = round.draft.trim();
+  if (words(text) < 15){ setMsg('Add more. Explain how each detail connects to your inference.', 'info'); render(); return; }
+  me().resp.unshift({d:new Date().toLocaleDateString(), p:round.p.title, q:it.q, a:text});
+  award(1); round.stage = 'done';
+  setMsg('Explanation saved. +1 star. Here’s one way to put it: ' + it.why, 'good');
+  save(); render();
+}
+
+/* Mission 2: Section Link */
+function renderLink(t, it){
+  t.appendChild(claimBox('Inference', it.t));
+  if (round.stage !== 'pick') return;
+  t.appendChild(el('p', 'instr', 'Pick TWO details from DIFFERENT sections that together best support this inference.'));
+  const ch = el('div', 'choices');
+  round.order.forEach(x => {
+    const b = el('button', 'choice quote');
+    b.appendChild(el('span', 'opt-sec', 'From “' + secName(x) + '”'));
+    b.appendChild(document.createTextNode(round.p.s[x]));
+    if (round.sel.has(x)) b.classList.add('picked');
+    if (round.out.has(x)) b.classList.add('wrong');
+    if (round.hintSet.has(x)) b.classList.add('hint');
+    b.setAttribute('aria-pressed', round.sel.has(x));
+    b.onclick = () => { round.out.delete(x); round.sel.has(x) ? round.sel.delete(x) : round.sel.size < 2 && round.sel.add(x); round.msg = ''; render(); };
+    ch.appendChild(b);
+  });
+  t.appendChild(ch);
+  const c = el('button', 'btn gold', `Check my pair (${round.sel.size} of 2)`);
+  c.onclick = checkLink; t.appendChild(c);
+}
+function checkLink(){
+  const it = round.items[round.i], sel = [...round.sel];
+  if (sel.length !== 2){ setMsg('Pick exactly two details.', 'info'); render(); return; }
+  const match = it.pairs.some(pr => pr.every(x => round.sel.has(x)));
+  if (match){
+    sel.forEach(x => round.marks[x] = 'good');
+    stat('link').t++; if (round.tries === 0) stat('link').c++;
+    const n = round.tries === 0 ? 2 : 1; award(n);
+    round.sel = new Set(); round.stage = 'done';
+    setMsg(`Linked! ${it.why} +${plural(n)}`, 'good');
+  } else {
+    round.tries++;
+    const good = new Set(it.pairs.flat());
+    if (round.p.secOf[sel[0]] === round.p.secOf[sel[1]]) setMsg('Both of those come from the same section. Synthesizing means connecting details from different parts of the text.', 'bad');
+    else {
+      const keep = sel.filter(x => good.has(x));
+      sel.forEach(x => { if (!good.has(x)){ round.out.add(x); round.sel.delete(x); } });
+      setMsg(keep.length ? 'One of your details is strong. The one marked red doesn’t help prove the inference. Swap it out.' : 'Neither detail really proves the inference. Ask: what would someone need to know to believe this?', 'bad');
+    }
+    if (round.tries >= 2) it.pairs[0].forEach(x => round.hintSet.add(x));
+    if (round.tries >= 2) round.msg += ' The dashed details are worth a second look.';
+  }
+  save(); render();
+}
+
+/* Mission 3: Connect the Stars */
+function renderConnect(t, it){
+  const pair = el('div', 'pair');
+  it.pair.forEach((x, k) => {
+    pair.appendChild(claimBox('Detail from “' + secName(x) + '”', round.p.s[x]));
+    if (k === 0) pair.appendChild(el('div', 'plus', '+'));
+  });
+  t.appendChild(pair);
+  if (round.stage !== 'pick') return;
+  t.appendChild(el('p', 'instr', 'What inference do these two details support TOGETHER? Watch out for answers only one detail supports, or that go beyond the text.'));
+  const ch = el('div', 'choices');
+  round.order.forEach(ci => {
+    const b = el('button', 'choice', it.c[ci]);
+    if (round.out.has(ci)){ b.disabled = true; b.classList.add('out'); }
+    b.onclick = () => pickConnect(ci);
+    ch.appendChild(b);
+  });
+  t.appendChild(ch);
+}
+function pickConnect(ci){
+  const it = round.items[round.i];
+  if (ci === 0){
+    it.pair.forEach(x => round.marks[x] = 'good');
+    stat('connect').t++; if (round.tries === 0) stat('connect').c++;
+    const n = round.tries === 0 ? 2 : 1; award(n);
+    round.stage = 'done';
+    setMsg(`Connected! ${it.why} +${plural(n)}`, 'good');
+  } else {
+    round.tries++; round.out.add(ci);
+    setMsg('Not quite. ' + it.n[ci], 'bad');
+  }
+  save(); render();
+}
+
+$('#passage').addEventListener('click', e => { const s = e.target.closest('.sent'); if (s) onSentence(+s.dataset.i); });
+$('#passage').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('sent')){ e.preventDefault(); onSentence(+e.target.dataset.i); } });
+
+function next(){
+  round.i++;
+  if (round.i >= round.items.length) finishRound(); else { startItem(); window.scrollTo(0, 0); }
+}
+function finishRound(){
+  const key = 'm' + round.m;
+  if (!me().done[key].includes(round.p.id)) me().done[key].push(round.p.id);
+  save();
+  $('#sumStars').textContent = '★ +' + round.earned;
+  $('#sumText').textContent = `You earned ${plural(round.earned)} on “${round.p.title}.” You now have ${me().stars} in all.`;
+  show('summary'); updHeader();
+}
+
+/* ---------- TEACHER ---------- */
+function pctCell(o){
+  const td = el('td');
+  if (!o || !o.t){ td.textContent = '-'; return td; }
+  const p = Math.round(100 * o.c / o.t);
+  td.append(el('span', 'pct ' + (p < 60 ? 'lo' : p < 80 ? 'mid' : 'hi'), p + '%'), document.createTextNode(` (${o.c}/${o.t})`));
+  return td;
+}
+function showResponses(s){
+  const panel = $('#respPanel'); panel.innerHTML = ''; panel.hidden = false;
+  panel.appendChild(el('h2', '', s.name + '’s written responses'));
+  if (!s.resp || !s.resp.length) panel.appendChild(el('p', 'note', 'No written responses yet.'));
+  (s.resp || []).forEach(r => {
+    const d = el('div', 'resp');
+    d.appendChild(el('div', 'meta', r.d + ' · ' + r.p));
+    d.appendChild(el('p', 'rq', r.q));
+    d.appendChild(el('p', 'ra', r.a));
+    panel.appendChild(d);
+  });
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function renderTeacher(){
+  cur = null;
+  $('#respPanel').hidden = true;
+  const tb = $('#tbody'); tb.innerHTML = '';
+  if (!store.students.length){ const tr = el('tr'), td = el('td', 'note', 'No students yet. They’ll show up after they log in.'); td.colSpan = 8; tr.appendChild(td); tb.appendChild(tr); }
+  store.students.forEach((s, i) => {
+    const tr = el('tr');
+    const nameTd = el('td'); const inp = el('input'); inp.value = s.name; inp.setAttribute('aria-label', 'Student name');
+    inp.onchange = () => { const v = tidyName(inp.value); if (nameKey(v).length >= 2) s.name = v; inp.value = s.name; save(); };
+    nameTd.appendChild(inp); tr.appendChild(nameTd);
+    SKILLS.forEach(k => tr.appendChild(pctCell(s.stats[k])));
+    const rTd = el('td'); const n = (s.resp || []).length;
+    rTd.appendChild(document.createTextNode(n + ' '));
+    if (n){ const v = el('button', 'btn ghost small', 'View'); v.onclick = () => showResponses(s); rTd.appendChild(v); }
+    tr.appendChild(rTd);
+    tr.appendChild(el('td', '', String(s.stars)));
+    const act = el('td');
+    const r = el('button', 'btn ghost small', 'Reset');
+    r.onclick = () => { if (confirm('Reset all progress for ' + s.name + '?')){ store.students[i] = blankStudent(s.name); save(); renderTeacher(); } };
+    const d = el('button', 'btn ghost small', 'Remove'); d.style.marginLeft = '6px';
+    d.onclick = () => { if (confirm('Remove ' + s.name + '?')){ store.students.splice(i, 1); save(); renderTeacher(); } };
+    act.append(r, d); tr.appendChild(act);
+    tb.appendChild(tr);
+  });
+  show('teacher'); updHeader();
+}
+
+/* ---------- WIRING ---------- */
+document.querySelectorAll('.mission').forEach(b => b.onclick = () => startMission(+b.dataset.m));
+$('#homeBtn').onclick = goHub;
+$('#switchBtn').onclick = renderPick;
+$('#againBtn').onclick = () => startMission(round.m);
+$('#backBtn').onclick = goHub;
+$('#teacherBtn').onclick = renderTeacher;
+$('#tBackBtn').onclick = renderPick;
+$('#loginBtn').onclick = login;
+$('#nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+renderPick();
+</script>
+</body>
+</html>

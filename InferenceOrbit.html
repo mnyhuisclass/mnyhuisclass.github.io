@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inference Orbit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --space:#0D2236; --space2:#14324D; --space3:#1C4262;
+  --teal:#1FB5A8; --teal-deep:#0F7E75; --teal-glow:#A3E8E0;
+  --gold:#F2B630; --gold-soft:#FCE6A6;
+  --paper:#FFFBF0; --ink:#1B2B3A; --ink-muted:#5B6B78;
+  --on-space:#EAF6F5; --on-space-muted:#A9C4CC;
+  --good:#2E9E5B; --good-soft:#CDEFD8; --bad:#D9534F; --bad-soft:#F8D6D4;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --space:#07172A; --space2:#0F2840; --space3:#173957; --paper:#F4ECD8; color-scheme: dark; }
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+body{
+  font-family:"Atkinson Hyperlegible",Verdana,Arial,sans-serif;
+  color:var(--on-space); min-height:100vh;
+  background-color:var(--space);
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #ffffffaa 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 12%, #ffffff88 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 85% 64%, #ffffff99 50%, transparent 51%),
+    radial-gradient(1px 1px at 33% 78%, #ffffff77 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 40%, #ffffff66 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 92% 30%, #f2b630aa 50%, transparent 51%),
+    radial-gradient(1px 1px at 5% 55%, #ffffff77 50%, transparent 51%);
+  background-size:420px 420px;
+}
+h1,h2,h3,.brand{font-family:"Baloo 2","Trebuchet MS",sans-serif}
+button{font:inherit;cursor:pointer}
+button:focus-visible,.sent:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 20px 40px}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{font-size:2rem;font-weight:800;color:var(--gold);margin:0;letter-spacing:.5px;line-height:1}
+.brand small{display:block;font-size:.9rem;color:var(--teal);font-weight:600;letter-spacing:0}
+.hdr-right{display:flex;gap:10px;align-items:center}
+.chip{background:var(--space2);border:1px solid var(--space3);border-radius:999px;padding:8px 16px;font-weight:700}
+.chip .st{color:var(--gold);margin-left:8px}
+.chip.pop .st{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.5)}}
+.st{display:inline-block}
+
+.btn{border:none;border-radius:12px;padding:12px 20px;font-weight:700;font-size:1.05rem}
+.btn.gold{background:var(--gold);color:#2A1F00}
+.btn.teal{background:var(--teal);color:#032B27}
+.btn.ghost{background:transparent;color:var(--on-space);border:2px solid var(--space3)}
+.btn.small{padding:8px 14px;font-size:.95rem}
+
+/* pick */
+.pick-title{font-size:2.4rem;margin:30px 0 6px;text-align:center}
+.pick-sub{text-align:center;color:var(--on-space-muted);margin:0 0 26px}
+.login{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:560px;margin:0 auto}
+.login input{flex:1 1 260px;font-family:"Baloo 2","Trebuchet MS",sans-serif;font-size:1.8rem;font-weight:600;background:var(--paper);color:var(--ink);border:3px solid var(--teal);border-radius:16px;padding:10px 18px}
+.login input::placeholder{color:var(--ink-muted);font-weight:400}
+.login .btn{font-size:1.3rem;padding:14px 26px}
+.login-msg{flex-basis:100%;text-align:center;min-height:1.4em;margin:4px 0 0;color:var(--gold)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.teacher-link{display:block;margin:34px auto 0}
+
+/* hub */
+.hub{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.sky{text-align:center}
+.sky svg{width:100%;max-width:440px;height:auto}
+.sky h2{font-size:2rem;margin:0}
+.sky p{color:var(--on-space-muted);margin:4px 0 0}
+.missions{display:flex;flex-direction:column;gap:14px}
+.mission{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:center;text-align:left;background:var(--space2);color:var(--on-space);border:2px solid var(--space3);border-radius:18px;padding:18px}
+.mission:hover{border-color:var(--teal)}
+.mission .ic{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:2rem;background:var(--space3)}
+.mission h3{margin:0;font-size:1.5rem;color:var(--gold)}
+.mission p{margin:2px 0 0;color:var(--on-space-muted)}
+.hub-greet{font-size:1.15rem;margin:0 0 4px}
+
+/* play */
+.play{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+.reading{background:var(--paper);color:var(--ink);border-radius:20px;padding:24px 28px 28px;box-shadow:0 0 0 4px var(--space3)}
+.reading h2{margin:0;font-size:1.8rem;color:var(--ink)}
+.ptype{color:var(--teal-deep);font-weight:700;margin:0 0 10px}
+.passage{font-size:1.3rem;line-height:1.85;max-width:62ch}
+.sent{border-radius:6px;padding:2px 1px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.passage.tappable .sent{cursor:pointer;background:#1FB5A814;border-bottom:2px dotted #0F7E7566}
+.passage.tappable .sent:hover{background:#1FB5A833}
+.sent.sel{background:var(--gold-soft)!important;box-shadow:0 0 0 2px var(--gold)}
+.sent.good{background:var(--good-soft)!important;box-shadow:0 0 0 2px var(--good)}
+.sent.bad{background:var(--bad-soft)!important;box-shadow:0 0 0 2px var(--bad)}
+.sent.hint{box-shadow:0 0 0 3px var(--teal-deep);border-bottom:none}
+.w.glow{background:var(--teal-glow);border-radius:4px;box-shadow:0 0 0 2px var(--teal-glow)}
+.task{background:var(--space2);border:2px solid var(--space3);border-radius:20px;padding:20px 22px;position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+.prog{display:flex;gap:6px;margin-bottom:12px}
+.dot{width:28px;height:8px;border-radius:4px;background:var(--space3)}
+.dot.done{background:var(--teal)}
+.dot.now{background:var(--gold)}
+.mlabel{color:var(--teal);font-weight:700;margin:0 0 8px}
+.question{font-size:1.35rem;font-weight:700;line-height:1.6;margin:0 0 10px}
+.qw{background:transparent;color:inherit;border:none;border-bottom:2px dashed #ffffff55;padding:0 2px;font-weight:700;border-radius:4px}
+.qw.on{background:var(--teal-glow);color:var(--ink);border-bottom-color:transparent}
+.instr{color:var(--on-space-muted);margin:6px 0 12px;line-height:1.5}
+.choices{display:grid;gap:10px;margin-bottom:12px}
+.choice{text-align:left;background:var(--space3);color:var(--on-space);border:2px solid transparent;border-radius:12px;padding:14px 16px;font-size:1.1rem}
+.choice:hover:not(:disabled){border-color:var(--teal)}
+.choice.quote{font-style:italic;border-left:6px solid var(--teal)}
+.choice.out{opacity:.4;text-decoration:line-through;cursor:default}
+.locked{background:var(--space3);border-radius:12px;padding:12px 16px;margin-bottom:8px}
+.locked span{display:block;color:var(--on-space-muted);font-size:.9rem}
+.locked b{font-size:1.15rem;color:var(--gold)}
+.claim{background:var(--paper);color:var(--ink);border-radius:14px;padding:14px 18px;margin-bottom:10px;border-left:8px solid var(--gold)}
+.claim-label{display:block;font-weight:700;color:var(--teal-deep);font-size:.95rem}
+.claim-text{font-size:1.25rem;font-weight:700;margin:4px 0 0;line-height:1.45}
+.judge{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.judge .btn{padding:16px 12px;font-size:1.1rem}
+.fb{min-height:1.5em;margin:10px 0 12px;line-height:1.5;font-size:1.08rem;border-radius:12px}
+.fb.good,.fb.bad,.fb.info{padding:12px 14px}
+.fb.good{background:#2E9E5B33;border:2px solid var(--good)}
+.fb.bad{background:#D9534F2E;border:2px solid var(--bad)}
+.fb.info{background:#1FB5A826;border:2px solid var(--teal)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* summary */
+.summary{text-align:center;max-width:620px;margin:40px auto}
+.summary h2{font-size:2.6rem;margin:0;color:var(--gold)}
+.big-stars{font-size:3rem;color:var(--gold);margin:10px 0}
+.summary .actions{justify-content:center;margin-top:20px}
+
+/* teacher */
+.tbl-wrap{overflow-x:auto;background:var(--space2);border-radius:16px;border:2px solid var(--space3)}
+table{border-collapse:collapse;width:100%;min-width:860px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--space3)}
+th{color:var(--teal);font-weight:700}
+td input{font:inherit;background:var(--space3);color:var(--on-space);border:1px solid var(--space3);border-radius:8px;padding:6px 10px;width:150px}
+.pct{font-weight:700}
+.pct.lo{color:#FF9A96}.pct.mid{color:var(--gold)}.pct.hi{color:#7BE0A4}
+.note{color:var(--on-space-muted);line-height:1.5}
+
+[hidden]{display:none!important}
+@media (max-width:860px){
+  .hub,.play{grid-template-columns:1fr}
+  .task{position:static}
+  .passage{font-size:1.2rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="brand">Inference Orbit<small>Supernova Reading Station</small></p>
+    <div class="hdr-right">
+    <a class="btn ghost small" href="ReadingLaunchPad.html" style="text-decoration:none">Launch pad</a>
+    <div class="hdr-right" id="hdrRight" hidden>
+      <span class="chip" id="chip"><span id="chipName"></span><span class="st" id="chipStars">★ 0</span></span>
+      <button class="btn ghost small" id="homeBtn">Station</button>
+      <button class="btn ghost small" id="switchBtn">Switch pilot</button>
+    </div>
+    </div>
+  </header>
+
+  <!-- PICK -->
+  <section class="screen" id="pick">
+    <h1 class="pick-title">Who’s flying today?</h1>
+    <p class="pick-sub">Type your first name to start your mission.</p>
+    <div class="login">
+      <label for="nameIn" class="sr">Your first name</label>
+      <input id="nameIn" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="24" placeholder="Your first name">
+      <button class="btn gold" id="loginBtn">Blast off</button>
+      <p class="login-msg" id="loginMsg" aria-live="polite"></p>
+    </div>
+    <button class="btn ghost small teacher-link" id="teacherBtn">Teacher view</button>
+  </section>
+
+  <!-- HUB -->
+  <section class="screen" id="hub" hidden>
+    <div class="hub">
+      <div class="sky">
+        <div id="constellation"></div>
+        <h2 id="skyCount"></h2>
+        <p id="skySub"></p>
+      </div>
+      <div>
+        <p class="hub-greet">Pick a mission, <b id="hubName"></b>. Every star you earn lights up your sky.</p>
+        <div class="missions">
+          <button class="mission" data-m="1"><span class="ic">🔍</span><span><h3>Answer + Detail</h3><p>Answer a question, then give one detail from the text that supports it.</p></span></button>
+          <button class="mission" data-m="2"><span class="ic">🧠</span><span><h3>Read Between the Lines</h3><p>The answer isn’t written down. Use clues to figure it out, then show your clue.</p></span></button>
+          <button class="mission" data-m="3"><span class="ic">⚖️</span><span><h3>Best Evidence</h3><p>Weigh four details and pick the one that best supports an inference.</p></span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section class="screen" id="play" hidden>
+    <div class="play">
+      <article class="reading">
+        <h2 id="pTitle"></h2>
+        <p class="ptype" id="pType"></p>
+        <div class="passage" id="passage"></div>
+      </article>
+      <aside class="task" id="task"></aside>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="screen" id="summary" hidden>
+    <div class="summary">
+      <h2>Passage complete!</h2>
+      <div class="big-stars" id="sumStars"></div>
+      <p id="sumText"></p>
+      <div class="actions">
+        <button class="btn gold" id="againBtn">Read another passage</button>
+        <button class="btn ghost" id="backBtn">Back to the station</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEACHER -->
+  <section class="screen" id="teacher" hidden>
+    <h1 style="margin:10px 0 4px">Teacher view</h1>
+    <p class="note">Percentages count first tries only, so they show what each student can do without hints. Students appear here the first time they type their name. Fix a misspelled name by editing its box, so the student’s progress follows them next time. Progress is saved in this browser.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Student</th><th>Answer the question</th><th>Give a supporting detail</th><th>Make an inference</th><th>Find the clue</th><th>Best evidence</th><th>Stars</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn ghost" id="tBackBtn">Done</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- PASSAGES ----------
+   q:    explicit questions. c[0] is correct (shuffled on screen). e = sentences that support it.
+   inf:  inference questions. e = key clue sentences, ok = other acceptable clues, why = explanation.
+   best: an inference + four sentence options. opts[0] is the best evidence. */
+const PASSAGES = [
+{ id:'biscuit', title:'The Open Gate', type:'Story',
+  s:[
+   'Marco raced home from the bus stop and burst through the back door.',
+   '“Biscuit, I’m home!” he called, dropping his backpack on the floor.',
+   'Usually, a scruffy brown dog would come skidding around the corner to greet him.',
+   'Today, the house was quiet.',
+   'Marco noticed that the gate in the backyard was swinging open in the wind.',
+   'His stomach dropped, and he grabbed the leash off its hook.',
+   'He ran down Oak Street calling Biscuit’s name until his voice was scratchy.',
+   'Near the park, Mrs. Lee waved from her porch.',
+   'Sitting next to her, chewing happily on a bone, was Biscuit.',
+   'Marco laughed and hugged his dog so tightly that Biscuit squirmed.'],
+  q:[
+   {q:'What did Marco see swinging open in the backyard?', c:['The gate','The back door','A window','The shed door'], e:[4], k:['swinging','backyard']},
+   {q:'Where did Marco find Biscuit?', c:['On Mrs. Lee’s porch','Inside the park','Under his bed','At the bus stop'], e:[8], ok:[7], k:['biscuit']},
+   {q:'What was Biscuit doing when Marco found him?', c:['Chewing on a bone','Sleeping in the sun','Barking at a squirrel','Digging a hole'], e:[8], k:['biscuit']}],
+  inf:[
+   {q:'Why was the house quiet?', c:['Biscuit was not home.','Marco’s family was asleep.','Marco forgot to say hello.','The TV was broken.'], e:[2,3], ok:[4],
+    why:'Biscuit usually runs to greet Marco. Today he didn’t come, so he must not have been home.'},
+   {q:'How did Marco feel when he saw the open gate?', c:['Worried','Excited','Bored','Silly'], e:[5], ok:[6],
+    why:'When your stomach drops, you feel scared or worried. Grabbing the leash shows he was ready to search.'},
+   {q:'How does Marco feel about Biscuit?', c:['He loves him very much.','He is tired of taking care of him.','He is a little afraid of him.','He wishes Biscuit lived with Mrs. Lee.'], e:[9], ok:[5,6],
+    why:'He searched until his voice was scratchy and hugged Biscuit tightly. That shows how much he cares.'}],
+  best:[
+   {t:'Biscuit got out of the yard through the gate.', opts:[
+     {i:4, why:'An open gate is exactly how a dog could get out of the yard.'},
+     {i:1, why:'This shows Marco coming home, not how Biscuit got out.'},
+     {i:7, why:'This tells where Mrs. Lee was, not how Biscuit left the yard.'},
+     {i:9, why:'This happens after Biscuit is found. It doesn’t explain how he got out.'}]},
+   {t:'Marco searched very hard for his dog.', opts:[
+     {i:6, why:'Calling until his voice was scratchy shows a long, hard search.'},
+     {i:0, why:'Marco is racing home here. He hasn’t started searching yet.'},
+     {i:2, why:'This describes what Biscuit usually does, not Marco’s search.'},
+     {i:8, why:'This is where Biscuit was found. It doesn’t show how hard Marco looked.'}]}]},
+
+{ id:'camels', title:'Desert Survivors', type:'Informational',
+  s:[
+   'Camels live in some of the hottest, driest places on Earth.',
+   'A camel can drink up to 30 gallons of water in about 13 minutes.',
+   'Its hump does not hold water, as many people think.',
+   'Instead, the hump stores fat that the camel’s body can use when food is hard to find.',
+   'Camels have two rows of long eyelashes that keep blowing sand out of their eyes.',
+   'They can also close their nostrils tightly during a sandstorm.',
+   'Their wide, padded feet spread out on the sand like snowshoes.',
+   'Desert travelers have used camels to carry heavy loads for thousands of years.'],
+  q:[
+   {q:'What is stored in a camel’s hump?', c:['Fat','Water','Milk','Air'], e:[3], ok:[2], k:['hump','stores']},
+   {q:'How much water can a camel drink in about 13 minutes?', c:['Up to 30 gallons','Up to 13 gallons','Up to 3 gallons','Up to 300 gallons'], e:[1], k:['water','minutes']},
+   {q:'What do a camel’s long eyelashes do?', c:['Keep blowing sand out of its eyes','Help it see at night','Keep its face cool','Help it find water'], e:[4], k:['eyelashes']}],
+  inf:[
+   {q:'How do wide feet help a camel?', c:['They keep it from sinking into soft sand.','They help it swim across rivers.','They help it dig for water.','They make it run faster than a horse.'], e:[6],
+    why:'Snowshoes keep people on top of snow. Feet that work like snowshoes keep a camel on top of the sand.'},
+   {q:'What can you tell about the places camels live?', c:['Food and water can be hard to find.','It rains almost every day.','There are lots of tall trees.','It is cold all year.'], e:[0,3], ok:[1],
+    why:'Hot, dry places don’t have much water, and the hump is for times when food is hard to find.'},
+   {q:'Why are camels good animals for long desert trips?', c:['They can go a long time with little food or water.','They are small and easy to carry.','They don’t mind getting wet.','They can find their way by the stars.'], e:[1,3], ok:[7],
+    why:'Camels drink a lot at once and store fat in their humps, so they can keep going when supplies run low.'}],
+  best:[
+   {t:'Camels are built to handle sandstorms.', opts:[
+     {i:5, why:'Closing their nostrils during a sandstorm keeps sand out. That fits the inference best.'},
+     {i:6, why:'Wide feet help with walking on sand, not with sandstorms.'},
+     {i:1, why:'This is about drinking water, not sandstorms.'},
+     {i:2, why:'This tells what the hump doesn’t hold. It has nothing to do with sandstorms.'}]},
+   {t:'A camel can survive when food is scarce.', opts:[
+     {i:3, why:'The hump stores fat the body uses when food is hard to find. That matches exactly.'},
+     {i:1, why:'This is about water, not food.'},
+     {i:6, why:'This is about walking on sand, not food.'},
+     {i:7, why:'This tells how people use camels, not how camels survive without food.'}]}]},
+
+{ id:'volcano', title:'The Volcano Problem', type:'Story',
+  s:[
+   'Priya stared at her volcano model on the kitchen table.',
+   'The science fair was tomorrow, and her volcano still would not erupt.',
+   'She had tried baking soda and vinegar three times, but only a tiny fizz bubbled out.',
+   'Her older brother, Dev, walked by and glanced at the model.',
+   '“Your opening is too wide,” he said. “The foam spreads out instead of shooting up.”',
+   'Priya frowned and crossed her arms.',
+   '“I want to figure it out myself,” she said.',
+   'After Dev left, she quietly found a small funnel in the drawer and taped it into the top.',
+   'This time, red foam shot up and splashed onto the ceiling.',
+   'Priya grabbed a towel, grinning, and didn’t tell Dev for a whole week.'],
+  q:[
+   {q:'What did Priya mix to make her volcano erupt?', c:['Baking soda and vinegar','Salt and water','Soap and juice','Sugar and milk'], e:[2], k:['erupt']},
+   {q:'What did Dev say was wrong with the volcano?', c:['The opening was too wide.','The opening was too small.','It was the wrong color.','It needed more vinegar.'], e:[4], k:['wrong']},
+   {q:'What did Priya tape into the top of the volcano?', c:['A small funnel','A straw','A paper cup','A rubber tube'], e:[7], k:['tape','top']}],
+  inf:[
+   {q:'How did Priya feel when Dev gave her advice?', c:['Annoyed','Thankful','Scared','Sleepy'], e:[5], ok:[6],
+    why:'Frowning and crossing your arms are signs of being annoyed. She also says she wants to do it herself.'},
+   {q:'Why did Priya add the funnel?', c:['She decided Dev’s advice made sense.','Dev told her to use a funnel.','She wanted it to look taller.','Her teacher said to add one.'], e:[4,7],
+    why:'Dev said the opening was too wide. A funnel makes the opening smaller, so she used his idea.'},
+   {q:'Why didn’t Priya tell Dev that his idea worked?', c:['She didn’t want to admit she used his idea.','She forgot about it.','Dev was away on a trip.','She was in trouble for the mess.'], e:[6,7], ok:[9],
+    why:'She wanted to figure it out herself and added the funnel “quietly.” She didn’t want Dev to know he helped.'}],
+  best:[
+   {t:'Priya worked hard on her volcano.', opts:[
+     {i:2, why:'Trying three times shows she kept working at it.'},
+     {i:0, why:'Staring at the model doesn’t show hard work.'},
+     {i:3, why:'This is about Dev walking by, not Priya’s work.'},
+     {i:8, why:'This shows it worked in the end, but not how hard she tried.'}]},
+   {t:'Dev’s idea solved the problem.', opts:[
+     {i:8, why:'Right after the funnel made the opening smaller, the foam shot up. His idea worked.'},
+     {i:4, why:'This is Dev’s idea, but it doesn’t show the idea worked.'},
+     {i:5, why:'This shows Priya’s feelings, not whether the idea worked.'},
+     {i:1, why:'This shows the problem, not the solution.'}]}]},
+
+{ id:'monarchs', title:'The Monarch Journey', type:'Informational',
+  s:[
+   'Every fall, millions of monarch butterflies leave Canada and the northern United States.',
+   'They fly as far as 3,000 miles to reach the same mountain forests in Mexico.',
+   'None of these butterflies has ever made the trip before.',
+   'Scientists believe monarchs use the position of the sun to find their way.',
+   'In Mexico, they cluster together on fir trees, sometimes thousands on a single branch.',
+   'Together, they are so heavy that branches can bend toward the ground.',
+   'In the spring, they head north, laying eggs on milkweed plants along the way.',
+   'Monarch caterpillars eat only milkweed, so without it, the butterflies cannot survive.'],
+  q:[
+   {q:'Where do the monarchs fly in the fall?', c:['To mountain forests in Mexico','To beaches in Florida','To Canada','To deserts in Texas'], e:[1], k:['fall']},
+   {q:'What do scientists believe monarchs use to find their way?', c:['The position of the sun','The stars at night','Their sense of smell','Older butterflies'], e:[3], k:['scientists','way']},
+   {q:'Where do monarchs lay their eggs?', c:['On milkweed plants','On fir trees','On the ground','On flowers in Mexico'], e:[6], k:['eggs']}],
+  inf:[
+   {q:'Why is the monarch journey so amazing?', c:['The butterflies find a place they have never been.','The butterflies fly backward.','The trip only takes one day.','Older monarchs lead the way.'], e:[2], ok:[1,3],
+    why:'None of them has made the trip before, yet they reach the same forests. That’s what makes it amazing.'},
+   {q:'What might happen if milkweed disappeared?', c:['There would be fewer monarchs.','Monarchs would eat fir trees instead.','Monarchs would fly farther north.','Nothing would change.'], e:[7], ok:[6],
+    why:'Caterpillars eat only milkweed. Without it, they can’t survive, so there would be fewer monarchs.'},
+   {q:'Why might cloudy days make it harder for monarchs to travel?', c:['They might not be able to use the sun to find their way.','Clouds make their wings too heavy.','They are afraid of clouds.','Milkweed only grows on sunny days.'], e:[3],
+    why:'Monarchs use the sun’s position to find their way. Clouds can hide the sun.'}],
+  best:[
+   {t:'Monarchs gather in huge groups in Mexico.', opts:[
+     {i:4, why:'Thousands on a single branch shows they gather in huge groups in Mexico.'},
+     {i:0, why:'This shows many butterflies leaving, but not gathering in Mexico.'},
+     {i:6, why:'This is about spring, when they leave Mexico.'},
+     {i:3, why:'This is about finding their way, not gathering in groups.'}]},
+   {t:'Milkweed is important to monarchs.', opts:[
+     {i:7, why:'Without milkweed, monarchs cannot survive. Nothing shows importance more than that.'},
+     {i:4, why:'This is about fir trees, not milkweed.'},
+     {i:3, why:'This is about using the sun, not milkweed.'},
+     {i:2, why:'This is about the trip, not milkweed.'}]}]},
+
+{ id:'bus', title:'Bus 14', type:'Story',
+  s:[
+   'Nora sat at the back of bus 14, watching the snow pile up outside.',
+   'At the next stop, an older man climbed on, holding a cane and two heavy grocery bags.',
+   'Every seat was full, and the bus lurched forward before he could grab a pole.',
+   'Nora stood up right away and touched his arm.',
+   '“Please, take my seat,” she said.',
+   'The man sat down with a long, slow breath and smiled at her.',
+   'Nora held onto the pole for the next six stops, swaying each time the bus turned.',
+   'When the man got off, he pressed a peppermint into her hand.',
+   '“My granddaughter would have done the same thing,” he said.',
+   'Nora smiled all the way home, even though her feet were tired.'],
+  q:[
+   {q:'What was the man carrying when he got on the bus?', c:['A cane and two heavy grocery bags','An umbrella and a newspaper','A big box','A suitcase'], e:[1], k:['carrying']},
+   {q:'For how many stops did Nora hold onto the pole?', c:['Six','Fourteen','Two','Ten'], e:[6], k:['pole','stops']},
+   {q:'What did the man give Nora?', c:['A peppermint','A dollar','A thank-you note','His newspaper'], e:[7], k:['give']},],
+  inf:[
+   {q:'Why did the man take a long, slow breath when he sat down?', c:['He was tired and glad to sit.','He was angry at Nora.','He was about to sing.','He was holding his breath for fun.'], e:[1,2], ok:[5],
+    why:'He had a cane and heavy bags and almost fell when the bus moved. Sitting down was a relief.'},
+   {q:'What kind of person is Nora?', c:['Kind and thoughtful','Shy and nervous','Bossy','Careless'], e:[3,4], ok:[6],
+    why:'She gave up her seat right away without being asked. That is kind and thoughtful.'},
+   {q:'How did Nora feel after helping the man?', c:['Proud and happy','Upset','Worried','Bored'], e:[9],
+    why:'She smiled all the way home even with tired feet. Helping made her feel good.'}],
+  best:[
+   {t:'Helping the man was not easy for Nora.', opts:[
+     {i:6, why:'Standing and swaying for six stops shows it took effort.'},
+     {i:3, why:'This shows she helped, but not that it was hard.'},
+     {i:7, why:'This is the man’s thank-you, not how hard it was for Nora.'},
+     {i:0, why:'This shows where Nora sat before anything happened.'}]},
+   {t:'The man was thankful for Nora’s help.', opts:[
+     {i:7, why:'Giving her a peppermint is a way of saying thank you.'},
+     {i:1, why:'This describes the man getting on the bus, before Nora helped.'},
+     {i:2, why:'This shows the problem, not his thanks.'},
+     {i:6, why:'This is about Nora standing, not the man’s feelings.'}]}]},
+
+{ id:'lightning', title:'Flash and Boom', type:'Informational',
+  s:[
+   'Lightning is a giant spark of electricity in the sky.',
+   'A single bolt can be five times hotter than the surface of the sun.',
+   'Lightning heats the air around it so fast that the air explodes outward.',
+   'That explosion is the sound we call thunder.',
+   'Light travels much faster than sound.',
+   'That is why you see a flash of lightning before you hear the thunder.',
+   'You can count the seconds between the flash and the boom.',
+   'Every five seconds means the storm is about one mile away.',
+   'Experts say that if you can hear thunder, you are close enough to be struck, so go indoors.'],
+  q:[
+   {q:'What makes the sound of thunder?', c:['Air exploding outward from the heat of lightning','Clouds bumping into each other','Heavy rain hitting the ground','Strong wind'], e:[2,3], k:['thunder','sound']},
+   {q:'How hot can a bolt of lightning be?', c:['Five times hotter than the surface of the sun','As hot as a campfire','Twice as hot as an oven','As hot as the sun’s surface'], e:[1], k:['hot']},
+   {q:'What should you do if you can hear thunder?', c:['Go indoors','Count to five','Stand under a tree','Keep playing outside'], e:[8], k:['hear','thunder']}],
+  inf:[
+   {q:'You count 10 seconds between a flash and a boom. About how far away is the storm?', c:['About 2 miles','About 10 miles','About 5 miles','About half a mile'], e:[7], ok:[6],
+    why:'Every 5 seconds is about 1 mile. 10 seconds is two groups of 5, so about 2 miles.'},
+   {q:'The time between the flash and the boom keeps getting shorter. What is happening?', c:['The storm is getting closer.','The storm is moving away.','The storm is almost over.','The lightning is getting hotter.'], e:[7], ok:[6],
+    why:'Fewer seconds means fewer miles. If the count keeps shrinking, the storm is coming closer.'},
+   {q:'Why is it a bad idea to keep playing outside when you hear thunder?', c:['Lightning could strike nearby.','Thunder can hurt your ears.','The rain is too cold.','It gets hard to see the ball.'], e:[8],
+    why:'If you can hear thunder, you are close enough to be struck by lightning.'}],
+  best:[
+   {t:'Lightning is extremely powerful.', opts:[
+     {i:1, why:'Being five times hotter than the sun’s surface shows incredible power.'},
+     {i:4, why:'This compares light and sound, not lightning’s power.'},
+     {i:6, why:'This is about counting, not power.'},
+     {i:7, why:'This is about distance, not power.'}]},
+   {t:'Thunder is caused by lightning.', opts:[
+     {i:2, why:'Lightning heats the air until it explodes, and that explosion is thunder. This shows the cause.'},
+     {i:5, why:'This tells which you notice first, not what causes thunder.'},
+     {i:7, why:'This is about how far away a storm is.'},
+     {i:0, why:'This tells what lightning is, but not how it makes thunder.'}]}]}
+];
+
+const MNAMES = {1:'Answer + Detail', 2:'Read Between the Lines', 3:'Best Evidence'};
+const STOP = new Set('a an the what which who whom how why when where did does do is are was were of to in on at for from with by and or that this these those it its his her their they he she you your can could each one after before as be been tell tells show shows about make about'.split(' '));
+
+/* ---------- STORAGE ---------- */
+const KEY = 'inferenceOrbit.v1';
+const SKILLS = ['ans','prove','infer','clue','best'];
+const blankStats = () => Object.fromEntries(SKILLS.map(k => [k, {c:0, t:0}]));
+const blankStudent = n => ({name:n, stars:0, stats:blankStats(), done:{m1:[],m2:[],m3:[]}});
+let store = null;
+try { store = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
+if (!store || !Array.isArray(store.students)) store = {students:[]};
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e) {} }
+
+/* ---------- HELPERS ---------- */
+const $ = s => document.querySelector(s);
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const norm = w => w.toLowerCase().replace(/[’']s\b/g,'').replace(/[^a-z0-9]/g,'');
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function wordMatch(a, b){
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.length >= 4 && b.length >= 4){ const n = Math.min(a.length, b.length, 5); return a.slice(0, n) === b.slice(0, n); }
+  return false;
+}
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.hidden = s.id !== id); window.scrollTo(0, 0); }
+function currentScreen(){ const s = [...document.querySelectorAll('.screen')].find(x => !x.hidden); return s ? s.id : ''; }
+const me = () => store.students[cur];
+const stat = k => me().stats[k];
+
+let cur = null, round = null;
+
+/* ---------- HEADER ---------- */
+function updHeader(pop){
+  const on = cur !== null && !['pick','teacher'].includes(currentScreen());
+  $('#hdrRight').hidden = !on;
+  if (cur !== null){ $('#chipName').textContent = me().name; $('#chipStars').textContent = '★ ' + me().stars; }
+  if (pop){ const c = $('#chip'); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
+}
+
+/* ---------- LOGIN ---------- */
+const nameKey = n => n.toLowerCase().replace(/[^a-z]/g, '');
+function tidyName(n){ n = n.trim().replace(/\s+/g, ' '); return n.charAt(0).toUpperCase() + n.slice(1); }
+function renderPick(){
+  cur = null;
+  $('#nameIn').value = ''; $('#loginMsg').textContent = '';
+  show('pick'); updHeader();
+  setTimeout(() => $('#nameIn').focus(), 30);
+}
+function login(){
+  const typed = $('#nameIn').value, k = nameKey(typed);
+  if (k.length < 2){ $('#loginMsg').textContent = 'Type your first name, then tap Blast off.'; $('#nameIn').focus(); return; }
+  let i = store.students.findIndex(s => nameKey(s.name) === k);
+  if (i === -1){ store.students.push(blankStudent(tidyName(typed))); i = store.students.length - 1; save(); }
+  cur = i; goHub();
+}
+
+/* ---------- HUB + CONSTELLATION ---------- */
+function starPoints(){
+  const cx = 200, cy = 200, R = 170, r = 70, V = [], pts = [];
+  for (let k = 0; k < 10; k++){ const ang = -Math.PI / 2 + k * Math.PI / 5, rad = k % 2 ? r : R; V.push([cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)]); }
+  for (let k = 0; k < 10; k++){ const a = V[k], b = V[(k + 1) % 10]; for (let t = 0; t < 3; t++) pts.push([a[0] + (b[0] - a[0]) * t / 3, a[1] + (b[1] - a[1]) * t / 3]); }
+  return pts;
+}
+const PTS = starPoints();
+function drawConstellation(stars){
+  const full = Math.floor(stars / 30), lit = stars % 30;
+  let svg = '<svg viewBox="0 0 400 400" role="img" aria-label="Your star map: ' + lit + ' of 30 stars lit"><defs><filter id="gl" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  for (let i = 1; i < lit; i++){ const a = PTS[i - 1], b = PTS[i]; svg += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#1FB5A8" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>`; }
+  PTS.forEach((p, i) => {
+    svg += i < lit
+      ? `<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="#F2B630" filter="url(#gl)"/>`
+      : `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#A9C4CC" opacity=".45"/>`;
+  });
+  if (full) svg += `<text x="200" y="212" text-anchor="middle" font-family="Baloo 2, sans-serif" font-size="38" font-weight="800" fill="#F2B630">${'✦'.repeat(Math.min(full, 5))}</text>`;
+  svg += '</svg>';
+  $('#constellation').innerHTML = svg;
+  $('#skyCount').textContent = stars + (stars === 1 ? ' star' : ' stars');
+  $('#skySub').textContent = (30 - lit) + ' more to finish this supernova' + (full ? ` · ${full} finished so far` : '');
+}
+function goHub(){
+  $('#hubName').textContent = me().name;
+  drawConstellation(me().stars);
+  show('hub'); updHeader();
+}
+
+/* ---------- MISSIONS ---------- */
+function startMission(m){
+  const s = me(), key = 'm' + m;
+  let pool = PASSAGES.filter(p => !s.done[key].includes(p.id));
+  if (!pool.length){ s.done[key] = []; pool = PASSAGES.slice(); save(); }
+  const p = pool[Math.floor(Math.random() * pool.length)];
+  let items;
+  if (m === 1) items = shuffle(p.q.map(x => ({...x, valid:[...x.e, ...(x.ok || [])]})));
+  if (m === 2) items = shuffle(p.inf.map(x => ({...x, valid:[...x.e, ...(x.ok || [])]})));
+  if (m === 3) items = shuffle(p.best.map(x => ({...x})));
+  round = {m, p, items, i:0, earned:0};
+  startItem();
+  show('play'); updHeader();
+}
+function startItem(){
+  const it = round.items[round.i];
+  Object.assign(round, {tries:0, marks:{}, keys:new Set(), msg:'', msgType:'', out:new Set(), firstA:true, hinted:false});
+  if (round.m === 3){ round.stage = 'pick'; round.order = shuffle(it.opts.map((_, k) => k)); }
+  else { round.stage = 'answer'; round.order = shuffle(it.c.map((_, k) => k)); }
+  render();
+}
+function tappable(){ return round.m !== 3 && round.stage === 'prove'; }
+function award(n){ me().stars += n; round.earned += n; save(); updHeader(true); }
+function setMsg(t, type){ round.msg = t; round.msgType = type; }
+
+/* ---------- RENDER ---------- */
+function render(){
+  const {p, items, i, m} = round, it = items[i];
+  $('#pTitle').textContent = p.title;
+  $('#pType').textContent = p.type;
+  renderPassage();
+  const t = $('#task'); t.innerHTML = '';
+  const prog = el('div', 'prog');
+  items.forEach((_, k) => prog.appendChild(el('span', 'dot' + (k < i ? ' done' : k === i ? ' now' : ''))));
+  t.appendChild(prog);
+  t.appendChild(el('p', 'mlabel', MNAMES[m] + ' · ' + (i + 1) + ' of ' + items.length));
+  if (m === 3) renderBest(t, it); else renderAsk(t, it);
+  const fb = el('div', 'fb' + (round.msgType ? ' ' + round.msgType : ''), round.msg);
+  fb.setAttribute('aria-live', 'polite');
+  t.appendChild(fb);
+  if (round.stage === 'done'){
+    const nb = el('button', 'btn gold', i < items.length - 1 ? 'Next' : 'Finish passage');
+    nb.onclick = next; t.appendChild(nb);
+    setTimeout(() => nb.focus({preventScroll:true}), 30);
+  }
+}
+function renderPassage(){
+  const box = $('#passage'); box.innerHTML = '';
+  const tap = tappable();
+  box.classList.toggle('tappable', tap);
+  round.p.s.forEach((sent, idx) => {
+    const sp = el('span', 'sent'); sp.dataset.i = idx;
+    if (round.marks[idx]) sp.classList.add(round.marks[idx]);
+    const words = sent.split(' ');
+    words.forEach((w, k) => {
+      const ws = el('span', 'w', w); ws.dataset.n = norm(w); sp.appendChild(ws);
+      if (k < words.length - 1) sp.appendChild(document.createTextNode(' '));
+    });
+    if (tap){ sp.tabIndex = 0; sp.setAttribute('role', 'button'); sp.setAttribute('aria-label', 'Sentence ' + (idx + 1) + ': ' + sent); }
+    box.appendChild(sp); box.appendChild(document.createTextNode(' '));
+  });
+  const keys = [...round.keys];
+  box.querySelectorAll('.w').forEach(w => w.classList.toggle('glow', keys.some(k => wordMatch(w.dataset.n, k))));
+}
+function qWords(q){
+  const box = el('p', 'question');
+  q.split(' ').forEach((w, k, arr) => {
+    const n = norm(w);
+    if (!n || STOP.has(n)) box.appendChild(el('span', '', w));
+    else {
+      const b = el('button', 'qw' + (round.keys.has(n) ? ' on' : ''), w);
+      b.setAttribute('aria-pressed', round.keys.has(n));
+      b.onclick = () => { round.keys.has(n) ? round.keys.delete(n) : round.keys.add(n); render(); };
+      box.appendChild(b);
+    }
+    if (k < arr.length - 1) box.appendChild(document.createTextNode(' '));
+  });
+  return box;
+}
+
+/* Missions 1 and 2: pick an answer, then tap the supporting sentence */
+function renderAsk(t, it){
+  const m = round.m;
+  if (m === 2) t.appendChild(el('p', 'claim-label', 'The text doesn’t say this straight out. Use clues!'));
+  t.appendChild(qWords(it.q));
+  if (round.stage === 'answer'){
+    t.appendChild(el('p', 'instr', m === 1
+      ? 'Tap key words in the question to light them up in the text. Then pick the answer.'
+      : 'Look for clues in the text. Think: what do these clues tell me? Then pick the best answer.'));
+    const ch = el('div', 'choices');
+    round.order.forEach(ci => {
+      const b = el('button', 'choice', it.c[ci]);
+      if (round.out.has(ci)){ b.disabled = true; b.classList.add('out'); }
+      b.onclick = () => pickChoice(ci);
+      ch.appendChild(b);
+    });
+    t.appendChild(ch);
+    if (!round.hinted){
+      const h = el('button', 'btn ghost small', m === 1 ? 'Light up the key words for me' : 'Show me a clue');
+      h.onclick = () => {
+        round.hinted = true;
+        if (m === 1){ it.k.forEach(k => round.keys.add(norm(k))); setMsg('The glowing words are clues. Read the sentences around them carefully.', 'info'); }
+        else { it.e.forEach(x => round.marks[x] = 'hint'); setMsg('Read the outlined sentence. What does it make you think?', 'info'); }
+        render();
+      };
+      t.appendChild(h);
+    }
+  } else {
+    const lk = el('div', 'locked'); lk.appendChild(el('span', '', 'Your answer')); lk.appendChild(el('b', '', it.c[0])); t.appendChild(lk);
+    if (round.stage === 'prove') t.appendChild(el('p', 'instr', m === 1
+      ? 'Now give one supporting detail. Tap a sentence in the text that proves your answer.'
+      : 'Which clue helped you figure that out? Tap the sentence in the text.'));
+  }
+}
+function pickChoice(ci){
+  const k = round.m === 1 ? 'ans' : 'infer';
+  if (ci === 0){
+    const first = round.tries === 0 && (round.m === 1 || !round.hinted);
+    stat(k).t++; if (first) stat(k).c++;
+    round.firstA = first;
+    round.stage = 'prove'; round.tries = 0;
+    Object.keys(round.marks).forEach(x => { if (round.marks[x] === 'hint' && round.m === 1) delete round.marks[x]; });
+    setMsg(round.m === 1 ? 'Correct! Now back it up with a detail.' : 'Nice thinking! Now show the clue that led you there.', 'good');
+  } else {
+    round.tries++; round.out.add(ci);
+    setMsg(round.m === 1
+      ? 'Not quite. The answer is in the text. Find the sentence with the key words.'
+      : 'The clues in the text don’t point to that answer. Read the clues again and ask: what makes the most sense?', 'bad');
+  }
+  save(); render();
+}
+function onSentence(i){
+  if (!tappable()) return;
+  const it = round.items[round.i];
+  Object.keys(round.marks).forEach(k => { if (round.marks[k] === 'bad') delete round.marks[k]; });
+  if (it.valid.includes(i)){
+    Object.keys(round.marks).forEach(k => delete round.marks[k]);
+    round.marks[i] = 'good';
+    const k = round.m === 1 ? 'prove' : 'clue';
+    const first = round.tries === 0 && !(round.m === 2 && round.hinted);
+    stat(k).t++; if (first) stat(k).c++;
+    const n = 1 + (round.firstA && first ? 1 : 0);
+    award(n); round.stage = 'done';
+    setMsg(round.m === 1
+      ? `Great detail! That sentence supports your answer. +${n} ${n === 1 ? 'star' : 'stars'}`
+      : `Great clue! ${it.why} +${n} ${n === 1 ? 'star' : 'stars'}`, 'good');
+  } else {
+    round.tries++; round.marks[i] = 'bad';
+    if (round.tries >= 2){ it.e.forEach(x => round.marks[x] = 'hint'); setMsg('That sentence doesn’t support your answer. Read the outlined sentence. How does it connect?', 'bad'); }
+    else setMsg(round.m === 1
+      ? 'That sentence doesn’t support your answer. Find one that does.'
+      : 'That sentence isn’t a clue for this answer. Which sentence made you think of it?', 'bad');
+  }
+  save(); render();
+}
+$('#passage').addEventListener('click', e => { const s = e.target.closest('.sent'); if (s) onSentence(+s.dataset.i); });
+$('#passage').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('sent')){ e.preventDefault(); onSentence(+e.target.dataset.i); } });
+
+/* Mission 3: Best Evidence */
+function renderBest(t, it){
+  const box = el('div', 'claim'); box.appendChild(el('span', 'claim-label', 'Inference')); box.appendChild(el('p', 'claim-text', it.t)); t.appendChild(box);
+  if (round.stage === 'pick'){
+    t.appendChild(el('p', 'instr', 'All four details are from the text. Which one BEST supports this inference? Ask: does this detail help prove it?'));
+    const ch = el('div', 'choices');
+    round.order.forEach(oi => {
+      const b = el('button', 'choice quote', round.p.s[it.opts[oi].i]);
+      if (round.out.has(oi)){ b.disabled = true; b.classList.add('out'); }
+      b.onclick = () => pickBest(oi);
+      ch.appendChild(b);
+    });
+    t.appendChild(ch);
+  }
+}
+function pickBest(oi){
+  const it = round.items[round.i], o = it.opts[oi];
+  Object.keys(round.marks).forEach(k => delete round.marks[k]);
+  if (oi === 0){
+    round.marks[o.i] = 'good';
+    stat('best').t++; if (round.tries === 0) stat('best').c++;
+    const n = round.tries === 0 ? 2 : 1; award(n);
+    round.stage = 'done';
+    setMsg(`Best evidence! ${o.why} +${n} ${n === 1 ? 'star' : 'stars'}`, 'good');
+  } else {
+    round.tries++; round.out.add(oi); round.marks[o.i] = 'bad';
+    setMsg('Not the best. ' + o.why, 'bad');
+  }
+  save(); render();
+}
+
+function next(){
+  round.i++;
+  if (round.i >= round.items.length) finishRound(); else { startItem(); window.scrollTo(0, 0); }
+}
+function finishRound(){
+  const key = 'm' + round.m;
+  if (!me().done[key].includes(round.p.id)) me().done[key].push(round.p.id);
+  save();
+  $('#sumStars').textContent = '★ +' + round.earned;
+  $('#sumText').textContent = `You earned ${round.earned} ${round.earned === 1 ? 'star' : 'stars'} on “${round.p.title}.” You now have ${me().stars} in all.`;
+  show('summary'); updHeader();
+}
+
+/* ---------- TEACHER ---------- */
+function pctCell(o){
+  const td = el('td');
+  if (!o || !o.t){ td.textContent = '-'; return td; }
+  const p = Math.round(100 * o.c / o.t);
+  td.append(el('span', 'pct ' + (p < 60 ? 'lo' : p < 80 ? 'mid' : 'hi'), p + '%'), document.createTextNode(` (${o.c}/${o.t})`));
+  return td;
+}
+function renderTeacher(){
+  cur = null;
+  const tb = $('#tbody'); tb.innerHTML = '';
+  if (!store.students.length){ const tr = el('tr'), td = el('td', 'note', 'No students yet. They’ll show up after they log in.'); td.colSpan = 8; tr.appendChild(td); tb.appendChild(tr); }
+  store.students.forEach((s, i) => {
+    const tr = el('tr');
+    const nameTd = el('td'); const inp = el('input'); inp.value = s.name; inp.setAttribute('aria-label', 'Student name');
+    inp.onchange = () => { const v = tidyName(inp.value); if (nameKey(v).length >= 2) s.name = v; inp.value = s.name; save(); };
+    nameTd.appendChild(inp); tr.appendChild(nameTd);
+    SKILLS.forEach(k => tr.appendChild(pctCell(s.stats[k])));
+    tr.appendChild(el('td', '', String(s.stars)));
+    const act = el('td');
+    const r = el('button', 'btn ghost small', 'Reset');
+    r.onclick = () => { if (confirm('Reset all progress for ' + s.name + '?')){ store.students[i] = blankStudent(s.name); save(); renderTeacher(); } };
+    const d = el('button', 'btn ghost small', 'Remove'); d.style.marginLeft = '6px';
+    d.onclick = () => { if (confirm('Remove ' + s.name + '?')){ store.students.splice(i, 1); save(); renderTeacher(); } };
+    act.append(r, d); tr.appendChild(act);
+    tb.appendChild(tr);
+  });
+  show('teacher'); updHeader();
+}
+
+/* ---------- WIRING ---------- */
+document.querySelectorAll('.mission').forEach(b => b.onclick = () => startMission(+b.dataset.m));
+$('#homeBtn').onclick = goHub;
+$('#switchBtn').onclick = renderPick;
+$('#againBtn').onclick = () => startMission(round.m);
+$('#backBtn').onclick = goHub;
+$('#teacherBtn').onclick = renderTeacher;
+$('#tBackBtn').onclick = renderPick;
+$('#loginBtn').onclick = login;
+$('#nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+renderPick();
+</script>
+</body>
+</html>
