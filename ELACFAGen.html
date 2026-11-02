@@ -98,9 +98,11 @@
 
     .section + .section { margin-top: 26px; }
     .sec-label { font-size: 12px; font-weight: 700; color: var(--teal-700); margin: 0 0 8px; }
-    .passage { border: 1.5px solid #999; border-radius: 6px; padding: 14px 18px; margin-bottom: 18px; font-family: var(--read); font-size: 15px; line-height: 1.6; break-inside: avoid; }
+    .passage { border: 1.5px solid #999; border-radius: 6px; padding: 14px 18px; margin-bottom: 18px; font-family: var(--read); font-size: 15px; line-height: 1.6; }
     .passage h3 { font-family: var(--ui); font-size: 16px; margin: 0 0 6px; }
-    .passage p { margin: 0 0 8px; }
+    .passage p { margin: 0 0 8px; padding-left: 26px; position: relative; text-indent: 1.2em; break-inside: avoid; }
+    .passage .pnum { position: absolute; left: 0; top: 2px; text-indent: 0; font-family: var(--ui); font-size: 11px; font-weight: 700; color: #555; }
+    .passage h3 { break-after: avoid; }
     .passage p:last-child { margin-bottom: 0; }
     .q { display: grid; grid-template-columns: 28px 1fr; margin-bottom: 18px; break-inside: avoid; }
     .q-num { font-weight: 700; }
@@ -224,47 +226,231 @@ const STANDARDS = [
             { id: '4.RC.13', label: '4.RC.13: Figurative Language & Meaning', desc: 'Determine how words provide meaning in literature, including figurative language (similes, metaphors, hyperbole).' }
         ];
 
+        // Passages. Paragraphs that start with "+" print only on End of Unit tests;
+        // the rest make up the shorter CFA version.
         const PASSAGES = {
             '4.RC.1': {
-                fiction: { title: 'Story: The Midnight Rescue', text: ['Maya peered out her bedroom window into the storm. Heavy rain pelted the glass, and the old oak tree in the front yard swayed wildly in the wind. Suddenly, a bright flash of lightning illuminated the lawn, and Maya gasped.', 'A small puppy was shivering inside an overturned cardboard box near the sidewalk. Maya grabbed her raincoat and flashlight from the closet without hesitation. She knew she had to act quickly before the rising rainwater flooded the box.'] },
-                nonfiction: { title: 'Informational Text: Deep Sea Explorers', text: ['Deep on the ocean floor, sunlight cannot penetrate the pitch-black water. Oceanographers use specialized submarines called submersibles to explore these extreme depth environments.', 'In 1977, researchers discovered hydrothermal vents spewing superheated water full of minerals. Surprising scientists everywhere, whole ecosystems of tube worms and blind white crabs were thriving in total darkness without sunlight energy.'] }
+                fiction: { title: "Story: The Midnight Rescue", text: [
+                    "Maya peered out her bedroom window into the storm. Heavy rain pelted the glass, and the old oak tree in the front yard swayed wildly in the wind. Thunder rumbled so loudly that the picture frames on her dresser rattled.",
+                    "+It was almost midnight, and everyone else in the house was asleep. Maya had tried to sleep too, but the storm kept her awake. She counted the seconds between each flash and each boom, the way her grandpa had taught her, to figure out how far away the lightning was.",
+                    "Suddenly, a bright flash of lightning illuminated the lawn, and Maya gasped. A small puppy was shivering inside an overturned cardboard box near the sidewalk. Its ears were pressed flat against its head, and it whimpered each time the thunder boomed.",
+                    "Maya grabbed her raincoat and flashlight from the closet without hesitation. Water was already rushing along the curb and creeping toward the box. She knew she had to act quickly before the rising rainwater flooded the box.",
+                    "+She tiptoed down the stairs, careful to skip the squeaky third step. At the back door, she pulled on her rubber boots and zipped her raincoat all the way up to her chin. Then she took a deep breath and stepped out into the storm.",
+                    "+The wind pushed against her like an invisible wall. Cold rain stung her cheeks, and the beam of her flashlight bounced across the wet grass. Maya kept her eyes on the cardboard box and walked as fast as she could without slipping.",
+                    "When she reached the sidewalk, the puppy backed into the corner of the box. \"It's okay,\" Maya said softly, kneeling down. \"I won't hurt you.\" She held out her hand and waited. After a long moment, the puppy crept forward and licked her fingers.",
+                    "+Maya tucked the puppy inside her raincoat, where it was warm and dry. She could feel its tiny heart beating fast against her. As she turned toward the house, she noticed that water had already filled the spot where the box had been sitting.",
+                    "Back inside, Maya wrapped the puppy in a fluffy towel and rubbed its fur until it stopped shaking. The noise woke her mom, who came into the kitchen rubbing her eyes. When she saw the soggy puppy curled up on Maya's lap, her sleepy frown turned into a smile.",
+                    "+\"Where did this little one come from?\" Mom asked. Maya explained everything, from the flash of lightning to the overflowing curb. Mom shook her head and said, \"Next time, wake me up first. But I'm proud of you for helping.\"",
+                    "+The next morning, the storm had passed, and the sky was a clear, bright blue. Maya and her mom made posters with a photo of the puppy and hung them around the neighborhood. By lunchtime, a man named Mr. Alvarez called to say the puppy belonged to his family.",
+                    "The puppy's owner came to pick him up the next day. The puppy wagged his whole body and jumped into his owner's arms. \"Biscuit must have slipped out of the fence when the gate blew open,\" the man said. \"Thank you for keeping him safe.\" Maya smiled as she waved goodbye, already missing her soggy midnight friend."
+                ] },
+                nonfiction: { title: "Informational Text: Deep Sea Explorers", text: [
+                    "Deep on the ocean floor, sunlight cannot penetrate the pitch-black water. Below about 3,000 feet, the ocean is completely dark, freezing cold, and under enormous pressure. Oceanographers use specialized submarines called submersibles to explore these extreme depth environments.",
+                    "+A submersible is small, usually carrying only one to three people. Its walls are made of thick metal that can withstand pressure hundreds of times stronger than the air pressure we feel on land. Bright lights on the outside let scientists see the dark water around them.",
+                    "+One of the most famous submersibles is named Alvin. Alvin first dove in 1964 and has made thousands of trips to the deep sea since then. It has robotic arms that can scoop up rocks, collect water, and gently grab animals for scientists to study.",
+                    "In 1977, researchers discovered hydrothermal vents spewing superheated water full of minerals. Surprising scientists everywhere, whole ecosystems of tube worms and blind white crabs were thriving in total darkness without sunlight energy.",
+                    "+The vents were found near the Galapagos Islands, along a crack in the ocean floor where two pieces of Earth's crust slowly pull apart. Seawater seeps down into the crack, gets heated by hot rock below, and then shoots back up. Some vent water is hotter than 600 degrees Fahrenheit, but the crushing pressure keeps it from boiling.",
+                    "Life near the vents works differently from life almost anywhere else on Earth. Instead of using sunlight, tiny bacteria use the chemicals in the vent water to make food. This process is called chemosynthesis. Larger animals then eat the bacteria or live alongside them.",
+                    "+Giant tube worms are some of the strangest vent creatures. They can grow taller than a grown-up person, and they have no mouth and no stomach. Instead, bacteria living inside their bodies make food for them. The worms have bright red plumes that take in chemicals from the water.",
+                    "Blind white crabs scurry across the rocks near the vents. Because there is no light, they have no need for bright colors or sharp eyesight. Scientists have also found pale shrimp, snails, and fish living in these communities.",
+                    "Exploring the deep sea is difficult and expensive, so scientists have seen only a tiny part of it. Most of the deep ocean floor has never been seen by human eyes. Every dive gives researchers a chance to discover something new.",
+                    "+Today, scientists also use robots called ROVs, which stands for remotely operated vehicles. An ROV is connected to a ship by a long cable, and a pilot on the ship steers it with a joystick. ROVs can stay underwater for many hours without putting anyone in danger.",
+                    "+The discoveries at hydrothermal vents changed how scientists think about life. If living things can survive in dark, scalding, chemical-filled water on Earth, some scientists wonder whether life might exist in similar places on other worlds, such as the icy moons of Jupiter and Saturn.",
+                    "The deep ocean is still one of the least explored places on our planet. With every new dive, oceanographers uncover more secrets hidden in the darkness. Who knows what amazing creatures are still waiting to be found?"
+                ] },
             },
             '4.RC.2': {
-                fiction: { title: 'Story: The Great Oak Tree', text: ['Leo loved playing near the old oak tree at the edge of the schoolyard. When a heavy thunderstorm broke several branches, the principal announced that the tree might need to be removed for safety reasons.', 'Leo refused to give up on the oak. He organized a group of classmates to write letters explaining how much the tree meant to the school. They also raised money to hire an arborist to trim the damaged branches safely. After weeks of hard work, the tree was saved. Leo learned that even a young person can make a big difference when they stand up for what they care about.'] }
+                fiction: { title: "Story: The Great Oak Tree", text: [
+                    "Leo loved playing near the old oak tree at the edge of the schoolyard. Its thick branches stretched over the grass like a giant umbrella, and its trunk was so wide that three students holding hands could barely reach around it.",
+                    "+Every recess, Leo and his friends met under the oak. They traded cards in its shade, played tag around its roots, and collected acorns in the fall. Some of the oldest teachers said the tree had been standing there long before the school was built.",
+                    "One night in April, a heavy thunderstorm swept through town. The next morning, Leo saw several broken branches lying across the playground. At an assembly that afternoon, the principal announced that the tree might need to be removed for safety reasons.",
+                    "+Leo could hardly eat his lunch that day. He kept staring out the cafeteria window at the wounded oak. \"There has to be something we can do,\" he whispered to his best friend, Priya. Priya nodded, but she didn't know what that something could be.",
+                    "Leo refused to give up on the oak. That evening, he asked his mom how grown-ups solve problems like this. She explained that a tree expert called an arborist can sometimes trim damaged branches so that a tree is safe again. Leo had an idea.",
+                    "The next day, Leo organized a group of classmates to write letters explaining how much the tree meant to the school. Some students wrote about reading in its shade. Others drew pictures of the tree in every season. In all, they delivered forty-two letters to the principal's office.",
+                    "+The principal read every letter. She told the students that she loved the tree too, but trimming it would cost money that the school did not have. Leo's heart sank, but only for a moment. \"Then we'll raise the money ourselves,\" he said.",
+                    "The class decided to raise money to hire an arborist to trim the damaged branches safely. They held a bake sale, washed cars in the school parking lot, and set up a lemonade stand at the spring soccer games.",
+                    "+Raising money was hard work. On the first day of the bake sale, it rained, and they sold only six cookies. Some students wanted to quit, but Leo reminded them of all the afternoons they had spent under the oak. Little by little, the jar filled with coins and dollar bills.",
+                    "+After four weeks, the students counted their money. They had enough! The principal called an arborist named Mr. Hayes, who climbed high into the tree with ropes and a saw. He carefully cut away the broken limbs and checked the trunk for damage.",
+                    "After weeks of hard work, the tree was saved. The arborist said the oak was healthy and strong once the broken limbs were removed. The principal changed her plan and announced that the tree would stay. The whole school cheered, and Leo grinned so wide that his cheeks hurt.",
+                    "That summer, a new plaque appeared at the base of the oak. It read, \"Saved by the students of Room 14.\" Leo learned that even a young person can make a big difference when they stand up for what they care about."
+                ] },
             },
             '4.RC.3': {
-                fiction: { title: 'Story: The Mystery of Whispering Woods', text: ['Clara and Ethan followed the narrow trail into Whispering Woods as dusk began to fall. Shadows stretched like long fingers across the pine needles. Suddenly, a strange clicking noise echoed from inside a hollow cedar tree.', 'Ethan froze in fear, but Clara stepped forward bravely. Using her stick, she gently tapped the trunk. Out swooped a small barn owl, blinking in the twilight. Ethan released a deep breath and laughed at his mistake.'] }
+                fiction: { title: "Story: The Mystery of Whispering Woods", text: [
+                    "Clara and Ethan followed the narrow trail into Whispering Woods as dusk began to fall. They had promised Grandma they would be back from the creek before dark, but they had stayed too long skipping stones.",
+                    "+The woods had earned their name. Even on calm days, the tall pines seemed to murmur and sigh above the trail. Kids at school liked to tell stories about the woods, and not all of the stories were friendly.",
+                    "Now the sun was slipping behind the hills. Shadows stretched like long fingers across the pine needles, and the air grew cool and damp. Somewhere far away, a dog barked once and then went silent.",
+                    "+Ethan walked so close behind his sister that he kept stepping on her heels. \"Do you remember which way the big rock is?\" he asked. Clara pointed ahead with the walking stick she had found by the creek. \"Just past the bend,\" she said, sounding more confident than she felt.",
+                    "Suddenly, a strange clicking noise echoed from inside a hollow cedar tree. Click. Click-click. Ethan froze in fear. His heart pounded so hard he was sure Clara could hear it.",
+                    "+\"What is that?\" Ethan whispered. He thought about the stories from school. Maybe it was a raccoon with sharp teeth, or something much worse. He wanted to run, but his legs felt as heavy as bricks.",
+                    "Clara was nervous too, but she noticed that the sound was small and steady, not like a large animal. She stepped forward bravely. \"Whatever it is, it's probably more scared of us than we are of it,\" she said.",
+                    "+Clara crept toward the hollow cedar. The opening in the trunk was dark, about the size of a basketball. The clicking stopped, and the woods went completely silent. Ethan held his breath.",
+                    "Using her walking stick, Clara gently tapped the trunk. Out swooped a small barn owl, blinking in the twilight. Its pale, heart-shaped face glowed like a tiny moon as it flapped to a nearby branch.",
+                    "+The owl turned its head and stared down at them with large dark eyes. Then it made the same soft clicking sound, as if it were scolding them for interrupting its evening.",
+                    "Ethan released a deep breath and laughed at his mistake. \"I was scared of a bird,\" he said, shaking his head. Clara laughed too. \"A very grumpy bird,\" she said.",
+                    "+The two of them hurried down the trail and spotted the big rock just past the bend. By the time they reached Grandma's porch, the first stars were coming out. Ethan couldn't wait to tell everyone at school that the scariest thing in Whispering Woods was an owl."
+                ] },
             },
             '4.RC.4': {
-                fiction: { title: 'Story: The Science Fair Swap', text: ['<strong>Narrator A (Julian):</strong> I spent three weeks perfecting my volcanic eruption model. When Maya accidentally bumped my table, red lava splattered across my poster.', '<strong>Narrator B (Maya):</strong> The cafeteria was crowded and chaotic. As I turned around with my presentation board, my foot tripped on an electrical cord, sending me tumbling directly into Julian\'s table.'] }
+                fiction: { title: "Story: The Science Fair Swap", text: [
+                    "<strong>Narrator A (Julian):</strong> I spent three weeks perfecting my volcanic eruption model. I built the mountain out of papier-mache, painted every rock by hand, and mixed a special batch of baking soda and red food coloring for the lava.",
+                    "+On the morning of the science fair, I set everything up on my table in the cafeteria. My poster explained how real volcanoes erupt, and I had practiced my speech in front of the mirror at least twenty times. I was sure I had a chance to win first place.",
+                    "+The judges were three tables away when I poured vinegar into the crater to test my eruption one last time. It bubbled perfectly. I was so focused on the lava that I didn't notice how crowded the aisle behind me had become.",
+                    "When Maya accidentally bumped my table, red lava splattered across my poster. The words I had written so neatly turned into pink, dripping blobs. My volcano tipped over and rolled onto the floor.",
+                    "+\"Watch where you're going!\" I said, louder than I meant to. My face felt hot. Three weeks of work, ruined in one second. I didn't even look at Maya. I just grabbed a handful of paper towels and started wiping.",
+                    "When the judges arrived, I had to explain my project with a stained, sticky poster. I tried to smile, but I was so frustrated that my voice shook. All I could think about was how unfair it was.",
+                    "<strong>Narrator B (Maya):</strong> The cafeteria was crowded and chaotic. Parents were taking pictures, little brothers and sisters were running between tables, and everyone seemed to be talking at once.",
+                    "+My project was about how plants grow toward light. I had a big presentation board covered with photos of my bean plants, and I needed to move it to the judging area. Carrying it was like carrying a sail on a windy day.",
+                    "As I turned around with my presentation board, my foot tripped on an electrical cord, sending me tumbling directly into Julian's table. I never even saw the cord. Someone had stretched it across the aisle to plug in a fan.",
+                    "+I heard a crash and a splash, and when I looked up, red goo was dripping down Julian's poster. He yelled at me to watch where I was going. I wanted to explain, but the words got stuck in my throat.",
+                    "My cheeks burned with embarrassment. Everyone near us had turned to stare. I mumbled \"sorry\" and hurried away, but I felt terrible for the rest of the morning. Julian's volcano had been the coolest project in the whole fair.",
+                    "+Later, I found Julian by the trophy table and showed him the cord. \"I tripped,\" I told him. \"I would never wreck your project on purpose.\" He looked at the cord for a long time. Then he said, \"I guess I would have tripped too.\" We decided to ask the teachers to tape down every cord before next year's fair."
+                ] },
             },
             '4.RC.5': {
-                nonfiction: { title: 'Informational Text: Monarch Butterfly Migration', text: ['Every autumn, millions of monarch butterflies embark on an extraordinary journey across North America. Travelling over 2,000 miles, these delicate insects fly south from Canada and the United States all the way to the warm forests of central Mexico.', 'Because individual monarchs live only a few weeks, it takes four generations of butterflies to complete the annual round-trip cycle. Scientists track their flight paths using lightweight tags placed on their wings to better understand how habitat loss impacts their survival.'] }
+                nonfiction: { title: "Informational Text: Monarch Butterfly Migration", text: [
+                    "Every autumn, millions of monarch butterflies embark on an extraordinary journey across North America. Traveling over 2,000 miles, these delicate insects fly south from Canada and the United States all the way to the warm forests of central Mexico.",
+                    "Because most monarchs live only a few weeks, it takes about four generations of butterflies to complete the annual round-trip cycle. Scientists track their flight paths using lightweight tags placed on their wings to better understand how habitat loss impacts their survival.",
+                    "+Monarchs are easy to recognize. Their wings are bright orange with black veins and white spots along the edges. This bold coloring is a warning to birds. Monarchs taste bitter and can make predators sick because of what they eat as caterpillars.",
+                    "Monarch caterpillars eat only one kind of plant: milkweed. Milkweed grows in fields and along roadsides, and female monarchs lay their eggs only on its leaves. Without milkweed, monarchs cannot survive.",
+                    "+The butterflies that make the long flight south are special. Unlike their parents and grandparents, this generation can live for about eight months. They spend the winter clustered together on fir trees high in the mountains of Mexico, where the cool air helps them rest and save energy.",
+                    "+The clusters can be enormous. Thousands of monarchs may cling to a single branch, so many that the branch bends under their weight. From far away, the trees look like they are covered in orange leaves.",
+                    "In spring, the monarchs fly north and lay eggs along the way. Their children continue the trip, and then their grandchildren. By the time monarchs return to Canada, it is the great-grandchildren of the butterflies that left the year before.",
+                    "+Scientists still are not sure exactly how monarchs find their way to the same mountain forests every year, even though no single butterfly has ever made the trip before. Many researchers believe monarchs use the position of the sun as a compass.",
+                    "Today, monarch populations face serious challenges. Farms, roads, and new buildings have replaced many fields where milkweed once grew. In Mexico, some of the forests where monarchs spend the winter have been cut down.",
+                    "+Weather also affects monarchs. Long droughts can dry up milkweed and flowers, and sudden winter storms in the mountains can freeze butterflies that are clustered on the trees.",
+                    "+The wing tags help scientists learn which routes the butterflies follow and where they stop to rest. When someone finds a tagged monarch, they can report its tag number online. Each report helps researchers build a map of the migration.",
+                    "People can help monarchs, too. Families, schools, and towns are planting milkweed and colorful flowers in gardens. These small patches of habitat give monarchs places to eat, rest, and lay eggs along their long journey."
+                ] },
             },
             '4.RC.6': {
-                nonfiction: { title: 'Informational Text: Navigating Maps & Diagrams', text: ['Maps contain several key features that help travelers locate destinations. The compass rose shows cardinal directions (North, South, East, West), while the map key explains symbols.', 'Elevation charts use shaded colors to represent land height above sea level. Reading cross-section diagrams allows geologists to examine layers of rock hidden beneath Earth\'s surface.'] }
+                nonfiction: { title: "Informational Text: Navigating Maps & Diagrams", text: [
+                    "Maps contain several key features that help travelers locate destinations. Learning to read these features is like learning a new language. Once you know them, a map can tell you where you are, where you are going, and what you will see along the way.",
+                    "The compass rose shows cardinal directions (North, South, East, West). It is usually drawn in a corner of the map. Many compass roses also show in-between directions, such as northeast and southwest.",
+                    "The map key explains symbols. A key is sometimes called a legend. A tiny tent might stand for a campground, a blue line might be a river, and a star often marks a capital city.",
+                    "+A scale bar tells you how distance on the map compares to distance in real life. For example, one inch on a map might equal ten miles. By measuring with a ruler, you can figure out how far apart two places really are.",
+                    "+Many maps also have a grid of lines with letters along one side and numbers along the other. To find a place, you look it up in the map's index, which might say \"C4.\" Then you slide one finger to column C and another to row 4 until they meet.",
+                    "Elevation charts use shaded colors to represent land height above sea level. Low land near the ocean might be dark green, while tall mountains might be brown or white. These colors help hikers see where the land rises steeply.",
+                    "+Some maps use contour lines instead of colors. Each line connects points that are the same height. When the lines are packed close together, the land is steep. When they are far apart, the land is flat.",
+                    "Reading cross-section diagrams allows geologists to examine layers of rock hidden beneath Earth's surface. A cross-section shows what you would see if you could slice through the ground like a layer cake and look at the side.",
+                    "+Labels and arrows point out each layer in the diagram, such as soil, sandstone, and limestone. A volcano cross-section might show the magma chamber deep underground and the path the melted rock takes to reach the top.",
+                    "+Informational books about maps use text features too. Bold subheadings tell readers what each section is about, so they can skip to the part they need. Captions explain what a photograph or diagram shows.",
+                    "+At the back of many nonfiction books, readers can find a glossary and an index. The glossary gives the meanings of important words. The index lists topics in alphabetical order with the page numbers where they appear.",
+                    "Whether you are planning a road trip, hiking a mountain trail, or studying rocks, these features turn a confusing page into useful information. The next time you open a map, take a moment to read the compass rose, the key, and the charts before you begin."
+                ] },
             },
             '4.RC.7': {
-                nonfiction: { title: 'Informational Text: Tornadoes and Hurricanes', text: ['Tornadoes and hurricanes are both powerful storm systems with rotating winds, but they differ significantly in scale. Tornadoes form quickly over land during severe thunderstorms and last a short time.', 'In contrast, hurricanes form over warm ocean waters, stretch hundreds of miles wide, and can last for days. Consequently, coastal communities receive early evacuation warnings, whereas tornado alerts give residents only minutes to seek shelter.'] }
+                nonfiction: { title: "Informational Text: Tornadoes and Hurricanes", text: [
+                    "Tornadoes and hurricanes are both powerful storm systems with rotating winds, but they differ significantly in scale. Both can damage homes, knock down trees, and cause power outages. However, the way they form and the way people prepare for them are very different.",
+                    "Tornadoes form quickly over land during severe thunderstorms and last a short time. Most tornadoes last less than ten minutes, though a few have lasted more than an hour.",
+                    "+A tornado begins when warm, moist air near the ground meets cooler, drier air above it. The winds blow at different speeds and in different directions, which can make the air start to spin. If a strong updraft tips the spinning air upward, a funnel cloud can form and reach down toward the ground.",
+                    "+Tornadoes are usually narrow. Many are only a few hundred feet wide, about the length of a football field. However, the winds inside the strongest tornadoes can spin faster than 200 miles per hour, fast enough to lift cars and tear roofs from houses.",
+                    "+Tornadoes happen in many places, but the United States has more than any other country. A region in the middle of the country is often called Tornado Alley because so many tornadoes touch down there each spring.",
+                    "In contrast, hurricanes form over warm ocean waters, stretch hundreds of miles wide, and can last for days. As warm water evaporates, it rises and forms towering clouds. The storm grows stronger as long as it stays over warm water.",
+                    "+At the center of a hurricane is the eye, a calm area where the sky may even be clear. Around the eye is the eyewall, where the strongest winds and heaviest rain are found. Bands of thunderstorms spiral outward from the eyewall like the arms of a pinwheel.",
+                    "+Hurricanes cause damage in several ways. Their winds can reach more than 150 miles per hour. Heavy rain causes flooding, and a rise of seawater called a storm surge can push ocean water far inland.",
+                    "Consequently, coastal communities receive early evacuation warnings, whereas tornado alerts give residents only minutes to seek shelter. Meteorologists can watch a hurricane on satellite images for days as it moves across the ocean, which gives families time to pack and leave.",
+                    "+Because tornadoes form so quickly, scientists use special radar to look for spinning winds inside thunderstorms. When they spot danger, they send out a tornado warning. Many towns sound outdoor sirens, and phones buzz with emergency alerts.",
+                    "Because the two storms are different, the safety plans are different too. During a tornado warning, people should go to a basement or a small room in the middle of the lowest floor, away from windows. During a hurricane, people in the storm's path are often told to leave the coast and travel inland.",
+                    "Tornadoes and hurricanes are both dangerous, but knowing how they work can keep people safe. By understanding the differences between these storms, families can make the right plan before severe weather arrives."
+                ] },
             },
             '4.RC.8': {
-                nonfiction: { title: 'Persuasive Article: Why Recess Matters', text: ['Daily physical exercise is essential for growing children. Research proves that 30 minutes of unstructured outdoor play improves classroom focus and reduces student stress.', 'Although some school boards believe cutting recess increases academic instruction time, evidence clearly shows that active breaks lead to higher test scores and better social behavior. Recess is undeniably the best part of the school day.'] }
+                nonfiction: { title: "Persuasive Article: Why Recess Matters", text: [
+                    "Daily physical exercise is essential for growing children. Running, jumping, and climbing build strong muscles and bones. But exercise does more than keep bodies healthy. It also helps young minds learn.",
+                    "Research proves that 30 minutes of unstructured outdoor play improves classroom focus and reduces student stress. Unstructured play means that children choose their own games instead of following directions from an adult.",
+                    "+Think about how you feel after sitting at a desk all morning. Your legs get restless, and it becomes harder to pay attention. A break outside gives the brain a chance to rest and recharge, just like a phone needs time on its charger.",
+                    "+Recess also teaches skills that are hard to learn from a textbook. When students make up rules for a game, take turns on the swings, or settle an argument about who was tagged, they are practicing teamwork, fairness, and problem solving.",
+                    "Although some school boards believe cutting recess increases academic instruction time, evidence clearly shows that active breaks lead to higher test scores and better social behavior. Students who play outside come back to class ready to learn.",
+                    "+Imagine a school that shortens recess to only ten minutes so students have more time for reading and math. Teachers at schools like this often notice more students talking out of turn and having trouble sitting still by the afternoon.",
+                    "Some people worry that recess is unsafe because children might get hurt on the playground. However, adults can supervise recess, and schools can keep equipment in good repair. The benefits of play are far greater than the risk of a scraped knee.",
+                    "+Recess is important in every season. Even on cold days, a short time outside in coats and gloves can wake students up. When the weather is too stormy, schools can offer indoor recess with dancing, stretching, or active games in the gym.",
+                    "+Students agree that recess matters. \"Recess is my favorite time because I get to play tag with my friends,\" said one fourth grader. Another student said that recess helps her calm down after a hard test.",
+                    "+Some countries give students even more playtime. In Finland, many students get a 15-minute break after every 45 minutes of class, and Finnish students are known for doing very well in school.",
+                    "Schools should protect recess instead of cutting it. Principals and school boards can make sure every student gets at least 30 minutes of outdoor play every day.",
+                    "Recess is undeniably the best part of the school day. It keeps students healthy, happy, and ready to learn. Let's make sure every child has time to play."
+                ] },
             },
             '4.RC.9': {
-                nonfiction: { title: 'Paired Passages on Solar Energy', text: ['<strong>Text A:</strong> Solar panels turn sunlight into electricity without burning fossil fuels. They produce clean energy and help keep our air clean.', '<strong>Text B:</strong> Installing solar panels can be expensive at first, but over time, homes save money on electricity bills because sunlight is completely free.'] }
+                nonfiction: { title: "Paired Passages on Solar Energy", text: [
+                    "<strong>Text A: Clean Power from the Sun.</strong> Solar panels turn sunlight into electricity without burning fossil fuels. They produce clean energy and help keep our air clean.",
+                    "+For many years, most electricity in the United States has come from power plants that burn coal, oil, or natural gas. When these fossil fuels burn, they release smoke and gases into the air. Some of these gases trap heat around Earth and add to climate change.",
+                    "A solar panel is made of many small parts called solar cells. When sunlight hits a cell, it knocks tiny particles loose inside the material, and those moving particles create an electric current. The panel makes power silently, with no smoke and no moving parts.",
+                    "+Solar panels can be placed almost anywhere the sun shines. People put them on rooftops, over parking lots, and in large fields called solar farms. Some calculators and road signs even have their own tiny panels.",
+                    "+Unlike coal or oil, sunlight will not run out. The sun will keep shining for billions of years, so solar power is called a renewable resource. Using it means less digging and drilling for fuel.",
+                    "Every home or school that switches to solar power helps reduce pollution. Cleaner air means healthier lungs for people and a healthier planet for plants and animals.",
+                    "<strong>Text B: Solar Panels and Your Wallet.</strong> Installing solar panels can be expensive at first, but over time, homes save money on electricity bills because sunlight is completely free.",
+                    "+A set of rooftop panels for one house can cost thousands of dollars. Families must pay for the panels, the wiring, and the workers who install them. For many families, that is a big decision.",
+                    "Once the panels are working, they make electricity every sunny day. The family buys less electricity from the power company, so the monthly bill shrinks. In some months, the bill might be close to zero.",
+                    "+Many families find that the savings add up. After several years, the money they saved on bills can equal the money they spent on the panels. After that, the savings are like extra money in their pocket.",
+                    "+Solar panels also need very little care. Most panels last 25 years or more. Owners may need to rinse off dust or snow, but there are no engines to repair.",
+                    "Before buying panels, families should compare prices and think about how much sun their roof gets. A home with a sunny, south-facing roof will usually save the most money."
+                ] },
             },
             '4.RC.10': {
-                fiction: { title: 'Story: The Lost Compass', text: ['Liam searched frantically through his backpack for the ancient compass. The fog was growing dense, and the dimly lit forest paths were becoming treacherous.', 'He realized he was in a perilous situation. Taking a slow, calming breath, Liam resolved not to panic and instead searched for recognizable landmarks.'] }
+                fiction: { title: "Story: The Lost Compass", text: [
+                    "Liam searched frantically through his backpack for the ancient compass. He dumped out his water bottle, his granola bars, and his rain jacket, but the compass was nowhere to be found.",
+                    "+The compass had belonged to his grandfather, who had carried it on hiking trips for fifty years. Its brass case was scratched and dented, but its needle still pointed north as faithfully as ever. Liam had promised to take good care of it.",
+                    "The fog was growing dense, and the dimly lit forest paths were becoming treacherous. Thick gray clouds hid the trees only a few feet away, and the rocks under his boots were slick with moisture.",
+                    "+Liam had hiked ahead of his family, sure that he could find the lookout point on his own. Now he could not hear his parents' voices or see the bright red trail markers that had guided him earlier.",
+                    "He realized he was in a perilous situation. If he wandered in the wrong direction, he could slip down a steep hillside or walk deeper into the forest, farther from help.",
+                    "Taking a slow breath, Liam resolved not to panic and instead searched for recognizable landmarks. He remembered his grandfather's advice: \"When you're lost, stop, think, and look around.\"",
+                    "+First, he noticed a gigantic boulder shaped like a turtle's shell. He had passed it about twenty minutes ago and had even climbed on top of it to take a photo. That meant the main trail could not be far away.",
+                    "+Next, he listened carefully. Beneath the dripping of the trees, he heard a faint, steady rushing sound. It was the creek! The trail ran right beside the creek, so if he followed the sound, he would find his way back.",
+                    "Liam moved cautiously, testing each step before he put his weight on it. He kept one hand on the rough bark of the trees for balance. Slowly, the rushing water grew louder.",
+                    "At last, a red trail marker appeared out of the fog. Liam let out a whoop of relief. And there, tangled in a fern right beside the marker, was a glint of brass. The compass had fallen out of his pocket when he stopped to tie his shoe!",
+                    "A few minutes later, he heard his dad calling his name. Liam shouted back, and soon his whole family emerged from the mist. His mom hugged him so tightly that he could barely breathe.",
+                    "+That night, Liam held the compass in his hand and thought about the day. He had been lost, but he had used his head instead of letting his fear take over. Next time, he decided, he would stay with his family and keep the compass on a string around his neck."
+                ] },
             },
             '4.RC.11': {
-                both: { title: 'Passage: Word Power in Action', text: ['Language is full of interesting relationships. Words that sound the same can have entirely different meanings, like the bark of a dog versus the bark of a tree.', 'Understanding synonyms and antonyms helps writers expand their vocabulary and express exact ideas clearly.'] }
+                both: { title: "Passage: Word Power in Action", text: [
+                    "Language is full of interesting relationships. Some words sound alike, some are spelled alike, and some mean nearly the same thing. Learning how words are connected helps readers understand what they read and helps writers say exactly what they mean.",
+                    "Words that sound the same can have entirely different meanings, like the bark of a dog versus the bark of a tree. Words that are spelled and pronounced the same but have different meanings are called homonyms, or multiple-meaning words. A bat can fly through the night sky, or it can hit a baseball.",
+                    "+Homographs are words that are spelled the same but may be pronounced differently. When you wind a toy, you say it with a long i sound. When the wind blows, you say it with a short i sound. Readers must use the rest of the sentence to decide which word makes sense.",
+                    "Homophones are words that sound the same but are spelled differently and have different meanings. Their, there, and they're are homophones that confuse many writers. So are to, too, and two, and ate and eight.",
+                    "+A good way to remember homophones is to look for clues inside the word. \"Hear\" has the word \"ear\" inside it, and you hear with your ears. \"Here\" is spelled like \"there\" and \"where,\" and all three words tell about places.",
+                    "Understanding synonyms and antonyms helps writers expand their vocabulary and express exact ideas clearly. Synonyms are words with similar meanings, such as big, large, and enormous. Antonyms are words with opposite meanings, such as hot and cold or early and late.",
+                    "+Synonyms are not always exactly the same. \"Giggle,\" \"chuckle,\" and \"roar\" all describe laughing, but they paint very different pictures. A careful writer chooses the synonym that fits the feeling best.",
+                    "+Antonyms can help readers figure out new words. In the sentence \"Unlike his timid brother, Marcus was bold and brave,\" the word \"unlike\" signals an opposite. If Marcus is bold, then \"timid\" must mean shy or easily frightened.",
+                    "Context clues help readers choose the right meaning of a multiple-meaning word. In \"The pitcher threw a fast ball,\" a pitcher is a baseball player. In \"Please fill the pitcher with lemonade,\" a pitcher is a container for pouring.",
+                    "+Dictionaries and thesauruses are helpful tools. A dictionary lists every meaning of a word, often numbered. A thesaurus lists synonyms and sometimes antonyms, so writers can find a fresh word instead of using the same one again and again.",
+                    "+Playing with words can be fun. Jokes and riddles often use multiple-meaning words. Why did the cookie go to the doctor? Because it felt crummy!",
+                    "The more you notice how words are related, the stronger your reading and writing will become. Next time you read, look for homophones, homographs, synonyms, and antonyms hiding in the sentences."
+                ] },
             },
             '4.RC.12': {
-                both: { title: 'Informational Text: Understanding Word Building', text: ['Many English words originate from ancient Greek and Latin roots. For example, the root "bio" means life, while "geo" means earth.', 'Attaching prefixes like "un-" or suffixes like "-able" alters a word\'s core meaning, turning "break" into "unbreakable".'] }
+                both: { title: "Informational Text: Understanding Word Building", text: [
+                    "Many English words originate from ancient Greek and Latin roots. A root is the main part of a word that carries its meaning. When you know a few common roots, you can often figure out words you have never seen before.",
+                    "For example, the root \"bio\" means life, while \"geo\" means earth. Biology is the study of living things, and geology is the study of rocks and the earth. Both words end with \"logy,\" which means the study of something.",
+                    "+The Greek root \"graph\" means to write or draw. An autograph is a person's own signature, a photograph is a picture made with light, and geography describes the earth and its places.",
+                    "+The Latin root \"aud\" means to hear. An audience is a group of people who listen, something audible can be heard, and an auditorium is a large room where people gather to hear a performance.",
+                    "Attaching prefixes like \"un-\" or suffixes like \"-able\" alters a word's core meaning, turning \"break\" into \"unbreakable.\" A prefix comes at the beginning of a word, and a suffix comes at the end.",
+                    "Some of the most common prefixes are \"re-,\" which means again, \"pre-,\" which means before, and \"dis-,\" which means not or the opposite of. To reread a book is to read it again, to preheat an oven is to heat it before cooking, and to disagree is to not agree.",
+                    "+Suffixes can change a word's meaning or its part of speech. Adding \"-ful\" means full of, so a joyful person is full of joy. Adding \"-less\" means without, so a fearless explorer is without fear. Adding \"-ness\" turns a describing word into a thing, as when \"kind\" becomes \"kindness.\"",
+                    "+The Latin root \"port\" means to carry. A portable speaker can be carried from place to place, to transport something is to carry it across a distance, and a porter is a person who carries luggage.",
+                    "+The Greek root \"tele\" means far. A telephone carries sound from far away, a telescope helps you see faraway objects, and television shows pictures sent from far away.",
+                    "When you meet a long, unfamiliar word, try breaking it into parts. For \"unbelievable,\" cover the prefix and suffix to find the base word \"believe.\" Then add the meanings back: \"un-\" means not, and \"-able\" means able to be. Unbelievable means not able to be believed.",
+                    "+Sometimes a word's parts can trick you. The \"re\" in \"ready\" is not a prefix, because \"ady\" is not a word. Always check that the part that is left makes sense on its own.",
+                    "Learning roots and affixes is like collecting keys. Each new key unlocks dozens of words. The more keys you collect, the more doors you can open as a reader."
+                ] },
             },
             '4.RC.13': {
-                fiction: { title: 'Poem / Story: Nature\'s Symphony', text: ['The wind whispered secrets through the swaying pine branches. Outside my bedroom window, rain tapped gently on the glass like a playful visitor.', 'My blanket was as warm as a sunbeam, wrapping me in comfort while the thunderstorm played its noisy midnight symphony outside.'] }
-            }
+                fiction: { title: "Story: Nature's Symphony", text: [
+                    "The wind whispered secrets through the swaying pine branches. I lay in bed with the covers pulled up to my chin, listening as the evening turned into a stormy night.",
+                    "Outside my bedroom window, rain tapped gently on the glass like a playful visitor. Tap, tap, tap. It seemed to be asking if I could come outside and play.",
+                    "+At first, the storm was soft and polite. The clouds drifted across the sky like gray sheep wandering through a field, and the streetlight glowed like a lonely lighthouse at the end of the block.",
+                    "My blanket was as warm as a sunbeam, wrapping me in comfort while the thunderstorm played its noisy midnight symphony outside. Thunder was the bass drum, booming so loudly it could have woken the whole world.",
+                    "+The raindrops became the snare drums, rattling on the roof faster and faster. The gutters gurgled and sang along, and the old maple tree waved its arms like a conductor leading the orchestra.",
+                    "Then the lightning flashed like a jagged silver sword across the dark night sky. For one bright second, my whole room lit up, and I could see every toy on my shelf. My cat, Pepper, was a furry statue at the foot of my bed.",
+                    "+Pepper's ears twitched with every boom. She is the bravest cat in the universe during the day, chasing leaves and pouncing on shoelaces, but storms turn her into a nervous little ball of fur.",
+                    "+I reached down and pulled her close. \"It's just the sky singing,\" I whispered. Her purr started up like a tiny motor, and the storm suddenly seemed a little less wild.",
+                    "Slowly, the music outside began to fade. The thunder grumbled once more, like an old man complaining as he walked away. The rain softened to a whisper, and the wind hummed a quiet lullaby.",
+                    "+My eyelids felt as heavy as bricks. I could hear the last drops sliding down the window, each one taking its time, as if it didn't want the concert to end.",
+                    "+Somewhere far away, a train horn called out into the night. It sounded lonely, but I felt safe and cozy, tucked in with Pepper beside me.",
+                    "By morning, the storm had packed up its instruments and tiptoed away. Sunshine poured through my window like warm honey, and the whole world sparkled as if it had been scrubbed clean."
+                ] },
+            },
         };
 
         const QUESTION_POOLS = {
@@ -322,7 +508,7 @@ const STANDARDS = [
                 { genre: 'nonfiction', rigor: 'basic', q: "Where do monarchs travel to spend the winter?", c: "Warm forests in central Mexico.", d: ["Cold mountains in Canada.", "Deserts in Arizona.", "Swamps in Florida."] },
                 { genre: 'nonfiction', rigor: 'on-grade', q: "Why do scientists track monarch butterflies using lightweight wing tags?", c: "To better understand how habitat loss impacts their survival.", d: ["To count exactly how many butterflies there are.", "To see which butterfly flies the fastest.", "To capture them for zoos."] },
                 { genre: 'nonfiction', rigor: 'on-grade', q: "What is the best summary of the second paragraph?", c: "It takes four generations of monarchs to complete the migration, and scientists track them to study their survival.", d: ["Monarchs only live a few weeks.", "Tags are placed on butterfly wings.", "Habitat loss is a major problem for insects."] },
-                { genre: 'nonfiction', rigor: 'on-grade', q: "Which key detail explains why one single monarch cannot complete the entire round-trip?", c: "Individual monarchs live only a few weeks.", d: ["Their wings are too delicate for wind storms.", "They get lost without tags.", "Forests in Mexico are too far."] },
+                { genre: 'nonfiction', rigor: 'on-grade', q: "Which key detail explains why one single monarch cannot complete the entire round-trip?", c: "Most monarchs live only a few weeks.", d: ["Their wings are too delicate for wind storms.", "They get lost without tags.", "Forests in Mexico are too far."] },
                 { genre: 'nonfiction', rigor: 'advanced', q: "Which summary best captures the entire article without including minor details?", c: "Monarchs complete a multi-generational 2,000-mile migration that scientists study to help protect their habitat.", d: ["Monarchs fly from Canada to Mexico every fall because Mexico is warm and has green forests.", "Scientists attach small tags to butterfly wings so they can see them fly over Canadian houses.", "Butterflies live short lives and die quickly after four generations."] },
                 { genre: 'nonfiction', rigor: 'advanced', q: "How does the second paragraph build upon the main idea introduced in the first paragraph?", c: "It explains the remarkable multi-generational process required to complete the journey.", d: ["It proves that butterflies travel faster than birds.", "It refutes the claim that monarchs migrate south.", "It describes the climate of central Mexico in detail."] },
                 { genre: 'nonfiction', rigor: 'advanced', q: "Which detail provides evidence that habitat loss threatens monarchs?", c: "Scientists use tags to monitor how environment changes affect survival rates.", d: ["Monarchs have bright orange and black wings.", "Canada has cold winters.", "Mexico is located south of the United States."] },
@@ -743,6 +929,13 @@ const STANDARDS = [
             box.innerHTML = msgs.map(m => `<p>${m}</p>`).join('');
         }
 
+        // CFA uses the core paragraphs; End of Unit adds the paragraphs marked with "+"
+        function passageParagraphs(passage) {
+            return passage.text
+                .filter(t => state.mode === 'eou' || !t.startsWith('+'))
+                .map(t => t.replace(/^\+/, ''));
+        }
+
         // ---------- Printable sheet ----------
         function el(tag, cls, text) {
             const e = document.createElement(tag);
@@ -794,7 +987,12 @@ const STANDARDS = [
                     if (block.passage) {
                         const p = el('div', 'passage');
                         p.appendChild(el('h3', '', block.passage.title));
-                        block.passage.text.forEach(t => { const para = el('p'); para.innerHTML = t; p.appendChild(para); });
+                        passageParagraphs(block.passage).forEach((t, k) => {
+                            const para = el('p');
+                            para.appendChild(el('span', 'pnum', String(k + 1)));
+                            const body = el('span'); body.innerHTML = t; para.appendChild(body);
+                            p.appendChild(para);
+                        });
                         wrap.appendChild(p);
                     }
                     block.questions.forEach(q => {
