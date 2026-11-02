@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reading Launch Pad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --space:#0D2236; --space2:#14324D; --space3:#1C4262;
+  --teal:#1FB5A8; --gold:#F2B630; --orbit:#8FB8FF;
+  --on-space:#EAF6F5; --on-space-muted:#A9C4CC;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --space:#07172A; --space2:#0F2840; --space3:#173957; color-scheme: dark; }
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+body{
+  font-family:"Atkinson Hyperlegible",Verdana,Arial,sans-serif;
+  color:var(--on-space); min-height:100vh;
+  background-color:var(--space);
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #ffffffaa 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 12%, #ffffff88 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 85% 64%, #ffffff99 50%, transparent 51%),
+    radial-gradient(1px 1px at 33% 78%, #ffffff77 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 40%, #ffffff66 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 92% 30%, #f2b630aa 50%, transparent 51%),
+    radial-gradient(1px 1px at 5% 55%, #ffffff77 50%, transparent 51%);
+  background-size:420px 420px;
+}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 48px}
+h1,h2{font-family:"Baloo 2","Trebuchet MS",sans-serif;margin:0}
+.top{text-align:center;margin:10px 0 34px}
+.top h1{font-size:clamp(2.4rem,6vw,3.6rem);color:var(--gold);line-height:1.05}
+.top p{font-size:1.25rem;color:var(--on-space-muted);margin:8px 0 0}
+.bays{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.bay{
+  display:flex;flex-direction:column;gap:12px;text-decoration:none;color:var(--on-space);
+  background:var(--space2);border:3px solid var(--space3);border-radius:24px;padding:26px 24px 24px;
+  position:relative;overflow:hidden;
+}
+.bay:hover{border-color:var(--accent)}
+.bay:focus-visible{outline:4px solid var(--gold);outline-offset:4px}
+.bay::before{content:"";position:absolute;inset:0 0 auto;height:10px;background:var(--accent)}
+.bay .ic{font-size:3rem;line-height:1;margin-top:6px}
+.bay h2{font-size:2rem;color:var(--accent);line-height:1.1}
+.bay p{margin:0;font-size:1.1rem;line-height:1.5;color:var(--on-space-muted);flex:1}
+.bay .go{align-self:flex-start;background:var(--accent);color:#03222A;font-weight:700;font-size:1.1rem;border-radius:12px;padding:10px 20px}
+.patrol{--accent:var(--teal)}
+.orbit{--accent:var(--orbit)}
+.bridge{--accent:var(--gold)}
+.foot{text-align:center;color:var(--on-space-muted);margin-top:30px;font-size:1.05rem}
+@media (max-width:860px){ .bays{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Reading Launch Pad</h1>
+    <p>Pick the mission Mr. Nyhuis gave you, then log in with your first name.</p>
+  </header>
+  <main class="bays">
+    <a class="bay patrol" href="ProofPatrol.html">
+      <span class="ic" aria-hidden="true">🔍</span>
+      <h2>Proof Patrol</h2>
+      <p>Hunt down answers in the text and prove exactly where you found them.</p>
+      <span class="go">Launch</span>
+    </a>
+    <a class="bay orbit" href="InferenceOrbit.html">
+      <span class="ic" aria-hidden="true">🧠</span>
+      <h2>Inference Orbit</h2>
+      <p>Read between the lines, follow the clues, and back up your thinking.</p>
+      <span class="go">Launch</span>
+    </a>
+    <a class="bay bridge" href="Starbridge.html">
+      <span class="ic" aria-hidden="true">🔗</span>
+      <h2>Starbridge</h2>
+      <p>Connect details across a whole text and explain how they fit together.</p>
+      <span class="go">Launch</span>
+    </a>
+  </main>
+  <p class="foot">Your stars are saved inside each mission.</p>
+</div>
+</body>
+</html>
