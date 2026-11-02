@@ -220,7 +220,7 @@ const STANDARDS = [
             { id: '4.RC.7', label: '4.RC.7: Text Structure', desc: 'Describe organizational structure (chronological, problem-solution, cause/effect, compare/contrast, etc.).' },
             { id: '4.RC.8', label: '4.RC.8: Fact/Opinion & Author Claims', desc: 'Distinguish between fact and opinion; explain how an author uses reasons/evidence to support a claim.' },
             { id: '4.RC.9', label: '4.RC.9: Integrating Information Across Texts', desc: 'Combine information from two texts on the same topic to demonstrate knowledge.' },
-            { id: '4.RC.10', label: '4.RC.10: Context Clues for Word Meaning', desc: 'Apply context clues and text features to determine the meanings of unknown words.' },
+            { id: '4.RC.10', label: '4.RC.10: Context Clues for Word Meaning', desc: 'Apply context clues to determine the meanings of unknown words. No passage of its own: uses words from the other passages on the test.' },
             { id: '4.RC.11', label: '4.RC.11: Word Relationships & Multiple Meanings', desc: 'Identify relationships among words, including homographs, homonyms, synonyms, antonyms, multiple meanings.' },
             { id: '4.RC.12', label: '4.RC.12: Word Structure & Affixes/Roots', desc: 'Apply knowledge of prefixes, suffixes, Greek/Latin roots, and word patterns to determine meaning.' },
             { id: '4.RC.13', label: '4.RC.13: Figurative Language & Meaning', desc: 'Determine how words provide meaning in literature, including figurative language (similes, metaphors, hyperbole).' }
@@ -367,20 +367,6 @@ const STANDARDS = [
                     "Before buying panels, families should compare prices and think about how much sun their roof gets. A home with a sunny, south-facing roof will usually save the most money."
                 ] },
             },
-            '4.RC.10': {
-                fiction: { title: "Story: The Lost Compass", text: [
-                    "Liam searched frantically through his backpack for the ancient compass. He dumped out his water bottle, his granola bars, and his rain jacket, but the compass was nowhere to be found.",
-                    "+The compass had belonged to his grandfather, who had carried it on hiking trips for fifty years. Its brass case was scratched and dented, but its needle still pointed north as faithfully as ever. Liam had promised to take good care of it.",
-                    "The fog was growing dense, and the dimly lit forest paths were becoming treacherous. Thick gray clouds hid the trees only a few feet away, and the rocks under his boots were slick with moisture.",
-                    "+Liam had hiked ahead of his family, sure that he could find the lookout point on his own. Now he could not hear his parents' voices or see the bright red trail markers that had guided him earlier.",
-                    "He realized he was in a perilous situation. If he wandered in the wrong direction, he could slip down a steep hillside or walk deeper into the forest, farther from help.",
-                    "Taking a slow breath, Liam resolved not to panic and instead searched for recognizable landmarks. He remembered his grandfather's advice: \"When you're lost, stop, think, and look around.\"",
-                    "+He stopped and listened carefully. Beneath the dripping of the trees, he heard a faint, steady rushing sound. It was the creek! The trail ran right beside the creek, so if he followed the sound, he would find his way back.",
-                    "Liam moved cautiously, testing each step before he put his weight on it. He kept one hand on the rough bark of the trees for balance. Slowly, the rushing water grew louder.",
-                    "At last, a red trail marker appeared out of the fog. Liam let out a whoop of relief. And there, tangled in a fern right beside the marker, was a glint of brass. The compass had fallen out of his pocket when he stopped to tie his shoe!",
-                    "A few minutes later, he heard his dad calling his name. Liam shouted back, and soon his whole family emerged from the mist. His mom hugged him so tightly that he could barely breathe."
-                ] },
-            },
             '4.RC.11': {
                 both: { title: "Passage: Word Power in Action", text: [
                     "Language is full of interesting relationships. Some words sound alike, some are spelled alike, and some mean nearly the same thing. Learning how words are connected helps readers understand what they read and helps writers say exactly what they mean.",
@@ -423,6 +409,648 @@ const STANDARDS = [
                     "By morning, the storm had packed up its instruments and tiptoed away. Sunshine poured through my window like warm honey, and the whole world sparkled as if it had been scrubbed clean."
                 ] },
             },
+        };
+        // 4.RC.10 context-clue items, keyed by passage title. Each sentence comes from a CFA (core) paragraph,
+        // so it appears in both the CFA and End of Unit versions of the passage.
+        const CONTEXT_CLUES = {
+         "Story: The Midnight Rescue": [
+          {
+           "rigor": "basic",
+           "sentence": "Heavy rain pelted the glass, and the old oak tree in the front yard swayed wildly in the wind.",
+           "word": "pelted",
+           "c": "hit hard, again and again",
+           "d": [
+            "gently touched",
+            "painted",
+            "froze"
+           ],
+           "clue": "heavy rain, swayed wildly in the wind"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Suddenly, a bright flash of lightning illuminated the lawn, and Maya gasped.",
+           "word": "illuminated",
+           "c": "lit up",
+           "d": [
+            "flooded",
+            "hid",
+            "shook"
+           ],
+           "clue": "a bright flash of lightning"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Maya grabbed her raincoat and flashlight from the closet without hesitation.",
+           "word": "without hesitation",
+           "c": "right away, without stopping to wonder",
+           "d": [
+            "slowly and carefully",
+            "without asking permission",
+            "while crying"
+           ],
+           "clue": "she knew she had to act quickly"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Water was already rushing along the curb and creeping toward the box.",
+           "word": "creeping",
+           "c": "moving slowly closer",
+           "d": [
+            "jumping quickly away",
+            "freezing solid",
+            "drying up"
+           ],
+           "clue": "rushing along the curb, toward the box"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "When she saw the soggy puppy curled up on Maya's lap, her sleepy frown turned into a smile.",
+           "word": "soggy",
+           "c": "very wet",
+           "d": [
+            "very hungry",
+            "very sleepy",
+            "very small"
+           ],
+           "clue": "the puppy had been out in the rain and needed a towel"
+          }
+         ],
+         "Informational Text: Deep Sea Explorers": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Deep on the ocean floor, sunlight cannot penetrate the pitch-black water.",
+           "word": "penetrate",
+           "c": "pass through",
+           "d": [
+            "warm up",
+            "bounce off",
+            "change the color of"
+           ],
+           "clue": "pitch-black water, sunlight cannot reach the bottom"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "In 1977, researchers discovered hydrothermal vents spewing superheated water full of minerals.",
+           "word": "spewing",
+           "c": "pouring out with force",
+           "d": [
+            "slowly freezing",
+            "soaking up",
+            "hiding"
+           ],
+           "clue": "superheated water coming out of vents"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Surprising scientists everywhere, whole ecosystems of tube worms and blind white crabs were thriving in total darkness without sunlight energy.",
+           "word": "thriving",
+           "c": "growing and doing well",
+           "d": [
+            "dying out",
+            "sleeping",
+            "hiding from danger"
+           ],
+           "clue": "whole ecosystems, surprising scientists"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "This process is called chemosynthesis.",
+           "word": "chemosynthesis",
+           "c": "making food from chemicals instead of sunlight",
+           "d": [
+            "making food from sunlight",
+            "breathing underwater",
+            "digging into rocks"
+           ],
+           "clue": "the sentence before it explains that bacteria use chemicals to make food"
+          }
+         ],
+         "Story: The Great Oak Tree": [
+          {
+           "rigor": "basic",
+           "sentence": "At an assembly that afternoon, the principal announced that the tree might need to be removed for safety reasons.",
+           "word": "assembly",
+           "c": "a meeting of the whole school",
+           "d": [
+            "a science test",
+            "a building project",
+            "a recess game"
+           ],
+           "clue": "the principal announced news to everyone"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "She explained that a tree expert called an arborist can sometimes trim damaged branches so that a tree is safe again.",
+           "word": "arborist",
+           "c": "a tree expert",
+           "d": [
+            "a school principal",
+            "a carpenter",
+            "a farmer"
+           ],
+           "clue": "the sentence defines it: a tree expert"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Leo refused to give up on the oak.",
+           "word": "refused",
+           "c": "would not",
+           "d": [
+            "decided",
+            "forgot",
+            "was afraid"
+           ],
+           "clue": "he kept working to save the tree"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "The arborist said the oak was healthy and strong once the broken limbs were removed.",
+           "word": "limbs",
+           "c": "large branches of a tree",
+           "d": [
+            "arms and legs",
+            "roots",
+            "leaves"
+           ],
+           "clue": "the broken branches from the storm; the sentence is about a tree"
+          }
+         ],
+         "Story: The Mystery of Whispering Woods": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Clara and Ethan followed the narrow trail into Whispering Woods as dusk began to fall.",
+           "word": "dusk",
+           "c": "the time when the sun goes down",
+           "d": [
+            "early morning",
+            "noon",
+            "a heavy fog"
+           ],
+           "clue": "the sun slipping behind the hills, shadows stretching"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Ethan froze in fear.",
+           "word": "froze",
+           "c": "stopped moving",
+           "d": [
+            "got very cold",
+            "turned to ice",
+            "ran away"
+           ],
+           "clue": "in fear, his heart pounded; he did not move"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Out swooped a small barn owl, blinking in the twilight.",
+           "word": "swooped",
+           "c": "flew down quickly",
+           "d": [
+            "crawled slowly",
+            "sang loudly",
+            "fell asleep"
+           ],
+           "clue": "an owl flapping out of the tree"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Out swooped a small barn owl, blinking in the twilight.",
+           "word": "twilight",
+           "c": "the dim light after sunset",
+           "d": [
+            "the bright noon sun",
+            "the middle of winter",
+            "a thick forest"
+           ],
+           "clue": "dusk was falling; the owl was blinking"
+          }
+         ],
+         "Story: The Science Fair Swap": [
+          {
+           "rigor": "on-grade",
+           "sentence": "I spent three weeks perfecting my volcanic eruption model.",
+           "word": "perfecting",
+           "c": "making something as good as possible",
+           "d": [
+            "breaking",
+            "selling",
+            "painting red"
+           ],
+           "clue": "three weeks of careful work"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "When Maya accidentally bumped my table, red lava splattered across my poster.",
+           "word": "splattered",
+           "c": "splashed in messy drops",
+           "d": [
+            "was neatly painted",
+            "dried up",
+            "was folded"
+           ],
+           "clue": "the table was bumped; pink, dripping blobs"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "The cafeteria was crowded and chaotic.",
+           "word": "chaotic",
+           "c": "wild and disorganized",
+           "d": [
+            "quiet and calm",
+            "empty",
+            "clean and neat"
+           ],
+           "clue": "crowded; kids running; everyone talking at once"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "My cheeks burned with embarrassment.",
+           "word": "burned",
+           "c": "felt hot",
+           "d": [
+            "caught on fire",
+            "got a sunburn",
+            "turned pale"
+           ],
+           "clue": "with embarrassment; everyone turned to stare"
+          }
+         ],
+         "Informational Text: Monarch Butterfly Migration": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Every autumn, millions of monarch butterflies embark on an extraordinary journey across North America.",
+           "word": "embark on",
+           "c": "begin",
+           "d": [
+            "finish",
+            "watch",
+            "draw a map of"
+           ],
+           "clue": "the journey is just starting each autumn"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Every autumn, millions of monarch butterflies embark on an extraordinary journey across North America.",
+           "word": "extraordinary",
+           "c": "very unusual and amazing",
+           "d": [
+            "ordinary",
+            "short and easy",
+            "dangerous"
+           ],
+           "clue": "a 2,000-mile trip by tiny insects; extra- means beyond"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Today, monarch populations face serious challenges.",
+           "word": "populations",
+           "c": "the number of monarchs living in an area",
+           "d": [
+            "migration routes",
+            "favorite plants",
+            "types of wings"
+           ],
+           "clue": "fields and forests are disappearing, so there are fewer monarchs"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "These small patches of habitat give monarchs places to eat, rest, and lay eggs along their long journey.",
+           "word": "habitat",
+           "c": "a place where an animal can live and find what it needs",
+           "d": [
+            "a kind of flower",
+            "a long trip",
+            "a group of scientists"
+           ],
+           "clue": "places to eat, rest, and lay eggs"
+          }
+         ],
+         "Informational Text: Navigating Maps & Diagrams": [
+          {
+           "rigor": "basic",
+           "sentence": "Maps contain several key features that help travelers locate destinations.",
+           "word": "locate",
+           "c": "find",
+           "d": [
+            "leave",
+            "build",
+            "name"
+           ],
+           "clue": "maps help travelers know where places are"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Maps contain several key features that help travelers locate destinations.",
+           "word": "destinations",
+           "c": "places someone is traveling to",
+           "d": [
+            "maps and charts",
+            "travelers",
+            "directions"
+           ],
+           "clue": "travelers, where you are going"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "The compass rose shows cardinal directions (North, South, East, West).",
+           "word": "cardinal directions",
+           "c": "the four main directions",
+           "d": [
+            "a kind of red bird",
+            "steps in a recipe",
+            "the most important streets"
+           ],
+           "clue": "the examples in parentheses: North, South, East, West"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Reading cross-section diagrams allows geologists to examine layers of rock hidden beneath Earth's surface.",
+           "word": "geologists",
+           "c": "scientists who study rocks",
+           "d": [
+            "people who draw maps",
+            "people who study weather",
+            "people who study animals"
+           ],
+           "clue": "layers of rock hidden beneath Earth's surface"
+          }
+         ],
+         "Informational Text: Tornadoes and Hurricanes": [
+          {
+           "rigor": "basic",
+           "sentence": "Tornadoes and hurricanes are both powerful storm systems with rotating winds, but they differ significantly in scale.",
+           "word": "rotating",
+           "c": "spinning",
+           "d": [
+            "warm",
+            "quiet",
+            "slowing down"
+           ],
+           "clue": "storms with winds that turn in circles"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Tornadoes and hurricanes are both powerful storm systems with rotating winds, but they differ significantly in scale.",
+           "word": "scale",
+           "c": "size",
+           "d": [
+            "a tool for weighing things",
+            "a flat plate on a fish's skin",
+            "a set of musical notes"
+           ],
+           "clue": "hurricanes stretch hundreds of miles wide, while tornadoes are small"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Consequently, coastal communities receive early evacuation warnings, whereas tornado alerts give residents only minutes to seek shelter.",
+           "word": "evacuation",
+           "c": "leaving a dangerous place to stay safe",
+           "d": [
+            "staying inside",
+            "cleaning up after a storm",
+            "measuring wind speed"
+           ],
+           "clue": "warnings, time to pack and leave"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Consequently, coastal communities receive early evacuation warnings, whereas tornado alerts give residents only minutes to seek shelter.",
+           "word": "coastal",
+           "c": "near the ocean",
+           "d": [
+            "in the mountains",
+            "in big cities",
+            "far from water"
+           ],
+           "clue": "hurricanes form over ocean waters"
+          }
+         ],
+         "Persuasive Article: Why Recess Matters": [
+          {
+           "rigor": "basic",
+           "sentence": "Daily physical exercise is essential for growing children.",
+           "word": "essential",
+           "c": "very important; needed",
+           "d": [
+            "boring",
+            "dangerous",
+            "not allowed"
+           ],
+           "clue": "exercise builds strong muscles and helps minds learn"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Unstructured play means that children choose their own games instead of following directions from an adult.",
+           "word": "Unstructured",
+           "c": "not planned or led by an adult",
+           "d": [
+            "dangerous and unsafe",
+            "organized by a coach",
+            "done indoors"
+           ],
+           "clue": "the sentence explains it: children choose their own games"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "However, adults can supervise recess, and schools can keep equipment in good repair.",
+           "word": "supervise",
+           "c": "watch over",
+           "d": [
+            "cancel",
+            "build",
+            "play games during"
+           ],
+           "clue": "keeping children safe on the playground"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Recess is undeniably the best part of the school day.",
+           "word": "undeniably",
+           "c": "in a way no one could argue with",
+           "d": [
+            "possibly",
+            "sadly",
+            "quietly"
+           ],
+           "clue": "un- means not; deny means to say something is not true"
+          }
+         ],
+         "Paired Passages on Solar Energy": [
+          {
+           "rigor": "basic",
+           "sentence": "Installing solar panels can be expensive at first, but over time, homes save money on electricity bills because sunlight is completely free.",
+           "word": "expensive",
+           "c": "costing a lot of money",
+           "d": [
+            "free",
+            "easy",
+            "fast"
+           ],
+           "clue": "but over time, homes save money"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "The family buys less electricity from the power company, so the monthly bill shrinks.",
+           "word": "shrinks",
+           "c": "gets smaller",
+           "d": [
+            "gets bigger",
+            "gets lost",
+            "stays the same"
+           ],
+           "clue": "they buy less electricity"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Every home or school that switches to solar power helps reduce pollution.",
+           "word": "reduce",
+           "c": "make less",
+           "d": [
+            "add more",
+            "clean up by hand",
+            "measure"
+           ],
+           "clue": "cleaner air, healthier lungs"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "The panel makes power silently, with no smoke and no moving parts.",
+           "word": "silently",
+           "c": "without making any noise",
+           "d": [
+            "very quickly",
+            "with lots of smoke",
+            "only at night"
+           ],
+           "clue": "no smoke and no moving parts"
+          }
+         ],
+         "Passage: Word Power in Action": [
+          {
+           "rigor": "basic",
+           "sentence": "Their, there, and they're are homophones that confuse many writers.",
+           "word": "confuse",
+           "c": "mix up",
+           "d": [
+            "help",
+            "please",
+            "teach"
+           ],
+           "clue": "the words sound the same but are spelled differently"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Understanding synonyms and antonyms helps writers expand their vocabulary and express exact ideas clearly.",
+           "word": "expand",
+           "c": "make bigger",
+           "d": [
+            "forget",
+            "shrink",
+            "spell"
+           ],
+           "clue": "learning more words"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "In \"Please fill the pitcher with lemonade,\" a pitcher is a container for pouring.",
+           "word": "container",
+           "c": "something that holds things",
+           "d": [
+            "a baseball player",
+            "a kind of drink",
+            "a picture"
+           ],
+           "clue": "fill it with lemonade; used for pouring"
+          }
+         ],
+         "Informational Text: Understanding Word Building": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Many English words originate from ancient Greek and Latin roots.",
+           "word": "originate",
+           "c": "come from",
+           "d": [
+            "sound like",
+            "are spelled like",
+            "are shorter than"
+           ],
+           "clue": "words grow from roots, like a plant"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Many English words originate from ancient Greek and Latin roots.",
+           "word": "ancient",
+           "c": "very old",
+           "d": [
+            "brand new",
+            "very long",
+            "very hard"
+           ],
+           "clue": "Greek and Latin are languages from long ago"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Attaching prefixes like \"un-\" or suffixes like \"-able\" alters a word's core meaning, turning \"break\" into \"unbreakable.\"",
+           "word": "alters",
+           "c": "changes",
+           "d": [
+            "spells",
+            "hides",
+            "repeats"
+           ],
+           "clue": "break becomes unbreakable, a different meaning"
+          }
+         ],
+         "Story: Nature's Symphony": [
+          {
+           "rigor": "basic",
+           "sentence": "Thunder was the bass drum, booming so loudly it could have woken the whole world.",
+           "word": "booming",
+           "c": "making a deep, loud sound",
+           "d": [
+            "flashing brightly",
+            "whispering softly",
+            "falling down"
+           ],
+           "clue": "thunder, bass drum, so loudly"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "The thunder grumbled once more, like an old man complaining as he walked away.",
+           "word": "grumbled",
+           "c": "made a low, complaining sound",
+           "d": [
+            "laughed happily",
+            "stopped forever",
+            "shouted loudly"
+           ],
+           "clue": "like an old man complaining"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "The rain softened to a whisper, and the wind hummed a quiet lullaby.",
+           "word": "lullaby",
+           "c": "a soft song to help someone fall asleep",
+           "d": [
+            "a loud march",
+            "a scary story",
+            "a strong wind"
+           ],
+           "clue": "softened, whisper, quiet; the storm is ending at night"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "By morning, the storm had packed up its instruments and tiptoed away.",
+           "word": "tiptoed away",
+           "c": "left quietly",
+           "d": [
+            "came back louder",
+            "broke the instruments",
+            "danced wildly"
+           ],
+           "clue": "the storm was over by morning"
+          }
+         ]
         };
 
         const QUESTION_POOLS = {
@@ -536,12 +1164,10 @@ const STANDARDS = [
             ],
             '4.RC.10': [
                 { genre: 'fiction', rigor: 'basic', q: "Read: 'The hiker found the trail treacherous, with steep cliffs on one side and loose, slippery gravel on the other.' What does 'treacherous' mean?", c: "Dangerous or hazardous", d: ["Smooth and easy to walk", "Short and pleasant", "Paved and flat"] },
-                { genre: 'fiction', rigor: 'basic', q: "Read: 'He realized he was in a perilous situation.' What clue helps define 'perilous'?", c: "Dense fog and treacherous paths.", d: ["Sunny sky and green grass.", "A warm bed and blanket.", "A paved highway."] },
                 { genre: 'nonfiction', rigor: 'basic', q: "Read: 'The scientist observed the nocturnal animal sleeping soundly during the daylight hours.' What does 'nocturnal' mean?", c: "Active during the night", d: ["Living in water", "Very small in size", "Fast moving"] },
                 { genre: 'fiction', rigor: 'on-grade', q: "Read: 'The old, dilapidated barn looked like it would collapse in the next windstorm.' What does 'dilapidated' mean?", c: "In a state of ruin or disrepair", d: ["Brand new and sturdy", "Painted bright red", "Full of healthy animals"] },
                 { genre: 'fiction', rigor: 'on-grade', q: "Read: 'Her benevolent smile made everyone in the room feel welcomed and loved.' What does 'benevolent' mean?", c: "Kind and well-meaning", d: ["Angry and cruel", "Confused and lost", "Loud and noisy"] },
                 { genre: 'nonfiction', rigor: 'on-grade', q: "Read: 'The water in the lake was so murky that I couldn't see my feet at the bottom.' What does 'murky' mean?", c: "Dark and cloudy", d: ["Crystal clear", "Freezing cold", "Full of fast fish"] },
-                { genre: 'fiction', rigor: 'advanced', q: "Read: 'Taking a slow breath, Liam resolved not to panic and instead searched for recognizable landmarks.' What does 'resolved' mean in this context?", c: "Made a firm decision", d: ["Failed completely", "Asked for help", "Forgot his plan"] },
                 { genre: 'nonfiction', rigor: 'advanced', q: "Read: 'Arid regions receive less than ten inches of rainfall annually, making plant life scarce.' What does 'arid' mean?", c: "Extremely dry", d: ["Cold and snowy", "Tropical and humid", "Deep underwater"] },
                 { genre: 'fiction', rigor: 'advanced', q: "Read: 'The king was known for his ostentatious displays, wearing gold robes and diamond crowns every day.' What does 'ostentatious' mean?", c: "Showy and extravagant", d: ["Simple and modest", "Secretive and quiet", "Poor and needy"] },
                 { genre: 'nonfiction', rigor: 'advanced', q: "Read: 'The team worked in tandem, coordinating every movement to win the rowing race.' What does 'in tandem' mean?", c: "Together in unison", d: ["Against each other", "One at a time slowly", "Without practice"] }
@@ -632,7 +1258,6 @@ const STANDARDS = [
             '4.RC.10': [
                 { genre: 'any', q: "Read: 'The hiker found the trail treacherous, with steep cliffs on one side and loose, slippery gravel on the other.' What does 'treacherous' mean? Which context clues helped you?", key: "Dangerous. Clues: 'steep cliffs' and 'loose, slippery gravel'." },
                 { genre: 'any', q: "Read: 'The old, dilapidated barn looked like it would collapse in the next windstorm.' What does 'dilapidated' mean? Explain which context clues helped you.", key: "Falling apart / in disrepair. Clues: 'old' and 'looked like it would collapse'." },
-                { genre: 'fiction', q: "In 'The Lost Compass', Liam is in a 'perilous situation.' What does 'perilous' mean? Which words in the story help you figure it out?", key: "Dangerous. Clues: fog growing dense, paths becoming treacherous, searched frantically." }
             ],
             '4.RC.11': [
                 { genre: 'any', q: "Explain two different meanings for the homograph 'bark'. Write a complete sentence for each meaning.", key: "Meaning 1: the sound a dog makes. Meaning 2: the outer covering of a tree." },
@@ -803,12 +1428,75 @@ const STANDARDS = [
             return { stdId, blocks, written };
         }
 
+        // ---------- 4.RC.10 Context clues ----------
+        // No passage of its own: its questions use words from the passages already on the test
+        // and are placed right after each host passage's questions.
+        const CONTEXT_STD = '4.RC.10';
+        const shortTitle = t => t.replace(/^(Story|Informational Text|Persuasive Article|Passage):\s*/, '');
+
+        function addContextClues(sections, mcWanted, wrWanted, genre, rigor, rng, notices) {
+            let hosts = [];
+            sections.forEach(sec => sec.blocks.forEach(block => {
+                if (block.passage && CONTEXT_CLUES[block.passage.title]) hosts.push({ sec, block });
+            }));
+            if (!hosts.length) {
+                // Nothing to borrow from, so give 4.RC.10 one passage from another standard
+                const all = [];
+                Object.entries(PASSAGES).forEach(([id, group]) => Object.entries(group).forEach(([g, p]) => {
+                    if (CONTEXT_CLUES[p.title]) all.push({ g, p });
+                }));
+                const fits = all.filter(x => genre === 'auto' || x.g === genre || x.g === 'both');
+                const choice = shuffle(fits.length ? fits : all, rng)[0];
+                const sec = { stdId: CONTEXT_STD, blocks: [{ passage: choice.p, questions: [] }], written: [] };
+                const order = STANDARDS.map(x => x.id);
+                const at = sections.findIndex(x => order.indexOf(x.stdId) > order.indexOf(CONTEXT_STD));
+                sections.splice(at < 0 ? sections.length : at, 0, sec);
+                hosts = [{ sec, block: sec.blocks[0] }];
+            }
+
+            // Multiple choice: take turns across the host passages
+            const queues = hosts.map(h => orderForLevel(CONTEXT_CLUES[h.block.passage.title].map(v => ({ ...v, host: h })), rigor, 'auto', rng));
+            const picked = [];
+            for (let round = 0; picked.length < mcWanted && queues.some(q => q.length); round++) {
+                queues.forEach(q => { if (picked.length < mcWanted && q.length) picked.push(q.shift()); });
+            }
+            picked.forEach(v => {
+                const title = shortTitle(v.host.block.passage.title);
+                const q = { std: CONTEXT_STD, rigor: v.rigor, c: v.c, d: v.d,
+                    q: `Read this sentence from "${title}": "${v.sentence}" What does "${v.word}" mean in this sentence?` };
+                v.host.block.questions.push({ ...q, ...shuffleOptions(q.c, q.d, rng) });
+            });
+            // Fill any shortfall with stand-alone sentences
+            if (picked.length < mcWanted) {
+                const extra = orderForLevel(QUESTION_POOLS[CONTEXT_STD] || [], rigor, 'auto', rng).slice(0, mcWanted - picked.length);
+                const last = hosts[hosts.length - 1].block;
+                extra.forEach(x => last.questions.push({ ...x, std: CONTEXT_STD, ...shuffleOptions(x.c, x.d, rng) }));
+                if (picked.length + extra.length < mcWanted) notices.short.push(`${CONTEXT_STD}: ${picked.length + extra.length} of ${mcWanted} multiple-choice questions added. The bank has no more that fit.`);
+            }
+
+            // Written: use passage words not already asked about, then stand-alone prompts
+            const leftovers = shuffle(queues.flat(), rng).slice(0, wrWanted);
+            leftovers.forEach(v => {
+                const title = shortTitle(v.host.block.passage.title);
+                v.host.sec.written.push({ std: CONTEXT_STD,
+                    q: `Reread this sentence from "${title}": "${v.sentence}" What does "${v.word}" mean? Explain which words or details from the passage helped you figure it out.`,
+                    key: `Meaning: ${v.c}. Clues: ${v.clue}.` });
+            });
+            if (leftovers.length < wrWanted) {
+                const more = shuffle(WRITTEN_QUESTION_POOLS[CONTEXT_STD] || [], rng).slice(0, wrWanted - leftovers.length);
+                more.forEach(w => hosts[hosts.length - 1].sec.written.push({ ...w, std: CONTEXT_STD }));
+                if (leftovers.length + more.length < wrWanted) notices.short.push(`${CONTEXT_STD}: ${leftovers.length + more.length} of ${wrWanted} written prompts added. The bank has no more that fit.`);
+            }
+            hosts.forEach(h => { h.sec.hasContext = true; });
+        }
+
         function build() {
             const s = S();
             const notices = { swap: [], level: [], short: [] };
             const rng = makeRng(state.code + '|' + state.mode);
-            const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id]);
+            const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id] && id !== CONTEXT_STD);
             const sections = ids.map(id => buildSection(id, s.sel[id].mc, s.sel[id].wr, s.genre, s.rigor, rng, notices));
+            if (s.sel[CONTEXT_STD]) addContextClues(sections, s.sel[CONTEXT_STD].mc, s.sel[CONTEXT_STD].wr, s.genre, s.rigor, rng, notices);
             const msgs = [...notices.short];
             const other = s.genre === 'fiction' ? 'nonfiction' : 'fiction';
             if (notices.swap.length) msgs.push(`No ${s.genre} passage exists for ${notices.swap.join(', ')}, so ${notices.swap.length > 1 ? 'those use their' : 'it uses its'} ${other} passage.`);
@@ -824,7 +1512,7 @@ const STANDARDS = [
             document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
             $('std-hint').textContent = state.mode === 'cfa'
                 ? `Pick up to ${CFA_MAX_STANDARDS} standards: one main target and an optional second. Set how many of each question type.`
-                : 'Pick every standard the unit covered. Each one gets its own passage and section.';
+                : 'Pick every standard the unit covered. Each one gets its own passage and section, except 4.RC.10, which uses words from the other passages.';
             $('f-title').value = s.title;
             $('f-sub').value = s.sub;
             $('f-genre').value = s.genre;
@@ -841,8 +1529,8 @@ const STANDARDS = [
                 const row = document.createElement('div');
                 row.className = 'std-row' + (pick ? ' on' : '');
                 const name = std.label.replace(std.id + ': ', '');
-                const mcMax = (QUESTION_POOLS[std.id] || []).length;
-                const wrMax = (WRITTEN_QUESTION_POOLS[std.id] || []).length;
+                const mcMax = std.id === CONTEXT_STD ? 10 : (QUESTION_POOLS[std.id] || []).length;
+                const wrMax = std.id === CONTEXT_STD ? 3 : (WRITTEN_QUESTION_POOLS[std.id] || []).length;
                 row.innerHTML = `
                     <input type="checkbox" aria-label="Include ${std.id}" ${pick ? 'checked' : ''}>
                     <div><div class="std-name"><b>${std.id}</b> ${name}</div><div class="std-desc">${std.desc}</div></div>
@@ -908,6 +1596,18 @@ const STANDARDS = [
                 .map(t => t.replace(/^\+/, ''));
         }
 
+        // 1, 2, 3, 4, 7, 9 -> "1 to 4, 7, 9"
+        function listNums(nums) {
+            const out = [];
+            for (let i = 0; i < nums.length; i++) {
+                let j = i;
+                while (j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
+                out.push(j - i >= 2 ? `${nums[i]} to ${nums[j]}` : nums.slice(i, j + 1).join(', '));
+                i = j;
+            }
+            return out.join(', ');
+        }
+
         // ---------- Printable sheet ----------
         function el(tag, cls, text) {
             const e = document.createElement(tag);
@@ -927,7 +1627,8 @@ const STANDARDS = [
             const left = el('div');
             left.appendChild(el('h1', 't-title', s.title || 'ELA Assessment'));
             if (s.sub) left.appendChild(el('p', 't-sub', s.sub));
-            left.appendChild(el('p', 't-std', 'Standards: ' + (sections.map(x => x.stdId).join(', ') || 'none picked')));
+            const stdIds = STANDARDS.map(x => x.id).filter(id => sections.some(x => x.stdId === id || (id === CONTEXT_STD && x.hasContext)));
+            left.appendChild(el('p', 't-std', 'Standards: ' + (stdIds.join(', ') || 'none picked')));
             const right = el('div', 't-lines');
             right.innerHTML = '<div>Name:<span class="fill"></span></div><div>Date:<span class="fill"></span></div>';
             head.append(left, right);
@@ -951,9 +1652,12 @@ const STANDARDS = [
             sections.forEach((sec, i) => {
                 const std = STANDARDS.find(x => x.id === sec.stdId);
                 const wrap = el('div', 'section' + (s.newPage && i > 0 ? ' newpage' : ''));
-                wrap.appendChild(el('p', 'sec-label', std.label));
-                const first = n;
-                let mcCount = 0;
+                wrap.appendChild(el('p', 'sec-label', std.label + (sec.hasContext && sec.stdId !== CONTEXT_STD ? ', with 4.RC.10: Context Clues' : '')));
+                const tally = (id, kind) => {
+                    let r = perStd.find(x => x.id === id);
+                    if (!r) { r = { id, nums: [], mc: 0, wr: 0 }; perStd.push(r); }
+                    r.nums.push(n); r[kind]++;
+                };
 
                 sec.blocks.forEach(block => {
                     if (block.passage) {
@@ -972,7 +1676,7 @@ const STANDARDS = [
                         qd.appendChild(el('div', 'q-num', n + '.'));
                         const body = el('div');
                         const stem = el('div', 'q-stem', q.q);
-                        if (state.showKey) stem.appendChild(el('span', 'tag', LEVEL_NAME[q.rigor]));
+                        if (state.showKey) stem.appendChild(el('span', 'tag', (q.std ? q.std + ', ' : '') + LEVEL_NAME[q.rigor]));
                         body.appendChild(stem);
                         const opts = el('div', 'opts');
                         q.options.forEach(o => {
@@ -984,8 +1688,9 @@ const STANDARDS = [
                         body.appendChild(opts);
                         qd.appendChild(body);
                         wrap.appendChild(qd);
-                        keyRows.push([n, q.correctLetter, sec.stdId, LEVEL_NAME[q.rigor]]);
-                        n++; mcCount++;
+                        keyRows.push([n, q.correctLetter, q.std || sec.stdId, LEVEL_NAME[q.rigor]]);
+                        tally(q.std || sec.stdId, 'mc');
+                        n++;
                     });
                 });
 
@@ -995,7 +1700,9 @@ const STANDARDS = [
                         const qd = el('div', 'q');
                         qd.appendChild(el('div', 'q-num', n + '.'));
                         const body = el('div');
-                        body.appendChild(el('div', 'q-stem', w.q));
+                        const wstem = el('div', 'q-stem', w.q);
+                        if (state.showKey && w.std) wstem.appendChild(el('span', 'tag', w.std));
+                        body.appendChild(wstem);
                         if (state.showKey) {
                             const lf = el('div', 'lookfor');
                             lf.innerHTML = '<b>Look for:</b> ';
@@ -1008,11 +1715,11 @@ const STANDARDS = [
                         }
                         qd.appendChild(body);
                         wrap.appendChild(qd);
-                        keyRows.push([n, 'Written', sec.stdId, '']);
+                        keyRows.push([n, 'Written', w.std || sec.stdId, '']);
+                        tally(w.std || sec.stdId, 'wr');
                         n++;
                     });
                 }
-                perStd.push({ id: sec.stdId, from: first, to: n - 1, mc: mcCount, wr: sec.written.length });
                 sheet.appendChild(wrap);
             });
 
@@ -1022,7 +1729,7 @@ const STANDARDS = [
                 blockEl.appendChild(el('h3', '', 'Score by standard (teacher use)'));
                 const t = el('table', 'grid');
                 t.innerHTML = '<tr><th>Standard</th><th>Questions</th><th>Multiple choice</th><th>Written</th></tr>' +
-                    perStd.map(r => `<tr><td>${r.id}</td><td>${r.from === r.to ? r.from : r.from + ' to ' + r.to}</td><td>_____ / ${r.mc}</td><td>${r.wr ? '_____' : ''}</td></tr>`).join('');
+                    STANDARDS.map(x => perStd.find(r => r.id === x.id)).filter(Boolean).map(r => `<tr><td>${r.id}</td><td>${listNums(r.nums)}</td><td>_____ / ${r.mc}</td><td>${r.wr ? '_____' : ''}</td></tr>`).join('');
                 blockEl.appendChild(t);
                 sheet.appendChild(blockEl);
             }
