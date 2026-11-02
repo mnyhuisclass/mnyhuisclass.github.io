@@ -116,6 +116,32 @@
     .wlines span { border-bottom: 1px solid #999; display: block; }
     .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
     .newpage { break-before: page; }
+    body:not([data-mode="exit"]) .exit-only { display: none; }
+    body[data-mode="exit"] .test-only { display: none; }
+    .ticket { border: 2px solid #333; border-radius: 10px; padding: 10px 16px 4px; break-inside: avoid; }
+    .ticket + .ticket { margin-top: 0.4in; position: relative; }
+    .ticket + .ticket::before { content: "\2702  cut here"; position: absolute; left: 0; right: 0; top: -0.25in; border-top: 1.5px dashed #888; font-size: 10px; color: #666; padding-top: 2px; text-align: center; }
+    .ticket.alone { break-before: page; margin-top: 0; }
+    .ticket.alone::before { display: none; }
+    .x-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-bottom: 3px solid var(--teal-700); padding-bottom: 6px; margin-bottom: 10px; }
+    .x-title { font-size: 18px; font-weight: 800; margin: 0; }
+    .x-std { font-size: 11px; color: #333; margin: 2px 0 0; }
+    .x-name { flex: 0 0 2.4in; display: flex; gap: 6px; font-size: 14px; }
+    .x-name span { flex: 1; border-bottom: 1px solid #000; }
+    .x-note { font-size: 13px; font-style: italic; margin: 0 0 10px; }
+    .ticket { font-size: 13.5px; line-height: 1.35; }
+    .ticket .q { margin-bottom: 10px; }
+    .ticket .q-stem { margin-bottom: 4px; }
+    .ticket .opts { gap: 2px; }
+    .ticket .bubble { width: 18px; height: 18px; font-size: 10px; }
+    .ticket .wr-head { margin: 2px 0 6px; }
+    .ticket .wlines { gap: 18px; margin-top: 10px; }
+    .ticket .lookfor { margin-top: 4px; }
+    .ticket .q { margin-bottom: 0; padding-bottom: 22px; }
+    .ticket .fig { margin: 0 0 4px; }
+    .ticket .fig svg { max-height: 1.55in; width: auto; }
+    .ticket .ref { font-size: 11px; padding: 4px 10px; margin-bottom: 8px; }
+    .ticket .ref b { margin-bottom: 1px; }
     .page { display: flex; flex-direction: column; }
     .page.spaced { min-height: 9.4in; }
     .page.spaced.first { min-height: 8.3in; }
@@ -158,6 +184,7 @@
         <div class="modes" role="group" aria-label="Assessment type">
             <button type="button" data-mode="cfa" aria-pressed="true">Quick CFA</button>
             <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
+            <button type="button" data-mode="exit" aria-pressed="false">Exit Ticket</button>
         </div>
     </div>
 
@@ -182,7 +209,14 @@
                 <label for="f-sub">Unit or subtitle (optional)</label>
                 <input type="text" id="f-sub" placeholder="Example: Unit 2, Multiplication">
             </div>
-            <div class="field">
+            <div class="field exit-only">
+                <label for="f-copies">Copies per page</label>
+                <select id="f-copies">
+                    <option value="1">1 (full page)</option>
+                    <option value="2">2 (half sheets to cut apart)</option>
+                </select>
+            </div>
+            <div class="field test-only">
                 <label for="f-layout">Page layout</label>
                 <select id="f-layout">
                     <option value="4">4 questions per page (most work space)</option>
@@ -192,7 +226,17 @@
                 </select>
                 <p class="hint">Questions with a ruler, table, or line plot count as two.</p>
             </div>
-            <div class="checks">
+            <div class="field">
+                <label for="f-rigor">Question level (Depth of Knowledge)</label>
+                <select id="f-rigor">
+                    <option value="mix">Balanced mix of DOK 1, 2, and 3, easiest first</option>
+                    <option value="all">Any level, random</option>
+                    <option value="1">DOK 1: Recall and routine practice</option>
+                    <option value="2">DOK 2: Apply skills and concepts</option>
+                    <option value="3">DOK 3: Reasoning and explaining</option>
+                </select>
+            </div>
+            <div class="checks test-only">
                 <label><input type="checkbox" id="f-newpage"> Start each standard on a new page</label>
                 <label><input type="checkbox" id="f-score"> Add a score-by-standard table at the end</label>
             </div>
@@ -802,13 +846,487 @@
             ]
         };
 
+        // ---------- Depth of Knowledge ----------
+        // DOK 1: recall and routine procedures. DOK 2: apply a skill or concept, one or two steps, read a model.
+        // DOK 3: reason and justify: error analysis, multi-step decisions, choosing the correct explanation.
+        // Levels for the generators above, in the order they appear in each list.
+        const DOK_LEVELS = {
+            '4.NS.1': [1, 1, 1, 1],
+            '4.NS.7': [1, 1, 1, 1, 1],
+            '4.CA.1': [2, 2, 1, 1],
+            '4.CA.3': [1, 2, 1, 2],
+            '4.CA.4': [1, 1, 1, 1, 1, 1],
+            '4.CA.5': [2, 2, 2, 2, 2, 2, 3, 2, 2, 1],
+            '4.CA.2': [1, 2, 2, 2],
+            '4.M.4': [1, 1, 2, 2],
+            '4.M.1': [1, 2, 2],
+            '4.M.2': [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            '4.NS.3': [1, 1, 2],
+            '4.NS.4': [1, 2, 2],
+            '4.CA.6': [1, 1, 2, 2],
+            '4.CA.8': [2, 2, 2],
+            '4.NS.2': [1, 1],
+            '4.NS.5': [1, 1, 1, 1],
+            '4.NS.6': [1, 1, 2],
+            '4.DA.1': [2, 1, 2],
+            '4.DA.2': [2, 2, 2],
+            '4.M.3': [2, 2, 2, 2]
+        };
+        Object.entries(DOK_LEVELS).forEach(([id, levels]) => {
+            if (levels.length !== GEN[id].length) console.error(`DOK list for ${id} has ${levels.length} entries but there are ${GEN[id].length} generators`);
+            GEN[id].forEach((fn, i) => { fn.dok = levels[i] || 2; });
+        });
+
+        // Clock time from minutes after midnight, PM afternoon times: 1,005 -> "4:45 PM"
+        function clock(min) {
+            const h24 = Math.floor(min / 60) % 24, mm = min % 60;
+            const h = ((h24 + 11) % 12) + 1;
+            return `${h}:${String(mm).padStart(2, '0')} ${h24 >= 12 ? 'PM' : 'AM'}`;
+        }
+        const money = cents => '$' + (cents / 100).toFixed(2);
+
+        // New questions: [DOK level, generator]
+        const MORE_QUESTIONS = {
+            '4.NS.1': [
+                [2, () => {
+                    let dg;
+                    do { dg = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], R).slice(0, 6); } while (dg[0] === 0 || dg[1] === 0);
+                    const num = d => Number(d.join(''));
+                    const sw = (i, j) => { const c = dg.slice(); [c[i], c[j]] = [c[j], c[i]]; return c; };
+                    return { q: `Which number has a ${dg[0]} in the hundred thousands place, a ${dg[2]} in the thousands place, and a ${dg[4]} in the tens place?`,
+                        c: fmt(num(dg)), d: [fmt(num(sw(2, 3))), fmt(num(sw(4, 5))), fmt(num(sw(0, 1))), fmt(num(sw(2, 4)))] };
+                }],
+                [2, () => {
+                    const dg = randInt(2, 9), gap = pick([1, 1, 2]);
+                    const place = randInt(0, 5 - gap);                     // power of ten of the right-hand copy
+                    const digits = Array.from({ length: 6 }, () => randInt(0, 9));
+                    digits[0] = digits[0] || 1;
+                    const posR = 5 - place, posL = posR - gap;
+                    digits[posL] = dg; digits[posR] = dg;
+                    for (let i = 0; i < 6; i++) if (i !== posL && i !== posR && digits[i] === dg) digits[i] = (dg + 1) % 10 || 1;
+                    const n = Number(digits.join(''));
+                    const names = ['ones', 'tens', 'hundreds', 'thousands', 'ten thousands', 'hundred thousands'];
+                    return { q: `In ${fmt(n)}, the value of the ${dg} in the ${names[place + gap]} place is how many times the value of the ${dg} in the ${names[place]} place?`,
+                        c: gap === 1 ? '10 times' : '100 times', d: ['10 times', '100 times', '1,000 times', 'the same value'] };
+                }],
+                [3, () => {
+                    let num, idx;
+                    do { num = randInt(100000, 999999); idx = String(num).split('').map((x, i) => i).filter(i => i > 0 && i < 5 && String(num)[i] !== '0' && String(num)[i - 1] !== '0' && String(num)[i + 1] === '0'); } while (!idx.length);
+                    const s = String(num), i = pick(idx), dg = Number(s[i]), right = dg * 10 ** (5 - i), wrongV = right / 10;
+                    const wrongExp = s.split('').map((x, k) => x === '0' ? null : (k === i ? wrongV : Number(x) * 10 ** (5 - k))).filter(v => v !== null).map(fmt).join(' + ');
+                    return { q: `Sam wrote ${fmt(num)} in expanded form as ${wrongExp}. What mistake did Sam make?`,
+                        c: `He wrote ${fmt(wrongV)} for the ${dg}, but its value is ${fmt(right)}.`,
+                        d: ['He should have multiplied the parts instead of adding them.', 'He left out a part for the zero digit.', 'He made no mistake.'] };
+                }],
+                [3, () => {
+                    const h = randInt(2, 8), th = randInt(11, 19), t = randInt(1, 9);
+                    const n = h * 100000 + th * 1000 + t * 10;
+                    return { q: `A number has ${h} hundred thousands, ${th} thousands, and ${t} tens. What is the number?`,
+                        c: fmt(n), d: [fmt(h * 100000 + (th % 10) * 1000 + t * 10), fmt(Number(`${h}${th}${t}`)), fmt(h * 100000 + th * 100 + t * 10), fmt(h * 100000 + th * 1000 + t)] };
+                }]
+            ],
+            '4.NS.7': [
+                [2, () => {
+                    const T = randInt(12, 98) * 1000;
+                    return { q: `Which number rounds to ${fmt(T)} when rounded to the nearest thousand?`,
+                        c: fmt(T + pick([-1, 1]) * randInt(1, 499)), d: [fmt(T + randInt(500, 999)), fmt(T - randInt(501, 999)), fmt(T + randInt(1001, 1499)), fmt(T - randInt(1501, 1999))] };
+                }],
+                [3, () => {
+                    const t = randInt(12, 89) * 1000;
+                    return { q: `A number rounds to ${fmt(t + 500)} when rounded to the nearest hundred. It rounds to ${fmt(t)} when rounded to the nearest thousand. Which could be the number?`,
+                        c: fmt(t + randInt(450, 499)), d: [fmt(t + randInt(500, 549)), fmt(t + randInt(410, 440)), fmt(t + randInt(551, 599))] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), hd = randInt(5, 9);
+                    const num = randInt(12, 98) * 1000 + hd * 100 + randInt(0, 99), down = Math.floor(num / 1000) * 1000;
+                    return { q: `${name} rounded ${fmt(num)} to the nearest thousand and got ${fmt(down)}. What mistake did ${name} make?`,
+                        c: `The hundreds digit is ${hd}, so the number should round up to ${fmt(down + 1000)}.`,
+                        d: ['The ones digit should be used to decide how to round.', `It should round to ${fmt(Math.round(num / 100) * 100)}.`, `There is no mistake. ${fmt(down)} is correct.`] };
+                }]
+            ],
+            '4.CA.1': [
+                [2, () => {
+                    const R1 = randInt(12, 25), S1 = randInt(14, 30), P = randInt(Math.floor(R1 * S1 / 3), R1 * S1 - 20), tot = R1 * S1;
+                    return { q: `A theater has ${R1} rows with ${S1} seats in each row. ${P} seats are filled. How many seats are empty?`,
+                        c: fmt(tot - P), d: [fmt(tot), fmt(tot + P), fmt(tot - P + 10), fmt(R1 + S1)] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), a1 = randInt(2, 8), a0 = randInt(2, 9), b1 = randInt(2, 8), b0 = randInt(2, 9);
+                    const n1 = a1 * 10 + a0, n2 = b1 * 10 + b0;
+                    const parts = [a1 * 10 * b1 * 10, a1 * 10 * b0, a0 * b1 * 10, a0 * b0];
+                    const shown = [parts[0], parts[1], parts[3]];
+                    return { q: `${name} used partial products to find ${n1} × ${n2}. ${name} wrote: ${shown.map(fmt).join(' + ')} = ${fmt(shown.reduce((x, y) => x + y))}. What mistake did ${name} make?`,
+                        c: `${name} left out ${a0} × ${b1 * 10} = ${fmt(parts[2])}.`,
+                        d: [`${name} should have added ${n1} + ${n2} first.`, `${name} left out ${a1 * 10} × ${b1 * 10} = ${fmt(parts[0])}.`, `${name} made no mistake.`] };
+                }],
+                [3, () => {
+                    const pa = randInt(4, 8), ea = pick([125, 150, 175, 225, 250]), pb = randInt(3, 7), eb = pick([140, 160, 180, 190, 210, 240]);
+                    const A = pa * ea, B = pb * eb;
+                    if (A === B) return MORE_QUESTIONS['4.CA.1'][2][1]();
+                    const win = A > B ? 'Store A' : 'Store B', lose = A > B ? 'Store B' : 'Store A', diff = Math.abs(A - B);
+                    return { q: `Store A sells ${pa} packs of stickers with ${ea} stickers in each pack. Store B sells ${pb} packs with ${eb} stickers in each pack. Which store sells more stickers in all, and how many more?`,
+                        c: `${win}, ${fmt(diff)} more`, d: [`${lose}, ${fmt(diff)} more`, `${win}, ${fmt(Math.abs(ea - eb))} more`, `${win}, ${fmt(diff + 100)} more`, `${lose}, ${fmt(diff + 100)} more`] };
+                }]
+            ],
+            '4.CA.3': [
+                [3, () => {
+                    const name = pick(NAMES), a = randInt(3, 9), r = randInt(2, 9), b = 10 + r;
+                    return { q: `${name} says ${a} × ${b} = (${a} × 10) + ${r}. Which explains ${name}'s mistake?`,
+                        c: `${name} also needs to multiply ${a} × ${r}: (${a} × 10) + (${a} × ${r}).`,
+                        d: [`${name} should add ${a} + 10 first.`, `${name} should use ${a} × 100 instead of ${a} × 10.`, `There is no mistake because of the commutative property.`] };
+                }],
+                [3, () => {
+                    const a = randInt(3, 9), b1 = pick([10, 20]), b2 = randInt(2, 9), b = b1 + b2;
+                    return { q: `Which two expressions could BOTH be used to find ${a} × ${b}?`,
+                        c: `(${a} × ${b1}) + (${a} × ${b2}) and ${b} × ${a}`,
+                        d: [`(${a} × ${b1}) + ${b2} and ${b} × ${a}`, `(${a} + ${b1}) × ${b2} and ${a} × ${b}`, `(${a} × ${b1}) + (${a} × ${b2}) and ${a} + ${b}`] };
+                }]
+            ],
+            '4.CA.4': [
+                [2, () => {
+                    const n = pick([24, 30, 36, 40, 48, 60]), f = factorsOf(n).filter(x => x >= 2 && x <= 12), non = [5, 7, 8, 9, 11].filter(x => n % x);
+                    return { q: `A teacher wants to arrange ${n} desks in equal rows with no desks left over. Which number of rows would NOT work?`,
+                        c: String(pick(non)), d: pickN(f, 3).map(String) };
+                }],
+                [2, () => {
+                    const [a, b] = pick([[3, 4], [4, 6], [2, 9], [3, 5], [4, 5], [6, 8], [2, 7]]);
+                    const l = a * b / gcd(a, b), m = l * randInt(1, Math.floor(100 / l));
+                    const onlyA = [a * 5, a * 7, a * 11].filter(x => x % b && x <= 100), onlyB = [b * 3, b * 5, b * 7].filter(x => x % a && x <= 100);
+                    return { q: `Which number is a multiple of BOTH ${a} and ${b}?`, c: String(m), d: [...onlyA, ...onlyB, m + 1].map(String) };
+                }],
+                [3, () => {
+                    const name = pick(NAMES);
+                    return { q: `${name} says, "All odd numbers are prime." Which number shows that ${name} is wrong?`,
+                        c: String(pick([9, 15, 21, 25, 27, 33, 35, 39, 45, 49])), d: [String(pick([11, 13, 17, 19, 23])), String(pick([29, 31, 37, 41, 43])), String(pick([4, 8, 10, 12, 16]))] };
+                }],
+                [3, () => pick([
+                    { q: 'Which statement is true?', c: 'Every multiple of 6 is also a multiple of 3.', d: ['Every multiple of 3 is also a multiple of 6.', 'The number 1 is a prime number.', 'All even numbers are composite.'] },
+                    { q: 'Which statement is true?', c: 'A prime number has exactly two factors.', d: ['9 is prime because it is odd.', 'A composite number has exactly two factors.', 'Every number has an even number of factors.'] },
+                    { q: 'Which statement is true?', c: 'If a number is a factor of 24, then 24 is a multiple of that number.', d: ['The factors of a number are always greater than the number.', 'A number has only one multiple.', 'Every multiple of 4 is also a multiple of 8.'] }
+                ])]
+            ],
+            '4.CA.5': [
+                [3, () => {
+                    const [a, b, c] = pickN(NAMES, 3), x = randInt(4, 9), m = randInt(3, 6), k = randInt(2, 9);
+                    const big = x * m, more = x + k;
+                    if (big <= more) return MORE_QUESTIONS['4.CA.5'][0][1]();
+                    return { q: `${a} has ${x} stickers. ${b} has ${m} times as many stickers as ${a}. ${c} has ${k} more stickers than ${a}. How many more stickers does ${b} have than ${c}?`,
+                        c: `${big - more} stickers`, d: [`${big} stickers`, `${big - x} stickers`, `${Math.abs(m - k)} stickers`, `${big + more} stickers`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), r = randInt(3, 9), m = randInt(3, 8);
+                    return { q: `A red ribbon is ${r} inches long. A blue ribbon is ${m} times as long. ${name} says the blue ribbon is ${r + m} inches long. What mistake did ${name} make?`,
+                        c: `${name} added ${m} + ${r}. "${m} times as long" means ${m} × ${r} = ${m * r} inches.`,
+                        d: [`${name} should have subtracted: ${Math.max(r, m)} − ${Math.min(r, m)} = ${Math.abs(r - m)} inches.`, `${name} should have divided: ${r * m} ÷ ${m} = ${r} inches.`, `${name} made no mistake.`] };
+                }]
+            ],
+            '4.CA.2': [
+                [3, () => {
+                    const name = pick(NAMES), ds = randInt(4, 9), q0 = randInt(12, 60), r = randInt(0, ds - 2), dv = ds * q0 + r;
+                    return { q: `${name} says ${dv} ÷ ${ds} = ${q0 - 1} R${r + ds}. Which explains why ${name}'s answer is wrong?`,
+                        c: `The remainder, ${r + ds}, is not less than ${ds}, so one more group of ${ds} can be made.`,
+                        d: ['Division answers can never have a remainder.', `${name} should have multiplied ${dv} × ${ds}.`, `The quotient ${q0 - 1} is too big.`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), k = pick([4, 6, 8]), n = k * randInt(8, 20) + randInt(1, k - 1), p = randInt(5, 12), full = Math.floor(n / k);
+                    return { q: `${name} baked ${n} cupcakes and packed them in boxes of ${k}. ${name} sells only FULL boxes, for $${p} each. How much money does ${name} make by selling all the full boxes?`,
+                        c: `$${full * p}`, d: [`$${(full + 1) * p}`, `$${n * p}`, `$${full + p}`, `$${(n % k) * p}`] };
+                }]
+            ],
+            '4.M.4': [
+                [3, () => {
+                    const half = randInt(8, 12), P = half * 2;
+                    const pairs = []; for (let w = 1; w <= half / 2; w++) pairs.push([half - w, w]);
+                    const best = pairs[pairs.length - 1];
+                    const others = shuffle(pairs.slice(0, -1), R).slice(0, 3);
+                    return { q: `A rectangle has a perimeter of ${P} feet. Which length and width give it the GREATEST area?`,
+                        c: `${best[0]} feet by ${best[1]} feet`, d: others.map(p => `${p[0]} feet by ${p[1]} feet`) };
+                }],
+                [3, () => {
+                    const s = randInt(4, 8), d = randInt(1, 3), a = [s + d, s - d], b = [s, s];
+                    return { q: `Rectangle A is ${a[0]} meters by ${a[1]} meters. Rectangle B is ${b[0]} meters by ${b[1]} meters. Which statement is true?`,
+                        c: 'They have the same perimeter, but Rectangle B has a greater area.',
+                        d: ['They have the same area, but Rectangle A has a greater perimeter.', 'Rectangle A has a greater area and a greater perimeter.', 'They have the same area and the same perimeter.'] };
+                }],
+                [2, () => {
+                    const l = randInt(6, 15), w = randInt(3, 9), c = randInt(2, 6), p = 2 * (l + w);
+                    return { q: `A garden is ${l} feet long and ${w} feet wide. Fencing costs $${c} per foot. How much will it cost to put fencing around the whole garden?`,
+                        c: `$${p * c}`, d: [`$${l * w * c}`, `$${(l + w) * c}`, `$${p + c}`] };
+                }]
+            ],
+            '4.M.1': [
+                [3, () => {
+                    const name = pick(NAMES), E = randInt(1, 3) * 8 + 2 * randInt(1, 3), s = e => fracStr(e, 8) + ' inches';
+                    return { q: `${name} says the gray bar is ${s(E + 8)} long. What mistake did ${name} make?`, fig: rulerSVG(8, E),
+                        c: `The bar starts at 1 inch, not 0, so ${name} needs to subtract 1 inch. The bar is ${s(E)} long.`,
+                        d: [`${name} counted eighths instead of quarters.`, `${name} should have measured in centimeters.`, `${name} made no mistake.`] };
+                }],
+                [3, () => {
+                    const [a, b] = pickN(NAMES, 2), w1 = randInt(4, 8), w2 = randInt(2, w1 - 1), d = pick([4, 8]), n1 = randInt(2, d - 1), n2 = randInt(1, n1 - 1);
+                    const diffW = w1 - w2, diffN = n1 - n2, f = (w, n) => fracStr(w * d + n, d);
+                    return { q: `${a}'s pencil is ${f(w1, n1)} inches long. ${b}'s pencil is ${f(w2, n2)} inches long. Whose pencil is longer, and by how much?`,
+                        c: `${a}'s, by ${f(diffW, diffN)} inches`, d: [`${b}'s, by ${f(diffW, diffN)} inches`, `${a}'s, by ${f(w1 + w2, n1 + n2 >= d ? n1 + n2 - d : n1 + n2)} inches`, `${a}'s, by ${f(diffW, 0)} inches`] };
+                }]
+            ],
+            '4.M.2': [
+                [3, () => {
+                    const name = pick(NAMES), [from, to, m, wrong] = pick([['kilograms', 'grams', 1000, 100], ['meters', 'centimeters', 100, 10], ['hours', 'minutes', 60, 100], ['feet', 'inches', 12, 10], ['liters', 'milliliters', 1000, 100]]), v = randInt(3, 9);
+                    return { q: `${name} says ${v} ${from} = ${fmt(v * wrong)} ${to}. Which explains the mistake?`,
+                        c: `1 ${from.replace(/s$/, '')} = ${fmt(m)} ${to}, so ${v} ${from} = ${fmt(v * m)} ${to}.`,
+                        d: [`${name} should divide: ${v} ÷ ${wrong}.`, `${name} should add ${v} + ${fmt(m)}.`, `${name} made no mistake.`] };
+                }],
+                [2, () => {
+                    const [a, b] = pickN(NAMES, 2), km = randInt(2, 5), m = km * 1000 + pick([-1, 1]) * randInt(1, 9) * 100;
+                    const diff = Math.abs(km * 1000 - m), win = km * 1000 > m ? a : b, lose = win === a ? b : a;
+                    return { q: `${a} ran ${km} kilometers. ${b} ran ${fmt(m)} meters. Who ran farther, and by how many meters?`,
+                        c: `${win}, by ${fmt(diff)} meters`, d: [`${lose}, by ${fmt(diff)} meters`, `${b}, by ${fmt(m - km)} meters`, `${win}, by ${fmt(diff * 10)} meters`] };
+                }],
+                [2, () => {
+                    const [from, to, m] = pick([['feet', 'inches', 12], ['yards', 'feet', 3], ['hours', 'minutes', 60], ['pounds', 'ounces', 16]]);
+                    const row = k => [1, 2, 3].map(x => `${x} = ${fmt(x * k)}`).join(', ');
+                    return { q: `Which list correctly shows ${from} changed to ${to}? (${from} = ${to})`,
+                        c: row(m), d: [row(m === 12 ? 10 : 12), [1, 2, 3].map(x => `${x} = ${m + x - 1}`).join(', '), row(m === 60 ? 100 : 60)] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), L = randInt(2, 4), ml = pick([300, 400, 450, 600]), b = Math.floor((L * 1000 - 100) / ml);
+                    const have = b * ml, need = L * 1000 - have;
+                    return { q: `A punch recipe needs ${L} liters of juice. ${name} has ${b} bottles of juice, and each bottle holds ${ml} milliliters. How many more milliliters of juice does ${name} need?`,
+                        c: `${fmt(need)} milliliters`, d: [`${fmt(have)} milliliters`, `${fmt(L * 1000)} milliliters`, `${fmt(Math.abs(L * 100 - have))} milliliters`, `${fmt(need + ml)} milliliters`] };
+                }]
+            ],
+            '4.NS.3': [
+                [3, () => {
+                    const name = pick(NAMES), [n, d] = pick([[1, 2], [2, 3], [1, 3], [3, 4], [2, 5]]), k = randInt(1, 3);
+                    return { q: `${name} says ${n}/${d} = ${n + k}/${d + k} because ${name} added ${k} to the numerator and the denominator. Which explains the mistake?`,
+                        c: 'To make an equivalent fraction, multiply or divide the numerator and denominator by the same number. Adding changes the size of the fraction.',
+                        d: [`${name} should have added ${k} only to the denominator.`, `${name} should have subtracted ${k} instead of adding it.`, `${name} made no mistake.`] };
+                }],
+                [3, () => {
+                    const [n, d] = pick([[1, 2], [2, 3], [1, 3], [3, 4], [2, 5], [3, 5]]), m = randInt(2, 4);
+                    return { q: `Which explains why ${n}/${d} = ${n * m}/${d * m}?`,
+                        c: `Splitting each of the ${d} parts into ${m} equal pieces makes ${m} times as many parts and ${m} times as many shaded parts, but the same amount is shaded.`,
+                        d: [`Both fractions have the same numerator.`, `${d * m} is greater than ${d}, so ${n * m}/${d * m} is greater than ${n}/${d}.`, `You can add ${m} to the numerator and the denominator.`] };
+                }]
+            ],
+            '4.NS.4': [
+                [1, () => {
+                    const d = pick([4, 6, 8, 10, 12]); let a, b; do { a = randInt(1, d - 1); b = randInt(1, d - 1); } while (a === b);
+                    const big = Math.max(a, b);
+                    return { q: `Which fraction is greater: ${a}/${d} or ${b}/${d}?`, c: `${big}/${d}`, d: [`${Math.min(a, b)}/${d}`, 'They are equal.'], three: true };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), [x, y] = pick([[2, 3], [3, 4], [2, 5], [4, 6], [3, 8], [5, 10]]);
+                    return { q: `${name} says 1/${y} is greater than 1/${x} because ${y} is greater than ${x}. Which explains the mistake?`,
+                        c: `When a whole is cut into more pieces, each piece is smaller, so 1/${y} is less than 1/${x}.`,
+                        d: [`1/${y} and 1/${x} are equal because both numerators are 1.`, `${name} is correct because the bigger denominator always wins.`, `${name} should compare the numerators, and 1 is greater than 1.`] };
+                }],
+                [2, () => {
+                    let f;
+                    do { f = pickN([[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [2, 5], [3, 5], [5, 6], [3, 8], [5, 8], [7, 10], [1, 6]], 3); } while (new Set(f.map(x => x[0] / x[1])).size < 3);
+                    const s = l => l.map(x => `${x[0]}/${x[1]}`).join(', ');
+                    const sorted = f.slice().sort((x, y) => x[0] / x[1] - y[0] / y[1]);
+                    return { q: 'Which list shows the fractions in order from LEAST to GREATEST?', c: s(sorted),
+                        d: [s(sorted.slice().reverse()), s([sorted[1], sorted[0], sorted[2]]), s([sorted[0], sorted[2], sorted[1]]), s(f.slice().sort((x, y) => x[1] - y[1]))] };
+                }],
+                [3, () => {
+                    const [a, b] = pickN(NAMES, 2);
+                    let d1, k, n1, n2;
+                    do { d1 = pick([2, 3, 4, 5]); k = pick([2, 3]); n1 = randInt(1, d1 - 1); n2 = randInt(1, d1 * k - 1); } while (n1 * k === n2);
+                    const d2 = d1 * k, aMore = n1 * k > n2, who = aMore ? a : b, other = aMore ? b : a;
+                    return { q: `${a} ate ${n1}/${d1} of a pizza. ${b} ate ${n2}/${d2} of a pizza the same size. Who ate more, and why?`,
+                        c: `${who}, because ${n1}/${d1} = ${n1 * k}/${d2}, and ${aMore ? `${n1 * k}/${d2} > ${n2}/${d2}` : `${n2}/${d2} > ${n1 * k}/${d2}`}.`,
+                        d: [`${other}, because ${aMore ? `${n1 * k}/${d2} < ${n2}/${d2}` : `${n2}/${d2} < ${n1 * k}/${d2}`}.`, `${b}, because ${d2} is greater than ${d1}.`, `They ate the same amount, because both are parts of one pizza.`] };
+                }]
+            ],
+            '4.CA.6': [
+                [3, () => {
+                    const d = pick([6, 8, 10, 12]), n = randInt(5, d - 1);
+                    const a1 = randInt(1, n - 1), a2 = randInt(1, n - 1);
+                    const b1 = a1 === a2 ? (a1 % (n - 1)) + 1 : a2;
+                    return { q: `Which shows TWO correct ways to decompose ${n}/${d}?`,
+                        c: `${a1}/${d} + ${n - a1}/${d}  and  ${b1}/${d} + ${n - b1}/${d}`,
+                        d: [`${a1}/${d} + ${n - a1}/${d}  and  ${b1}/${d} + ${n - b1 + 1}/${d}`, `${a1}/${d} + ${n - a1}/${d}  and  ${b1}/${Math.floor(d / 2)} + ${n - b1}/${Math.ceil(d / 2)}`, `${a1}/${Math.floor(d / 2)} + ${n - a1}/${Math.ceil(d / 2)}  and  ${n}/${d} + 1/${d}`] };
+                }],
+                [2, () => {
+                    const d = pick([5, 6, 8, 10, 12]), a = randInt(1, d - 2), b = randInt(1, d - 1 - a);
+                    return { q: `${a}/${d} + ? = ${a + b}/${d}. What fraction is missing?`, c: `${b}/${d}`, d: [`${a + b}/${d}`, `${b}/${d * 2}`, `${a}/${d}`, `${b + 1}/${d}`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), d = pick([5, 6, 8, 10]), a = randInt(1, Math.floor(d / 2)), b = randInt(1, Math.floor(d / 2));
+                    return { q: `${name} says ${a}/${d} + ${b}/${d} = ${a + b}/${d * 2}. Which explains ${name}'s mistake?`,
+                        c: `${name} added the denominators. The size of the parts does not change, so the sum is ${a + b}/${d}.`,
+                        d: [`${name} should have multiplied the numerators: ${a * b}/${d * 2}.`, `${name} should have subtracted the fractions.`, `${name} made no mistake.`] };
+                }]
+            ],
+            '4.CA.8': [
+                [1, () => {
+                    const [a, b] = pickN(NAMES, 2), d = pick([5, 6, 8]), n1 = randInt(1, 3), n2 = randInt(1, 2);
+                    return { q: `${a} drank ${n1}/${d} of a bottle of water. ${b} drank ${n2}/${d} of the same bottle. Which equation shows how much they drank in all?`,
+                        c: `${n1}/${d} + ${n2}/${d} = ?`, d: [`${n1}/${d} − ${n2}/${d} = ?`, `${n1}/${d} × ${n2}/${d} = ?`, `${n1 + n2}/${d} + ${d}/${d} = ?`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), d = pick([5, 6, 8, 10]), a = randInt(1, Math.floor(d / 2)), b = randInt(1, Math.floor(d / 2));
+                    return { q: `${name} ran ${a}/${d} mile on Monday and ${b}/${d} mile on Tuesday. ${name} says that is ${a + b}/${d * 2} mile in all. Which explains the mistake?`,
+                        c: `${name} added the denominators. The pieces are still ${d}ths, so the total is ${a + b}/${d} mile.`,
+                        d: [`${name} should have subtracted to find the total.`, `${name} should have multiplied: ${a * b}/${d}.`, `${name} made no mistake.`] };
+                }],
+                [2, () => {
+                    const [a, b] = pickN(NAMES, 2), d = pick([8, 10, 12]), n1 = randInt(1, 3), n2 = randInt(1, 3);
+                    return { q: `A pizza is cut into ${d} equal slices. ${a} eats ${n1}/${d} of the pizza and ${b} eats ${n2}/${d} of the pizza. What fraction of the pizza is left?`,
+                        c: `${d - n1 - n2}/${d}`, d: [`${n1 + n2}/${d}`, `${d - n1}/${d}`, `${d - n1 - n2}/${d * 2}`, `${d - n2}/${d}`] };
+                }],
+                [3, () => {
+                    const [a, b] = pickN(NAMES, 2), d = pick([4, 6, 8]), w1 = randInt(3, 6), w2 = randInt(1, w1 - 1), n1 = randInt(2, d - 1), n2 = randInt(1, n1 - 1);
+                    return { q: `${a} walked ${w1} ${n1}/${d} miles. ${b} walked ${w2} ${n2}/${d} miles. Who walked farther, and how much farther?`,
+                        c: `${a}, ${fracStr((w1 - w2) * d + n1 - n2, d)} miles farther`,
+                        d: [`${b}, ${fracStr((w1 - w2) * d + n1 - n2, d)} miles farther`, `${a}, ${fracStr((w1 + w2) * d + n1 - n2, d)} miles farther`, `${a}, ${w1 - w2} miles farther`] };
+                }]
+            ],
+            '4.NS.2': [
+                [3, () => {
+                    const [a, b] = pickN(NAMES, 2), d = pick([3, 4, 5, 6, 8]);
+                    let w1, n1, w2, n2; do { w1 = randInt(1, 4); n1 = randInt(1, d - 1); w2 = randInt(1, 4); n2 = randInt(1, d - 1); } while (w1 * d + n1 === w2 * d + n2);
+                    const A = w1 * d + n1, B = w2 * d + n2, aMore = A > B;
+                    return { q: `${a} has ${A}/${d} cups of flour. ${b} has ${w2} ${n2}/${d} cups of flour. Who has more flour?`,
+                        c: aMore ? `${a}, because ${A}/${d} = ${w1} ${n1}/${d}` : `${b}, because ${A}/${d} = ${w1} ${n1}/${d}`,
+                        d: [aMore ? `${b}, because ${A}/${d} = ${w1} ${n1}/${d}` : `${a}, because ${A}/${d} = ${w1} ${n1}/${d}`, `${a}, because ${A} is greater than ${w2}`, 'They have the same amount.'] };
+                }],
+                [2, () => {
+                    const w = randInt(2, 5), d = pick([3, 4, 5, 6]), n = randInt(1, d - 1);
+                    return { q: `Which improper fraction is between ${w} and ${w + 1}?`, c: `${w * d + n}/${d}`,
+                        d: [`${(w + 1) * d + n}/${d}`, `${(w - 1) * d + n}/${d}`, `${w * d}/${d}`, `${w + n}/${d}`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES);
+                    let w, d, n; do { w = randInt(2, 6); d = pick([3, 4, 5, 6, 8]); n = randInt(1, d - 1); } while (w === d || n >= w);
+                    const imp = w * d + n;
+                    return { q: `${name} says ${imp}/${d} = ${w} ${n}/${w}. What mistake did ${name} make?`,
+                        c: `${name} changed the denominator. The pieces are still ${d}ths of a whole, so ${imp}/${d} = ${w} ${n}/${d}.`,
+                        d: [`The whole number should be ${n}, not ${w}.`, `${name} should have added ${imp} + ${d}.`, `${name} made no mistake.`] };
+                }]
+            ],
+            '4.NS.5': [
+                [3, () => {
+                    const n = randInt(2, 9);
+                    return { q: 'Which set shows three numbers that are all equal?', c: `${n}/10, ${n * 10}/100, 0.${n}`,
+                        d: [`${n}/10, ${n}/100, 0.${n}`, `${n}/10, ${n * 10}/100, 0.0${n}`, `${n}/100, ${n * 10}/100, 0.${n}`] };
+                }],
+                [2, () => {
+                    let t, h; do { t = randInt(1, 9); h = randInt(1, 9); } while (t === h);
+                    return { q: `Which decimal equals ${t} tenths and ${h} hundredths?`, c: `0.${t}${h}`, d: [`0.${h}${t}`, `${t}.${h}`, `0.${t}0${h}`, `${t}${h}.0`] };
+                }],
+                [2, () => {
+                    const c = randInt(11, 99);
+                    return { q: `Which shows ${c} cents as a fraction of a dollar and as a decimal?`, c: `${c}/100 and $0.${c}`, d: [`${c}/10 and $${(c / 10).toFixed(1)}`, `${c}/100 and $${c}.00`, `1/${c} and $0.${c}`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), n = randInt(2, 9);
+                    return { q: `${name} says ${n}/10 = 0.0${n}. Which explains the mistake?`,
+                        c: `${n}/10 means ${n} tenths, so the ${n} belongs in the tenths place: 0.${n}.`,
+                        d: [`${n}/10 should be written as ${n}.10.`, `${n}/10 means ${n} hundredths, so it should be 0.${n}0.`, `${name} made no mistake.`] };
+                }]
+            ],
+            '4.NS.6': [
+                [3, () => {
+                    let t, h; do { t = randInt(3, 9); h = randInt(11, 99); } while (Math.floor(h / 10) !== t - 1 || h % 10 === 0);
+                    const T = `0.${t}`, H = (h / 100).toFixed(2);
+                    return { q: `Which statement correctly compares ${T} and ${H}?`,
+                        c: `${T} > ${H}, because ${t}0 hundredths is greater than ${h} hundredths.`,
+                        d: [`${T} < ${H}, because ${t} is less than ${h}.`, `${T} < ${H}, because ${H} has more digits.`, `${T} = ${H}, because both are close to ${t}0 hundredths.`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES); let t, hh;
+                    do { t = randInt(3, 9); hh = randInt(11, 89); } while (Math.floor(hh / 10) >= t || hh % 10 === 0);
+                    return { q: `${name} says 0.${t} < ${(hh / 100).toFixed(2)} because ${t} < ${hh}. Is ${name} correct?`,
+                        c: `No. 0.${t} = 0.${t}0, and ${t}0 hundredths is greater than ${hh} hundredths.`,
+                        d: [`Yes, because ${t} is less than ${hh}.`, `Yes, because ${(hh / 100).toFixed(2)} has more digits.`, 'No, because the two decimals are equal.'] };
+                }],
+                [2, () => {
+                    let v; do { v = pickN([12, 25, 30, 47, 5, 50, 8, 80, 61, 9], 4); } while (new Set(v).size < 4);
+                    const str = h => (h % 10 === 0 ? (h / 100).toFixed(1) : (h / 100).toFixed(2));
+                    const s = l => l.map(str).join(', ');
+                    const up = v.slice().sort((x, y) => x - y);
+                    return { q: 'Which list shows the decimals in order from LEAST to GREATEST?', c: s(up),
+                        d: [s(up.slice().reverse()), s(v.slice().sort((x, y) => String(x).length - String(y).length || x - y)), s([up[1], up[0], up[2], up[3]]), s([up[0], up[1], up[3], up[2]]), s([up[0], up[2], up[1], up[3]])] };
+                }]
+            ],
+            '4.DA.1': [
+                [3, () => {
+                    const [head, cats] = pick([['Favorite sport', ['Soccer', 'Basketball', 'Baseball', 'Swimming']], ['Favorite pet', ['Dogs', 'Cats', 'Birds', 'Fish']]]);
+                    let vals, k, from, to;
+                    do { vals = pickN([6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18], 4); from = randInt(0, 3); to = (from + randInt(1, 3)) % 4; k = randInt(2, 6);
+                    } while (k > vals[from] || (() => { const v = vals.slice(); v[from] -= k; v[to] += k; const mx = Math.max(...v); return v.filter(x => x === mx).length > 1 || v.indexOf(mx) === vals.indexOf(Math.max(...vals)); })());
+                    const v = vals.slice(); v[from] -= k; v[to] += k; const win = v.indexOf(Math.max(...v));
+                    return { fig: freqTable([head, 'Number of students'], cats.map((c, i) => [c, vals[i]])),
+                        q: `Suppose ${k} students who chose ${cats[from]} change their vote to ${cats[to]}. Which choice would then have the MOST votes?`,
+                        c: cats[win], d: cats.filter((_, i) => i !== win) };
+                }],
+                [1, () => {
+                    const [head, cats] = pick([['Favorite sport', ['Soccer', 'Basketball', 'Baseball', 'Swimming']], ['Favorite pet', ['Dogs', 'Cats', 'Birds', 'Fish']]]);
+                    const vals = pickN([6, 7, 8, 9, 11, 12, 13, 14, 16, 17], 4), i = randInt(0, 3);
+                    return { fig: freqTable([head, 'Number of students'], cats.map((c, k) => [c, vals[k]])), q: `How many students chose ${cats[i]}?`,
+                        c: String(vals[i]), d: vals.filter((_, k) => k !== i).map(String) };
+                }],
+                [3, () => {
+                    const [head, cats] = pick([['Favorite fruit', ['Apples', 'Bananas', 'Grapes', 'Oranges']], ['Favorite season', ['Spring', 'Summer', 'Fall', 'Winter']]]);
+                    let x, y, w; do { x = randInt(4, 12); y = randInt(4, 12); w = randInt(5, 20); } while (x === y || w === x + y || [x, y].includes(w) || w + x === x + y || w + y === x + y);
+                    const vals = shuffle([x, y, x + y, w], R), iHi = vals.indexOf(x + y), ix = vals.indexOf(x), iy = vals.indexOf(y), iw = vals.indexOf(w);
+                    return { fig: freqTable([head, 'Number of students'], cats.map((c, k) => [c, vals[k]])),
+                        q: `Which TWO choices together got the same number of votes as ${cats[iHi]}?`,
+                        c: `${cats[ix]} and ${cats[iy]}`, d: [`${cats[ix]} and ${cats[iw]}`, `${cats[iy]} and ${cats[iw]}`, `${cats[iw]} and ${cats[iHi]}`] };
+                }]
+            ],
+            '4.DA.2': [
+                [3, () => {
+                    let counts; do { counts = [0, randInt(1, 4), randInt(1, 4), randInt(1, 4), randInt(1, 2)]; } while (counts.indexOf(Math.max(...counts)) === 4 || counts.filter(c => c === Math.max(...counts)).length > 1);
+                    const name = pick(NAMES), mode = counts.indexOf(Math.max(...counts));
+                    return { fig: linePlotSVG(counts, 'Plant growth in one week (inches)'),
+                        q: `${name} says the most common amount of growth was 1 inch, because 1 is the greatest number on the line plot. Is ${name} correct?`,
+                        c: `No. The most common amount is ${fracStr(mode, 4)} inch, because it has the most X marks.`,
+                        d: [`Yes. The greatest number is always the most common.`, `No. The most common amount is 0 inches.`, `Yes. Only ${counts[4]} plant${counts[4] > 1 ? 's' : ''} grew 1 inch.`] };
+                }],
+                [1, () => {
+                    let counts; do { counts = [0, randInt(1, 4), randInt(1, 4), randInt(0, 4), randInt(0, 3)]; } while (new Set(counts.slice(1)).size < 3);
+                    const q = pick([1, 2, 3, 4].filter(k => counts[k] > 0));
+                    return { fig: linePlotSVG(counts, 'Plant growth in one week (inches)'), q: `How many plants grew exactly ${fracStr(q, 4)} inch?`,
+                        c: String(counts[q]), d: [0, 1, 2, 3, 4, 5].filter(v => v !== counts[q]).map(String) };
+                }],
+                [3, () => {
+                    let counts; do { counts = [0, randInt(1, 3), randInt(0, 3), randInt(1, 3), randInt(0, 2)]; } while (counts.reduce((a, b) => a + b) < 5);
+                    const tot = counts.reduce((s, c, q) => s + c * q, 0), plants = counts.reduce((a, b) => a + b);
+                    const inch = q => fracStr(q, 4) + (q > 4 ? ' inches' : ' inch');
+                    return { fig: linePlotSVG(counts, 'Plant growth in one week (inches)'), q: 'What is the TOTAL growth of all the plants shown on the line plot?',
+                        c: inch(tot), d: [inch(plants), inch(tot - 1), inch(tot + 2), `${plants} inches`] };
+                }]
+            ],
+            '4.M.3': [
+                [1, () => {
+                    const h = randInt(2, 5), m = pick([10, 15, 20, 30, 45]);
+                    return { q: `How many minutes are in ${h} hours and ${m} minutes?`, c: `${h * 60 + m} minutes`, d: [`${h * 100 + m} minutes`, `${h + m} minutes`, `${h * 60} minutes`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), start = (18 * 60) + pick([0, 15, 30, 45]) + pick([0, 5, 10]), dur = 60 + pick([35, 40, 45, 50, 55]), drive = pick([15, 20, 25]);
+                    const end = start + dur + drive;
+                    return { q: `A movie starts at ${clock(start)} and lasts 1 hour ${dur - 60} minutes. Then ${name}'s family drives ${drive} minutes home. What time do they get home?`,
+                        c: clock(end), d: [clock(start + dur), clock(end - 60), clock(end + 60), clock(start + dur - drive)] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), k = randInt(2, 4), p = randInt(1, 4) * 100 + pick([15, 25, 35, 45, 60, 75]), bill = k * p < 1000 ? 1000 : 2000;
+                    return { q: `${name} buys ${k} notebooks that cost ${money(p)} each. ${name} pays with a $${bill / 100} bill. How much change should ${name} get?`,
+                        c: money(bill - k * p), d: [money(bill - p), money(k * p), money(bill - k * p + 100), money(bill - k * p - 10)] };
+                }]
+            ]
+        };
+        Object.entries(MORE_QUESTIONS).forEach(([id, list]) => list.forEach(([dok, fn]) => { fn.dok = dok; GEN[id].push(fn); }));
+
         // =====================================================================
         // App
         // =====================================================================
         const CFA_MAX_STANDARDS = 2;
         const MODE_DEFAULTS = {
-            cfa: { title: 'Math Common Formative Assessment', sub: '', layout: '5', newPage: false, score: false, sel: { '4.CA.4': 10 }, defaultCount: 10 },
-            eou: { title: 'Math End of Unit Assessment', sub: '', layout: '5', newPage: true, score: true, sel: { '4.NS.1': 5, '4.NS.7': 5 }, defaultCount: 5 }
+            cfa: { title: 'Math Common Formative Assessment', sub: '', layout: '5', rigor: 'mix', newPage: false, score: false, sel: { '4.CA.4': 10 }, defaultCount: 10 },
+            eou: { title: 'Math End of Unit Assessment', sub: '', layout: '5', rigor: 'mix', newPage: true, score: true, sel: { '4.NS.1': 5, '4.NS.7': 5 }, defaultCount: 5 },
+            exit: { title: 'Exit Ticket', sub: '', layout: 'compact', rigor: 'mix', newPage: false, score: false, copies: '2', sel: { '4.CA.4': 3 }, defaultCount: 3 }
         };
         const state = { mode: 'cfa', settings: JSON.parse(JSON.stringify(MODE_DEFAULTS)), showKey: false, code: newCode(), built: null };
         const S = () => state.settings[state.mode];
@@ -896,18 +1414,27 @@
         }
 
         // ---------- Building ----------
-        function buildSection(stdId, count, notices) {
+        function buildSection(stdId, count, level, notices) {
             const gens = GEN[stdId];
-            const offset = Math.floor(R() * gens.length);
+            const byDok = [1, 2, 3].map(k => shuffle(gens.filter(g => g.dok === k), R));
+            const next = [0, 0, 0];
+            // Which DOK level the i-th question should come from
+            const want = i => level === 'mix' ? i % 3 : level === 'all' ? Math.floor(R() * 3) : Number(level) - 1;
             const seen = new Set();
             const questions = [];
-            for (let i = 0; questions.length < count && i < count * 6; i++) {
-                const g = gens[(offset + questions.length) % gens.length]();
+            let borrowed = 0;
+            for (let i = 0; questions.length < count && i < count * 8; i++) {
+                let k = want(questions.length);
+                if (!byDok[k].length) { k = [1, 0, 2].find(x => byDok[x].length); borrowed++; }
+                const fn = byDok[k][next[k]++ % byDok[k].length];
+                const g = fn();
                 if (seen.has(g.q + '|' + g.c)) continue;
                 seen.add(g.q + '|' + g.c);
-                questions.push({ ...g, ...(g.fixed ? { options: g.fixed, correctLetter: g.correctLetter } : makeChoices(g.c, g.d, g.three, g.exact)) });
+                questions.push({ ...g, dok: fn.dok, ...(g.fixed ? { options: g.fixed, correctLetter: g.correctLetter } : makeChoices(g.c, g.d, g.three, g.exact)) });
             }
+            if (level === 'mix') questions.sort((x, y) => x.dok - y.dok);
             if (questions.length < count) notices.push(`${stdId}: ${questions.length} of ${count} questions added. The generator ran out of different questions.`);
+            if (borrowed) notices.push(`${stdId}: some questions came from another DOK level.`);
             return { stdId, questions };
         }
 
@@ -916,7 +1443,7 @@
             const notices = [];
             R = makeRng(state.code + '|' + state.mode);
             const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id]);
-            const sections = ids.map(id => buildSection(id, s.sel[id], notices));
+            const sections = ids.map(id => buildSection(id, s.sel[id], s.rigor, notices));
             R = Math.random;
             state.built = { sections, notices };
             renderNotices();
@@ -927,12 +1454,17 @@
         function renderControls() {
             const s = S();
             document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
-            $('std-hint').textContent = state.mode === 'cfa'
+            document.body.dataset.mode = state.mode;
+            $('f-copies').value = s.copies || '2';
+            $('std-hint').textContent = state.mode === 'exit'
+                ? 'Pick one standard. Three questions (one at each DOK level) fits nicely on a half sheet.'
+                : state.mode === 'cfa'
                 ? `Pick up to ${CFA_MAX_STANDARDS} standards: one main target and an optional second.`
                 : 'Pick every standard the unit covered. Each one gets its own section.';
             $('f-title').value = s.title;
             $('f-sub').value = s.sub;
             $('f-layout').value = s.layout;
+            $('f-rigor').value = s.rigor;
             $('f-newpage').checked = s.newPage;
                         $('f-score').checked = s.score;
             $('f-code').value = state.code;
@@ -950,7 +1482,8 @@
                 const box = row.querySelector('input[type=checkbox]'), num = row.querySelector('input[type=number]');
                 box.addEventListener('change', () => {
                     if (box.checked) {
-                        if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
+                        if (state.mode === 'exit') s.sel = {};    // one standard at a time
+                        else if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
                             box.checked = false;
                             flash(`A Quick CFA covers up to ${CFA_MAX_STANDARDS} standards. Switch to End of Unit to include more.`);
                             return;
@@ -994,7 +1527,9 @@
             const qd = el('div', 'q');
             qd.appendChild(el('div', 'q-num', n + '.'));
             const body = el('div');
-            body.appendChild(el('div', 'q-stem', q.q));
+            const stem = el('div', 'q-stem', q.q);
+            if (state.showKey) stem.appendChild(el('span', 'tag', 'DOK ' + q.dok));
+            body.appendChild(stem);
             if (q.fig) { const f = el('div', 'fig'); f.innerHTML = q.fig; body.appendChild(f); }
             const short = q.options.every(o => o.text.length <= 26);
             const opts = el('div', 'opts' + (short ? ' two' : ''));
@@ -1016,6 +1551,32 @@
                 '1 ft = 12 in', '1 yd = 3 ft', '1 lb = 16 oz'
             ].map(t => `<span>${t}</span>`).join('') + '</div>';
             return r;
+        }
+
+        // Exit ticket: one small ticket, repeated on the page for cutting apart (the key prints one copy)
+        function renderTickets(sections) {
+            const s = S(), sheet = $('sheet');
+            sheet.innerHTML = '';
+            const t = el('div', 'ticket');
+            const head = el('div', 'x-head'), left = el('div');
+            left.appendChild(el('h1', 'x-title', (s.title || 'Exit Ticket') + (state.showKey ? ' (Teacher Key)' : '')));
+            const std = sections[0] && STANDARDS.find(x => x.id === sections[0].stdId);
+            left.appendChild(el('p', 'x-std', (std ? std.label : 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + state.code));
+            const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
+            head.append(left, nm);
+            t.appendChild(head);
+            if (!sections.length) { t.appendChild(el('p', 'empty', 'Pick a standard to build an exit ticket.')); sheet.appendChild(t); return; }
+            if (NEEDS_REFERENCE.includes(sections[0].stdId)) t.appendChild(referenceChart());
+            sections[0].questions.forEach((q, i) => t.appendChild(questionEl(q, i + 1)));
+            sheet.appendChild(t);
+            const copies = state.showKey ? 1 : Number(s.copies || 2);
+            const tooTall = copies > 1 && t.getBoundingClientRect().height / 96 > 4.8;
+            for (let c = 1; c < copies; c++) {
+                const copy = t.cloneNode(true);
+                if (tooTall) copy.classList.add('alone');
+                sheet.appendChild(copy);
+            }
+            if (tooTall) flash('This ticket is too long for two per page, so each copy prints on its own page. Use fewer questions to fit two.');
         }
 
         function renderSheet() {
@@ -1045,6 +1606,8 @@
                 return;
             }
 
+            if (state.mode === 'exit') { renderTickets(sections); return; }
+
             const spaced = s.layout !== 'compact';
             const perPage = spaced ? parseInt(s.layout, 10) : Infinity;
             let n = 1, pageCount = 0;
@@ -1073,7 +1636,7 @@
                         page.appendChild(el('p', 'sec-label', std.label + ' (continued)'));
                     }
                     page.appendChild(questionEl(q, n));
-                    keyRows.push([n, q.correctLetter, q.c, sec.stdId]);
+                    keyRows.push([n, q.correctLetter, q.c, sec.stdId, q.dok]);
                     used += w; n++;
                 });
                 perStd.push({ id: sec.stdId, from: first, to: n - 1, count: sec.questions.length });
@@ -1093,8 +1656,8 @@
                 const k = el('div', 'end-block newpage');
                 k.appendChild(el('h3', '', `Answer key, version ${state.code}`));
                 const t = el('table', 'grid');
-                t.innerHTML = '<tr><th>#</th><th>Answer</th><th>Correct choice</th><th>Standard</th></tr>' +
-                    keyRows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td></td><td>${r[3]}</td></tr>`).join('');
+                t.innerHTML = '<tr><th>#</th><th>Answer</th><th>Correct choice</th><th>Standard</th><th>DOK</th></tr>' +
+                    keyRows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td></td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
                 t.querySelectorAll('tr').forEach((tr, i) => { if (i) tr.children[2].textContent = keyRows[i - 1][2]; });
                 k.appendChild(t);
                 sheet.appendChild(k);
@@ -1113,8 +1676,10 @@
             bindField('f-title', 'title');
             bindField('f-sub', 'sub');
             bindField('f-layout', 'layout', 'change');
+            $('f-rigor').addEventListener('change', e => { S().rigor = e.target.value; build(); });
             bindField('f-newpage', 'newPage', 'change');
             bindField('f-score', 'score', 'change');
+            bindField('f-copies', 'copies', 'change');
             $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
             $('btn-new').addEventListener('click', () => { state.code = newCode(); $('f-code').value = state.code; build(); });
             $('btn-key').addEventListener('click', () => { state.showKey = !state.showKey; $('btn-key').setAttribute('aria-pressed', String(state.showKey)); renderSheet(); });
