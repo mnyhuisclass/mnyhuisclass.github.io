@@ -316,6 +316,70 @@
             return `<table class="freq"><tr><th>${head[0]}</th><th>${head[1]}</th></tr>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
         }
 
+        // ---------- Bar models (multiplicative comparison) ----------
+        // rows: top = the smaller amount (one box), bottom = the larger amount (m equal boxes); brace text under the bottom row.
+        function barModelParts({ labels, top, bottom, brace, unit = 70, bh = 56, fs = 26, lw = 170 }) {
+            const red = '#c8323c', blue = '#2a6db5', gap = Math.round(bh * 0.55);
+            const y1 = 4, y2 = y1 + bh + gap;
+            const row = (boxes, y, stroke) => boxes.map((t, i) => {
+                const x = lw + i * unit;
+                return `<rect x="${x}" y="${y}" width="${unit}" height="${bh}" fill="#fff" stroke="${stroke}" stroke-width="3"/>` +
+                    (t === '' ? '' : `<text x="${x + unit / 2}" y="${y + bh / 2 + fs * 0.35}" font-size="${fs}" font-weight="bold" text-anchor="middle" fill="${t === '?' ? blue : red}" font-family="Arial">${t}</text>`);
+            }).join('');
+            const label = (t, y) => `<text x="${lw - 18}" y="${y + bh / 2 + fs * 0.32}" font-size="${fs * 0.85}" text-anchor="end" fill="#222" font-family="Arial">${t}</text>`;
+            const x0 = lw + 2, x1 = lw + bottom.length * unit - 2, mid = (x0 + x1) / 2, yb = y2 + bh + 8, r = 10;
+            const braceSvg = `<path d="M${x0} ${yb} q0 ${r} ${r} ${r} H${mid - r} q${r} 0 ${r} ${r} q0 -${r} ${r} -${r} H${x1 - r} q${r} 0 ${r} -${r}" fill="none" stroke="${blue}" stroke-width="2.5"/>` +
+                `<text x="${mid}" y="${yb + 2 * r + fs}" font-size="${fs}" font-weight="bold" text-anchor="middle" fill="${blue}" font-family="Arial">${brace}</text>`;
+            const w = lw + Math.max(top.length, bottom.length) * unit + 6, h = yb + 2 * r + fs + 8;
+            return { body: label(labels[0], y1) + label(labels[1], y2) + row(top, y1, red) + row(bottom, y2, blue) + braceSvg, w, h };
+        }
+        function barModel(spec) {
+            const unit = Math.min(70, 470 / Math.max(spec.top.length, spec.bottom.length));
+            const p = barModelParts({ ...spec, unit });
+            return `<svg viewBox="0 0 ${p.w} ${p.h}" width="${p.w}" role="img" aria-label="bar model">${p.body}</svg>`;
+        }
+        function modelChoices(specs) {           // four small bar models in a 2 by 2 grid, labeled A to D
+            const parts = specs.map(s => barModelParts({ ...s, unit: 38, bh: 34, fs: 17, lw: 112 }));
+            const cw = Math.max(...parts.map(p => p.w)) + 36, ch = Math.max(...parts.map(p => p.h)) + 34;
+            const body = parts.map((p, i) => {
+                const gx = (i % 2) * cw, gy = Math.floor(i / 2) * ch;
+                return `<g transform="translate(${gx},${gy})"><text x="0" y="18" font-size="18" font-weight="bold" font-family="Arial">Model ${'ABCD'[i]}</text>` +
+                    `<rect x="0" y="24" width="${cw - 18}" height="${ch - 30}" fill="none" stroke="#bbb" rx="6"/>` +
+                    `<g transform="translate(4,30)">${p.body}</g></g>`;
+            }).join('');
+            return `<svg viewBox="0 0 ${cw * 2} ${ch * 2}" width="${cw * 2}" role="img" aria-label="four bar models">${body}</svg>`;
+        }
+        function comparisonContext() {
+            const [a, b] = pickN(NAMES, 2), name = pick(NAMES);
+            const plain = (unit) => ({ f: v => String(v), u: v => `${v} ${unit}` });
+            return pick([
+                { rows: [a, b], ...plain('goals'), forward: (x, m) => `${a} scored ${x} goals this season. ${b} scored ${m} times as many goals as ${a}.`, askBig: `How many goals did ${b} score?`,
+                  backward: (t, m) => `${b} scored ${t} goals this season. That is ${m} times as many goals as ${a} scored.`, askSmall: `How many goals did ${a} score?` },
+                { rows: ['Last season', 'This season'], ...plain('games'), forward: (x, m) => `A team won ${x} games last season. This season, the team won ${m} times as many games.`, askBig: 'How many games did the team win this season?',
+                  backward: (t, m) => `A team won ${t} games this season. That is ${m} times as many games as it won last season.`, askSmall: 'How many games did the team win last season?' },
+                { rows: ['Small dog', 'Big dog'], ...plain('pounds'), forward: (x, m) => `A small dog weighs ${x} pounds. A big dog weighs ${m} times as much.`, askBig: 'How much does the big dog weigh?',
+                  backward: (t, m) => `A big dog weighs ${t} pounds. That is ${m} times as much as a small dog.`, askSmall: 'How much does the small dog weigh?' },
+                { rows: ['Monday', 'Tuesday'], ...plain('pages'), forward: (x, m) => `${name} read ${x} pages on Monday. On Tuesday, ${name} read ${m} times as many pages.`, askBig: `How many pages did ${name} read on Tuesday?`,
+                  backward: (t, m) => `${name} read ${t} pages on Tuesday. That is ${m} times as many pages as on Monday.`, askSmall: `How many pages did ${name} read on Monday?` },
+                { rows: ['Red ribbon', 'Blue ribbon'], ...plain('inches'), forward: (x, m) => `A red ribbon is ${x} inches long. A blue ribbon is ${m} times as long.`, askBig: 'How long is the blue ribbon?',
+                  backward: (t, m) => `A blue ribbon is ${t} inches long. That is ${m} times as long as a red ribbon.`, askSmall: 'How long is the red ribbon?' },
+                { rows: [a, b], f: v => `$${v}`, u: v => `$${v}`, forward: (x, m) => `${a} saved $${x}. ${b} saved ${m} times as much money as ${a}.`, askBig: `How much money did ${b} save?`,
+                  backward: (t, m) => `${b} saved $${t}. That is ${m} times as much money as ${a} saved.`, askSmall: `How much money did ${a} save?` }
+            ]);
+        }
+        // A starting amount and a multiplier that are never the same number (avoids "8 × 8" confusion)
+        function xm(xl, xh, ml, mh) {
+            let x, m;
+            do { x = randInt(xl, xh); m = randInt(ml, mh); } while (x === m);
+            return [x, m];
+        }
+        // Alternate bar-model questions with word-only questions: [A1, B1, A2, B2, ...]
+        function interleave(a, b) {
+            const out = [];
+            for (let i = 0; i < Math.max(a.length, b.length); i++) { if (a[i]) out.push(a[i]); if (b[i]) out.push(b[i]); }
+            return out;
+        }
+
         // ---------- Question generators ----------
         // Each returns { q, c (correct), d (distractor candidates), fig? (HTML) }.
         // Subtypes rotate by index so a set of questions covers the whole standard.
@@ -431,7 +495,51 @@
                     return { q: `Which number is a factor of ${n}?`, c: String(pick(f)), d: pickN(non, 4).map(String) };
                 }
             ],
-            '4.CA.5': [
+            '4.CA.5': interleave([
+                // Bar model, larger amount unknown
+                () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 12, 2, 8), t = x * m;
+                    return { fig: barModel({ labels: c.rows, top: [c.f(x)], bottom: Array(m).fill(c.f(x)), brace: '?' }),
+                        q: `${c.forward(x, m)} ${c.askBig} Use the bar model to help you.`,
+                        c: c.u(t), d: [c.u(x + m), c.u(t + x), c.u(t - x), c.u(t + m)] };
+                },
+                // Bar model, smaller amount unknown
+                () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 12, 2, 8), t = x * m;
+                    return { fig: barModel({ labels: c.rows, top: ['?'], bottom: Array(m).fill(''), brace: c.f(t) }),
+                        q: `${c.backward(t, m)} ${c.askSmall} Use the bar model to help you.`,
+                        c: c.u(x), d: [c.u(t * m), c.u(t - m), c.u(t + m), c.u(x + 1)] };
+                },
+                // Which equation matches the bar model?
+                () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 12, 3, 8), t = x * m;
+                    if (R() < 0.5) {
+                        return { fig: barModel({ labels: c.rows, top: [String(x)], bottom: Array(m).fill(String(x)), brace: '?' }),
+                            q: 'Which equation matches the bar model?',
+                            c: `${m} × ${x} = ?`, d: [`${m} + ${x} = ?`, `${x} − ${m} = ?`, `${m} × ? = ${x}`] };
+                    }
+                    return { fig: barModel({ labels: c.rows, top: ['?'], bottom: Array(m).fill(''), brace: String(t) }),
+                        q: 'Which equation matches the bar model?',
+                        c: `${t} ÷ ${m} = ?`, d: [`${t} × ${m} = ?`, `${t} − ${m} = ?`, `${m} + ? = ${t}`] };
+                },
+                // Which bar model shows the problem?
+                () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 9, 3, 6);
+                    const v = c.f(x), rows = c.rows;
+                    const models = shuffle([
+                        { right: true, spec: { top: [v], bottom: Array(m).fill(v), brace: '?' } },
+                        { spec: { top: [v], bottom: Array(m + 1).fill(v), brace: '?' } },
+                        { spec: { top: [v], bottom: [v, String(m)], brace: '?' } },
+                        { spec: { top: Array(m).fill(v), bottom: [v], brace: '?' } }
+                    ], R);
+                    const letters = ['A', 'B', 'C', 'D'];
+                    const k = models.findIndex(x => x.right);
+                    return { fig: modelChoices(models.map(x => ({ labels: rows, ...x.spec }))), weight: 3,
+                        q: `${c.forward(x, m)} Which bar model shows this problem?`,
+                        c: `Model ${letters[k]}`, fixed: letters.map(L => ({ label: L, text: `Model ${L}` })), correctLetter: letters[k] };
+                }
+            ], [
+
                 () => {
                     const [a, b] = pickN(NAMES, 2), base = randInt(4, 12), m = 4, ans = base * m;
                     return { q: `${a} scored ${base} goals this season. ${b} scored ${m} times as many goals. How many goals did ${b} score?`, c: `${ans} goals`, d: [`${base + m} goals`, `${ans + m} goals`, `${ans - base} goals`] };
@@ -456,7 +564,7 @@
                     const small = randInt(3, 9), m = randInt(3, 8), big = small * m;
                     return { q: `Which equation shows "${big} is ${m} times as many as ${small}"?`, c: `${big} = ${m} × ${small}`, d: [`${big} = ${m} + ${small}`, `${m} = ${big} × ${small}`, `${small} = ${m} × ${big}`] };
                 }
-            ],
+            ]),
             '4.CA.2': [
                 () => {
                     let dv, ds;
@@ -797,7 +905,7 @@
                 const g = gens[(offset + questions.length) % gens.length]();
                 if (seen.has(g.q + '|' + g.c)) continue;
                 seen.add(g.q + '|' + g.c);
-                questions.push({ ...g, ...makeChoices(g.c, g.d, g.three, g.exact) });
+                questions.push({ ...g, ...(g.fixed ? { options: g.fixed, correctLetter: g.correctLetter } : makeChoices(g.c, g.d, g.three, g.exact)) });
             }
             if (questions.length < count) notices.push(`${stdId}: ${questions.length} of ${count} questions added. The generator ran out of different questions.`);
             return { stdId, questions };
@@ -958,7 +1066,7 @@
                 page.appendChild(label);
                 if (NEEDS_REFERENCE.includes(sec.stdId)) { page.appendChild(referenceChart()); used += 1; }
                 sec.questions.forEach((q, k) => {
-                    const w = q.fig ? 2 : 1;
+                    const w = q.weight || (q.fig ? 2 : 1);
                     const cap = perPage;
                     if (spaced && used + w > cap && used > 0) {
                         newPage();
