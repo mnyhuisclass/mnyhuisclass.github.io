@@ -34,7 +34,7 @@
     .brand h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: .2px; }
     .brand small { display: block; font-size: 13px; font-weight: 400; color: #b9dcda; }
     .modes { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 999px; padding: 4px; }
-    .modes button { border: 0; background: transparent; color: #d7ecea; padding: 8px 18px; border-radius: 999px; cursor: pointer; font-weight: 600; }
+    .modes button { border: 0; background: transparent; color: #d7ecea; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; }
     .modes button[aria-pressed="true"] { background: var(--gold-500); color: var(--teal-900); }
 
     .panel { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
@@ -116,8 +116,9 @@
     .wlines span { border-bottom: 1px solid #999; display: block; }
     .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
     .newpage { break-before: page; }
-    body:not([data-mode="exit"]) .exit-only { display: none; }
-    body[data-mode="exit"] .test-only { display: none; }
+    body:not([data-mode="exit"]) .exit-only, body:not([data-mode="morning"]) .morning-only { display: none; }
+    body[data-mode="exit"] .test-only, body[data-mode="morning"] .test-only { display: none; }
+    body[data-mode="morning"] .std-row input[type=number], body[data-mode="morning"] .std-head span:nth-child(n+3) { visibility: hidden; }
     .ticket { border: 2px solid #333; border-radius: 10px; padding: 10px 16px 4px; break-inside: avoid; }
     .ticket + .ticket { margin-top: 0.4in; position: relative; }
     .ticket + .ticket::before { content: "\2702  cut here"; position: absolute; left: 0; right: 0; top: -0.25in; border-top: 1.5px dashed #888; font-size: 10px; color: #666; padding-top: 2px; text-align: center; }
@@ -185,6 +186,7 @@
             <button type="button" data-mode="cfa" aria-pressed="true">Quick CFA</button>
             <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
             <button type="button" data-mode="exit" aria-pressed="false">Exit Ticket</button>
+            <button type="button" data-mode="morning" aria-pressed="false">Morning Work</button>
         </div>
     </div>
 
@@ -208,6 +210,18 @@
             <div class="field">
                 <label for="f-sub">Unit or subtitle (optional)</label>
                 <input type="text" id="f-sub" placeholder="Example: Unit 2, Multiplication">
+            </div>
+            <div class="field morning-only">
+                <label for="f-days">Days</label>
+                <select id="f-days">
+                    <option value="1">1 day</option><option value="2">2 days</option><option value="3">3 days</option><option value="4">4 days</option><option value="5">5 days (a week)</option>
+                </select>
+            </div>
+            <div class="field morning-only">
+                <label for="f-perday">Questions per day</label>
+                <select id="f-perday">
+                    <option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                </select>
             </div>
             <div class="field exit-only">
                 <label for="f-copies">Copies per page</label>
@@ -1326,6 +1340,7 @@
         const MODE_DEFAULTS = {
             cfa: { title: 'Math Common Formative Assessment', sub: '', layout: '5', rigor: 'mix', newPage: false, score: false, sel: { '4.CA.4': 10 }, defaultCount: 10 },
             eou: { title: 'Math End of Unit Assessment', sub: '', layout: '5', rigor: 'mix', newPage: true, score: true, sel: { '4.NS.1': 5, '4.NS.7': 5 }, defaultCount: 5 },
+            morning: { title: 'Morning Work', sub: '', layout: '5', rigor: 'mix', newPage: false, score: false, days: '5', perDay: '5', sel: { '4.NS.1': 1, '4.NS.7': 1, '4.CA.1': 1, '4.CA.3': 1, '4.CA.4': 1 }, defaultCount: 1 },
             exit: { title: 'Exit Ticket', sub: '', layout: 'compact', rigor: 'mix', newPage: false, score: false, copies: '2', sel: { '4.CA.4': 3 }, defaultCount: 3 }
         };
         const state = { mode: 'cfa', settings: JSON.parse(JSON.stringify(MODE_DEFAULTS)), showKey: false, code: newCode(), built: null };
@@ -1438,10 +1453,42 @@
             return { stdId, questions };
         }
 
+        // ---------- Morning work (spiral review) ----------
+        // Each day mixes questions from different picked standards, rotating so every standard comes back
+        // during the week. Levels cycle DOK 1, 2, 3 (or the chosen level), easiest first each day.
+        function buildMorning(s, notices) {
+            const ids = shuffle(STANDARDS.map(x => x.id).filter(id => s.sel[id] !== undefined), R);
+            const perDay = Number(s.perDay) || 5, days = Number(s.days) || 5;
+            const seen = new Set(), out = [];
+            let slot = 0;
+            for (let d = 0; d < days; d++) {
+                const qs = [];
+                for (let k = 0; k < perDay && ids.length; k++, slot++) {
+                    const id = ids[slot % ids.length];
+                    const want = s.rigor === 'mix' ? ((k + d) % 3) + 1 : s.rigor === 'all' ? null : Number(s.rigor);
+                    let pool = GEN[id].filter(f => want === null || f.dok === want);
+                    if (!pool.length) pool = GEN[id];
+                    let g, fn, tries = 0;
+                    do { fn = pick(pool); g = fn(); tries++; } while (seen.has(g.q + '|' + g.c) && tries < 12);
+                    seen.add(g.q + '|' + g.c);
+                    qs.push({ ...g, std: id, dok: fn.dok, ...(g.fixed ? { options: g.fixed, correctLetter: g.correctLetter } : makeChoices(g.c, g.d, g.three, g.exact)) });
+                }
+                if (s.rigor === 'mix') qs.sort((x, y) => x.dok - y.dok);
+                out.push({ day: d, questions: qs });
+            }
+            return out;
+        }
+
         function build() {
             const s = S();
             const notices = [];
             R = makeRng(state.code + '|' + state.mode);
+            if (state.mode === 'morning') {
+                state.built = { days: buildMorning(s, notices), sections: [], notices };
+                R = Math.random;
+                renderNotices(); renderSheet();
+                return;
+            }
             const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id]);
             const sections = ids.map(id => buildSection(id, s.sel[id], s.rigor, notices));
             R = Math.random;
@@ -1456,7 +1503,11 @@
             document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
             document.body.dataset.mode = state.mode;
             $('f-copies').value = s.copies || '2';
-            $('std-hint').textContent = state.mode === 'exit'
+            $('f-days').value = s.days || '5';
+            $('f-perday').value = s.perDay || '5';
+            $('std-hint').textContent = state.mode === 'morning'
+                ? 'Pick the standards to spiral. Each day mixes questions from different standards, and every standard comes back during the week.'
+                : state.mode === 'exit'
                 ? 'Pick one standard. Three questions (one at each DOK level) fits nicely on a half sheet.'
                 : state.mode === 'cfa'
                 ? `Pick up to ${CFA_MAX_STANDARDS} standards: one main target and an optional second.`
@@ -1553,6 +1604,38 @@
             return r;
         }
 
+        // Morning work: one page per day with a small header, then the answers for the week (key only)
+        function renderMorning(days) {
+            const s = S(), sheet = $('sheet');
+            sheet.innerHTML = '';
+            if (!days.length || !days[0].questions.length) { sheet.appendChild(el('p', 'empty', 'Pick at least one standard to build morning work.')); return; }
+            days.forEach(day => {
+                const page = el('div', 'page spaced');
+                const head = el('div', 'x-head'), left = el('div');
+                left.appendChild(el('h1', 'x-title', `${s.title || 'Morning Work'}: Day ${day.day + 1}` + (state.showKey ? ' (Teacher Key)' : '')));
+                const ids = STANDARDS.map(x => x.id).filter(id => day.questions.some(q => q.std === id));
+                left.appendChild(el('p', 'x-std', 'Review: ' + ids.join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + state.code));
+                const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
+                head.append(left, nm);
+                page.appendChild(head);
+                if (ids.some(id => NEEDS_REFERENCE.includes(id))) page.appendChild(referenceChart());
+                day.questions.forEach((q, i) => {
+                    const qe = questionEl(q, i + 1);
+                    if (state.showKey) qe.querySelector('.q-stem').appendChild(el('span', 'tag', q.std));
+                    page.appendChild(qe);
+                });
+                sheet.appendChild(page);
+            });
+            if (state.showKey) {
+                const k = el('div', 'end-block newpage');
+                k.appendChild(el('h3', '', `Morning work answers, version ${state.code}`));
+                const t = el('table', 'grid');
+                t.innerHTML = '<tr><th>Day</th><th>Answers</th></tr>' + days.map(d => `<tr><td>Day ${d.day + 1}</td><td>${d.questions.map((q, i) => `${i + 1}. <b>${q.correctLetter}</b> <span style="color:#666">(${q.std}, DOK ${q.dok})</span>`).join('&nbsp;&nbsp; ')}</td></tr>`).join('');
+                k.appendChild(t);
+                sheet.appendChild(k);
+            }
+        }
+
         // Exit ticket: one small ticket, repeated on the page for cutting apart (the key prints one copy)
         function renderTickets(sections) {
             const s = S(), sheet = $('sheet');
@@ -1584,6 +1667,8 @@
             const sheet = $('sheet');
             sheet.innerHTML = '';
             const { sections } = state.built;
+            if (state.mode === 'exit') { renderTickets(sections); return; }
+            if (state.mode === 'morning') { renderMorning(state.built.days); return; }
 
             const top = el('div');
             const head = el('div', 't-head');
@@ -1606,7 +1691,6 @@
                 return;
             }
 
-            if (state.mode === 'exit') { renderTickets(sections); return; }
 
             const spaced = s.layout !== 'compact';
             const perPage = spaced ? parseInt(s.layout, 10) : Infinity;
@@ -1680,6 +1764,8 @@
             bindField('f-newpage', 'newPage', 'change');
             bindField('f-score', 'score', 'change');
             bindField('f-copies', 'copies', 'change');
+            $('f-days').addEventListener('change', e => { S().days = e.target.value; build(); });
+            $('f-perday').addEventListener('change', e => { S().perDay = e.target.value; build(); });
             $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
             $('btn-new').addEventListener('click', () => { state.code = newCode(); $('f-code').value = state.code; build(); });
             $('btn-key').addEventListener('click', () => { state.showKey = !state.showKey; $('btn-key').setAttribute('aria-pressed', String(state.showKey)); renderSheet(); });
