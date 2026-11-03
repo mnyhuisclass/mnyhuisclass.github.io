@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Space Paws">
+<title>Space Paws: The Word Eater</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0820; --panel:#17113a; --panel2:#221a52; --ink:#f4f1ff; --muted:#b9b0e6;
+  --accent:#ffd23f; --accentDk:#b38f00; --good:#3ddc84; --bad:#ff4d6d; --edge:#5b4bb7;
+  --pix:'Press Start 2P', ui-monospace, monospace;
+  --read:'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0820}
+body{
+  min-height:100vh;color:var(--ink);font-family:var(--read);
+  background:radial-gradient(ellipse at 50% 0%, #2a1d66 0%, #0b0820 60%) fixed;
+  display:flex;flex-direction:column;align-items:center;
+  -webkit-tap-highlight-color:transparent;
+}
+#app{width:min(calc(100vw - 16px), 1000px, calc((100vh - 150px) * 1.7778));min-width:300px;margin:8px auto}
+#hud{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;
+  font-family:var(--pix);font-size:10px;padding:8px 10px;background:var(--panel);border:3px solid var(--edge);
+  border-bottom:none;border-radius:10px 10px 0 0;min-height:36px}
+#hHearts{font-size:14px;letter-spacing:2px;font-family:system-ui,sans-serif}
+#hHearts .on{color:#ff4d6d}#hHearts .off{color:#4a3f7a}
+#hLevel{color:var(--accent)}
+#stage{position:relative}
+canvas#cv{display:block;width:100%;aspect-ratio:16/9;image-rendering:pixelated;image-rendering:crisp-edges;
+  background:#000;border:3px solid var(--edge);border-top:none;border-bottom:none}
+#alert{position:absolute;left:50%;top:8px;transform:translateX(-50%);font-family:var(--pix);font-size:clamp(8px,1.4vw,12px);
+  background:rgba(120,0,30,.85);border:2px solid var(--bad);padding:6px 10px;border-radius:6px;display:none;white-space:nowrap}
+#alert.show{display:block;animation:blink 1s steps(2) infinite}
+#toast{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);font-family:var(--pix);font-size:clamp(8px,1.3vw,11px);
+  background:rgba(10,8,30,.85);border:2px solid var(--accent);padding:8px 12px;border-radius:6px;display:none;text-align:center;max-width:90%;line-height:1.7}
+#toast.show{display:block}
+@keyframes blink{50%{opacity:.55}}
+#mmWrap{background:var(--panel);border:3px solid var(--edge);border-top:none;border-radius:0 0 10px 10px;padding:8px 12px 10px}
+#mm{position:relative;height:16px;background:#0d0a26;border-radius:8px;border:2px solid #34297a}
+.mmPod{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent);border:2px solid #0d0a26}
+.mmPod.saved{background:var(--good)}.mmPod.eaten{background:#555}
+.mmPod.attack{background:var(--bad);animation:blink .5s steps(2) infinite}
+.mmP{position:absolute;top:-6px;width:0;height:0;margin-left:-6px;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid #fff}
+.mmA{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50% 50% 40% 40%;background:#a066ff;border:2px solid #fff;display:none}
+#bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.mini{font-family:var(--pix);font-size:10px;background:var(--panel2);color:var(--ink);border:2px solid var(--edge);border-radius:8px;padding:8px 10px;cursor:pointer}
+.mini:hover{border-color:var(--accent)}
+html{touch-action:manipulation}
+#app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#touch{--tb:clamp(62px, 9vw, 92px);display:none;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+body.touch #touch{display:flex}
+body.touch #app{width:min(calc(100vw - 16px), 1000px, calc((100vh - 250px) * 1.7778));width:min(calc(100vw - 16px), 1000px, calc((100dvh - 250px) * 1.7778))}
+body.touch{justify-content:center}
+body.touch #bar{margin:8px 0 4px}
+body.touch .mini{padding:10px 12px}
+#touch .grp{display:flex;gap:12px}
+#dpad{display:flex;width:calc(var(--tb) * 2.4);height:var(--tb);border-radius:999px;background:rgba(91,75,183,.5);
+  border:3px solid var(--edge);overflow:hidden;touch-action:none}
+#dpad span{flex:1;display:flex;align-items:center;justify-content:center;font-size:calc(var(--tb) * .38);color:#fff;pointer-events:none}
+#dpad span.l{border-right:2px solid var(--edge)}
+#dpad span.down{background:rgba(255,210,63,.85);color:#1a1033}
+#touch button{width:var(--tb);height:var(--tb);border-radius:50%;font-family:var(--pix);font-size:calc(var(--tb) * .15);color:#fff;
+  background:rgba(91,75,183,.55);border:3px solid var(--edge);touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;padding:0}
+#touch button#tEnter{opacity:.55;transition:opacity .15s}
+#touch button#tEnter.ready{opacity:1;background:rgba(61,220,132,.7);border-color:var(--good);animation:blink .6s steps(2) infinite}
+@media (max-width:420px){#touch{--tb:52px}#touch .grp{gap:6px}}
+#touch button.act{background:rgba(255,210,63,.55)}
+#touch button:active,#touch button.down{background:rgba(255,210,63,.9);color:#1a1033}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;background:rgba(6,4,20,.88);display:none;justify-content:center;align-items:flex-start;
+  overflow-y:auto;z-index:20;padding:16px}
+.overlay.show{display:flex}
+.panel{background:var(--panel);border:3px solid var(--edge);border-radius:14px;width:100%;max-width:780px;margin:auto;padding:20px 22px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6)}
+h1,h2,h3{font-family:var(--pix);line-height:1.5;margin:0 0 12px}
+h1{font-size:clamp(18px,4vw,30px);color:var(--accent);text-align:center;text-shadow:3px 3px 0 #7a2f9e}
+h2{font-size:clamp(13px,2.4vw,18px);color:var(--accent)}
+h3{font-size:12px;color:#9fd8ff}
+p{font-size:18px;line-height:1.55;margin:0 0 12px}
+.sub{text-align:center;color:var(--muted);font-family:var(--pix);font-size:10px;line-height:1.8}
+.center{text-align:center}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.btn{font-family:var(--pix);font-size:12px;padding:13px 18px;background:var(--accent);color:#1a1033;border:none;border-radius:10px;
+  box-shadow:0 5px 0 var(--accentDk);cursor:pointer;line-height:1.4}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--accentDk)}
+.btn.alt{background:#8f7cff;box-shadow:0 5px 0 #4f3fb0;color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--edge);box-shadow:none}
+button:focus-visible{outline:3px solid #9fd8ff;outline-offset:3px}
+.lineup{display:block;width:100%;max-width:560px;margin:0 auto 10px;image-rendering:pixelated;aspect-ratio:260/72}
+
+.charGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:12px;margin:10px 0}
+.charCard{background:var(--panel2);border:3px solid var(--edge);border-radius:12px;padding:10px 6px;cursor:pointer;text-align:center;color:var(--ink)}
+.charCard canvas{width:120px;height:120px;image-rendering:pixelated;display:block;margin:0 auto}
+.charCard .nm{font-family:var(--pix);font-size:11px;margin:6px 0 4px;color:var(--accent)}
+.charCard .ds{font-size:14px;color:var(--muted)}
+.charCard.sel{border-color:var(--accent);background:#2f2470;box-shadow:0 0 0 3px rgba(255,210,63,.3)}
+
+.lvGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.lvBtn{background:var(--panel2);border:3px solid var(--edge);border-radius:12px;padding:12px 8px;color:var(--ink);cursor:pointer;text-align:center}
+.lvBtn .n{font-family:var(--pix);font-size:16px;color:var(--accent)}
+.lvBtn .t{font-size:15px;font-weight:700;margin:6px 0 2px}
+.lvBtn .d{font-size:13px;color:var(--muted)}
+.lvBtn .st{font-size:16px;color:var(--accent);letter-spacing:2px;margin-top:4px}
+.lvBtn.locked{opacity:.45;cursor:not-allowed}
+.lvBtn:not(.locked):hover{border-color:var(--accent)}
+
+.badge{display:inline-block;font-family:var(--pix);font-size:9px;background:#8f7cff;color:#fff;padding:5px 8px;border-radius:6px;margin:0 6px 8px 0}
+.badge.y{background:var(--accent);color:#1a1033}
+.teach{background:var(--panel2);border-left:5px solid var(--accent);padding:12px 14px;border-radius:8px;margin-bottom:12px}
+.teach p{margin:0}
+.passage{background:#fbf7ec;color:#1d1a14;border-radius:10px;padding:16px 18px;margin:10px 0;max-height:52vh;overflow-y:auto}
+.passage h3{color:#6a3fb5;font-size:11px}
+.passage p{font-size:19px;line-height:1.65;margin:0 0 12px}
+details.reread{margin:6px 0 10px}
+details.reread summary{font-family:var(--pix);font-size:10px;cursor:pointer;color:#9fd8ff;padding:8px 0;list-style:none}
+details.reread summary::before{content:'▶ '}
+details.reread[open] summary::before{content:'▼ '}
+
+.qhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.qhead .word{font-family:var(--pix);font-size:14px;color:var(--good);background:#0f2a1f;padding:6px 10px;border-radius:6px}
+.qtext{font-size:21px;font-weight:700;line-height:1.5;margin:6px 0 10px}
+.choices{display:grid;gap:8px}
+.choice{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;font-family:var(--read);font-size:19px;line-height:1.4;
+  padding:12px 14px;background:var(--panel2);color:var(--ink);border:2px solid var(--edge);border-radius:10px;cursor:pointer}
+.choice .k{font-family:var(--pix);font-size:11px;background:#3a2f80;border-radius:5px;padding:5px 7px;flex:none;margin-top:2px}
+.choice:hover:not(:disabled){border-color:var(--accent)}
+.choice.wrong{background:#4a1426;border-color:var(--bad);opacity:.75}
+.choice.wrong .tx{text-decoration:line-through}
+.choice.right{background:#124a2e;border-color:var(--good)}
+.choice:disabled{cursor:default}
+.fb{min-height:10px;margin-top:12px}
+.fb .msg{font-size:18px;line-height:1.5;padding:12px 14px;border-radius:10px}
+.fb .msg.good{background:#0f3a26;border:2px solid var(--good)}
+.fb .msg.bad{background:#3d1020;border:2px solid var(--bad)}
+.fb .msg.hint{background:#2b2350;border:2px solid #8f7cff}
+.bossBox{display:flex;align-items:center;gap:14px}
+#bossIntroCv{width:min(320px,80%);aspect-ratio:16/10;image-rendering:pixelated;background:#0d0a26;border-radius:12px;border:3px solid var(--bad);display:block;margin:6px auto 10px}
+.steps{text-align:left;font-size:18px;line-height:1.55;margin:8px auto 4px;max-width:560px;padding-left:24px}
+.steps li{margin-bottom:6px}
+.danger{font-family:var(--pix);font-size:10px;color:#ff9fb1;margin:6px 0}
+#bossCv{width:180px;height:120px;image-rendering:pixelated;background:#0d0a26;border-radius:10px;border:2px solid var(--bad)}
+.hp{font-family:var(--pix);font-size:10px;line-height:2}
+.hp .pip{display:inline-block;width:18px;height:12px;background:var(--bad);margin-right:4px;border-radius:3px}
+.hp .pip.off{background:#3a2a4a}
+.stars{font-size:44px;text-align:center;color:var(--accent);letter-spacing:6px;margin:8px 0}
+.wordList{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.wordList span{font-family:var(--pix);font-size:10px;padding:7px 9px;border-radius:6px}
+.wordList .s{background:#124a2e;color:#bff5d6}.wordList .e{background:#3d1020;color:#ff9fb1;text-decoration:line-through}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:17px;margin-bottom:12px}
+.keys b{font-family:var(--pix);font-size:10px;color:var(--accent);padding-top:4px}
+.small{font-size:15px;color:var(--muted)}
+table.guide{width:100%;border-collapse:collapse;font-size:15px;margin:8px 0 12px}
+table.guide td,table.guide th{border-bottom:1px solid #3a2f80;padding:6px;text-align:left;vertical-align:top}
+table.guide th{font-family:var(--pix);font-size:9px;color:#9fd8ff}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hud">
+    <span id="hHearts"></span>
+    <span id="hLevel">SPACE PAWS</span>
+    <span id="hSaved"></span>
+    <span id="hScore"></span>
+  </div>
+  <div id="stage">
+    <canvas id="cv" width="320" height="180" aria-label="Game screen"></canvas>
+    <div id="alert"></div>
+    <div id="toast"></div>
+  </div>
+  <div id="mmWrap"><div id="mm" aria-hidden="true"></div></div>
+  <div id="touch">
+    <div class="grp">
+      <div id="dpad" role="group" aria-label="Move left or right"><span class="l">◀</span><span class="r">▶</span></div>
+    </div>
+    <div class="grp">
+      <button data-k="up" id="tEnter" aria-label="Enter pod">ENTER</button>
+      <button data-k="fire" class="act" aria-label="Throw star">STAR</button>
+      <button data-k="jump" class="act" aria-label="Jump">JUMP</button>
+    </div>
+  </div>
+  <div id="bar">
+    <button class="mini" id="bPause">⏸ PAUSE</button>
+    <button class="mini" id="bSound">🔊 SOUND ON</button>
+    <button class="mini" id="bHelp">❓ HOW TO PLAY</button>
+  </div>
+</div>
+
+<!-- TITLE -->
+<div class="overlay" id="scrTitle"><div class="panel">
+  <h1>SPACE PAWS</h1>
+  <p class="sub">★ THE WORD EATER ★</p>
+  <canvas class="lineup" id="titleCv" width="260" height="72"></canvas>
+  <p class="center">A hungry alien is gobbling up the words on Planet Lexi! Pick a space hero, run between the pods, and use your reading power to <b>save the words</b>.</p>
+  <div class="row">
+    <button class="btn" id="bPlay">▶ PLAY</button>
+    <button class="btn alt" id="bHow">HOW TO PLAY</button>
+  </div>
+</div></div>
+
+<!-- CHARACTER SELECT -->
+<div class="overlay" id="scrSelect"><div class="panel">
+  <h2 class="center">CHOOSE YOUR SPACE HERO</h2>
+  <div class="charGrid" id="charGrid"></div>
+  <div class="row">
+    <button class="btn ghost" data-go="scrTitle">◀ BACK</button>
+    <button class="btn" id="bCharOk">CHOOSE ▶</button>
+  </div>
+</div></div>
+
+<!-- LEVEL SELECT -->
+<div class="overlay" id="scrLevels"><div class="panel">
+  <h2 class="center">MISSION MAP</h2>
+  <p class="center small">Save at least 3 of the 5 words in a level to unlock the next one.</p>
+  <div class="lvGrid" id="lvGrid"></div>
+  <div class="row">
+    <button class="btn ghost" data-go="scrSelect">◀ CHANGE HERO</button>
+    <button class="btn alt" id="bMapHelp">HELP &amp; TEACHER TOOLS</button>
+  </div>
+</div></div>
+
+<!-- LEVEL INTRO -->
+<div class="overlay" id="scrIntro"><div class="panel" id="introPanel"></div></div>
+
+<!-- BOSS INTRO -->
+<div class="overlay" id="scrBoss"><div class="panel center" id="bossPanel"></div></div>
+
+<!-- QUESTION -->
+<div class="overlay" id="scrQ"><div class="panel" id="qPanel"></div></div>
+
+<!-- RESULT -->
+<div class="overlay" id="scrResult"><div class="panel" id="resPanel"></div></div>
+
+<!-- GAME OVER -->
+<div class="overlay" id="scrOver"><div class="panel center">
+  <h2>OUT OF ENERGY!</h2>
+  <p>The Word Eater got the best of you this time. Every hero needs a recharge. Try again!</p>
+  <div class="row">
+    <button class="btn" id="bRetryBoss" style="display:none">↻ TRY THE BOSS AGAIN</button>
+    <button class="btn" id="bRetry">↻ RESTART LEVEL</button>
+    <button class="btn ghost" data-go="scrLevels">MISSION MAP</button>
+  </div>
+</div></div>
+
+<!-- PAUSE -->
+<div class="overlay" id="scrPause"><div class="panel center">
+  <h2>PAUSED</h2>
+  <div class="row">
+    <button class="btn" id="bResume">▶ RESUME</button>
+    <button class="btn alt" id="bRestart">↻ RESTART LEVEL</button>
+    <button class="btn ghost" id="bQuit">MISSION MAP</button>
+  </div>
+</div></div>
+
+<!-- WIN -->
+<div class="overlay" id="scrWin"><div class="panel center">
+  <h1>MISSION COMPLETE!</h1>
+  <canvas class="lineup" id="winCv" width="260" height="72"></canvas>
+  <p>You saved the words of Planet Lexi! And the Word Eater? It turns out it was never really hungry. It just wanted to learn to read. Now it sits in the story circle every night and listens.</p>
+  <p class="sub" id="winScore"></p>
+  <div class="row">
+    <button class="btn" data-go="scrLevels">MISSION MAP</button>
+    <button class="btn alt" data-go="scrTitle">TITLE</button>
+  </div>
+</div></div>
+
+<!-- HELP -->
+<div class="overlay" id="scrHelp"><div class="panel">
+  <h2>HOW TO PLAY</h2>
+  <p>The Word Eater roams Planet Lexi looking for <b>pods</b> to raid. Each pod holds a word. Walk into a pod and answer the question to <b>save its word</b>.</p>
+  <p>When the alarm sounds, the Word Eater is attacking a pod. Watch the map at the bottom of the screen and hurry there before the timer runs out! Go inside and answer questions to blast it away.</p>
+  <p>Watch out for the little <b>Nibblers</b> on the path. Jump over them or zap them with word stars.</p>
+  <p>Once every pod is done, a <b>BOSS</b> appears! Jump and throw word stars at it until it gets <b>dizzy</b>. Then answer a question. Each correct answer is a <b>big hit</b>, and <b>5 big hits</b> destroy the boss and clear the level.</p>
+  <h3>CONTROLS</h3>
+  <div class="keys">
+    <b>← →  A D</b><span>Walk</span>
+    <b>SPACE  Z</b><span>Jump</span>
+    <b>X  J</b><span>Throw a word star</span>
+    <b>↑  W</b><span>Enter a pod (stand at the door)</span>
+    <b>1 2 3 4</b><span>Pick an answer</span>
+    <b>P  ESC</b><span>Pause</span>
+  </div>
+  <p class="small">On a tablet, use the on-screen buttons. Every question and story has a 🔊 <b>Read to me</b> button.</p>
+  <h3>FOR TEACHERS</h3>
+  <table class="guide">
+    <tr><th>LEVEL</th><th>FOCUS</th></tr>
+    <tr><td>1</td><td>Synonyms</td></tr>
+    <tr><td>2</td><td>Antonyms</td></tr>
+    <tr><td>3</td><td>Homonyms (multiple-meaning words)</td></tr>
+    <tr><td>4</td><td>Context clues (bridge to comprehension)</td></tr>
+    <tr><td>5</td><td>Comprehension: DOK 1, recall details stated in the text</td></tr>
+    <tr><td>6</td><td>Comprehension: DOK 1, recall plus word meaning in context</td></tr>
+    <tr><td>7</td><td>Comprehension: DOK 2, main idea, cause and effect, text structure</td></tr>
+    <tr><td>8</td><td>Comprehension: DOK 2, sequence, character traits, summarizing</td></tr>
+    <tr><td>9</td><td>Comprehension: DOK 3, inference with evidence, theme, author's purpose</td></tr>
+    <tr><td>10</td><td>Comprehension: DOK 4, synthesize and evaluate across two texts</td></tr>
+  </table>
+  <p class="small">Every level gets harder: faster Nibblers, a quicker Word Eater, and a tougher boss that moves faster, shoots more, swoops down (Level 4+), rains attacks from the sky (Level 7+), and needs more star hits before it gets dizzy.</p>
+  <p class="small">Progress is saved in this browser only. To demo the game, unlock all levels:</p>
+  <div class="row">
+    <button class="btn alt" id="bUnlock">UNLOCK ALL LEVELS</button>
+    <button class="btn ghost" id="bReset">RESET PROGRESS</button>
+    <button class="btn" id="bHelpClose">GOT IT!</button>
+  </div>
+</div></div>
+
+<script>
+/* ==========================================================
+   SPACE PAWS: THE WORD EATER
+   A single-file reading adventure. Upload this file as-is.
+   ========================================================== */
+
+// ---------- EASY CUSTOMIZING ----------
+const CONFIG = {
+  // Rename the crew here. The names are used on the select screen AND inside the stories.
+  names: ['Purrsy', 'Maggie', 'Cap', 'Toby', 'Fritter'],
+  wordsToPass: 3,      // words (out of 5) needed to clear a level
+  startHearts: 5,
+};
+
+const CHARS = [
+  {species:'cat', fur:'#17161f', fur2:'#2e2c3d', eye:'#ffd23f', inner:'#ff9ec7', suit:'#eef2f8', suitDk:'#b6c2d6', trim:'#2f6fe0', desc:'Black cat · white & blue suit'},
+  {species:'cat', fur:'#17161f', fur2:'#2e2c3d', eye:'#7dff9a', inner:'#ff9ec7', suit:'#ff7ab8', suitDk:'#d4508f', trim:'#ffe1ef', desc:'Black cat · pink suit'},
+  {species:'cat', fur:'#8b909b', fur2:'#f5f5f5', eye:'#ffc94a', inner:'#ff9ec7', suit:'#3fbf5a', suitDk:'#2a8f40', trim:'#1d5e2b', patch:true, desc:'Gray & white cat · green suit'},
+  {species:'dog', fur:'#f7f3ea', fur2:'#e2d3b5', eye:'#1a1a1a', suit:'#ff8a1f', suitDk:'#d26a0a', trim:'#8a3f00', desc:'Great Pyrenees · orange suit'},
+  {species:'pig', fur:'#f9b2c3', fur2:'#ec8ba4', eye:'#1a1a1a', suit:'#3a7bd5', suitDk:'#2a5ea8', trim:'#173a6e', desc:'Pig · blue suit'},
+];
+CHARS.forEach((c,i)=>c.name=CONFIG.names[i]);
+
+// ---------- CONTENT ----------
+// In every question, the FIRST choice is the correct one (choices are shuffled on screen).
+// {C0}..{C4} are replaced with the crew names above.
+const LEVELS = [
+ { title:'Synonym Station', topic:'Synonyms', tag:'Vocabulary',
+   teach:'<b>Synonyms</b> are words that mean the <b>same</b> or almost the same thing. <i>Big</i> and <i>large</i> are synonyms.',
+   pods:[
+    {word:'HAPPY', q:'Which word means the SAME as HAPPY?', c:['glad','sad','angry','tired'], why:'Glad and happy both mean feeling good.'},
+    {word:'BIG', q:'Which word means the SAME as BIG?', c:['large','tiny','slow','soft'], why:'Big and large both describe something of great size.'},
+    {word:'FAST', q:'Which word means the SAME as FAST?', c:['quick','slow','loud','late'], why:'Fast and quick both mean moving with speed.'},
+    {word:'SHOUT', q:'Which word means the SAME as SHOUT?', c:['yell','whisper','sleep','listen'], why:'To shout and to yell both mean to speak very loudly.'},
+    {word:'SMART', q:'Which word means the SAME as SMART?', c:['clever','silly','sleepy','sticky'], why:'Smart and clever both mean good at thinking and learning.'},
+   ],
+   boss:[
+    {q:'“The crew was TIRED after the space walk.” Which word could replace TIRED?', c:['sleepy','excited','hungry','brave'], why:'Tired and sleepy mean almost the same thing.'},
+    {q:'Which word means the SAME as BEGIN?', c:['start','finish','stop','leave'], why:'To begin and to start both mean to do the first part.'},
+    {q:'Which word means the SAME as SCARED?', c:['afraid','proud','calm','bold'], why:'Scared and afraid both mean feeling fear.'},
+    {q:'Which pair of words are synonyms?', c:['small and little','hot and cold','up and down','day and night'], why:'Small and little mean the same thing. The others are opposites.'},
+    {q:'Which word means the SAME as JUMP?', c:['leap','sit','crawl','sleep'], why:'Jump and leap both mean to push off the ground into the air.'},
+    {q:'“The alien was ANGRY.” Which word could replace ANGRY?', c:['mad','glad','calm','sleepy'], why:'Angry and mad mean the same thing.'},
+    {q:'Which word means the SAME as SHUT?', c:['close','open','break','paint'], why:'Shut the door and close the door mean the same thing.'},
+   ]},
+ { title:'Opposite Orbit', topic:'Antonyms', tag:'Vocabulary',
+   teach:'<b>Antonyms</b> are words with <b>opposite</b> meanings. <i>Hot</i> and <i>cold</i> are antonyms.',
+   pods:[
+    {word:'HOT', q:'Which word is the OPPOSITE of HOT?', c:['cold','warm','spicy','sunny'], why:'Cold is the opposite of hot.'},
+    {word:'UP', q:'Which word is the OPPOSITE of UP?', c:['down','over','high','top'], why:'Down is the opposite of up.'},
+    {word:'FULL', q:'Which word is the OPPOSITE of FULL?', c:['empty','packed','heavy','round'], why:'A full tank has a lot inside. An empty tank has nothing inside.'},
+    {word:'BRAVE', q:'Which word is the OPPOSITE of BRAVE?', c:['fearful','bold','strong','kind'], why:'Brave means not afraid. Fearful means full of fear.'},
+    {word:'ARRIVE', q:'Which word is the OPPOSITE of ARRIVE?', c:['leave','come','reach','land'], why:'To arrive is to get somewhere. To leave is to go away.'},
+   ],
+   boss:[
+    {q:'Which word is the OPPOSITE of LOUD?', c:['quiet','noisy','booming','fast'], why:'Quiet is the opposite of loud.'},
+    {q:'Which pair of words are antonyms?', c:['win and lose','big and large','glad and happy','start and begin'], why:'Win and lose are opposites. The others are synonyms.'},
+    {q:'“The rocket was FAST.” Which word means the opposite of FAST?', c:['slow','quick','shiny','new'], why:'Slow is the opposite of fast.'},
+    {q:'Which word is the OPPOSITE of ASLEEP?', c:['awake','tired','resting','dreaming'], why:'If you are not asleep, you are awake.'},
+    {q:'Which word is the OPPOSITE of ALWAYS?', c:['never','often','forever','usually'], why:'Always means every time. Never means not even once.'},
+    {q:'“The cave was DARK.” Which word means the opposite of DARK?', c:['bright','black','deep','cold'], why:'Bright is the opposite of dark.'},
+    {q:'Which word is the OPPOSITE of REMEMBER?', c:['forget','recall','think','know'], why:'To forget is the opposite of to remember.'},
+   ]},
+ { title:'Double-Meaning Dunes', topic:'Homonyms', tag:'Vocabulary',
+   teach:'<b>Homonyms</b> are words that are spelled and sound the <b>same</b> but have <b>different meanings</b>. A <i>bat</i> can be an animal, or the stick you swing in baseball. Read the rest of the sentence to figure out which meaning makes sense.',
+   pods:[
+    {word:'BAT', q:'Which sentence uses BAT to mean an ANIMAL?', c:['A bat flew out of the cave at night.','She swung the bat and hit the ball.','He will bat next in the game.','Grab the bat and the glove.'], why:'A bat that flies out of a cave at night is an animal.'},
+    {word:'BARK', q:'“The dog’s BARK woke up the whole crew.” What does BARK mean here?', c:['the sound a dog makes','the outside of a tree','a sharp stick','a deep hole'], why:'Dogs bark. The sound is what woke up the crew.'},
+    {word:'RING', q:'“{C1} wore a shiny RING on one paw.” What does RING mean here?', c:['a circle of metal you wear','the sound a phone makes','to call someone','a loud bark'], why:'You can wear a shiny ring. That is the clue!'},
+    {word:'LIGHT', q:'“The space suit is very LIGHT, so it is easy to carry.” What does LIGHT mean here?', c:['not heavy','a lamp that glows','the color of the sky','to turn something on'], why:'“Easy to carry” tells you light means not heavy.'},
+    {word:'ROCK', q:'“Mom will ROCK the baby to sleep.” What does ROCK mean here?', c:['to move gently back and forth','a hard stone','loud music','a star in the sky'], why:'You rock a baby by moving gently back and forth.'},
+   ],
+   boss:[
+    {q:'Which word fits BOTH sentences?  “Turn ___ at the next pod.”  “You got the answer ___!”', c:['right','left','correct','write'], why:'Right can mean a direction OR correct.'},
+    {q:'“A FLY landed on my sandwich.” What does FLY mean here?', c:['a small bug','to move through the air','to hurry','a kite'], why:'Something that lands on a sandwich is a small bug.'},
+    {q:'Which sentence uses PLAY to mean a show on a stage?', c:['Our class put on a play about space.','Let’s play tag at recess.','Press play to start the video.','The puppy wants to play.'], why:'A play that a class puts on is a show on a stage.'},
+    {q:'“The pig will WAVE to the crew.” What does WAVE mean here?', c:['move your hand to say hello','water moving in the ocean','a curl in your hair','a loud sound'], why:'You wave to people to say hello.'},
+    {q:'“The soccer MATCH was exciting.” What does MATCH mean here?', c:['a game','a stick that makes fire','to go together','a pair of socks'], why:'A soccer match is a game.'},
+    {q:'Which word fits BOTH sentences?  “A ___ swam in the ocean.”  “Please ___ the envelope.”', c:['seal','whale','close','fish'], why:'A seal is an ocean animal, and to seal an envelope means to close it.'},
+    {q:'“{C2} felt a DROP of rain.”  “Don’t DROP the egg!”  Which is true?', c:['Both use DROP, but the meanings are different.','Both use DROP with the same meaning.','DROP is not a real word.','Neither sentence makes sense.'], why:'A drop of rain is a tiny bit of water. To drop an egg means to let it fall.'},
+   ]},
+ { title:'Clue Canyon', topic:'Context Clues', tag:'Vocabulary',
+   teach:'<b>Context clues</b> are hints in the sentence that help you figure out a word you do not know. Look at the words <b>around</b> the tricky word!',
+   pods:[
+    {word:'ENORMOUS', q:'“The alien was ENORMOUS. It was bigger than three rockets stacked together!” What does ENORMOUS mean?', c:['very big','very fast','very old','very kind'], why:'Bigger than three rockets? That is very big!'},
+    {word:'FAMISHED', q:'“{C2} was FAMISHED after the long mission, so {C2} ate three bowls of space soup.” What does FAMISHED mean?', c:['very hungry','very sleepy','very cold','very happy'], why:'Eating three bowls of soup is a clue that someone is very hungry.'},
+    {word:'CAUTIOUS', q:'“The crew had to be CAUTIOUS on the icy path so nobody would slip.” What does CAUTIOUS mean?', c:['careful','careless','quick','noisy'], why:'To keep from slipping on ice, you must be careful.'},
+    {word:'MURKY', q:'“The sky was so MURKY that the crew could not see the stars.” What does MURKY mean?', c:['dark and hard to see through','shiny and bright','warm and sunny','clean and clear'], why:'If you cannot see the stars, the sky must be dark and hard to see through.'},
+    {word:'ELATED', q:'“{C4} was ELATED after finding the lost word and jumped up and cheered!” What does ELATED mean?', c:['very happy','very angry','very bored','very scared'], why:'Jumping and cheering show that someone is very happy.'},
+   ],
+   boss:[
+    {q:'“The engine was so DEAFENING that the crew covered their ears.” What does DEAFENING mean?', c:['very loud','very quiet','very hot','broken'], why:'People cover their ears when a sound is very loud.'},
+    {q:'“The tiny plant was FRAGILE, so the crew carried it gently.” What does FRAGILE mean?', c:['easy to break','very heavy','dangerous','bright green'], why:'You carry something gently when it could break easily.'},
+    {q:'“After the storm, the base was in SHAMBLES. Tools and boxes were everywhere!” What does SHAMBLES mean?', c:['a big mess','very clean','on fire','under water'], why:'Tools and boxes everywhere is a big mess.'},
+    {q:'“The trail was so STEEP that the crew had to climb using their paws.” What does STEEP mean?', c:['going sharply upward','flat and smooth','muddy','very short'], why:'You need to climb a trail that goes sharply upward.'},
+    {q:'“The Word Eater was SLUGGISH after eating so many words. It could barely move.” What does SLUGGISH mean?', c:['slow','speedy','angry','tiny'], why:'Barely moving means moving slowly.'},
+    {q:'“The crew was RELUCTANT to enter the dark cave. They stood outside and did not want to go in.” What does RELUCTANT mean?', c:['not wanting to','excited','ready','lost'], why:'They did not want to go in. That is what reluctant means.'},
+   ]},
+ { title:'Garden Dome', topic:'Reading: Find It', tag:'DOK 1', dok:'DOK 1 · Recall',
+   teach:'<b>Find It!</b> The answers to these questions are <b>right there</b> in the story. If you are not sure, look back and find the sentence that tells you.',
+   passage:[{title:'The Drooping Sunflower', text:
+`{C3} was the biggest member of the crew. Every morning at 7:00, {C3} walked to the Garden Dome to water the plants. The dome was round and made of clear glass. Inside, there were tomatoes, beans, and one giant sunflower.
+
+One morning, {C3} saw that the sunflower was drooping. Its yellow petals hung down low. {C3} checked the water tank. It was empty! A tiny crack at the bottom had let all the water leak out.
+
+{C3} called {C4}, the crew’s best fixer. {C4} came running with a roll of silver tape and wrapped it around the crack three times. Then {C3} filled the tank with fresh water.
+
+By lunchtime, the sunflower was standing tall again. “Teamwork saves the day,” said {C4}.`}],
+   pods:[
+    {word:'GARDEN', q:'What time did {C3} go to the Garden Dome every morning?', c:['7:00','12:00','3:00','9:00'], why:'The story says, “Every morning at 7:00…”'},
+    {word:'DOME', q:'What was the Garden Dome made of?', c:['clear glass','shiny metal','wood','moon rocks'], why:'“The dome was round and made of clear glass.”'},
+    {word:'SUNFLOWER', q:'Which plant was drooping?', c:['the sunflower','the tomatoes','the beans','a cactus'], why:'“{C3} saw that the sunflower was drooping.”'},
+    {word:'TANK', q:'Why was the water tank empty?', c:['A crack let the water leak out.','The alien drank the water.','Someone forgot to fill it.','The tank was too small.'], why:'“A tiny crack at the bottom had let all the water leak out.”'},
+    {word:'TAPE', q:'What did {C4} use to fix the crack?', c:['silver tape','glue','a hammer','a rock'], why:'{C4} “came running with a roll of silver tape.”'},
+   ],
+   boss:[
+    {q:'Who is the biggest member of the crew?', c:['{C3}','{C4}','{C1}','{C2}'], why:'The very first sentence tells you.'},
+    {q:'Which plants grew in the Garden Dome?', c:['tomatoes, beans, and a sunflower','carrots and peas','apples and pears','roses and daisies'], why:'“Inside, there were tomatoes, beans, and one giant sunflower.”'},
+    {q:'How many times did {C4} wrap the tape around the crack?', c:['three','one','two','five'], why:'{C4} wrapped it around the crack three times.'},
+    {q:'When was the sunflower standing tall again?', c:['by lunchtime','at midnight','the next week','never'], why:'“By lunchtime, the sunflower was standing tall again.”'},
+    {q:'What did {C4} say at the end of the story?', c:['“Teamwork saves the day.”','“Water is wet.”','“I need a nap.”','“Watch out!”'], why:'Look at the last line of the story.'},
+    {q:'What color were the sunflower’s petals?', c:['yellow','red','blue','purple'], why:'“Its yellow petals hung down low.”'},
+   ]},
+ { title:'Silver Crater', topic:'Reading: Find It & Define It', tag:'DOK 1', dok:'DOK 1 · Recall + Word Meaning',
+   teach:'<b>Find It & Define It!</b> Find facts in the story. When you see a tricky word, use the sentence around it to figure out what it means.',
+   passage:[{title:'The Moon Map', text:
+`{C1} loved maps. {C1} had drawn a map of every crater near the base. One night, the crew’s radio crackled. “Help!” said a faint voice. “My rover is stuck near the Silver Crater!” It was {C2}, who had gone out to collect moon rocks.
+
+{C1} grabbed the map and a flashlight. The Silver Crater was two miles east of the base, past a tall rock shaped like a rabbit. {C1} hopped into the second rover and drove carefully across the dusty ground.
+
+When {C1} arrived, {C2}’s rover was tilted in a deep, sandy ditch. The wheels spun, but they could not grip the sand. {C1} tied a strong rope to both rovers and pulled slowly. With a loud CLUNK, {C2}’s rover rolled free.
+
+“How did you find me so fast?” {C2} asked.
+
+{C1} held up the map and smiled. “I always know where I am going.”`}],
+   pods:[
+    {word:'MAP', q:'What did {C1} love?', c:['maps','rocks','rovers','music'], why:'The first sentence says “{C1} loved maps.”'},
+    {word:'CRATER', q:'Where was {C2}’s rover stuck?', c:['near the Silver Crater','inside the base','in the Garden Dome','on top of a mountain'], why:'“My rover is stuck near the Silver Crater!”'},
+    {word:'LANDMARK', q:'What did {C1} pass on the way to the crater?', c:['a tall rock shaped like a rabbit','a tall tree','a broken rocket','a frozen lake'], why:'The crater was “past a tall rock shaped like a rabbit.”'},
+    {word:'FAINT', q:'“The radio crackled with a FAINT voice.” What does FAINT mean?', c:['quiet and hard to hear','very loud','angry','happy'], why:'A voice crackling over a radio from far away is quiet and hard to hear.'},
+    {word:'GRIP', q:'“The wheels spun, but they could not GRIP the sand.” What does GRIP mean?', c:['hold on tightly','fall off','turn blue','go faster'], why:'The wheels spun because they could not hold on to the sand.'},
+   ],
+   boss:[
+    {q:'Why had {C2} gone out?', c:['to collect moon rocks','to look for {C1}','to fix the radio','to look at the stars'], why:'{C2} “had gone out to collect moon rocks.”'},
+    {q:'How far away was the Silver Crater?', c:['two miles east of the base','ten miles north of the base','one mile west of the base','right next door'], why:'“The Silver Crater was two miles east of the base.”'},
+    {q:'What did {C1} use to pull the rover free?', c:['a strong rope','a magnet','a shovel','a ladder'], why:'{C1} “tied a strong rope to both rovers.”'},
+    {q:'What sound did the rover make when it rolled free?', c:['CLUNK','BEEP','SPLASH','ZOOM'], why:'“With a loud CLUNK, {C2}’s rover rolled free.”'},
+    {q:'“{C1} drove CAREFULLY across the dusty ground.” What does CAREFULLY mean?', c:['slowly and safely','fast and wild','sadly','loudly'], why:'Driving carefully means driving in a safe way.'},
+    {q:'What two things did {C1} grab before leaving?', c:['a map and a flashlight','a helmet and boots','tape and water','a snack and a hat'], why:'“{C1} grabbed the map and a flashlight.”'},
+   ]},
+ { title:'Float Station', topic:'Reading: Connect It', tag:'DOK 2', dok:'DOK 2 · Main Idea, Cause & Effect',
+   teach:'<b>Connect It!</b> Now you will put ideas together. Think about the <b>main idea</b>, <b>why</b> things happen (cause and effect), and how ideas are <b>alike</b>.',
+   passage:[{title:'Living in Space', text:
+`Life on a space station is very different from life on Earth. In space, there is almost no gravity, so everything floats. That changes how astronauts do even simple things.
+
+Take sleeping, for example. Astronauts cannot just lie down on a bed, because they would drift away! Instead, they zip themselves into sleeping bags that are tied to the wall.
+
+Eating is tricky, too. Crumbs from bread could float into machines and break them. So astronauts often eat tortillas instead of bread. Drinks come in pouches with straws, because liquid would float out of a cup in wobbly bubbles.
+
+Even exercise is different. Without gravity, muscles and bones get weak because they do not have to work hard. To stay strong, astronauts exercise for about two hours every day on special machines that use straps and bungee cords.
+
+Living in space takes a lot of planning, but astronauts find clever ways to solve each problem.`}],
+   pods:[
+    {word:'GRAVITY', q:'What is the MAIN IDEA of the passage?', c:['Astronauts must find new ways to do everyday things in space.','Astronauts like tortillas.','Sleeping bags are soft and warm.','Exercise is fun.'], why:'Every paragraph tells about a different everyday thing that astronauts must do in a new way.'},
+    {word:'TORTILLA', q:'Why do astronauts often eat tortillas instead of bread?', c:['Bread crumbs could float into machines and break them.','Tortillas taste better than bread.','Bread is too heavy to fly into space.','There are no ovens in space.'], why:'That is the cause the passage gives. Floating crumbs could break machines.'},
+    {word:'FLOAT', q:'What would MOST LIKELY happen if an astronaut slept without a sleeping bag tied to the wall?', c:['The astronaut would drift away.','The astronaut would fall on the floor.','The astronaut would get too warm.','Nothing would happen.'], why:'The passage says astronauts “would drift away” without one.'},
+    {word:'EXERCISE', q:'Which detail BEST supports the idea that “exercise is different” in space?', c:['Astronauts use machines with straps and bungee cords.','Drinks come in pouches with straws.','Astronauts eat tortillas.','Sleeping bags are tied to the wall.'], why:'Only this detail is about exercise.'},
+    {word:'STATION', q:'How are SLEEPING and DRINKING in space alike?', c:['Both need special tools so things do not float away.','Both happen in a bed.','Both use straws.','Both take two hours.'], why:'Sleeping bags tied to the wall and pouches with straws both keep things from floating away.'},
+   ],
+   boss:[
+    {q:'Which is the BEST summary of the passage?', c:['In space things float, so astronauts use sleeping bags tied to walls, special food and drinks, and daily exercise.','Astronauts eat tortillas and drink from pouches.','Space has almost no gravity.','Astronauts exercise for two hours.'], why:'A good summary covers the main idea AND the most important details, not just one fact.'},
+    {q:'Why do muscles get weak in space?', c:['Without gravity, they do not have to work hard.','Astronauts eat too many tortillas.','The sleeping bags are too tight.','Space is very cold.'], why:'“Muscles and bones get weak because they do not have to work hard.”'},
+    {q:'How is this passage organized?', c:['It describes problems and their solutions.','It tells a story about a villain.','It is a poem that rhymes.','It is a recipe with steps.'], why:'Each paragraph gives a problem (floating) and how astronauts solve it.'},
+    {q:'“Eating is TRICKY, too.” What does TRICKY mean?', c:['hard to do','funny','easy','delicious'], why:'Eating in space has problems, so it is hard to do.'},
+    {q:'Why do drinks come in pouches with straws?', c:['Liquid would float out of a cup in bubbles.','Straws are more fun.','Cups are too heavy.','Pouches keep drinks cold.'], why:'The passage says liquid “would float out of a cup in wobbly bubbles.”'},
+    {q:'What is the EFFECT of having almost no gravity?', c:['Everything floats.','Astronauts get sleepy.','Food tastes better.','Machines run faster.'], why:'“There is almost no gravity, so everything floats.”'},
+   ]},
+ { title:'Solar Ridge', topic:'Reading: Explain It', tag:'DOK 2', dok:'DOK 2 · Sequence, Character, Summary',
+   teach:'<b>Explain It!</b> Think about the <b>order</b> of events, what the characters are <b>like</b>, and how to <b>sum up</b> a story in a few words.',
+   passage:[{title:'The Quiet Engineer', text:
+`{C2} was the quietest member of the crew. During meetings, {C2} usually sat in the back and listened while the others talked.
+
+One day, the base’s power began to flicker. The lights blinked on and off, and the heaters stopped humming. “We need to fix the solar panels before night comes,” said {C0}, the captain. “Night on this planet lasts twelve days, and it gets very cold.”
+
+Everyone shouted ideas at once. {C4} wanted to replace every single panel. {C3} wanted to wait and see if the power came back on its own. {C1} wanted to call Earth for help, but a message would take three days to get there.
+
+{C2} raised a paw. Nobody noticed. So {C2} walked to the board and drew a picture of the panels. One panel was tilted the wrong way, facing away from the sun. “The meteor storm last week must have bumped it,” {C2} said softly. “If we turn it back, the power should return.”
+
+The crew went outside and turned the panel. Instantly, the lights glowed bright and steady.
+
+That night, {C0} gave {C2} a shiny badge. “Sometimes,” said {C0}, “the best ideas come from the ones who listen the most.”`}],
+   pods:[
+    {word:'SOLAR', q:'Which word BEST describes {C2}?', c:['observant (notices things)','bossy','lazy','loud'], why:'{C2} listens and notices the tilted panel that everyone else missed.'},
+    {word:'POWER', q:'What happened RIGHT AFTER {C2} drew the picture on the board?', c:['{C2} explained that the meteor storm bumped a panel.','The crew called Earth.','The lights started to blink.','{C0} gave {C2} a badge.'], why:'Right after drawing the panels, {C2} explained what went wrong.'},
+    {word:'NIGHT', q:'Why did the crew need to fix the panels quickly?', c:['Night lasts twelve days and gets very cold.','The Word Eater was coming.','Earth was calling them.','{C4} was hungry.'], why:'{C0} says night lasts twelve days and gets very cold.'},
+    {word:'IDEA', q:'How was {C4}’s idea DIFFERENT from {C3}’s idea?', c:['{C4} wanted to replace the panels, but {C3} wanted to wait.','Both wanted to wait.','{C4} wanted to call Earth.','{C3} wanted to replace the panels.'], why:'{C4} wanted to act right away. {C3} wanted to wait and see.'},
+    {word:'MESSAGE', q:'Why would calling Earth NOT have been a good plan?', c:['A message would take three days to arrive.','Earth was closed.','The radio was broken.','{C1} forgot the number.'], why:'The story says a message would take three days, and night was coming.'},
+   ],
+   boss:[
+    {q:'What CAUSED the panel to tilt the wrong way?', c:['a meteor storm','{C4} bumped it','a strong wind','the Word Eater'], why:'“The meteor storm last week must have bumped it.”'},
+    {q:'What is the LESSON of this story?', c:['Good listeners can have great ideas.','Always shout your ideas.','Never fix things yourself.','Badges are shiny.'], why:'{C0} says the best ideas come from the ones who listen the most.'},
+    {q:'Which event happened FIRST?', c:['The power began to flicker.','{C2} drew a picture.','The crew turned the panel.','{C0} gave {C2} a badge.'], why:'The problem starts when the power begins to flicker.'},
+    {q:'Which is the BEST summary of the story?', c:['When the power fails, quiet {C2} notices a tilted panel, and fixing it saves the base.','{C1} wants to call Earth.','The lights blink on and off.','{C0} is the captain of the crew.'], why:'A summary tells the problem, the most important events, and how it ends.'},
+    {q:'Who is the captain of the crew?', c:['{C0}','{C1}','{C3}','{C2}'], why:'“said {C0}, the captain.”'},
+    {q:'“The lights glowed bright and STEADY.” What does STEADY mean?', c:['not flickering','very dim','many colors','broken'], why:'Before, the lights blinked. Now they stay on, so they are steady.'},
+   ]},
+ { title:'Supply Shed', topic:'Reading: Prove It', tag:'DOK 3', dok:'DOK 3 · Inference & Evidence',
+   teach:'<b>Prove It!</b> The author will not tell you everything. Use clues to make an <b>inference</b> (a smart guess), then find the <b>evidence</b> that proves it. Think about the <b>theme</b> and <b>why</b> the author wrote things a certain way.',
+   passage:[{title:'The Lonely Alien', text:
+`The Word Eater had been nibbling words for weeks. First it ate small words like “hum” and “nap.” Then it grew bolder and swallowed “tomorrow” and “together.” Each time a word disappeared, the crew found it harder to talk. Their sentences came out with holes in them.
+
+{C4} found the alien one morning curled up behind the supply shed. Its belly glowed with stolen letters, but its eyes were droopy, and its tentacles trembled.
+
+“Why do you eat our words?” {C4} asked.
+
+The alien opened its mouth, but only a tiny squeak came out. {C4} noticed something odd. The alien had eaten hundreds of words, but it could not speak a single one.
+
+{C4} sat down beside it and pointed at the sky. “Star,” {C4} said slowly. The alien blinked. {C4} pointed at the ground. “Rock.” The alien’s belly flickered, and one letter floated out and drifted back toward the base.
+
+“Rrr…ock,” the alien whispered.
+
+{C4} grinned. “I don’t think you were ever hungry for words. I think you were lonely, and you wanted to learn them.”
+
+From then on, every morning, {C4} taught the alien one new word. And every morning, one stolen word floated home.`}],
+   pods:[
+    {word:'LONELY', q:'What is the REAL reason the Word Eater ate words?', c:['It wanted to learn how to talk.','It was very hungry.','It wanted to be mean.','Words taste like candy.'], why:'The alien could not speak, and it was happy to learn “rock.” {C4} figures out that it wanted to learn words.'},
+    {word:'WHISPER', q:'Which sentence BEST supports the idea that the alien wanted to communicate?', c:['“Rrr…ock,” the alien whispered.','Its belly glowed with stolen letters.','First it ate small words like “hum” and “nap.”','{C4} found the alien behind the supply shed.'], why:'The alien tries to say a word. That shows it wants to talk.'},
+    {word:'DROOPY', q:'How did the alien MOST LIKELY feel when {C4} found it?', c:['sad and tired','proud and angry','excited and silly','bored and sleepy'], why:'Droopy eyes, trembling tentacles, and hiding behind a shed are clues that it felt sad and tired.'},
+    {word:'KINDNESS', q:'What is the THEME (big message) of the story?', c:['Kindness and understanding can solve problems.','Aliens are always scary.','Hiding behind a shed is safe.','Words are a kind of food.'], why:'{C4} solves the problem by being kind and patient, not by fighting.'},
+    {word:'SENTENCE', q:'Why did the author write, “Their sentences came out with holes in them”?', c:['to show how losing words made talking hard','to teach about holes','to make the reader hungry','to describe the shape of the base'], why:'The author uses this picture to show the crew was missing words when they talked.'},
+   ],
+   boss:[
+    {q:'What will MOST LIKELY happen if {C4} keeps teaching the alien?', c:['All the stolen words will return home.','The alien will eat even more words.','The crew will leave the planet.','{C4} will stop talking.'], why:'Every new word the alien learns sends one stolen word home.'},
+    {q:'Why did the author have the alien swallow “tomorrow” and “together” AFTER small words?', c:['to show the alien grew bolder and took bigger, more important words','because those words are short','because those words rhyme','for no reason'], why:'The story says it “grew bolder.” Bigger words show the problem getting worse.'},
+    {q:'How did {C4}’s thinking about the alien CHANGE?', c:['from thinking it was a thief to understanding it was lonely','from friend to enemy','It did not change.','from scared to bored'], why:'At first {C4} asks why it eats words. By the end, {C4} understands it is lonely.'},
+    {q:'Which word BEST describes {C4} in this story?', c:['patient','greedy','careless','frightened'], why:'{C4} sits down and teaches one word at a time, every morning. That is patient.'},
+    {q:'Why did a letter float out of the alien when it learned “rock”?', c:['Learning real words meant it no longer needed the stolen ones.','The alien sneezed.','{C4} pulled the letter out.','The wind blew it away.'], why:'The pattern shows that learning a word lets the alien give back a stolen one.'},
+    {q:'“Then it grew BOLDER.” What does BOLDER mean?', c:['more daring','smaller','more tired','quieter'], why:'The alien started taking bigger words, so it became more daring.'},
+   ]},
+ { title:'Story Circle', topic:'Reading: Extend It', tag:'DOK 4', dok:'DOK 4 · Synthesize Two Texts',
+   teach:'<b>Extend It!</b> This mission has <b>two texts</b>. Read both. Think about how they <b>connect</b>, where they <b>disagree</b>, and use ideas from <b>both</b> to make the best plan.',
+   passage:[
+    {title:'Text A: Captain’s Log by {C0}', text:
+`Day 40. The Word Eater was seen at four pods this week. It always arrives just before sunset, when the base is quietest. Crew members report that it moves toward places where someone is reading out loud.
+
+When the crew shouts at it or chases it, it eats even more words and hides. My recommendation: build a stronger fence around every pod.`},
+    {title:'Text B: {C1}’s Journal', text:
+`Tonight I tried something new. Instead of chasing the Word Eater, I sat by Pod 3 and read a story out loud, slowly and kindly.
+
+The alien crept closer. It did not eat a single word. It just listened, its belly glowing softly. When the story ended, it left a gift by the door: the word “friend,” which it had stolen days ago.`}],
+   pods:[
+    {word:'PLAN', q:'Using BOTH texts, what is the BEST plan to save the words?', c:['Read aloud calmly near the pods instead of chasing the alien.','Build a stronger fence around every pod.','Shout louder at the alien.','Hide all the books.'], why:'Text A says it moves toward reading. Text B shows that reading calmly worked.'},
+    {word:'OPINION', q:'How do the two authors DISAGREE?', c:['{C0} wants fences, but {C1} found that kindness works.','Both want fences.','Both think the alien is not real.','{C1} wants to shout at it.'], why:'{C0} recommends fences. {C1} tried a kind approach that worked.'},
+    {word:'CLUE', q:'Which detail from Text A helps EXPLAIN what happened in Text B?', c:['It moves toward places where someone is reading out loud.','It was seen at four pods this week.','It was Day 40.','The base has many pods.'], why:'{C1} read out loud, and the alien came closer, just like Text A describes.'},
+    {word:'READING', q:'Which statement is supported by BOTH texts?', c:['The Word Eater is drawn to reading.','The alien only comes at noon.','Fences stop the alien.','The alien hates the crew.'], why:'Text A reports it moves toward reading. In Text B, it comes to hear a story.'},
+    {word:'REPORT', q:'How is Text A DIFFERENT from Text B?', c:['Text A reports facts from many sightings. Text B tells one personal experience.','Text A is a poem.','Text B is a list of rules.','Both are fairy tales.'], why:'A captain’s log collects reports. A journal tells about one person’s night.'},
+   ],
+   boss:[
+    {q:'If you were the captain, what would be the BEST new recommendation?', c:['Hold a story circle at each pod every evening.','Build even more fences.','Stop all reading on the base.','Chase the alien faster.'], why:'This uses the facts from Text A and the success from Text B.'},
+    {q:'Based on Text A, why might the alien eat MORE words when chased?', c:['It gets scared and hides with them.','Running makes it hungry for letters.','It likes being chased.','It falls asleep.'], why:'Text A says it eats more words and hides. Hiding is a sign of fear.'},
+    {q:'What EVIDENCE would make {C1}’s idea even stronger?', c:['If reading aloud worked again at other pods on other nights','If the fence broke','If {C0} got tired','If the alien turned green'], why:'An idea is stronger when it works more than once.'},
+    {q:'Thinking about BOTH texts, what does the gift of “friend” suggest?', c:['The alien wants friendship, not to cause harm.','The alien hates that word.','It is a trap.','The alien was too full to eat it.'], why:'It gave back the word “friend” after someone was kind to it.'},
+    {q:'Which sentence from Text A is an OPINION, not a fact?', c:['Build a stronger fence around every pod.','The Word Eater was seen at four pods this week.','It always arrives just before sunset.','It was Day 40.'], why:'A recommendation is what someone thinks we should do. That makes it an opinion.'},
+    {q:'Which title fits BOTH texts best?', c:['Understanding the Word Eater','How to Build a Fence','{C1}’s Favorite Book','Sunset on Pod 3'], why:'Both texts help us understand how the Word Eater acts.'},
+   ]},
+];
+
+const THEMES = [
+  {sky:['#0d0b2e','#3b2a7a'], m1:'#2c2468', m2:'#1d1850', g:'#5b4f8f', g2:'#463c75', planet:'#ff9e5e'},
+  {sky:['#071a2e','#1f5b7a'], m1:'#1c4a63', m2:'#123448', g:'#3f7f86', g2:'#2f6168', planet:'#ffd166'},
+  {sky:['#1a0b25','#6b2c5f'], m1:'#4a1f4a', m2:'#311536', g:'#8a4f7a', g2:'#6d3c60', planet:'#7de2d1'},
+  {sky:['#0b1f14','#2f6b48'], m1:'#21503a', m2:'#163626', g:'#5c8f5a', g2:'#476f45', planet:'#f4a261'},
+  {sky:['#1f0f05','#8a4b1f'], m1:'#5e3215', m2:'#40210d', g:'#b07a45', g2:'#8e6034', planet:'#9bd1ff'},
+  {sky:['#05101f','#24476e'], m1:'#1b3352', m2:'#11233a', g:'#c9d6e8', g2:'#a6b6cc', planet:'#ff7aa2'},
+  {sky:['#14051f','#4b1a6e'], m1:'#341250', m2:'#220b36', g:'#6a4a94', g2:'#533a78', planet:'#ffe066'},
+  {sky:['#200808','#7a2222'], m1:'#541818', m2:'#3a1010', g:'#a3523a', g2:'#82402d', planet:'#a0f0ff'},
+  {sky:['#03141a','#0f5a5e'], m1:'#0d4245', m2:'#082d30', g:'#3aa39a', g2:'#2c8078', planet:'#ffb3c7'},
+  {sky:['#0a0614','#2a1450'], m1:'#3b1f6e', m2:'#24124a', g:'#e0c36a', g2:'#bfa250', planet:'#ff5d8f'},
+];
+
+// ---------- DIFFICULTY (level 0 = Level 1) ----------
+function DIFF(n){ return {
+  minionSpeed: 24 + n*4,            // Nibbler walking speed
+  maxMinions: 2 + Math.ceil(n/2),   // Nibblers on screen at once
+  spawn: Math.max(1.6, 5.5 - n*0.4),// seconds between Nibblers
+  eatMax: Math.max(22, 38 - n*1.8), // seconds before the Word Eater finishes a word
+  alienDelay: Math.max(5, 14 - n),  // seconds before the first raid
+  alienSpeed: 70 + n*6,
+  raidHp: n < 2 ? 2 : 3,            // questions needed to chase it out of a pod
+  bossScale: 1.45 + n*0.035,
+  bossSpeed: 28 + n*6,
+  bossY: 112 - n*2,
+  bossBob: 8 + n*1.2,
+  bossFire: Math.max(0.85, 2.8 - n*0.2), // seconds between boss attacks
+  shotSpeed: 50 + n*7,
+  spread: n < 2 ? 1 : n < 5 ? 2 : n < 8 ? 3 : 4, // spit-balls per attack
+  swoop: n >= 3,                    // dives at the player
+  rain: n >= 6,                     // drops spit-balls from the sky
+  rainN: 3 + Math.max(0, n-6),
+  stunNeed: 3 + Math.floor(n*0.5),  // star hits to make the boss dizzy
+  heal: n < 3 ? 5 : n < 7 ? 2 : 1,  // hearts recharged before the boss
+  arenaMinions: n >= 4,
+}; }
+const BOSSES = [
+  {name:'MUNCHER MAX',     body:'#3fbf7a', dark:'#23804d', spot:'#7ee8a8'},
+  {name:'FLIP-FLOP FANG',  body:'#ff8a3d', dark:'#b8561a', spot:'#ffc08f'},
+  {name:'TWIN-TONGUE',     body:'#2fb7c9', dark:'#1a7584', spot:'#8ee6f0'},
+  {name:'CLUE CRUNCHER',   body:'#e2463f', dark:'#932620', spot:'#ff9a94', horns:true},
+  {name:'FACT GOBBLER',    body:'#3f6fe2', dark:'#223f93', spot:'#97b4ff', horns:true},
+  {name:'MAP MUNCHER',     body:'#b07a45', dark:'#6e4b29', spot:'#e2b98a', horns:true},
+  {name:'GRAVITY GULPER',  body:'#e04fb2', dark:'#8f2a70', spot:'#ff9fde', horns:true},
+  {name:'POWER CHOMPER',   body:'#e0b62f', dark:'#8f7016', spot:'#fff09a', horns:true},
+  {name:'SHADOW SNACKER',  body:'#4a4560', dark:'#25223a', spot:'#7d7799', horns:true},
+  {name:'MEGA WORD EATER', body:'#7b3fe4', dark:'#5a2bb0', spot:'#9a6af0', horns:true, crown:true},
+];
+
+// ---------- HELPERS ----------
+const $ = s => document.querySelector(s);
+const rand = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const hash = n => { const x = Math.sin(n*12.9898)*43758.5453; return x - Math.floor(x); };
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const T = s => s.replace(/\{C(\d)\}/g, (m,d) => CHARS[+d].name);
+const strip = s => s.replace(/<[^>]+>/g,'');
+const paras = s => T(s).split(/\n\s*\n/).map(p=>`<p>${p.trim()}</p>`).join('');
+
+// ---------- SAVE DATA ----------
+const SAVE_KEY = 'spacePawsWordEater_v1';
+let PROG = {unlocked:1, stars:{}, char:0};
+try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s) PROG = Object.assign(PROG, s); } catch(e){}
+function saveProg(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(PROG)); } catch(e){} }
+
+// ---------- AUDIO ----------
+let AC = null, muted = false;
+function tone(f, d, type='square', v=0.05, slide=0, delay=0){
+  if (muted) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = AC.currentTime + delay;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t0);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, f+slide), t0+d);
+    g.gain.setValueAtTime(v, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0+d);
+    o.connect(g).connect(AC.destination); o.start(t0); o.stop(t0+d+0.02);
+  } catch(e){}
+}
+const SFX = {
+  jump: ()=>tone(320,.14,'square',.04,320),
+  shoot:()=>tone(1000,.08,'square',.03,-600),
+  pop:  ()=>tone(500,.12,'triangle',.06,500),
+  hurt: ()=>tone(180,.25,'sawtooth',.05,-110),
+  door: ()=>{tone(400,.07,'square',.04);tone(600,.09,'square',.04,0,.07)},
+  good: ()=>{tone(523,.1,'square',.05);tone(659,.1,'square',.05,0,.1);tone(784,.2,'square',.05,0,.2)},
+  bad:  ()=>tone(210,.28,'sawtooth',.045,-90),
+  blast:()=>{tone(120,.35,'sawtooth',.07,-80);tone(900,.2,'square',.04,-700)},
+  alarm:()=>{for(let i=0;i<3;i++){tone(880,.12,'square',.05,0,i*.3);tone(660,.12,'square',.05,0,i*.3+.15)}},
+  beep: ()=>tone(880,.08,'square',.03),
+  eaten:()=>{tone(300,.15,'sawtooth',.05,-150);tone(200,.3,'sawtooth',.05,-120,.15)},
+  win:  ()=>{[523,659,784,1047].forEach((f,i)=>tone(f,.18,'square',.05,0,i*.15))},
+};
+function speak(text){
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(strip(T(text))); u.rate = 0.9; speechSynthesis.speak(u); } catch(e){}
+}
+function hush(){ try { speechSynthesis.cancel(); } catch(e){} }
+
+// ---------- CANVAS ----------
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const W = 320, H = 180, GROUND = 152;
+const STARS = Array.from({length:90}, ()=>({x:rand(0,W*2), y:rand(0,120), s:Math.random()<.15?2:1, p:rand(0,6)}));
+
+function ell(c,x,y,rx,ry,col){ c.fillStyle=col; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,Math.PI*2); c.fill(); }
+function tri(c,col,a,b,d,e,f,g){ c.fillStyle=col; c.beginPath(); c.moveTo(a,b); c.lineTo(d,e); c.lineTo(f,g); c.closePath(); c.fill(); }
+
+function drawHero(c, id, x, y, o={}){
+  const C = CHARS[id], t = o.t||0, face = o.face||1, s = (o.s||1) * (C.species==='dog'?1.08:1);
+  const walk = o.walk ? Math.sin(t*14) : 0;
+  const R = (col,a,b,w,h)=>{ c.fillStyle=col; c.fillRect(a,b,w,h); };
+  const lp = o.air ? 2 : Math.round(walk*2);
+  const ap = o.air ? -2 : Math.round(-walk*1.5);
+  c.save(); c.translate(Math.round(x), Math.round(y)); c.scale(face*s, s);
+  // tail
+  if (C.species==='cat'){
+    const sw = Math.round(Math.sin(t*5));
+    R(C.fur,-7,-12,2,2); R(C.fur,-9,-14,2,2); R(C.fur,-10+sw,-17,2,3); R(C.fur,-9+sw,-19,2,2);
+    if (C.patch) R(C.fur2,-9+sw,-19,2,1);
+  } else if (C.species==='dog'){
+    const sw = Math.sin(t*8)*1.5;
+    ell(c,-9,-15+sw*0.3,3,4.5,C.fur); ell(c,-10,-18+sw*0.3,2,2.5,C.fur);
+  } else {
+    R(C.fur2,-7,-12,1,1); R(C.fur2,-8,-13,1,1); R(C.fur2,-7,-14,1,1); R(C.fur2,-6,-13,1,1);
+  }
+  // backpack
+  R(C.trim,-9,-20,4,10); R(C.suitDk,-8,-18,2,2);
+  // back leg
+  R(C.suitDk,-4-lp,-9,4,8); R(C.trim,-5-lp,-2,5,2);
+  // body
+  R(C.suit,-5,-20,11,12); R(C.trim,-5,-11,11,2); R(C.trim,0,-18,4,3); R('#ffd23f',1,-17,1,1);
+  R(C.suitDk,-5,-20,1,9);
+  // front leg
+  R(C.suit,-1+lp,-9,4,8); R(C.trim,-1+lp,-2,5,2);
+  // arm
+  R(C.suitDk,1+ap,-19,3,7); R(C.trim,1+ap,-13,3,2);
+  // collar
+  R(C.trim,-4,-22,9,2);
+  // head
+  if (C.species==='cat'){
+    ell(c,1,-28,6,5.5,C.fur);
+    tri(c,C.fur,-4.5,-30,-3.5,-37,0,-32.5);
+    tri(c,C.fur,2,-32.5,5.5,-37,6.5,-30);
+    tri(c,C.inner,-3.2,-31.5,-3,-35,-1.2,-32.5);
+    tri(c,C.inner,3,-32.5,5.2,-35,5.4,-31.2);
+    if (C.patch){ ell(c,3.5,-25.5,4,2.6,C.fur2); R(C.fur2,0,-31,2,4); }
+    else ell(c,3.5,-25.5,3.4,2.2,C.fur2);
+    R(C.eye,2,-30,2,2); R(C.eye,5,-30,2,2); R('#000',3,-30,1,2); R('#000',6,-30,1,2);
+    R('#ff8fb5',6,-27,1,1);
+    R('rgba(255,255,255,.55)',7,-26,3,1); R('rgba(255,255,255,.55)',7,-24,3,1);
+  } else if (C.species==='dog'){
+    ell(c,1,-28,6.5,6,C.fur);
+    ell(c,-1.5,-24,4.5,3,C.fur);
+    ell(c,-3,-27,2.6,4.5,C.fur2);
+    ell(c,5,-25,3.8,2.7,C.fur);
+    R('#1a1a1a',7,-27,2,2);
+    R('#1a1a1a',3,-30,2,2); R('#fff',3,-30,1,1);
+    R('#7a6a5a',5,-23,2,1); R('#ff7a8a',6,-22,1,1);
+  } else {
+    ell(c,1,-28,6,5.5,C.fur);
+    tri(c,C.fur2,-3.5,-32,-1.5,-36.5,1,-32.5);
+    tri(c,C.fur2,2,-33,5.5,-36.5,5.5,-31);
+    ell(c,7,-27,2.3,2.9,C.fur2);
+    R('#b85a72',7,-29,1,1); R('#b85a72',7,-26,1,1);
+    R('#1a1a1a',3,-30,2,2); R('#fff',3,-30,1,1);
+    ell(c,3,-25,1.6,1,'rgba(255,110,150,.55)');
+    R('#b85a72',4,-24,2,1);
+  }
+  // helmet
+  c.fillStyle='rgba(170,215,255,0.16)'; c.strokeStyle='rgba(225,240,255,0.85)'; c.lineWidth=1;
+  c.beginPath(); c.arc(1,-28.5,9.5,0,Math.PI*2); c.fill(); c.stroke();
+  R('rgba(255,255,255,.85)',-4,-33,1,3); R('rgba(255,255,255,.85)',-3,-35,2,1);
+  c.restore();
+}
+
+function drawAlien(c, x, y, s, t, o={}){
+  const mouth = o.mouth ?? (0.5+0.5*Math.sin(t*8));
+  c.save(); c.translate(x,y); c.scale(s,s);
+  if (o.shake) c.translate(Math.sin(t*90)*1.5, 0);
+  const V = o.v || {};
+  const body = o.flash ? '#ffffff' : (V.body || '#7b3fe4'), spot = o.flash ? '#fff' : (V.spot || '#9a6af0');
+  if (o.warn){ ell(c,0,2,24,20,'rgba(255,60,90,'+(0.25+0.25*Math.sin(t*30))+')'); }
+  // tentacles
+  c.strokeStyle = o.flash ? '#fff' : (V.dark || '#5a2bb0'); c.lineWidth = 3; c.lineCap = 'round';
+  for (let i=0;i<5;i++){
+    const bx = -12 + i*6;
+    c.beginPath(); c.moveTo(bx,8);
+    c.quadraticCurveTo(bx+Math.sin(t*4+i)*5, 16, bx+Math.sin(t*3+i*1.7)*6, 23);
+    c.stroke();
+  }
+  // antennae
+  c.lineWidth = 1.5; c.strokeStyle = body;
+  c.beginPath(); c.moveTo(-7,-10); c.lineTo(-11+Math.sin(t*3)*2,-21); c.stroke();
+  c.beginPath(); c.moveTo(7,-10); c.lineTo(11+Math.sin(t*3+1)*2,-21); c.stroke();
+  ell(c,-11+Math.sin(t*3)*2,-22,2.5,2.5,'#7dff9a'); ell(c,11+Math.sin(t*3+1)*2,-22,2.5,2.5,'#7dff9a');
+  // body
+  if (V.horns){ tri(c,'#f4f1ff',-14,-6,-11,-19,-7,-11); tri(c,'#f4f1ff',14,-6,11,-19,7,-11); }
+  ell(c,0,0,18,14,body);
+  ell(c,-10,-5,3,2,spot); ell(c,12,3,2.5,2,spot); ell(c,9,-9,2,1.5,spot);
+  if (V.crown){ c.fillStyle='#ffd23f'; c.beginPath(); c.moveTo(-7,-13); c.lineTo(-7,-20); c.lineTo(-3.5,-16); c.lineTo(0,-22); c.lineTo(3.5,-16); c.lineTo(7,-20); c.lineTo(7,-13); c.closePath(); c.fill(); ell(c,0,-17,1.2,1.2,'#ff4d6d'); }
+  // belly glow
+  ell(c,0,9,9,3.5,'rgba(255,230,120,'+(0.55+0.3*Math.sin(t*5))+')');
+  // eyes
+  [[-8,-5],[0,-9],[8,-5]].forEach(([ex,ey],i)=>{
+    ell(c,ex,ey,3.6,3.6,'#fff');
+    const blink = Math.sin(t*1.7+i)>0.97;
+    if (blink) { c.fillStyle=body; c.fillRect(ex-4,ey-4,8,8); c.fillStyle='#2a0f50'; c.fillRect(ex-3,ey,6,1); }
+    else if (o.dizzy){ c.strokeStyle='#120020'; c.lineWidth=0.8; c.beginPath(); c.arc(ex,ey,1.8,t*10,t*10+4.5); c.stroke(); }
+    else ell(c,ex+(o.look||0),ey+0.5,1.6,1.6,'#120020');
+  });
+  // mouth
+  if (o.happy){
+    c.strokeStyle='#3a0820'; c.lineWidth=1.5; c.beginPath(); c.arc(0,1,6,0.15*Math.PI,0.85*Math.PI); c.stroke();
+    ell(c,-9,2,2,1.2,'rgba(255,120,170,.6)'); ell(c,9,2,2,1.2,'rgba(255,120,170,.6)');
+  } else {
+    const mh = 1.5 + mouth*4.5;
+    ell(c,0,3+mh*0.3,9,mh,'#3a0820');
+    c.fillStyle='#fff';
+    const top = 3 + mh*0.3 - mh;
+    for (let i=-6;i<=6;i+=4){ c.beginPath(); c.moveTo(i-1.6,top+0.5); c.lineTo(i+1.6,top+0.5); c.lineTo(i,top+3); c.closePath(); c.fill(); }
+  }
+  c.restore();
+}
+
+function drawMinion(c, m, sx){
+  const y = m.y, sq = m.ground ? 1 : 0;
+  ell(c,sx,y-4.5+sq*0.5,6+sq,5-sq,'#5be37a');
+  ell(c,sx,y-1,5,1.5,'#3aa85a');
+  c.strokeStyle='#5be37a'; c.lineWidth=1; c.beginPath(); c.moveTo(sx,y-9); c.lineTo(sx+m.face*2,y-13); c.stroke();
+  ell(c,sx+m.face*2,y-13.5,1.3,1.3,'#ffe066');
+  c.fillStyle='#fff'; c.fillRect(sx+m.face*1-1,y-7,3,3); c.fillStyle='#000'; c.fillRect(sx+m.face*2,y-6,1,2);
+  const mo = Math.sin(m.t*10)>0 ? 2 : 1;
+  c.fillStyle='#1d3a22'; c.fillRect(sx+m.face*1-2,y-3,5,mo);
+}
+
+function drawStarShot(c, x, y, t){
+  c.save(); c.translate(x,y); c.rotate(t*12);
+  c.fillStyle='#ffe066'; c.beginPath();
+  for (let i=0;i<8;i++){ const r = i%2 ? 1.4 : 4; const a = i*Math.PI/4; c.lineTo(Math.cos(a)*r, Math.sin(a)*r); }
+  c.closePath(); c.fill(); c.restore();
+}
+
+function drawBG(c, th, cam, t){
+  const g = c.createLinearGradient(0,0,0,GROUND);
+  g.addColorStop(0, th.sky[0]); g.addColorStop(1, th.sky[1]);
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+  for (const s of STARS){
+    const x = ((s.x - cam*0.08) % (W*2) + W*2) % (W*2);
+    if (x > W) continue;
+    c.fillStyle = Math.sin(t*2+s.p) > 0.7 ? '#fff' : 'rgba(255,255,255,.55)';
+    c.fillRect(x|0, s.y|0, s.s, s.s);
+  }
+  // planet
+  const px = 255 - cam*0.02;
+  c.save(); c.beginPath(); c.arc(px,40,18,0,Math.PI*2); c.clip();
+  c.fillStyle = th.planet; c.fillRect(px-20,20,40,40);
+  c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.arc(px+8,46,18,0,Math.PI*2); c.fill();
+  c.restore();
+  c.strokeStyle='rgba(255,255,255,.45)'; c.lineWidth=1.5;
+  c.beginPath(); c.ellipse(px,40,30,5,-0.3,0,Math.PI*2); c.stroke();
+  // mountains
+  const mtn = (col,f,base,amp,seed)=>{
+    c.fillStyle = col; c.beginPath(); c.moveTo(0,GROUND);
+    for (let x=0;x<=W+4;x+=4){
+      const wx = x + cam*f;
+      const y = base - amp*(0.5+0.5*Math.sin(wx*0.013+seed)) - amp*0.6*(0.5+0.5*Math.sin(wx*0.037+seed*2));
+      c.lineTo(x, Math.round(y));
+    }
+    c.lineTo(W,GROUND); c.closePath(); c.fill();
+  };
+  mtn(th.m2, .2, 118, 26, 1); mtn(th.m1, .45, 134, 20, 4);
+  // ground
+  c.fillStyle = th.g; c.fillRect(0,GROUND,W,H-GROUND);
+  c.fillStyle = th.g2; c.fillRect(0,GROUND,W,2);
+  for (let wx = Math.floor(cam/70)*70; wx < cam+W+70; wx += 70){
+    const h = hash(wx), sx = wx - cam + h*30;
+    ell(c, sx, GROUND+9+Math.floor(h*14), 6+h*9, 1.5+h*2, th.g2);
+    if (h > .5){ c.fillStyle = th.g2; c.fillRect(Math.round(sx+20), GROUND+5, 2, 2); }
+  }
+}
+
+function drawPod(c, pod, sx, t, th, attacking){
+  const blink = Math.floor(t*4)%2===0;
+  c.fillStyle='#3d4663'; c.fillRect(sx-36, GROUND-6, 72, 6);
+  c.fillStyle='#2a3150'; c.fillRect(sx-36, GROUND-2, 72, 2);
+  const eaten = pod.status==='eaten';
+  c.fillStyle = eaten ? '#4a4a5a' : '#c3cde0';
+  c.beginPath(); c.arc(sx, GROUND-6, 32, Math.PI, 0); c.fill();
+  c.fillStyle = eaten ? '#3a3a48' : '#a3afc6';
+  c.beginPath(); c.arc(sx, GROUND-6, 32, Math.PI*0.62, Math.PI*0.38, true); c.fill();
+  c.fillStyle = eaten ? '#4a4a5a' : '#c3cde0';
+  c.beginPath(); c.arc(sx-3, GROUND-8, 27, Math.PI, 0); c.fill();
+  // windows
+  for (let i=-2;i<=2;i++){ if (i===0) continue; c.fillStyle = eaten ? '#222' : (pod.status==='saved' ? '#bff5d6' : '#6fd3ff'); c.fillRect(sx+i*11-3, GROUND-24, 6, 4); }
+  if (eaten){
+    ell(c, sx+20, GROUND-30, 9, 8, th.sky[1]);
+    ell(c, sx+10, GROUND-37, 6, 5, th.sky[1]);
+  }
+  // door
+  c.fillStyle = pod.status==='saved' ? '#3ddc84' : eaten ? '#111' : (attacking && blink ? '#ff4d6d' : '#2b3558');
+  c.fillRect(sx-7, GROUND-26, 14, 20);
+  c.strokeStyle = '#ffd23f'; c.lineWidth = 1; c.strokeRect(sx-7.5, GROUND-26.5, 15, 21);
+  c.fillStyle='#1b2238'; c.font='8px "Press Start 2P", monospace'; c.textAlign='center';
+  c.fillText(String(pod.i+1), sx, GROUND-29);
+  // antenna light
+  c.fillStyle='#8890a8'; c.fillRect(sx-1, GROUND-46, 2, 8);
+  const lc = pod.status==='saved' ? '#3ddc84' : eaten ? '#555' : (attacking ? (blink?'#ff4d6d':'#5a0010') : '#ffd23f');
+  ell(c, sx, GROUND-48, 3, 3, lc);
+  if (pod.status==='saved'){
+    const y = GROUND-58 + Math.round(Math.sin(t*2+pod.i)*2);
+    c.font='8px "Press Start 2P", monospace';
+    c.fillStyle='#0b2a1a';
+    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) c.fillText(pod.q.word, sx+dx, y+dy);
+    c.fillStyle='#7dffb3'; c.fillText(pod.q.word, sx, y);
+  }
+}
+
+// ---------- GAME STATE ----------
+const state = { mode:'menu', t:0, char: PROG.char||0, level:0 };
+let L = null;      // current level runtime
+let Q = null;      // current question context
+let prevIn = {jump:false, up:false, fire:false};
+
+const keys = {}, touch = {}, taps = {};
+const TAP_MAP = {Space:'jump',KeyZ:'jump',KeyK:'jump',ArrowUp:'up',KeyW:'up',KeyX:'fire',KeyJ:'fire',KeyF:'fire'};
+const K = {
+  left:  ()=>keys.ArrowLeft||keys.KeyA||touch.left,
+  right: ()=>keys.ArrowRight||keys.KeyD||touch.right,
+  jump:  ()=>keys.Space||keys.KeyZ||keys.KeyK||touch.jump,
+  up:    ()=>keys.ArrowUp||keys.KeyW||touch.up,
+  fire:  ()=>keys.KeyX||keys.KeyJ||keys.KeyF||touch.fire,
+};
+
+function startLevel(n){
+  state.level = n;
+  const def = LEVELS[n], D = DIFF(n);
+  const width = 2600;
+  L = {
+    n, def, D, width, t:0, arena:null,
+    pods: def.pods.map((q,i)=>({i, x:330+i*480, status:'open', q, tries:0})),
+    alien: {x: Math.random()<.5 ? -200 : width+200, state:'wait', timer: D.alienDelay, target:null, eat:0,
+            eatMax: D.eatMax, speed: D.alienSpeed, beepT:0},
+    p: {x:60, y:GROUND, vx:0, vy:0, ground:true, face:1, hurt:0, knock:0, fireCD:0},
+    minions:[], shots:[], parts:[], cam:0, hearts:CONFIG.startHearts, maxHearts:CONFIG.startHearts, score:0,
+    spawnT: 5, bossOrder: shuffle(def.boss.map((_,i)=>i)), bossPtr:0, ending:0, hudKey:'',
+  };
+  buildMinimap();
+  prevIn = {jump:true, up:true, fire:true}; taps.jump = taps.up = taps.fire = false;
+  for (const k in keys) keys[k] = false;
+  state.mode = 'play';
+  show(null);
+  toast(`LEVEL ${n+1}: ${def.title.toUpperCase()}<br>Save the words!`, 2.5);
+}
+
+function hurtPlayer(dir){
+  const P = L.p;
+  if (P.hurt > 0) return;
+  L.hearts--; P.hurt = 1.5; P.knock = 0.25; P.vx = dir*120; P.vy = -130; P.ground = false;
+  SFX.hurt();
+  burst(P.x, P.y-14, '#ff4d6d', 8);
+  if (L.hearts <= 0) gameOver();
+}
+
+function burst(x,y,col,n){
+  for (let i=0;i<n;i++) L.parts.push({x,y,vx:rand(-70,70),vy:rand(-90,20),life:rand(.3,.7),col,g:200});
+}
+
+function nearDoor(){
+  const P = L.p;
+  return L.pods.find(p => Math.abs(p.x - P.x) < 15);
+}
+const isAttack = pod => L.alien.state==='eat' && L.alien.target===pod;
+
+function pickTarget(){
+  const A = L.alien, P = L.p;
+  let open = L.pods.filter(p => p.status==='open');
+  if (!open.length){ A.state='idle'; A.target=null; return; }
+  const far = open.filter(p => Math.abs(p.x - P.x) > 70);
+  if (far.length) open = far;
+  A.target = open[Math.floor(Math.random()*open.length)];
+  A.state = 'travel';
+}
+
+function readInput(){
+  const left=K.left(), right=K.right(), jumpNow=K.jump(), upNow=K.up(), fireNow=K.fire();
+  const r = {left, right, jumpP:(jumpNow && !prevIn.jump) || taps.jump, upP:(upNow && !prevIn.up) || taps.up, fireP:(fireNow && !prevIn.fire) || taps.fire};
+  prevIn = {jump:jumpNow, up:upNow, fire:fireNow};
+  taps.jump = taps.up = taps.fire = false;
+  return r;
+}
+function movePlayer(dt, inp, width){
+  const P = L.p;
+  const dir = (inp.right?1:0) - (inp.left?1:0);
+  if (P.knock > 0) P.knock -= dt;
+  else { P.vx = dir*95; if (dir) P.face = dir; }
+  if ((inp.jumpP || inp.upP) && P.ground){ P.vy = -235; P.ground = false; SFX.jump(); }
+  P.vy += 640*dt; P.y += P.vy*dt; P.x += P.vx*dt;
+  if (P.y >= GROUND){ P.y = GROUND; P.vy = 0; P.ground = true; }
+  P.x = clamp(P.x, 8, width-8);
+  if (P.hurt > 0) P.hurt -= dt;
+  P.fireCD -= dt;
+  if (inp.fireP && P.fireCD <= 0){
+    L.shots.push({x:P.x+P.face*8, y:P.y-15, vx:P.face*230, life:0.75});
+    P.fireCD = 0.28; SFX.shoot();
+  }
+  P.walking = dir !== 0 && P.ground;
+}
+function stepMinion(m, dt){
+  const P = L.p;
+  m.t += dt;
+  const d = P.x - m.x;
+  m.face = d >= 0 ? 1 : -1;
+  m.x += m.face * m.sp * dt;
+  m.vy += 500*dt; m.y += m.vy*dt;
+  if (m.y >= GROUND){ m.y = GROUND; m.vy = 0; m.ground = true; m.hop -= dt;
+    if (m.hop <= 0){ m.vy = -rand(90,150); m.ground = false; m.hop = rand(.6,1.8); } }
+  else m.ground = false;
+  if (Math.abs(d) < 11 && Math.abs((P.y-14) - (m.y-5)) < 17) hurtPlayer(d >= 0 ? 1 : -1);
+  if (Math.abs(d) > W*1.6) m.dead = true;
+}
+const newMinion = (x, side) => ({x, y:GROUND, vy:0, ground:true, face:-side, t:0, hop:rand(.3,1.2), sp: L.D.minionSpeed + rand(0,12)});
+
+function update(dt){
+  const P = L.p, A = L.alien;
+  L.t += dt;
+  const inp = readInput();
+  if (L.arena) return updateArena(dt, inp);
+
+  // --- player ---
+  if (inp.upP){
+    const door = nearDoor();
+    if (door && P.ground){ enterPod(door); return; }
+  }
+  movePlayer(dt, inp, L.width);
+
+  // --- camera ---
+  const target = clamp(P.x - W*0.42, 0, L.width - W);
+  L.cam += (target - L.cam) * Math.min(1, dt*8);
+
+  // --- minions ---
+  L.spawnT -= dt;
+  const maxMin = L.D.maxMinions;
+  if (L.spawnT <= 0 && L.minions.length < maxMin){
+    let side = Math.random()<.5 ? -1 : 1;
+    let x = side<0 ? L.cam - 12 : L.cam + W + 12;
+    if (x < 10 || x > L.width-10){ side = -side; x = side<0 ? L.cam - 12 : L.cam + W + 12; }
+    if (x > 10 && x < L.width-10)
+      L.minions.push(newMinion(x, side));
+    L.spawnT = L.D.spawn * rand(0.8, 1.25);
+  }
+  for (const m of L.minions) stepMinion(m, dt);
+  // --- shots ---
+  for (const s of L.shots){
+    s.x += s.vx*dt; s.life -= dt;
+    for (const m of L.minions){
+      if (!m.dead && Math.abs(s.x-m.x) < 8 && Math.abs(s.y-(m.y-5)) < 9){
+        m.dead = true; s.life = 0; L.score += 10; SFX.pop(); burst(m.x, m.y-5, '#5be37a', 10);
+      }
+    }
+  }
+  L.minions = L.minions.filter(m => !m.dead);
+  L.shots = L.shots.filter(s => s.life > 0);
+
+  // --- alien ---
+  switch (A.state){
+    case 'wait': case 'cool':
+      A.timer -= dt; if (A.timer <= 0) pickTarget(); break;
+    case 'travel': {
+      if (!A.target || A.target.status !== 'open'){ pickTarget(); break; }
+      const d = A.target.x - A.x, st = A.speed*dt;
+      if (Math.abs(d) <= st){
+        A.x = A.target.x; A.state = 'eat'; A.eat = A.eatMax; A.beepT = 5;
+        SFX.alarm();
+        toast(`⚠ ALARM! The Word Eater is attacking POD ${A.target.i+1}!`, 3);
+      } else A.x += Math.sign(d)*st;
+      break;
+    }
+    case 'eat': {
+      A.eat -= dt; A.beepT -= dt;
+      if (A.beepT <= 0){ SFX.beep(); A.beepT = A.eat < 10 ? 1.5 : 5; }
+      if (Math.random() < dt*4) L.parts.push({x:A.target.x+rand(-6,6), y:GROUND-14, vx:rand(-8,8), vy:-38, life:0.85,
+        letter:'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)], col:'#ffe066', g:0});
+      if (A.eat <= 0){
+        A.target.status = 'eaten'; SFX.eaten();
+        toast(`Oh no! The Word Eater gobbled up “${A.target.q.word}”!`, 3);
+        burst(A.target.x, GROUND-30, '#a066ff', 16);
+        A.state = 'wait'; A.timer = 4; A.target = null;
+        checkEnd();
+      }
+      break;
+    }
+  }
+
+  // --- particles ---
+  for (const p of L.parts){ p.x += p.vx*dt; p.y += p.vy*dt; p.vy += (p.g||0)*dt; p.life -= dt; }
+  L.parts = L.parts.filter(p => p.life > 0);
+
+  if (L.ending > 0){ L.ending -= dt; if (L.ending <= 0) afterPods(); }
+}
+
+// ---------- BOSS BATTLE ----------
+function afterPods(){
+  const saved = L.pods.filter(p=>p.status==='saved').length;
+  if (saved >= CONFIG.wordsToPass) showBossIntro(); else showResult();
+}
+function showBossIntro(){
+  state.mode = 'menu';
+  const B = BOSSES[L.n], D = L.D, saved = L.pods.filter(p=>p.status==='saved').length;
+  const gain = Math.min(L.maxHearts, L.hearts + D.heal) - L.hearts;
+  let danger = ''; for (let i=0;i<10;i++) danger += i <= L.n ? '■' : '□';
+  const moves = ['It spits <b>letter blobs</b> at you.'];
+  if (D.spread > 1) moves[0] = `It spits <b>${D.spread} letter blobs</b> at a time.`;
+  if (D.swoop) moves.push('Watch for it to <b>flash red</b>. That means it is about to <b>swoop down</b> at you!');
+  if (D.rain) moves.push('It makes letter blobs <b>rain from the sky</b>. Watch for their shadows!');
+  if (D.arenaMinions) moves.push('Nibblers will join the fight.');
+  $('#bossPanel').innerHTML = `<span class="badge y">LEVEL ${L.n+1} BOSS</span>
+    <h1 style="color:#ff4d6d;text-shadow:3px 3px 0 #4a0d1f">BOSS BATTLE!</h1>
+    <canvas id="bossIntroCv" width="160" height="100"></canvas>
+    <h2>${B.name}</h2>
+    <div class="danger">DANGER ${danger}</div>
+    <p>You saved <b>${saved} of 5</b> words! Now defeat <b>${B.name}</b> to clear the level.</p>
+    <ol class="steps">
+      <li><b>Jump</b> and throw <b>word stars</b> at the boss. Hit it <b>${D.stunNeed} times</b> to make it <b>dizzy</b>.</li>
+      <li>When it is dizzy, answer a question. A correct answer is a <b>BIG HIT!</b></li>
+      <li>Land <b>5 big hits</b> to destroy it!</li>
+      <li>${moves.join(' ')} Your stars can pop the blobs.</li>
+    </ol>
+    ${gain > 0 ? `<p class="small">⚡ Energy recharge: +${gain} ♥</p>` : ''}
+    <div class="row"><button class="btn alt" id="bossRead">🔊 READ TO ME</button><button class="btn" id="bossGo">FIGHT! ▶</button></div>`;
+  show('scrBoss');
+  $('#bossRead').onclick = ()=> speak(`Boss battle! Defeat ${B.name}. ` + strip($('#bossPanel .steps').innerHTML.replace(/<\/li>/g,'. ')));
+  $('#bossGo').onclick = ()=>{ hush(); startBoss(false); };
+}
+function startBoss(retry){
+  const D = L.D;
+  if (retry) L.hearts = L.maxHearts;
+  else L.hearts = Math.min(L.maxHearts, L.hearts + D.heal);
+  const pool = L.def.boss.concat(L.def.pods);
+  L.arena = {
+    boss: {x: W-70, y: D.bossY, dir:-1, hp:5, stun:0, state:'enter', st:0, st2:1.2, flash:0, fireT:2.2, atkN:0, rage:1, tx:0, sw:0, sx:0, sy:0},
+    blobs: [], order: shuffle(pool), ptr: 0, done: 0,
+  };
+  L.alien.state = 'idle'; L.alien.target = null;
+  L.p = {x:50, y:GROUND, vx:0, vy:0, ground:true, face:1, hurt:1, knock:0, fireCD:0};
+  L.minions = []; L.shots = []; L.parts = []; L.cam = 0; L.spawnT = 5; L.ending = 0;
+  $('#mm').innerHTML = `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--pix);font-size:9px;color:#ff9fb1">⚔ BOSS BATTLE: ${BOSSES[L.n].name}</div>`;
+  L.mmP = document.createElement('div'); L.mmA = document.createElement('div');
+  L.pods.forEach(p => p.mm = document.createElement('div'));
+  prevIn = {jump:true, up:true, fire:true}; taps.jump = taps.up = taps.fire = false;
+  for (const k in keys) keys[k] = false;
+  clearTouch();
+  state.mode = 'play'; show(null);
+  SFX.alarm();
+  toast(`⚔ ${BOSSES[L.n].name} APPEARS!<br>Jump and throw stars to make it dizzy!`, 3);
+}
+function bossHitbox(b){ const s = L.D.bossScale; return {rx: 18*s, ry: 14*s}; }
+function bossSpit(){
+  const b = L.arena.boss, P = L.p, D = L.D, s = D.bossScale;
+  const mx = b.x, my = b.y + 5*s;
+  const ang = Math.atan2((P.y-12) - my, P.x - mx);
+  const n = D.spread, sp = D.shotSpeed * b.rage;
+  for (let i=0;i<n;i++){
+    const a = ang + (i - (n-1)/2) * 0.3;
+    L.arena.blobs.push({x:mx, y:my, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, r:4});
+  }
+  tone(260,.15,'square',.04,-120);
+}
+function bossRain(){
+  const D = L.D, P = L.p;
+  for (let i=0;i<D.rainN;i++){
+    const x = i === 0 ? clamp(P.x + rand(-20,20), 12, W-12) : rand(12, W-12);
+    L.arena.blobs.push({x, y: -10 - i*25, vx:0, vy: 45 + L.n*4, r:4, rain:true});
+  }
+  tone(500,.3,'triangle',.04,-300);
+}
+function updateArena(dt, inp){
+  const A = L.arena, b = A.boss, P = L.p, D = L.D, s = D.bossScale, hb = bossHitbox(b);
+  movePlayer(dt, inp, W);
+  b.st += dt; b.flash = Math.max(0, b.flash - dt);
+  const harmless = b.state==='dizzy' || b.state==='hit' || b.state==='dead' || b.state==='enter';
+  switch (b.state){
+    case 'enter':
+      b.st2 -= dt; b.y = D.bossY - b.st2*60; if (b.st2 <= 0){ b.state='move'; b.y = D.bossY; } break;
+    case 'move': {
+      const sp = D.bossSpeed * b.rage;
+      b.x += b.dir*sp*dt;
+      if (b.x < 60){ b.x = 60; b.dir = 1; }
+      if (b.x > W-45){ b.x = W-45; b.dir = -1; }
+      b.y = D.bossY + Math.sin(b.st*1.6)*D.bossBob;
+      b.fireT -= dt;
+      if (b.fireT <= 0){
+        b.atkN++;
+        if (D.swoop && b.atkN % 3 === 0){ b.state='warn'; b.st2 = Math.max(0.55, 0.9 - L.n*0.03); b.tx = clamp(P.x, 30, W-30); SFX.beep(); }
+        else if (D.rain && b.atkN % 2 === 0) bossRain();
+        else bossSpit();
+        b.fireT = D.bossFire / b.rage * rand(0.85, 1.15);
+      }
+      break;
+    }
+    case 'warn':
+      b.st2 -= dt; if (b.st2 <= 0){ b.state='swoop'; b.sw=0; b.sx=b.x; b.sy=b.y; tone(200,.4,'sawtooth',.05,300); } break;
+    case 'swoop': {
+      b.sw += dt / Math.max(0.8, 1.3 - L.n*0.04);
+      const k = Math.min(1, b.sw);
+      b.x = b.sx + (b.tx - b.sx) * Math.min(1, k*2);
+      b.y = b.sy + ((GROUND - 14*s) - b.sy) * Math.sin(Math.PI*k);
+      if (k >= 1){ b.state='move'; b.st = 0; }
+      break;
+    }
+    case 'dizzy':
+      b.st2 -= dt; b.y += ((GROUND - 14*s - 6) - b.y) * Math.min(1, dt*3);
+      if (b.st2 <= 0) openFinalQ();
+      break;
+    case 'hit':
+      b.st2 -= dt; b.y += (D.bossY - b.y) * Math.min(1, dt*2);
+      if (b.st2 <= 0){ b.state='move'; b.fireT = 1.2; }
+      break;
+    case 'dead':
+      b.st2 -= dt;
+      if (Math.random() < dt*25) burst(b.x + rand(-hb.rx, hb.rx), b.y + rand(-hb.ry, hb.ry), Math.random()<.5 ? BOSSES[L.n].body : '#ffd23f', 6);
+      if (Math.random() < dt*6) tone(rand(80,200),.2,'sawtooth',.05,-60);
+      if (b.st2 <= 0 && !A.done){ A.done = 1; burst(b.x, b.y, '#fff', 40); SFX.win(); }
+      break;
+  }
+  // stars vs boss & blobs
+  for (const sh of L.shots){
+    sh.x += sh.vx*dt; sh.life -= dt;
+    if (sh.life <= 0) continue;
+    for (const bl of A.blobs){
+      if (!bl.dead && Math.hypot(sh.x-bl.x, sh.y-bl.y) < bl.r + 4){ bl.dead = true; sh.life = 0; L.score += 5; SFX.pop(); burst(bl.x, bl.y, BOSSES[L.n].spot, 6); break; }
+    }
+    if (sh.life <= 0) continue;
+    const dx = (sh.x - b.x)/hb.rx, dy = (sh.y - b.y)/hb.ry;
+    if (dx*dx + dy*dy < 1 && b.state !== 'dead' && b.state !== 'enter'){
+      sh.life = 0;
+      if (harmless) continue;
+      b.stun++; b.flash = 0.12; L.score += 10;
+      tone(700,.08,'square',.04,300); burst(sh.x, sh.y, '#ffe066', 5);
+      if (b.stun >= D.stunNeed){
+        b.state = 'dizzy'; b.st2 = 1.1; A.blobs = []; b.stun = D.stunNeed;
+        tone(900,.5,'triangle',.05,-700);
+        toast('IT’S DIZZY! Get ready for a question…', 1.4);
+      }
+    }
+  }
+  L.shots = L.shots.filter(sh => sh.life > 0);
+  // blobs
+  for (const bl of A.blobs){
+    bl.x += bl.vx*dt; bl.y += bl.vy*dt;
+    if (bl.y > GROUND - 2){ bl.dead = true; burst(bl.x, GROUND-2, BOSSES[L.n].spot, 4); }
+    if (bl.x < -20 || bl.x > W+20) bl.dead = true;
+    if (!bl.dead && Math.abs(bl.x - P.x) < bl.r + 5 && Math.abs(bl.y - (P.y-14)) < bl.r + 13){ bl.dead = true; hurtPlayer(bl.vx >= 0 ? 1 : -1); }
+  }
+  A.blobs = A.blobs.filter(bl => !bl.dead);
+  // body contact
+  if (!harmless){
+    const dx = (P.x - b.x)/(hb.rx+5), dy = ((P.y-14) - b.y)/(hb.ry+12);
+    if (dx*dx + dy*dy < 1) hurtPlayer(P.x >= b.x ? 1 : -1);
+  }
+  // nibblers
+  if (D.arenaMinions && b.state !== 'dead'){
+    L.spawnT -= dt;
+    if (L.spawnT <= 0 && L.minions.length < Math.ceil(D.maxMinions/2)){
+      const side = P.x > W/2 ? -1 : 1;
+      L.minions.push(newMinion(side < 0 ? -10 : W+10, side));
+      L.spawnT = D.spawn * 1.6 * rand(0.8,1.2);
+    }
+  }
+  for (const m of L.minions) stepMinion(m, dt);
+  for (const sh of L.shots) for (const m of L.minions){
+    if (!m.dead && sh.life > 0 && Math.abs(sh.x-m.x) < 8 && Math.abs(sh.y-(m.y-5)) < 9){ m.dead = true; sh.life = 0; L.score += 10; SFX.pop(); burst(m.x, m.y-5, '#5be37a', 10); }
+  }
+  L.minions = L.minions.filter(m => !m.dead && m.x > -40 && m.x < W+40);
+  L.shots = L.shots.filter(sh => sh.life > 0);
+  for (const p of L.parts){ p.x += p.vx*dt; p.y += p.vy*dt; p.vy += (p.g||0)*dt; p.life -= dt; }
+  L.parts = L.parts.filter(p => p.life > 0);
+  if (A.done){ A.done += dt; if (A.done > 2.4){ L.bossBeaten = true; showResult(); } }
+}
+function openFinalQ(){
+  const A = L.arena;
+  const q = A.order[A.ptr % A.order.length]; A.ptr++;
+  if (A.ptr % A.order.length === 0) A.order = shuffle(A.order);
+  Q = {kind:'final', q, flash:0};
+  clearTouch(); for (const k in keys) keys[k] = false;
+  state.mode = 'modal'; renderQ(); show('scrQ');
+}
+function closeFinal(correct){
+  hush();
+  const b = L.arena.boss;
+  show(null); state.mode = 'play';
+  for (const k in keys) keys[k] = false;
+  prevIn = {jump:true, up:true, fire:true}; taps.jump = taps.up = taps.fire = false;
+  if (document.activeElement) document.activeElement.blur();
+  L.p.hurt = Math.max(L.p.hurt, 1.2);
+  b.stun = 0;
+  if (correct && b.hp <= 0){ b.state = 'dead'; b.st2 = 1.8; L.minions.forEach(m => burst(m.x, m.y-5, '#5be37a', 8)); L.minions = []; L.score += 500; }
+  else if (correct){ b.state = 'hit'; b.st2 = 1.0; b.flash = 1.0; b.rage = 1 + (5 - b.hp) * 0.08; SFX.blast(); burst(b.x, b.y, '#ffd23f', 24); }
+  else { b.state = 'move'; b.fireT = 1.4; toast('It shook off the dizziness! Make it dizzy again.', 2.5); }
+  Q = null;
+}
+function renderArena(){
+  const th = THEMES[L.n], t = state.t, A = L.arena, b = A.boss, B = BOSSES[L.n], D = L.D, s = D.bossScale, P = L.p;
+  drawBG(ctx, th, 0, t);
+  // arena pylons
+  for (const x of [6, W-6]){
+    ctx.fillStyle = '#2a2350'; ctx.fillRect(x-4, GROUND-40, 8, 40);
+    ell(ctx, x, GROUND-42, 4, 4, Math.floor(t*3)%2 ? '#ff4d6d' : '#7a1a33');
+  }
+  // swoop target
+  if (b.state === 'warn'){
+    const k = Math.floor(t*12)%2;
+    ctx.strokeStyle = k ? '#ff4d6d' : '#ffd23f'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(b.tx-6, GROUND+2); ctx.lineTo(b.tx+6, GROUND+10); ctx.moveTo(b.tx+6, GROUND+2); ctx.lineTo(b.tx-6, GROUND+10); ctx.stroke();
+  }
+  // rain shadows
+  for (const bl of A.blobs) if (bl.rain){ const k = clamp(bl.y / GROUND, 0, 1); ell(ctx, bl.x, GROUND+4, 2 + k*4, 1 + k*1.2, 'rgba(0,0,0,.45)'); }
+  // boss
+  if (!(A.done)){
+    const dead = b.state === 'dead';
+    const sc = dead ? s * Math.max(0.2, b.st2/1.8) : s;
+    drawAlien(ctx, b.x, b.y, sc, t, {v:B, look: Math.sign(P.x - b.x)*1.2, warn: b.state==='warn', dizzy: b.state==='dizzy',
+      flash: (b.flash > 0 && Math.floor(t*24)%2===0) || (dead && Math.floor(t*20)%2===0), shake: dead || b.state==='dizzy',
+      mouth: b.state==='dizzy' ? 0.9 : undefined});
+    if (b.state === 'dizzy'){
+      for (let i=0;i<3;i++){ const a = t*5 + i*2.1; drawStarShot(ctx, b.x + Math.cos(a)*16*s/1.5, b.y - 22*s + Math.sin(a)*4, t); }
+    }
+  }
+  for (const bl of A.blobs){ ell(ctx, bl.x, bl.y, bl.r+1.5, bl.r+1.5, B.dark); ell(ctx, bl.x, bl.y, bl.r, bl.r, B.spot); ell(ctx, bl.x-1, bl.y-1, 1.4, 1.4, '#fff'); }
+  for (const m of L.minions) drawMinion(ctx, m, Math.round(m.x));
+  for (const sh of L.shots) drawStarShot(ctx, sh.x, sh.y, t);
+  if (!(P.hurt > 0 && Math.floor(t*14)%2===0)) drawHero(ctx, state.char, P.x, P.y, {t, face:P.face, walk:P.walking, air:!P.ground});
+  for (const p of L.parts){ ctx.fillStyle = p.col; ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); }
+  // boss HUD
+  ctx.font = '8px "Press Start 2P", monospace'; ctx.textAlign = 'center';
+  ctx.fillStyle = '#000'; ctx.fillText(B.name, W/2+1, 13);
+  ctx.fillStyle = '#ff9fb1'; ctx.fillText(B.name, W/2, 12);
+  for (let i=0;i<5;i++){ const x = W/2 - 40 + i*16; ctx.fillStyle = '#1b0d2e'; ctx.fillRect(x, 17, 14, 7); ctx.fillStyle = i < b.hp ? '#ff4d6d' : '#3a2a4a'; ctx.fillRect(x+1, 18, 12, 5); }
+  ctx.fillStyle = '#1b0d2e'; ctx.fillRect(W/2-40, 27, 80, 5);
+  ctx.fillStyle = b.state==='dizzy' ? (Math.floor(t*10)%2 ? '#fff' : '#ffd23f') : '#ffd23f';
+  ctx.fillRect(W/2-39, 28, Math.round(78 * b.stun / D.stunNeed), 3);
+  ctx.fillStyle = '#ffe9a8'; ctx.fillText('DIZZY', W/2 - 64, 33);
+}
+
+function render(){
+  if (L.arena) return renderArena();
+  const th = THEMES[L.n], cam = Math.round(L.cam), t = state.t;
+  drawBG(ctx, th, cam, t);
+  const A = L.alien;
+  for (const pod of L.pods){
+    const sx = pod.x - cam;
+    if (sx < -60 || sx > W+60) continue;
+    drawPod(ctx, pod, sx, t, th, isAttack(pod));
+  }
+  // alien
+  if (A.state==='eat' && A.target){
+    const sx = A.target.x - cam;
+    if (sx > -60 && sx < W+60){
+      drawAlien(ctx, sx+3, GROUND-50+Math.sin(t*3)*1.5, 0.95, t, {mouth: 0.5+0.5*Math.sin(t*10), look: Math.sign(L.p.x - A.target.x)*1.2});
+      const frac = A.eat / A.eatMax;
+      ctx.fillStyle='#1b0d2e'; ctx.fillRect(sx-20, GROUND-82, 40, 5);
+      ctx.fillStyle = frac < .3 ? '#ff4d6d' : '#ffd23f'; ctx.fillRect(sx-19, GROUND-81, Math.round(38*frac), 3);
+    }
+  } else if (A.state==='travel'){
+    const sx = A.x - cam;
+    if (sx > -40 && sx < W+40) drawAlien(ctx, sx, 46 + Math.sin(t*2.5)*6, 0.6, t, {mouth:0.3});
+  }
+  // minions
+  for (const m of L.minions) drawMinion(ctx, m, Math.round(m.x - cam));
+  // shots
+  for (const s of L.shots) drawStarShot(ctx, s.x - cam, s.y, t);
+  // player
+  const P = L.p;
+  if (!(P.hurt > 0 && Math.floor(t*14)%2===0))
+    drawHero(ctx, state.char, P.x - cam, P.y, {t, face:P.face, walk:P.walking, air:!P.ground});
+  // door prompt
+  const door = nearDoor();
+  if (door && P.ground && door.status !== 'eaten' && door.status !== 'saved'){
+    const bob = Math.round(Math.sin(t*8)*2);
+    const px = Math.round(P.x - cam);
+    tri(ctx, '#000', px-5, P.y-44+bob, px+5, P.y-44+bob, px, P.y-50+bob);
+    tri(ctx, '#ffd23f', px-4, P.y-45+bob, px+4, P.y-45+bob, px, P.y-49+bob);
+    if (!L.doorTip){ L.doorTip = true; toast(document.body.classList.contains('touch') ? 'Tap ENTER to go inside the pod!' : 'Press ↑ to go inside the pod!', 2.5); }
+  }
+  // particles
+  for (const p of L.parts){
+    const sx = p.x - cam;
+    if (p.letter){ ctx.font='8px "Press Start 2P", monospace'; ctx.textAlign='center'; ctx.fillStyle=p.col; ctx.globalAlpha=Math.min(1,p.life*2); ctx.fillText(p.letter, sx, p.y); ctx.globalAlpha=1; }
+    else { ctx.fillStyle=p.col; ctx.fillRect(Math.round(sx), Math.round(p.y), 2, 2); }
+  }
+}
+
+function renderAttract(){
+  const t = state.t, cam = t*25;
+  drawBG(ctx, THEMES[0], cam, t);
+  for (let i=0;i<3;i++){
+    const wx = 200 + i*300, sx = ((wx - cam) % 900 + 900) % 900 - 60;
+    if (sx > -60 && sx < W+60) drawPod(ctx, {i, status:'open', q:{word:''}}, sx, t, THEMES[0], false);
+  }
+  drawHero(ctx, state.char, 110, GROUND, {t, face:1, walk:true});
+  drawAlien(ctx, 230 + Math.sin(t*0.8)*30, 50 + Math.sin(t*2)*8, 0.8, t, {});
+}
+
+// ---------- HUD ----------
+function buildMinimap(){
+  const mm = $('#mm'); mm.innerHTML = '';
+  L.pods.forEach(p=>{ const d = document.createElement('div'); d.className='mmPod'; d.style.left = (p.x/L.width*100)+'%'; d.title='Pod '+(p.i+1); p.mm = d; mm.appendChild(d); });
+  const a = document.createElement('div'); a.className='mmA'; mm.appendChild(a); L.mmA = a;
+  const pl = document.createElement('div'); pl.className='mmP'; mm.appendChild(pl); L.mmP = pl;
+}
+function updateHUD(){
+  if (!L){ $('#alert').classList.remove('show'); return; }
+  const saved = L.pods.filter(p=>p.status==='saved').length;
+  const key = [L.hearts, saved, L.score, L.n, !!L.arena].join('|');
+  if (key !== L.hudKey){
+    L.hudKey = key;
+    let h=''; for (let i=0;i<L.maxHearts;i++) h += `<span class="${i<L.hearts?'on':'off'}">♥</span>`;
+    $('#hHearts').innerHTML = h;
+    $('#hLevel').textContent = L.arena ? `LV ${L.n+1} · BOSS BATTLE` : `LV ${L.n+1} · ${L.def.topic.toUpperCase()}`;
+    $('#hSaved').textContent = `WORDS ${saved}/5`;
+    $('#hScore').textContent = `SCORE ${L.score}`;
+  }
+  const A = L.alien;
+  for (const p of L.pods){
+    const cls = 'mmPod ' + (isAttack(p) ? 'attack' : p.status==='open' ? '' : p.status);
+    if (p.mm.className !== cls) p.mm.className = cls;
+  }
+  L.mmP.style.left = (L.p.x/L.width*100)+'%';
+  const showA = A.state==='travel' || A.state==='eat';
+  L.mmA.style.display = showA ? 'block' : 'none';
+  if (showA) L.mmA.style.left = (clamp(A.x,0,L.width)/L.width*100)+'%';
+  const al = $('#alert');
+  if (A.state==='eat' && state.mode==='play'){
+    const dx = A.target.x - L.p.x;
+    const arrow = Math.abs(dx) < 20 ? '▼ HERE' : dx < 0 ? '◀◀' : '▶▶';
+    al.textContent = `⚠ WORD EATER AT POD ${A.target.i+1}  ${arrow}  ${Math.ceil(A.eat)}s`;
+    al.classList.add('show');
+  } else al.classList.remove('show');
+}
+let toastTimer = null;
+function toast(html, secs=2){
+  const el = $('#toast'); el.innerHTML = html; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>el.classList.remove('show'), secs*1000);
+}
+
+// ---------- SCREENS ----------
+function show(id){
+  document.querySelectorAll('.overlay').forEach(o => o.classList.toggle('show', o.id === id));
+  if (id) { const o = document.getElementById(id); o.scrollTop = 0; }
+  if (id === 'scrLevels') buildLevels();
+  if (id === 'scrSelect') buildSelect();
+}
+
+let charCanvases = [];
+function buildSelect(){
+  const g = $('#charGrid'); g.innerHTML = ''; charCanvases = [];
+  CHARS.forEach((C,i)=>{
+    const b = document.createElement('button');
+    b.className = 'charCard' + (i===state.char ? ' sel' : '');
+    b.innerHTML = `<canvas width="48" height="48"></canvas><div class="nm">${C.name}</div><div class="ds">${C.desc}</div>`;
+    b.onclick = ()=>{ state.char = i; PROG.char = i; saveProg(); document.querySelectorAll('.charCard').forEach((x,j)=>x.classList.toggle('sel', j===i)); SFX.door(); };
+    b.ondblclick = ()=>{ show('scrLevels'); };
+    g.appendChild(b);
+    charCanvases.push(b.querySelector('canvas'));
+  });
+}
+function drawSelect(){
+  charCanvases.forEach((c,i)=>{
+    const x = c.getContext('2d');
+    x.clearRect(0,0,48,48);
+    x.fillStyle='#0d0a26'; x.fillRect(0,0,48,48);
+    for (let k=0;k<6;k++){ x.fillStyle='rgba(255,255,255,.5)'; x.fillRect((k*13+3)%48, (k*7+4)%30, 1, 1); }
+    x.fillStyle='#3a2f80'; x.fillRect(0,42,48,6);
+    drawHero(x, i, 24, 43, {t:state.t + i, face:1, walk: i===state.char, s:1});
+  });
+}
+function drawLineup(id, happy){
+  const c = document.getElementById(id); if (!c) return;
+  const x = c.getContext('2d'), t = state.t;
+  const g = x.createLinearGradient(0,0,0,72); g.addColorStop(0,'#0d0b2e'); g.addColorStop(1,'#3b2a7a');
+  x.fillStyle=g; x.fillRect(0,0,260,72);
+  for (const s of STARS){ if (s.x < 260 && s.y < 60){ x.fillStyle = Math.sin(t*2+s.p)>.7?'#fff':'rgba(255,255,255,.5)'; x.fillRect(s.x|0, (s.y/2)|0, 1, 1); } }
+  x.fillStyle='#5b4f8f'; x.fillRect(0,64,260,8); x.fillStyle='#463c75'; x.fillRect(0,64,260,2);
+  for (let i=0;i<5;i++) drawHero(x, i, 22+i*38, 64 - (happy ? Math.max(0, Math.sin(t*6+i))*6 : 0), {t:t+i*0.7, face:1, walk:!happy});
+  drawAlien(x, 222, 34 + Math.sin(t*2)*4, 0.85, t, happy ? {happy:true, look:-1} : {look:-1.2});
+}
+
+function buildLevels(){
+  const g = $('#lvGrid'); g.innerHTML = '';
+  LEVELS.forEach((lv,i)=>{
+    const locked = i >= PROG.unlocked;
+    const st = PROG.stars[i] || 0;
+    const b = document.createElement('button');
+    b.className = 'lvBtn' + (locked ? ' locked' : '');
+    b.innerHTML = `<div class="n">${locked?'🔒':''} ${i+1}</div><div class="t">${lv.title}</div><div class="d">${lv.topic}${lv.dok?'<br>'+lv.tag:''}</div><div class="d" style="color:#ff9fb1">Boss: ${BOSSES[i].name}</div><div class="st">${'★'.repeat(st)}${'☆'.repeat(3-st)}</div>`;
+    if (locked) b.setAttribute('aria-disabled','true');
+    b.onclick = ()=>{ if (locked){ SFX.bad(); return; } showIntro(i); };
+    g.appendChild(b);
+  });
+}
+
+function showIntro(n){
+  const lv = LEVELS[n];
+  let html = `<span class="badge y">LEVEL ${n+1}</span><span class="badge">${lv.dok || lv.tag}</span>
+    <h2>${lv.title.toUpperCase()}</h2>
+    <h3>MISSION FOCUS: ${lv.topic.toUpperCase()}</h3>
+    <div class="teach"><p>${lv.teach}</p></div>`;
+  if (lv.passage){
+    html += `<p>Read the story carefully. The questions in every pod will be about it. You can reread it inside each pod, too!</p>`;
+    lv.passage.forEach(ps=>{ html += `<div class="passage"><h3>${T(ps.title)}</h3>${paras(ps.text)}</div>`; });
+  } else {
+    html += `<p>Find all 5 pods. Answer each question to save its word. If the alarm sounds, hurry to the pod and drive the Word Eater away!</p>`;
+  }
+  html += `<p class="small">⚔ Save at least ${CONFIG.wordsToPass} words to face this level’s boss: <b style="color:#ff9fb1">${BOSSES[n].name}</b>.</p>`;
+  html += `<div class="row"><button class="btn ghost" id="iBack">◀ MAP</button><button class="btn alt" id="iRead">🔊 READ TO ME</button><button class="btn" id="iGo">START MISSION ▶</button></div>`;
+  $('#introPanel').innerHTML = html;
+  show('scrIntro');
+  $('#iBack').onclick = ()=>{ hush(); show('scrLevels'); };
+  $('#iRead').onclick = ()=>{
+    let s = strip(lv.teach) + '. ';
+    if (lv.passage) lv.passage.forEach(ps => s += T(ps.title) + '. ' + T(ps.text) + ' ');
+    speak(s);
+  };
+  $('#iGo').onclick = ()=>{ hush(); startLevel(n); };
+  state.mode = 'menu';
+}
+
+// ---------- PODS & QUESTIONS ----------
+function enterPod(pod){
+  if (pod.status === 'saved'){ toast(`“${pod.q.word}” is already safe!`); return; }
+  if (pod.status === 'eaten'){ toast(`This pod is empty. The word was eaten.`); return; }
+  SFX.door();
+  for (const k in keys) keys[k] = false;
+  if (isAttack(pod)){
+    Q = {kind:'boss', pod, hp: L.D.raidHp, maxHp: L.D.raidHp, flash:0};
+    Q.q = nextBossQ();
+  } else {
+    Q = {kind:'pod', pod, q: pod.q};
+  }
+  clearTouch();
+  state.mode = 'modal';
+  renderQ();
+  show('scrQ');
+}
+function nextBossQ(){
+  const i = L.bossOrder[L.bossPtr % L.bossOrder.length];
+  L.bossPtr++;
+  if (L.bossPtr % L.bossOrder.length === 0) L.bossOrder = shuffle(L.bossOrder);
+  return L.def.boss[i];
+}
+
+function heartsHTML(){ let h=''; for (let i=0;i<L.maxHearts;i++) h += `<span style="color:${i<L.hearts?'#ff4d6d':'#4a3f7a'}">♥</span>`; return h; }
+
+function renderQ(){
+  const q = Q.q, lv = L.def;
+  Q.done = false;
+  Q.order = shuffle(q.c.map((text,idx)=>({text:T(text), idx})));
+  let head;
+  if (Q.kind === 'pod'){
+    head = `<div class="qhead"><span class="badge y">POD ${Q.pod.i+1}</span><span>Save the word:</span><span class="word">${Q.pod.q.word}</span></div>`;
+  } else if (Q.kind === 'final'){
+    const b = L.arena.boss;
+    let pips=''; for (let i=0;i<5;i++) pips += `<span class="pip ${i<b.hp?'':'off'}"></span>`;
+    head = `<div class="bossBox"><canvas id="bossCv" width="120" height="80"></canvas>
+      <div><h2 style="color:#ff4d6d;margin-bottom:6px">${BOSSES[L.n].name} IS DIZZY!</h2>
+      <div class="hp">BOSS ${pips}</div><div class="hp" style="font-size:16px;font-family:system-ui">${heartsHTML()}</div>
+      <p class="small" style="margin:4px 0 0">Answer correctly to land a BIG HIT! (${5-b.hp} of 5 so far)</p></div></div>`;
+  } else {
+    let pips=''; for (let i=0;i<Q.maxHp;i++) pips += `<span class="pip ${i<Q.hp?'':'off'}"></span>`;
+    head = `<div class="bossBox"><canvas id="bossCv" width="120" height="80"></canvas>
+      <div><h2 style="color:#ff4d6d;margin-bottom:6px">WORD EATER!</h2>
+      <div class="hp">ALIEN ${pips}</div><div class="hp" style="font-size:16px;font-family:system-ui">${heartsHTML()}</div>
+      <p class="small" style="margin:4px 0 0">Answer correctly to blast it away from POD ${Q.pod.i+1}!</p></div></div>`;
+  }
+  let pass = '';
+  if (lv.passage){
+    pass = `<details class="reread"><summary>📖 SHOW THE STORY</summary>${lv.passage.map(ps=>`<div class="passage"><h3>${T(ps.title)}</h3>${paras(ps.text)}</div>`).join('')}</details>`;
+  }
+  const letters = 'ABCD';
+  const ch = Q.order.map((o,i)=>`<button class="choice" data-i="${i}"><span class="k">${letters[i]}</span><span class="tx">${o.text}</span></button>`).join('');
+  $('#qPanel').innerHTML = `${head}${pass}<div class="qtext">${T(q.q)}</div><div class="choices">${ch}</div>
+    <div class="row" style="justify-content:flex-start;margin-top:10px"><button class="btn ghost" id="qRead">🔊 READ TO ME</button></div><div class="fb" id="fb"></div>`;
+  document.querySelectorAll('#qPanel .choice').forEach(b => b.onclick = ()=> choose(+b.dataset.i));
+  $('#qRead').onclick = ()=> speak(T(q.q) + '. ' + Q.order.map((o,i)=>letters[i]+': '+o.text).join('. '));
+  const sc = $('#scrQ'); sc.scrollTop = 0;
+}
+
+function choose(i){
+  if (Q.done) return;
+  const o = Q.order[i], btns = document.querySelectorAll('#qPanel .choice'), btn = btns[i];
+  if (!btn || btn.disabled) return;
+  const correct = o.idx === 0, fb = $('#fb'), why = T(Q.q.why);
+  if (Q.kind === 'pod'){
+    if (correct){
+      Q.done = true; btn.classList.add('right'); btns.forEach(b=>b.disabled=true);
+      Q.pod.status = 'saved';
+      const pts = Q.pod.tries === 0 ? 100 : 50;
+      L.score += pts; L.hearts = Math.min(L.maxHearts, L.hearts+1);
+      SFX.good();
+      fb.innerHTML = `<div class="msg good"><b>✔ Correct! “${Q.pod.q.word}” is saved!</b> +${pts}<br>${why}</div>
+        <div class="row"><button class="btn" id="qCont">CONTINUE ▶</button></div>`;
+      $('#qCont').onclick = closeQ; $('#qCont').focus();
+    } else {
+      Q.pod.tries++; btn.classList.add('wrong'); btn.disabled = true; SFX.bad();
+      L.score = Math.max(0, L.score-10);
+      fb.innerHTML = `<div class="msg hint">Not quite. ${L.def.passage ? 'Open the story and look for clues.' : 'Read the question again.'} Then try another answer!</div>`;
+    }
+  } else if (Q.kind === 'final'){
+    Q.done = true; btns.forEach(b=>b.disabled=true);
+    const b = L.arena.boss, name = BOSSES[L.n].name;
+    let msg;
+    if (correct){
+      btn.classList.add('right'); b.hp--; Q.flash = 0.8; SFX.blast(); L.score += 100;
+      msg = b.hp <= 0
+        ? `<div class="msg good"><b>💥 FINAL HIT! ${name} is going down!</b><br>${why}</div>`
+        : `<div class="msg good"><b>💥 BIG HIT! ${b.hp} more to go!</b><br>${why}</div>`;
+    } else {
+      btn.classList.add('wrong');
+      btns.forEach((x,j)=>{ if (Q.order[j].idx===0) x.classList.add('right'); });
+      L.hearts--; SFX.hurt();
+      msg = `<div class="msg bad"><b>CHOMP! ${name} bit you!</b> The answer was “${Q.order.find(x=>x.idx===0).text}.”<br>${why}</div>`;
+    }
+    fb.innerHTML = msg + `<div class="row"><button class="btn" id="qCont">${correct && b.hp<=0 ? 'FINISH IT! ▶' : 'BACK TO THE FIGHT ▶'}</button></div>`;
+    const bx = document.querySelector('.bossBox .hp');
+    if (bx){ let pips=''; for (let k=0;k<5;k++) pips += `<span class="pip ${k<b.hp?'':'off'}"></span>`; bx.innerHTML = 'BOSS '+pips; }
+    const hh = document.querySelectorAll('.bossBox .hp')[1]; if (hh) hh.innerHTML = heartsHTML();
+    $('#qCont').onclick = ()=>{ hush(); if (L.hearts <= 0){ gameOver(); return; } closeFinal(correct); };
+    $('#qCont').focus();
+  } else {
+    Q.done = true; btns.forEach(b=>b.disabled=true);
+    let msg, last = false;
+    if (correct){
+      btn.classList.add('right'); Q.hp--; Q.flash = 0.6; SFX.blast(); L.score += 50;
+      if (Q.hp <= 0){
+        last = true;
+        Q.pod.status = 'saved'; L.score += 200; L.hearts = Math.min(L.maxHearts, L.hearts+1);
+        const A = L.alien; A.state = 'cool'; A.timer = 12; A.target = null; A.x = Q.pod.x + (Math.random()<.5?-1:1)*900;
+        msg = `<div class="msg good"><b>💥 BLAST! The Word Eater runs away! “${Q.pod.q.word}” is saved!</b><br>${why}</div>`;
+        setTimeout(SFX.win, 300);
+      } else msg = `<div class="msg good"><b>💥 BLAST! Direct hit!</b><br>${why}</div>`;
+    } else {
+      btn.classList.add('wrong');
+      btns.forEach((b,j)=>{ if (Q.order[j].idx===0) b.classList.add('right'); });
+      L.hearts--; SFX.hurt();
+      msg = `<div class="msg bad"><b>CHOMP! The Word Eater bit you!</b> The answer was “${Q.order.find(x=>x.idx===0).text}.”<br>${why}</div>`;
+    }
+    fb.innerHTML = msg + `<div class="row"><button class="btn" id="qCont">CONTINUE ▶</button></div>`;
+    const bx = document.querySelector('.bossBox .hp'); // refresh pips
+    if (bx){ let pips=''; for (let k=0;k<Q.maxHp;k++) pips += `<span class="pip ${k<Q.hp?'':'off'}"></span>`; bx.innerHTML = 'ALIEN '+pips; }
+    const hh = document.querySelectorAll('.bossBox .hp')[1]; if (hh) hh.innerHTML = heartsHTML();
+    $('#qCont').onclick = ()=>{
+      hush();
+      if (L.hearts <= 0){ gameOver(); return; }
+      if (last || Q.hp <= 0){ closeQ(); return; }
+      Q.q = nextBossQ(); renderQ();
+    };
+    $('#qCont').focus();
+  }
+}
+
+function closeQ(){
+  hush();
+  show(null); state.mode = 'play';
+  for (const k in keys) keys[k] = false;
+  prevIn = {jump:true, up:true, fire:true}; taps.jump = taps.up = taps.fire = false;
+  if (document.activeElement) document.activeElement.blur();
+  L.p.hurt = Math.max(L.p.hurt, 1);
+  if (Q && Q.pod.status==='saved'){ burst(Q.pod.x, GROUND-40, '#3ddc84', 18); }
+  Q = null;
+  checkEnd();
+}
+
+function checkEnd(){
+  if (L.ending > 0) return;
+  if (L.pods.every(p => p.status !== 'open')) L.ending = 1.4;
+}
+
+function showResult(){
+  state.mode = 'menu';
+  const saved = L.pods.filter(p=>p.status==='saved').length;
+  const pass = saved >= CONFIG.wordsToPass && !!L.bossBeaten;
+  const stars = saved >= 5 ? 3 : saved === 4 ? 2 : saved >= CONFIG.wordsToPass ? 1 : 0;
+  const bonus = L.hearts * 20;
+  L.score += bonus;
+  if (pass){
+    PROG.stars[L.n] = Math.max(PROG.stars[L.n]||0, stars);
+    PROG.unlocked = Math.max(PROG.unlocked, Math.min(LEVELS.length, L.n+2));
+    saveProg();
+  }
+  if (pass && L.n === LEVELS.length-1){
+    $('#winScore').textContent = `FINAL LEVEL SCORE: ${L.score}`;
+    SFX.win(); show('scrWin'); return;
+  }
+  const words = L.pods.map(p=>`<span class="${p.status==='saved'?'s':'e'}">${p.q.word}</span>`).join('');
+  $('#resPanel').innerHTML = `<h2 class="center">${pass ? 'LEVEL CLEAR!' : 'TOO MANY WORDS EATEN!'}</h2>
+    <div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <p class="center">You saved <b>${saved} of 5</b> words.${pass ? '' : ` Save at least ${CONFIG.wordsToPass} to reach the boss and clear the level.`}</p>
+    ${pass ? `<p class="center">💥 You destroyed <b>${BOSSES[L.n].name}</b>! (+500)</p>` : ''}
+    <div class="wordList">${words}</div>
+    <p class="center sub">SCORE ${L.score} (includes +${bonus} heart bonus)</p>
+    <div class="row">
+      ${pass ? `<button class="btn" id="rNext">NEXT LEVEL ▶</button>` : ''}
+      <button class="btn ${pass?'alt':''}" id="rRetry">↻ PLAY AGAIN</button>
+      <button class="btn ghost" id="rMap">MISSION MAP</button>
+    </div>`;
+  if (pass) SFX.win(); else SFX.bad();
+  show('scrResult');
+  if (pass) $('#rNext').onclick = ()=> showIntro(L.n+1);
+  $('#rRetry').onclick = ()=> showIntro(L.n);
+  $('#rMap').onclick = ()=> show('scrLevels');
+}
+
+function gameOver(){
+  hush();
+  state.mode = 'menu';
+  $('#bRetryBoss').style.display = (L && L.arena) ? '' : 'none';
+  show('scrOver');
+}
+
+function pause(){ clearTouch(); if (state.mode !== 'play') return; state.mode = 'pause'; show('scrPause'); }
+function resume(){ show(null); state.mode = 'play'; for (const k in keys) keys[k]=false; prevIn={jump:true,up:true,fire:true}; taps.jump = taps.up = taps.fire = false; }
+
+// ---------- INPUT ----------
+const GAME_KEYS = ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','KeyA','KeyD','KeyW','KeyZ','KeyX','KeyJ','KeyK','KeyF'];
+addEventListener('keydown', e=>{
+  if (state.mode === 'play'){
+    if (GAME_KEYS.includes(e.code)) e.preventDefault();
+    if (e.code==='Escape' || e.code==='KeyP'){ pause(); return; }
+  } else if (state.mode === 'pause' && (e.code==='Escape' || e.code==='KeyP')){ resume(); return; }
+  else if (state.mode === 'modal' && Q && !Q.done){
+    const m = e.code.match(/^(?:Digit|Numpad)([1-4])$/);
+    if (m){ e.preventDefault(); choose(+m[1]-1); return; }
+  }
+  if (state.mode === 'play' && !e.repeat && TAP_MAP[e.code]) taps[TAP_MAP[e.code]] = true;
+  keys[e.code] = true;
+});
+addEventListener('keyup', e=>{ keys[e.code] = false; });
+addEventListener('blur', ()=>{ for (const k in keys) keys[k]=false; pause(); });
+document.addEventListener('visibilitychange', ()=>{ if (document.hidden) pause(); });
+
+// Touch screens (iPad, tablets, phones). iPadOS reports itself as a Mac, so also check touch points.
+const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || (window.matchMedia && matchMedia('(pointer:coarse)').matches);
+if (hasTouch) document.body.classList.add('touch');
+addEventListener('pointerdown', e=>{ if (e.pointerType === 'touch') document.body.classList.add('touch'); unlockAudio(); }, true);
+addEventListener('touchend', unlockAudio, true);
+function unlockAudio(){
+  if (muted) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state !== 'running') AC.resume();
+    if (!AC._unlocked){ const b = AC.createBuffer(1,1,22050), src = AC.createBufferSource(); src.buffer = b; src.connect(AC.destination); src.start(0); AC._unlocked = true; }
+  } catch(e){}
+}
+// Action buttons: each finger is tracked on its own, so you can hold JUMP while moving.
+document.querySelectorAll('#touch button').forEach(b=>{
+  const k = b.dataset.k;
+  const on = e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){} touch[k]=true; taps[k]=true; b.classList.add('down'); };
+  const off = e=>{ touch[k]=false; b.classList.remove('down'); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
+  b.addEventListener('pointercancel', off); b.addEventListener('lostpointercapture', off);
+  b.addEventListener('contextmenu', e=>e.preventDefault());
+});
+// D-pad: press anywhere on it and slide your thumb between left and right.
+const dpad = $('#dpad'), dpadPtrs = new Map();
+function dpadSet(e){ const r = dpad.getBoundingClientRect(); dpadPtrs.set(e.pointerId, (e.clientX - r.left) / r.width < 0.5 ? 'left' : 'right'); dpadSync(); }
+function dpadSync(){
+  const v = [...dpadPtrs.values()];
+  touch.left = v.includes('left'); touch.right = v.includes('right');
+  dpad.querySelector('.l').classList.toggle('down', touch.left);
+  dpad.querySelector('.r').classList.toggle('down', touch.right);
+}
+dpad.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ dpad.setPointerCapture(e.pointerId); }catch(_){} dpadSet(e); });
+dpad.addEventListener('pointermove', e=>{ if (dpadPtrs.has(e.pointerId)) dpadSet(e); });
+const dpadEnd = e=>{ dpadPtrs.delete(e.pointerId); dpadSync(); };
+['pointerup','pointercancel','lostpointercapture'].forEach(ev => dpad.addEventListener(ev, dpadEnd));
+dpad.addEventListener('contextmenu', e=>e.preventDefault());
+function clearTouch(){ dpadPtrs.clear(); for (const k in touch) touch[k]=false; document.querySelectorAll('#touch .down').forEach(x=>x.classList.remove('down')); }
+// Stop iPad pinch-zoom / double-tap zoom from hijacking the game screen.
+['gesturestart','gesturechange'].forEach(ev => document.addEventListener(ev, e=>e.preventDefault()));
+$('#stage').addEventListener('touchmove', e=>e.preventDefault(), {passive:false});
+
+// ---------- BUTTONS ----------
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = ()=>{ hush(); state.mode='menu'; show(b.dataset.go); });
+$('#bPlay').onclick = ()=> show('scrSelect');
+$('#bHow').onclick = ()=> { helpReturn = 'scrTitle'; show('scrHelp'); };
+$('#bMapHelp').onclick = ()=> { helpReturn = 'scrLevels'; show('scrHelp'); };
+$('#bCharOk').onclick = ()=> show('scrLevels');
+$('#bRetry').onclick = ()=> showIntro(state.level);
+$('#bRetryBoss').onclick = ()=> startBoss(true);
+$('#bResume').onclick = resume;
+$('#bRestart').onclick = ()=> startLevel(state.level);
+$('#bQuit').onclick = ()=>{ state.mode='menu'; L=null; show('scrLevels'); };
+$('#bPause').onclick = ()=>{ if (state.mode==='play') pause(); else if (state.mode==='pause') resume(); };
+$('#bSound').onclick = ()=>{ muted = !muted; $('#bSound').textContent = muted ? '🔇 SOUND OFF' : '🔊 SOUND ON'; };
+let helpReturn = null, helpPrevMode = 'menu';
+$('#bHelp').onclick = ()=>{
+  const cur = document.querySelector('.overlay.show');
+  helpReturn = cur ? cur.id : null;
+  if (state.mode === 'play'){ state.mode = 'pause'; helpReturn = 'scrPause'; }
+  show('scrHelp');
+};
+$('#bHelpClose').onclick = ()=> show(helpReturn || 'scrTitle');
+$('#bUnlock').onclick = ()=>{ PROG.unlocked = LEVELS.length; saveProg(); toast('All 10 levels unlocked!'); $('#bUnlock').textContent='✔ UNLOCKED'; };
+$('#bReset').onclick = ()=>{ if (confirm('Erase all saved progress in this browser?')){ PROG = {unlocked:1, stars:{}, char:state.char}; saveProg(); $('#bUnlock').textContent='UNLOCK ALL LEVELS'; toast('Progress reset.'); } };
+
+// ---------- MAIN LOOP ----------
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.033, (now - last)/1000); last = now;
+  state.t += dt;
+  if (state.mode === 'play' && L) update(dt);
+  if (L) render(); else renderAttract();
+  const te = $('#tEnter'), nd = L && !L.arena && state.mode==='play' && L.p.ground && nearDoor();
+  te.classList.toggle('ready', !!(nd && nd.status==='open'));
+  updateHUD();
+  if (Q && (Q.kind === 'boss' || Q.kind === 'final') && state.mode === 'modal'){
+    const bc = document.getElementById('bossCv');
+    if (bc){
+      const b = bc.getContext('2d');
+      Q.flash = Math.max(0, Q.flash - dt);
+      b.fillStyle = '#0d0a26'; b.fillRect(0,0,120,80);
+      for (let i=0;i<12;i++){ b.fillStyle='rgba(255,255,255,.5)'; b.fillRect((i*37)%120, (i*23)%80, 1, 1); }
+      const fin = Q.kind === 'final';
+      drawAlien(b, 60, fin ? 42 : 38, fin ? 1.7 : 1.6, state.t, {v: fin ? BOSSES[L.n] : null, dizzy: fin && Q.flash <= 0,
+        flash: Q.flash > 0 && Math.floor(state.t*20)%2===0, shake: Q.flash > 0 || fin, mouth: Q.flash>0 ? 1 : undefined});
+    }
+  }
+  if ($('#scrBoss').classList.contains('show') && L){
+    const c = document.getElementById('bossIntroCv');
+    if (c){ const x = c.getContext('2d'); drawBG(x, THEMES[L.n], state.t*10, state.t);
+      drawAlien(x, 80, 52 + Math.sin(state.t*2)*4, 1.9, state.t, {v: BOSSES[L.n], mouth: 0.5+0.5*Math.sin(state.t*6)}); }
+  }
+  if ($('#scrSelect').classList.contains('show')) drawSelect();
+  if ($('#scrTitle').classList.contains('show')) drawLineup('titleCv', false);
+  if ($('#scrWin').classList.contains('show')) drawLineup('winCv', true);
+  requestAnimationFrame(loop);
+}
+show('scrTitle');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
