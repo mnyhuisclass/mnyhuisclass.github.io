@@ -34,7 +34,7 @@
     .brand h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: .2px; }
     .brand small { display: block; font-size: 13px; font-weight: 400; color: #b9dcda; }
     .modes { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 999px; padding: 4px; }
-    .modes button { border: 0; background: transparent; color: #d7ecea; padding: 8px 18px; border-radius: 999px; cursor: pointer; font-weight: 600; }
+    .modes button { border: 0; background: transparent; color: #d7ecea; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; }
     .modes button[aria-pressed="true"] { background: var(--gold-500); color: var(--teal-900); }
 
     .panel { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
@@ -103,6 +103,7 @@
     .passage p { margin: 0 0 8px; padding-left: 26px; position: relative; text-indent: 1.2em; break-inside: avoid; }
     .passage .pnum { position: absolute; left: 0; top: 2px; text-indent: 0; font-family: var(--ui); font-size: 11px; font-weight: 700; color: #555; }
     .passage h3 { break-after: avoid; }
+    .passage p strong { display: block; font-family: var(--ui); font-size: 14px; margin: 4px 0 2px; }
     .passage p:last-child { margin-bottom: 0; }
     .q { display: grid; grid-template-columns: 28px 1fr; margin-bottom: 18px; break-inside: avoid; }
     .q-num { font-weight: 700; }
@@ -118,8 +119,9 @@
     .wlines span { border-bottom: 1px solid #999; display: block; }
     .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
     .newpage { break-before: page; }
-    body:not([data-mode="exit"]) .exit-only { display: none; }
-    body[data-mode="exit"] .test-only { display: none; }
+    body:not([data-mode="exit"]) .exit-only, body:not([data-mode="morning"]) .morning-only { display: none; }
+    body[data-mode="exit"] .test-only, body[data-mode="morning"] .test-only { display: none; }
+    body[data-mode="morning"] .std-row input[type=number], body[data-mode="morning"] .std-row select, body[data-mode="morning"] .std-head span:nth-child(n+3) { visibility: hidden; }
     .ticket { border: 2px solid #333; border-radius: 10px; padding: 10px 16px 4px; break-inside: avoid; }
     .ticket + .ticket { margin-top: 0.4in; position: relative; }
     .ticket + .ticket::before { content: "\2702  cut here"; position: absolute; left: 0; right: 0; top: -0.25in; border-top: 1.5px dashed #888; font-size: 10px; color: #666; padding-top: 2px; text-align: center; }
@@ -167,6 +169,7 @@
             <button type="button" data-mode="cfa" aria-pressed="true">Quick CFA</button>
             <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
             <button type="button" data-mode="exit" aria-pressed="false">Exit Ticket</button>
+            <button type="button" data-mode="morning" aria-pressed="false">Morning Work</button>
         </div>
     </div>
 
@@ -208,6 +211,21 @@
                     <option value="on-grade">Level 2: On grade (analysis)</option>
                     <option value="advanced">Level 3: Extension (high DOK)</option>
                 </select>
+            </div>
+            <div class="field morning-only">
+                <label for="f-days">Days</label>
+                <select id="f-days">
+                    <option value="1">1 day</option><option value="2">2 days</option><option value="3">3 days</option><option value="4">4 days</option><option value="5">5 days (a week)</option>
+                </select>
+            </div>
+            <div class="field morning-only">
+                <label for="f-perday">Questions per day</label>
+                <select id="f-perday">
+                    <option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                </select>
+            </div>
+            <div class="checks morning-only">
+                <label><input type="checkbox" id="f-written"> Add one short written response each day</label>
             </div>
             <div class="field exit-only">
                 <label for="f-copies">Copies per page</label>
@@ -258,11 +276,11 @@ const STANDARDS = [
             { id: '4.RC.13', label: '4.RC.13: Figurative Language & Meaning', desc: 'Determine how words provide meaning in literature, including figurative language (similes, metaphors, hyperbole).' }
         ];
 
-        // Passages. Paragraphs that start with "+" print only on End of Unit tests;
-        // the rest make up the shorter CFA version.
+        // Passages. Each standard has a list of passages; paragraphs that start with "+" print only on
+        // End of Unit tests, and the rest make up the shorter CFA version.
         const PASSAGES = {
-            '4.RC.1': {
-                fiction: { title: "Story: The Midnight Rescue", text: [
+            '4.RC.1': [
+                { id: 'midnight-rescue', genre: 'fiction', title: "Story: The Midnight Rescue", text: [
                     "Maya peered out her bedroom window into the storm. Heavy rain pelted the glass, and the old oak tree in the front yard swayed wildly in the wind. Thunder rumbled so loudly that the picture frames on her dresser rattled.",
                     "Suddenly, a bright flash of lightning illuminated the lawn, and Maya gasped. A small puppy was shivering inside an overturned cardboard box near the sidewalk. Its ears were pressed flat against its head, and it whimpered each time the thunder boomed.",
                     "Maya grabbed her raincoat and flashlight from the closet without hesitation. Water was already rushing along the curb and creeping toward the box. She knew she had to act quickly before the rising rainwater flooded the box.",
@@ -274,7 +292,7 @@ const STANDARDS = [
                     "+The next morning, the storm had passed, and the sky was a clear, bright blue. Maya and her mom made posters with a photo of the puppy and hung them around the neighborhood. By lunchtime, a man named Mr. Alvarez called to say the puppy belonged to his family.",
                     "The puppy's owner came to pick him up the next day. The puppy wagged his whole body and jumped into his owner's arms. \"Biscuit must have slipped out of the fence when the gate blew open,\" the man said. \"Thank you for keeping him safe.\" Maya smiled as she waved goodbye, already missing her soggy midnight friend."
                 ] },
-                nonfiction: { title: "Informational Text: Deep Sea Explorers", text: [
+                { id: 'deep-sea', genre: 'nonfiction', title: "Informational Text: Deep Sea Explorers", text: [
                     "Deep on the ocean floor, sunlight cannot penetrate the pitch-black water. Below about 3,000 feet, the ocean is completely dark, freezing cold, and under enormous pressure. Oceanographers use specialized submarines called submersibles to explore these extreme depth environments.",
                     "+A submersible is small, usually carrying only one to three people. Its walls are made of thick metal that can withstand pressure hundreds of times stronger than the air pressure we feel on land. Bright lights on the outside let scientists see the dark water around them.",
                     "In 1977, researchers discovered hydrothermal vents spewing superheated water full of minerals. Surprising scientists everywhere, whole ecosystems of tube worms and blind white crabs were thriving in total darkness without sunlight energy.",
@@ -286,9 +304,21 @@ const STANDARDS = [
                     "+The discoveries at hydrothermal vents changed how scientists think about life. If living things can survive in dark, scalding, chemical-filled water on Earth, some scientists wonder whether life might exist in similar places on other worlds, such as the icy moons of Jupiter and Saturn.",
                     "The deep ocean is still one of the least explored places on our planet. With every new dive, oceanographers uncover more secrets hidden in the darkness. Who knows what amazing creatures are still waiting to be found?"
                 ] },
-            },
-            '4.RC.2': {
-                fiction: { title: "Story: The Great Oak Tree", text: [
+                { id: 'garden-mystery', genre: 'fiction', title: "Story: The Garden Mystery", text: [
+                    "Every summer, Sofia stayed with her grandpa, who grew the biggest vegetable garden on Maple Street. This year, he had promised her the very first carrot of the season.",
+                    "One morning, Sofia ran outside to check on the carrots and stopped short. Three carrot tops lay wilted on the dirt, and the orange roots beneath them had been nibbled down to stubs. Small, round droppings dotted the path between the rows.",
+                    "+Grandpa scratched his chin when he saw the damage. \"Could be the neighbor's dog,\" he said. \"Or maybe a raccoon.\" Sofia was not so sure. Raccoons, she knew, usually knocked over trash cans and left big messes behind.",
+                    "Sofia decided to investigate like a real detective. She found a shallow hole dug under the wooden fence, just wide enough for a small animal to squeeze through. Near the hole, tiny tufts of soft brown fur were caught on a splinter.",
+                    "+That afternoon, she borrowed Grandpa's old trail camera, the one he used to photograph deer in the woods. She strapped it to a post facing the carrot rows and pressed the button until the little red light blinked on.",
+                    "The next morning, Sofia and Grandpa looked at the camera's pictures together. In the gray light of dawn, a mother rabbit and three fluffy babies hopped through the hole and nibbled happily on the carrot tops. Grandpa laughed. \"Well, detective, you solved the case.\"",
+                    "+Sofia felt proud, but she also felt worried. \"We can't let them eat everything,\" she said. \"But I don't want to hurt them either.\" Grandpa nodded slowly. He had been gardening for forty years, and he had an idea.",
+                    "Together, they filled the hole with rocks and stretched wire mesh along the bottom of the fence. Then Grandpa handed Sofia a packet of lettuce seeds. \"Let's plant a row on the other side of the fence,\" he said. \"Everybody deserves a snack.\"",
+                    "+Sofia raked the soil, pressed the seeds into neat lines, and watered them every evening. In two weeks, tiny green leaves poked up through the dirt. One morning, she spotted the rabbit family munching on the new row, right where they belonged.",
+                    "At the end of the summer, Grandpa pulled up the first big carrot and handed it to Sofia. It was crunchy and sweet. \"The best carrots in town,\" Grandpa said, \"thanks to the best detective in town.\""
+                ] },
+            ],
+            '4.RC.2': [
+                { id: 'great-oak', genre: 'fiction', title: "Story: The Great Oak Tree", text: [
                     "Leo loved playing near the old oak tree at the edge of the schoolyard. Its thick branches stretched over the grass like a giant umbrella, and its trunk was so wide that three students holding hands could barely reach around it.",
                     "+Every recess, Leo and his friends met under the oak. They traded cards in its shade, played tag around its roots, and collected acorns in the fall. Some of the oldest teachers said the tree had been standing there long before the school was built.",
                     "One night in April, a heavy thunderstorm swept through town. The next morning, Leo saw several broken branches lying across the playground. At an assembly that afternoon, the principal announced that the tree might need to be removed for safety reasons.",
@@ -300,9 +330,21 @@ const STANDARDS = [
                     "After weeks of hard work, the tree was saved. The arborist said the oak was healthy and strong once the broken limbs were removed. The principal changed her plan and announced that the tree would stay. The whole school cheered, and Leo grinned so wide that his cheeks hurt.",
                     "That summer, a new plaque appeared at the base of the oak. It read, \"Saved by the students of Room 14.\" Leo learned that even a young person can make a big difference when they stand up for what they care about."
                 ] },
-            },
-            '4.RC.3': {
-                fiction: { title: "Story: The Mystery of Whispering Woods", text: [
+                { id: 'squirrel', genre: 'fiction', title: "Fable: The Squirrel Who Kept Everything", text: [
+                    "Long ago, in a forest of tall oaks, there lived a squirrel named Pip. Pip was the fastest acorn gatherer in the whole forest, and he was very proud of it.",
+                    "Every autumn, Pip raced from tree to tree, stuffing his cheeks until they bulged. By the first frost, his hollow log was packed with more acorns than he could eat in two winters.",
+                    "+The other animals worked hard too, but an early frost had ruined many of the acorns that year. The chipmunks gathered only half of what they needed, and old Mrs. Rabbit could not find enough clover before the snow began.",
+                    "One cold morning, the chipmunks knocked on Pip's log. \"Could you spare a few acorns?\" they asked. \"Our pantry is nearly empty.\" Pip folded his arms. \"I worked hard for these,\" he said. \"Go gather your own.\" And he shut the door.",
+                    "+That night, Pip counted his acorns twice by the light of the moon. He felt rich, but he also felt a strange, heavy feeling in his chest. He told himself it was only because he had eaten too much dinner.",
+                    "A week later, a terrible ice storm swept through the forest. Branches cracked and crashed to the ground. One huge limb smashed through the top of Pip's hollow log and scattered his acorns into a frozen creek. In a single night, everything was gone.",
+                    "+Pip searched the snowy ground for hours, but the acorns had disappeared under the ice. His paws were numb, and his stomach growled. He sat on a stump and wondered what he would do.",
+                    "Shivering and hungry, Pip knocked on the chipmunks' door. He expected them to say, \"Go gather your own.\" Instead, the chipmunks pulled him inside, wrapped him in a leaf blanket, and shared what little food they had.",
+                    "+All winter, the animals took turns sharing. Mrs. Rabbit brought dried clover, the chipmunks offered seeds, and Pip helped by cracking nuts with his strong teeth. Somehow, there was enough for everyone.",
+                    "When autumn came again, Pip gathered acorns as fast as ever. But this time, he filled a second log near the creek and hung a sign above the door. It read, \"Take what you need.\" From that year on, no one in the forest ever went hungry."
+                ] },
+            ],
+            '4.RC.3': [
+                { id: 'whispering-woods', genre: 'fiction', title: "Story: The Mystery of Whispering Woods", text: [
                     "Clara and Ethan followed the narrow trail into Whispering Woods as dusk began to fall. They had promised Grandma they would be back from the creek before dark, but they had stayed too long skipping stones.",
                     "+The woods had earned their name. Even on calm days, the tall pines seemed to murmur and sigh above the trail. Kids at school liked to tell stories about the woods, and not all of the stories were friendly.",
                     "Now the sun was slipping behind the hills. Shadows stretched like long fingers across the pine needles, and the air grew cool and damp. Somewhere far away, a dog barked once and then went silent.",
@@ -314,9 +356,21 @@ const STANDARDS = [
                     "Ethan released a deep breath and laughed at his mistake. \"I was scared of a bird,\" he said, shaking his head. Clara laughed too. \"A very grumpy bird,\" she said.",
                     "+The two of them hurried down the trail and spotted the big rock just past the bend. By the time they reached Grandma's porch, the first stars were coming out. Ethan couldn't wait to tell everyone at school that the scariest thing in Whispering Woods was an owl."
                 ] },
-            },
-            '4.RC.4': {
-                fiction: { title: "Story: The Science Fair Swap", text: [
+                { id: 'lighthouse', genre: 'fiction', title: "Story: Light in the Storm", text: [
+                    "Nora had been on Gull Island for only two days when the storm arrived. Her grandmother lived in the old lighthouse at the edge of the rocky cliffs, and Nora was spending spring break with her.",
+                    "+The island was small, with one dirt road, a handful of cottages, and more seagulls than people. Nora liked exploring the tide pools, but she did not like the lighthouse stairs. There were one hundred and twelve of them, twisting up and up into the dark.",
+                    "By evening, the wind howled around the tower, and waves crashed against the rocks below, sending spray as high as the windows. Then, with a loud pop, every light went out. Even the great lamp at the top of the lighthouse went dark.",
+                    "Grandma grabbed a flashlight and looked out to sea. Far away, a tiny light bobbed up and down on the black water. \"That's the Martin family's fishing boat,\" she said. \"Without the lighthouse, they could crash into the rocks.\"",
+                    "+Grandma explained that the lighthouse had an old backup lantern at the top, one that burned oil instead of electricity. But her knee had been hurting for weeks, and climbing all those stairs quickly would be nearly impossible for her.",
+                    "Nora's heart pounded. She hated the dark, twisting stairs more than anything on the island. But she thought about the family out on the stormy water. \"I'll carry the lantern oil,\" she said. \"You show me what to do.\"",
+                    "Step by step, Nora climbed, with Grandma slowly following behind and the flashlight beam shaking on the walls. At the top, Nora poured oil into the backup lantern while Grandma struck a long match. A warm golden light blazed out across the waves.",
+                    "+For a long time, they watched the tiny light on the water. It moved slowly, turning away from the rocks and toward the harbor. Nora gripped the railing so tightly that her fingers ached.",
+                    "At last, the Martins' boat glided safely into the harbor. The next morning, Captain Martin knocked on the lighthouse door with a basket of fresh fish. \"That light saved us,\" he said. \"We were heading straight for the cliffs.\"",
+                    "+That afternoon, Nora climbed the lighthouse stairs again, all one hundred and twelve of them, just to look at the view. This time, she counted every step out loud, and she was not afraid at all."
+                ] },
+            ],
+            '4.RC.4': [
+                { id: 'science-fair', genre: 'fiction', title: "Story: The Science Fair Swap", text: [
                     "<strong>Narrator A (Julian):</strong> I spent three weeks perfecting my volcanic eruption model. I built the mountain out of papier-mache, painted every rock by hand, and mixed a special batch of baking soda and red food coloring for the lava.",
                     "+On the morning of the science fair, I set everything up on my table in the cafeteria. My poster explained how real volcanoes erupt, and I had practiced my speech in front of the mirror at least twenty times. I was sure I had a chance to win first place.",
                     "When Maya accidentally bumped my table, red lava splattered across my poster. The words I had written so neatly turned into pink, dripping blobs. My volcano tipped over and rolled onto the floor.",
@@ -328,9 +382,21 @@ const STANDARDS = [
                     "My cheeks burned with embarrassment. Everyone near us had turned to stare. I mumbled \"sorry\" and hurried away, but I felt terrible for the rest of the morning. Julian's volcano had been the coolest project in the whole fair.",
                     "+Later, I found Julian by the trophy table and showed him the cord. \"I tripped,\" I told him. \"I would never wreck your project on purpose.\" He looked at the cord for a long time. Then he said, \"I guess I would have tripped too.\" We decided to ask the teachers to tape down every cord before next year's fair."
                 ] },
-            },
-            '4.RC.5': {
-                nonfiction: { title: "Informational Text: Monarch Butterfly Migration", text: [
+                { id: 'library-book', genre: 'fiction', title: "Story: The Missing Library Book", text: [
+                    "<strong>Part 1, told by Owen:</strong> I was sure my little brother, Max, had taken my library book. It was a book about sharks, and it was due back on Friday. I had left it on the kitchen table on Monday, and by Tuesday it was gone.",
+                    "+Max loves sharks almost as much as I do, and he is always borrowing my things without asking. Last month he took my headphones and returned them with jelly on them. So when the shark book disappeared, I knew exactly who to blame.",
+                    "I marched into Max's room and demanded that he give it back. He said he had never touched it, but I did not believe him. I told Mom, and Max ended up crying. I felt angry all week.",
+                    "+On Friday, I had to tell Ms. Patel, the librarian, that I had lost the book. My stomach twisted into a knot. I was sure I would have to pay for it with my birthday money.",
+                    "When I walked into the library, Ms. Patel smiled and held up my shark book. I had no idea how it got there. All I knew was that I owed my brother an apology.",
+                    "<strong>Part 2, told by a narrator:</strong> On Monday evening, Owen's mother noticed a library book on the kitchen table. She knew Owen was busy with soccer practice, so she tucked the book into her bag to return it early on her way to work.",
+                    "+She meant to tell Owen, but that night the baby woke up three times, and by morning she had completely forgotten. On Tuesday, she dropped the book into the library's return slot without thinking about it again.",
+                    "Ms. Patel found the shark book in the return slot on Tuesday morning. She noticed that it had been returned early, and she set it aside so she could thank Owen in person.",
+                    "Meanwhile, Owen blamed his little brother. Max had not touched the book at all. He spent the week feeling hurt and confused, wondering why Owen would not believe him.",
+                    "+When Owen came home on Friday, he knocked on Max's door. He apologized and offered to read the shark book with him that night. Max grinned and said yes. Their mother, overhearing from the hallway, suddenly remembered returning the book and laughed at herself."
+                ] },
+            ],
+            '4.RC.5': [
+                { id: 'monarchs', genre: 'nonfiction', title: "Informational Text: Monarch Butterfly Migration", text: [
                     "Every autumn, millions of monarch butterflies embark on an extraordinary journey across North America. Traveling over 2,000 miles, these delicate insects fly south from Canada and the United States all the way to the warm forests of central Mexico.",
                     "Because most monarchs live only a few weeks, it takes about four generations of butterflies to complete the annual round-trip cycle. Scientists track their flight paths using lightweight tags placed on their wings to better understand how habitat loss impacts their survival.",
                     "+Monarchs are easy to recognize. Their wings are bright orange with black veins and white spots along the edges. This bold coloring is a warning to birds. Monarchs taste bitter and can make predators sick because of what they eat as caterpillars.",
@@ -342,9 +408,21 @@ const STANDARDS = [
                     "+The wing tags help scientists learn which routes the butterflies follow and where they stop to rest. When someone finds a tagged monarch, they can report its tag number online. Each report helps researchers build a map of the migration.",
                     "People can help monarchs, too. Families, schools, and towns are planting milkweed and colorful flowers in gardens. These small patches of habitat give monarchs places to eat, rest, and lay eggs along their long journey."
                 ] },
-            },
-            '4.RC.6': {
-                nonfiction: { title: "Informational Text: Navigating Maps & Diagrams", text: [
+                { id: 'honeybees', genre: 'nonfiction', title: "Informational Text: Honeybees, Small Insects with Big Jobs", text: [
+                    "Honeybees are tiny insects, but they do some of the most important work on Earth. As they buzz from flower to flower, they help plants make the fruits, vegetables, and nuts that people and animals need to eat.",
+                    "This important job is called pollination. When a bee lands on a flower to drink its sweet nectar, yellow pollen sticks to the tiny hairs on its body. When the bee visits the next flower, some of that pollen rubs off, which helps the plant make seeds and fruit. Scientists say that about one out of every three bites of food we eat depends on pollinators like bees.",
+                    "+Honeybees live together in large groups called colonies. In the summer, a single hive can hold 20,000 to 60,000 bees. Each bee has a job, and the colony works together like a busy factory.",
+                    "Every colony has one queen. Her main job is to lay eggs, sometimes up to 2,000 in a single day. Most of the other bees are worker bees. They clean the hive, feed the young, guard the entrance, and fly out to collect nectar and pollen. Male bees, called drones, have only one job: to mate with a queen from another colony.",
+                    "+Worker bees have a clever way of sharing information. When a worker finds a good patch of flowers, she returns to the hive and performs a special movement called the waggle dance. The direction and length of her dance tell the other bees which way to fly and how far to go.",
+                    "+Bees turn nectar into honey, which they store as food for the winter. Making honey takes a lot of work. In her whole life, one worker bee makes only about one twelfth of a teaspoon of honey.",
+                    "Sadly, honeybees face many dangers. Farms and cities have replaced many wildflower fields, so bees have fewer places to find food. Some chemicals sprayed on plants to kill pests can also harm bees. Tiny pests called mites can attack hives and make bees sick.",
+                    "Because bees are so important, scientists and beekeepers are working hard to protect them. Beekeepers check their hives for mites, and some farmers are using fewer harmful chemicals.",
+                    "+Bees may sting, but only when they feel threatened. A honeybee usually dies after it stings, so it does not sting unless it must protect itself or its hive. Staying calm and slowly moving away is the best way to avoid being stung.",
+                    "Kids can help, too. Planting flowers such as sunflowers, clover, and lavender gives bees more food. With a little help, these small insects can keep doing their big jobs for many years to come."
+                ] },
+            ],
+            '4.RC.6': [
+                { id: 'maps', genre: 'nonfiction', title: "Informational Text: Navigating Maps & Diagrams", text: [
                     "Maps contain several key features that help travelers locate destinations. Learning to read these features is like learning a new language. Once you know them, a map can tell you where you are, where you are going, and what you will see along the way.",
                     "The compass rose shows cardinal directions (North, South, East, West). It is usually drawn in a corner of the map. Many compass roses also show in-between directions, such as northeast and southwest.",
                     "The map key explains symbols. A key is sometimes called a legend. A tiny tent might stand for a campground, a blue line might be a river, and a star often marks a capital city.",
@@ -356,9 +434,21 @@ const STANDARDS = [
                     "+At the back of many nonfiction books, readers can find a glossary and an index. The glossary gives the meanings of important words. The index lists topics in alphabetical order with the page numbers where they appear.",
                     "Whether you are planning a road trip, hiking a mountain trail, or studying rocks, these features turn a confusing page into useful information. The next time you open a map, take a moment to read the compass rose, the key, and the charts before you begin."
                 ] },
-            },
-            '4.RC.7': {
-                nonfiction: { title: "Informational Text: Tornadoes and Hurricanes", text: [
+                { id: 'volcanoes', genre: 'nonfiction', title: "Informational Text: All About Volcanoes", text: [
+                    "<strong>What Is a Volcano?</strong> A volcano is an opening in Earth's surface where melted rock, gases, and ash escape from deep underground. Melted rock under the ground is called <b>magma</b>. When it flows out onto the surface, it is called <b>lava</b>.",
+                    "<strong>Parts of a Volcano</strong> Deep below a volcano is the <b>magma chamber</b>, a large pool of melted rock. Magma rises through a tube called the <b>vent</b> and bursts out of the opening at the top, which is called the <b>crater</b>. A diagram of a volcano usually labels each of these parts.",
+                    "+<em>Caption: In a volcano diagram, arrows show magma rising from the magma chamber, up through the vent, and out of the crater.</em>",
+                    "<strong>Why Do Volcanoes Erupt?</strong> Pressure builds up as gases and magma push upward. When the pressure becomes too strong, the volcano erupts. Some eruptions are gentle, with lava oozing slowly down the sides. Others are explosive, blasting ash high into the sky.",
+                    "+<strong>Types of Volcanoes</strong> Shield volcanoes are wide with gentle slopes, like a warrior's shield lying on the ground. Cinder cone volcanoes are small and steep. Composite volcanoes are tall, cone-shaped mountains built from many layers of lava and ash.",
+                    "<strong>Famous Eruptions</strong> In 1980, Mount St. Helens in Washington State erupted, blowing away the top of the mountain. In Hawaii, Kilauea has erupted many times, sending rivers of lava toward the ocean.",
+                    "+<strong>Did You Know?</strong> There are about 1,350 volcanoes on land around the world that could erupt. Many of them are found along the edges of the Pacific Ocean in an area nicknamed the Ring of Fire.",
+                    "<strong>Staying Safe</strong> Scientists called <b>volcanologists</b> study volcanoes to predict eruptions. They measure earthquakes, ground swelling, and gases. When danger is near, they warn people living nearby so they can leave in time.",
+                    "+<strong>Volcanoes Can Help, Too</strong> Over time, volcanic ash breaks down into rich soil that is excellent for growing crops. Some countries even use the heat from underground magma to make electricity.",
+                    "<strong>Glossary</strong> <b>crater:</b> the bowl-shaped opening at the top of a volcano. <b>lava:</b> melted rock that has reached Earth's surface. <b>magma:</b> melted rock beneath Earth's surface. <b>vent:</b> the tube that magma travels through. <b>volcanologist:</b> a scientist who studies volcanoes."
+                ] },
+            ],
+            '4.RC.7': [
+                { id: 'storms', genre: 'nonfiction', title: "Informational Text: Tornadoes and Hurricanes", text: [
                     "Tornadoes and hurricanes are both powerful storm systems with rotating winds, but they differ significantly in scale. Both can damage homes, knock down trees, and cause power outages. However, the way they form and the way people prepare for them are very different.",
                     "Tornadoes form quickly over land during severe thunderstorms and last a short time. Most tornadoes last less than ten minutes, though a few have lasted more than an hour.",
                     "+A tornado begins when warm, moist air near the ground meets cooler, drier air above it. The winds blow at different speeds and in different directions, which can make the air start to spin. If a strong updraft tips the spinning air upward, a funnel cloud can form and reach down toward the ground.",
@@ -370,9 +460,21 @@ const STANDARDS = [
                     "Because the two storms are different, the safety plans are different too. During a tornado warning, people should go to a basement or a small room in the middle of the lowest floor, away from windows. During a hurricane, people in the storm's path are often told to leave the coast and travel inland.",
                     "Tornadoes and hurricanes are both dangerous, but knowing how they work can keep people safe. By understanding the differences between these storms, families can make the right plan before severe weather arrives."
                 ] },
-            },
-            '4.RC.8': {
-                nonfiction: { title: "Persuasive Article: Why Recess Matters", text: [
+                { id: 'lunchroom', genre: 'nonfiction', title: "Informational Text: The Lunchroom Trash Problem", text: [
+                    "At Lincoln Elementary, the lunchroom had a big problem. Every day, students threw away more than ten bags of trash. Half-eaten apples, milk cartons, plastic forks, and paper trays filled the bins until they overflowed.",
+                    "+The custodian, Mr. Diaz, spent nearly an hour after every lunch hauling heavy bags to the dumpster. On windy days, loose wrappers blew across the playground and got stuck in the fence.",
+                    "The fourth graders decided to study the problem. For one week, they sorted the lunchroom trash into piles. They discovered that most of it was not really trash at all. Food scraps could be composted, cartons and bottles could be recycled, and plastic forks could be replaced.",
+                    "The students proposed three solutions. First, the school would set up separate bins for compost, recycling, and trash. Second, students would use metal forks and washable trays instead of plastic and paper. Third, a student \"Green Team\" would stand by the bins each day to help everyone sort correctly.",
+                    "+At first, some students were confused about which bin to use. The Green Team made colorful signs with pictures of each item. Before long, even the kindergartners knew that banana peels went in the green compost bin.",
+                    "As a result of these changes, the amount of trash dropped from ten bags a day to just two. The food scraps were turned into compost, which the school used to feed its vegetable garden.",
+                    "+The new system also saved money. The school no longer needed to buy thousands of plastic forks and paper trays each year, and it paid less for trash pickup.",
+                    "However, one problem remained. Many students still threw away whole sandwiches and unopened snacks. To solve this, the Green Team set up a \"share table\" where students could leave food they did not want, so that others could take it.",
+                    "+News of the project spread quickly. A local newspaper wrote an article about the Green Team, and two other schools in the district asked for help starting programs of their own.",
+                    "The lunchroom project shows that when people work together, even a big problem can be solved. What started as a pile of garbage became a lesson in teamwork, science, and caring for the planet."
+                ] },
+            ],
+            '4.RC.8': [
+                { id: 'recess', genre: 'nonfiction', title: "Persuasive Article: Why Recess Matters", text: [
                     "Daily physical exercise is essential for growing children. Running, jumping, and climbing build strong muscles and bones. But exercise does more than keep bodies healthy. It also helps young minds learn.",
                     "Research proves that 30 minutes of unstructured outdoor play improves classroom focus and reduces student stress. Unstructured play means that children choose their own games instead of following directions from an adult.",
                     "+Think about how you feel after sitting at a desk all morning. Your legs get restless, and it becomes harder to pay attention. A break outside gives the brain a chance to rest and recharge, just like a phone needs time on its charger.",
@@ -384,9 +486,21 @@ const STANDARDS = [
                     "Schools should protect recess instead of cutting it. Principals and school boards can make sure every student gets at least 30 minutes of outdoor play every day.",
                     "Recess is undeniably the best part of the school day. It keeps students healthy, happy, and ready to learn. Let's make sure every child has time to play."
                 ] },
-            },
-            '4.RC.9': {
-                nonfiction: { title: "Paired Passages on Solar Energy", text: [
+                { id: 'school-garden', genre: 'nonfiction', title: "Persuasive Article: Every School Needs a Garden", text: [
+                    "Every school should have a garden. A school garden gives students a place to learn, grow healthy food, and enjoy the outdoors.",
+                    "First, gardens help students learn science in a hands-on way. Instead of only reading about seeds and soil, students can plant seeds, measure how fast they grow, and watch insects pollinate flowers. Teachers report that students remember lessons better when they can touch and see what they are learning.",
+                    "+Gardens can teach math, too. Students can measure garden beds, count seeds, and graph how many tomatoes each plant produces. Even writing improves when students keep garden journals.",
+                    "Second, gardens encourage healthy eating. Studies show that children who grow vegetables are more likely to eat them. A carrot you pulled from the ground yourself simply tastes better than one from a bag.",
+                    "+Some school gardens grow enough food to share. Students can bring vegetables home to their families or donate extra food to a local food pantry.",
+                    "Some people argue that gardens cost too much money and take too much time. However, a garden can start small, with just a few raised beds. Many families, local stores, and community groups are happy to donate seeds, soil, and tools.",
+                    "+Others worry that no one will care for the garden during the summer. But volunteers, families, and summer camps can take turns watering and weeding. In some towns, the whole community has helped.",
+                    "Finally, gardens give students a peaceful place to relax. Spending time outdoors, surrounded by green plants, can help students feel calm and happy.",
+                    "+One fourth grader said, \"The garden is my favorite place at school because I can see my sunflowers growing.\" Her classmate agreed and said that gardening helped him make new friends.",
+                    "A school garden is the most wonderful gift a school can give its students. Principals, teachers, and families should work together to plant one at every school."
+                ] },
+            ],
+            '4.RC.9': [
+                { id: 'solar', genre: 'nonfiction', title: "Paired Passages on Solar Energy", text: [
                     "<strong>Text A: Clean Power from the Sun.</strong> Solar panels turn sunlight into electricity without burning fossil fuels. They produce clean energy and help keep our air clean.",
                     "+For many years, most electricity in the United States has come from power plants that burn coal, oil, or natural gas. When these fossil fuels burn, they release smoke and gases into the air. Some of these gases trap heat around Earth and add to climate change.",
                     "A solar panel is made of many small parts called solar cells. When sunlight hits a cell, it knocks tiny particles loose inside the material, and those moving particles create an electric current. The panel makes power silently, with no smoke and no moving parts.",
@@ -398,9 +512,21 @@ const STANDARDS = [
                     "+Many families find that the savings add up. After several years, the money they saved on bills can equal the money they spent on the panels. After that, the savings are like extra money in their pocket.",
                     "Before buying panels, families should compare prices and think about how much sun their roof gets. A home with a sunny, south-facing roof will usually save the most money."
                 ] },
-            },
-            '4.RC.11': {
-                both: { title: "Passage: Word Power in Action", text: [
+                { id: 'dogs', genre: 'nonfiction', title: "Paired Passages: Dogs on the Job", text: [
+                    "<strong>Text A: Service Dogs.</strong> Service dogs are specially trained to help people with disabilities live more independently. A service dog might guide a person who is blind across a busy street, pick up dropped objects, or alert a person who is deaf when the doorbell rings.",
+                    "+Puppies in training first learn basic commands like sit, stay, and come. Later, they practice harder tasks, such as opening doors, carrying bags, and turning on light switches.",
+                    "Training a service dog takes about two years. Service dogs must stay calm in crowded places like grocery stores, buses, and restaurants. They learn to ignore loud noises, other animals, and tasty food on the floor.",
+                    "+When a service dog is wearing its working vest, it is on duty. People should never pet or distract a working dog without asking its owner first, because the dog needs to focus on its job.",
+                    "For many owners, a service dog is more than a helper. It is a loyal partner and friend that is by their side every day.",
+                    "<strong>Text B: Search and Rescue Dogs.</strong> Search and rescue dogs use their powerful noses to find people who are lost or trapped. A dog's sense of smell is many thousands of times stronger than a human's.",
+                    "+These dogs search for hikers lost in forests, skiers buried by avalanches, and people trapped under buildings after earthquakes. Some can even find people underwater while riding in a boat.",
+                    "Rescue dogs also train for about two years. They practice following a scent through woods, over rocks, and across rubble. When a dog finds a person, it barks to alert its handler.",
+                    "+Rescue work is hard and sometimes dangerous. Handlers protect their dogs' paws with special boots and give them plenty of rest and water between searches.",
+                    "Every year, search and rescue dogs help save many lives. To their handlers, they are both heroes and best friends."
+                ] },
+            ],
+            '4.RC.11': [
+                { id: 'word-power', genre: 'both', title: "Passage: Word Power in Action", text: [
                     "Language is full of interesting relationships. Some words sound alike, some are spelled alike, and some mean nearly the same thing. Learning how words are connected helps readers understand what they read and helps writers say exactly what they mean.",
                     "Words that sound the same can have entirely different meanings, like the bark of a dog versus the bark of a tree. Words that are spelled and pronounced the same but have different meanings are called homonyms, or multiple-meaning words. A bat can fly through the night sky, or it can hit a baseball.",
                     "+Homographs are words that are spelled the same but may be pronounced differently. When you wind a toy, you say it with a long i sound. When the wind blows, you say it with a short i sound. Readers must use the rest of the sentence to decide which word makes sense.",
@@ -412,9 +538,9 @@ const STANDARDS = [
                     "Context clues help readers choose the right meaning of a multiple-meaning word. In \"The pitcher threw a fast ball,\" a pitcher is a baseball player. In \"Please fill the pitcher with lemonade,\" a pitcher is a container for pouring.",
                     "The more you notice how words are related, the stronger your reading and writing will become. Next time you read, look for homophones, homographs, synonyms, and antonyms hiding in the sentences."
                 ] },
-            },
-            '4.RC.12': {
-                both: { title: "Informational Text: Understanding Word Building", text: [
+            ],
+            '4.RC.12': [
+                { id: 'word-building', genre: 'both', title: "Informational Text: Understanding Word Building", text: [
                     "Many English words originate from ancient Greek and Latin roots. A root is the main part of a word that carries its meaning. When you know a few common roots, you can often figure out words you have never seen before.",
                     "For example, the root \"bio\" means life, while \"geo\" means earth. Biology is the study of living things, and geology is the study of rocks and the earth. Both words end with \"logy,\" which means the study of something.",
                     "+The Greek root \"graph\" means to write or draw. An autograph is a person's own signature, a photograph is a picture made with light, and geography describes the earth and its places.",
@@ -426,9 +552,9 @@ const STANDARDS = [
                     "When you meet a long, unfamiliar word, try breaking it into parts. For \"unbelievable,\" cover the prefix and suffix to find the base word \"believe.\" Then add the meanings back: \"un-\" means not, and \"-able\" means able to be. Unbelievable means not able to be believed.",
                     "Learning roots and affixes is like collecting keys. Each new key unlocks dozens of words. The more keys you collect, the more doors you can open as a reader."
                 ] },
-            },
-            '4.RC.13': {
-                fiction: { title: "Story: Nature's Symphony", text: [
+            ],
+            '4.RC.13': [
+                { id: 'natures-symphony', genre: 'fiction', title: "Story: Nature's Symphony", text: [
                     "The wind whispered secrets through the swaying pine branches. I lay in bed with the covers pulled up to my chin, listening as the evening turned into a stormy night.",
                     "Outside my bedroom window, rain tapped gently on the glass like a playful visitor. Tap, tap, tap. It seemed to be asking if I could come outside and play.",
                     "+At first, the storm was soft and polite. The clouds drifted across the sky like gray sheep wandering through a field, and the streetlight glowed like a lonely lighthouse at the end of the block.",
@@ -440,8 +566,21 @@ const STANDARDS = [
                     "Slowly, the music outside began to fade. The thunder grumbled once more, like an old man complaining as he walked away. The rain softened to a whisper, and the wind hummed a quiet lullaby.",
                     "By morning, the storm had packed up its instruments and tiptoed away. Sunshine poured through my window like warm honey, and the whole world sparkled as if it had been scrubbed clean."
                 ] },
-            },
+                { id: 'field-day', genre: 'fiction', title: "Story: Field Day Fever", text: [
+                    "The morning of Field Day, the sun was a giant spotlight shining down on the playground. I had been waiting for this day for a million years, or at least since spring break.",
+                    "My stomach was full of butterflies as I lined up for the sack race. My best friend, Talia, gave me a thumbs-up. \"You've got this,\" she said. \"You're as quick as a rabbit.\"",
+                    "+The gym teacher, Coach Rivera, raised her whistle. The parents along the fence went quiet, and even the wind seemed to hold its breath.",
+                    "When the whistle blew, I hopped like a kangaroo with springs in its feet. The burlap sack scratched my legs, and the finish line danced in front of me, always just out of reach.",
+                    "+Halfway across the field, my foot caught on the edge of the sack. I tumbled forward and rolled across the grass like a runaway bowling ball. I could hear the whole school gasp at once.",
+                    "I jumped back up and kept going. By the time I crossed the finish line, I was in last place, and my face was as red as a tomato.",
+                    "+I flopped down on the grass, sure that Field Day was ruined. My legs were jelly, and my heart was a drum pounding in my ears.",
+                    "Then Talia ran over and pulled me to my feet. \"That was the best comeback in Field Day history,\" she laughed. \"You got up faster than anyone I've ever seen.\" Suddenly, my bad mood melted away like an ice pop in July.",
+                    "+For the rest of the day, we cheered for every race, splashed through the water-balloon toss, and ate so much watermelon that we could have floated away.",
+                    "When the final bell rang, the sky was painted orange and pink. I didn't win a single ribbon, but I went home with a smile as wide as the playground."
+                ] },
+            ],
         };
+
         // 4.RC.10 context-clue items, keyed by passage title. Each sentence comes from a CFA (core) paragraph,
         // so it appears in both the CFA and End of Unit versions of the passage.
         const CONTEXT_CLUES = {
@@ -1082,7 +1221,621 @@ const STANDARDS = [
            ],
            "clue": "the storm was over by morning"
           }
+         ],
+         "Story: The Garden Mystery": [
+          {
+           "rigor": "basic",
+           "sentence": "Three carrot tops lay wilted on the dirt, and the orange roots beneath them had been nibbled down to stubs.",
+           "word": "wilted",
+           "c": "drooping and limp",
+           "d": [
+            "growing tall",
+            "bright and fresh",
+            "frozen solid"
+           ],
+           "clue": "the carrots had been eaten and were lying on the dirt"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Sofia decided to investigate like a real detective.",
+           "word": "investigate",
+           "c": "look for clues to find out what happened",
+           "d": [
+            "give up",
+            "plant seeds",
+            "take a nap"
+           ],
+           "clue": "like a real detective; she looks for a hole and fur"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "She found a shallow hole dug under the wooden fence, just wide enough for a small animal to squeeze through.",
+           "word": "shallow",
+           "c": "not deep",
+           "d": [
+            "very deep",
+            "very wide",
+            "full of water"
+           ],
+           "clue": "just big enough for a small animal; dug under the fence"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Near the hole, tiny tufts of soft brown fur were caught on a splinter.",
+           "word": "tufts",
+           "c": "small bunches",
+           "d": [
+            "long ropes",
+            "sharp claws",
+            "wet puddles"
+           ],
+           "clue": "tiny, soft fur caught on a splinter"
+          }
+         ],
+         "Fable: The Squirrel Who Kept Everything": [
+          {
+           "rigor": "basic",
+           "sentence": "Every autumn, Pip raced from tree to tree, stuffing his cheeks until they bulged.",
+           "word": "bulged",
+           "c": "puffed out because they were full",
+           "d": [
+            "shrank",
+            "turned red",
+            "froze"
+           ],
+           "clue": "stuffing his cheeks with acorns"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Could you spare a few acorns?",
+           "word": "spare",
+           "c": "give away because you have extra",
+           "d": [
+            "hide",
+            "count",
+            "throw away"
+           ],
+           "clue": "they ask because their pantry is nearly empty, and Pip has more than he can eat"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "One huge limb smashed through the top of Pip's hollow log and scattered his acorns into a frozen creek.",
+           "word": "scattered",
+           "c": "spread out in many directions",
+           "d": [
+            "gathered together",
+            "buried carefully",
+            "counted"
+           ],
+           "clue": "the log was smashed and the acorns ended up in the creek"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Shivering and hungry, Pip knocked on the chipmunks' door.",
+           "word": "Shivering",
+           "c": "shaking from the cold",
+           "d": [
+            "laughing loudly",
+            "running quickly",
+            "feeling proud"
+           ],
+           "clue": "an ice storm and a frozen creek; the chipmunks wrap him in a blanket"
+          }
+         ],
+         "Story: Light in the Storm": [
+          {
+           "rigor": "basic",
+           "sentence": "Far away, a tiny light bobbed up and down on the black water.",
+           "word": "bobbed",
+           "c": "moved up and down",
+           "d": [
+            "sank quickly",
+            "stayed still",
+            "flashed brightly"
+           ],
+           "clue": "the sentence says up and down; a boat on waves"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "A warm golden light blazed out across the waves.",
+           "word": "blazed",
+           "c": "shone very brightly",
+           "d": [
+            "went out",
+            "flickered weakly",
+            "hid"
+           ],
+           "clue": "a warm golden light after the match is struck"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "At last, the Martins' boat glided safely into the harbor.",
+           "word": "glided",
+           "c": "moved smoothly and easily",
+           "d": [
+            "crashed",
+            "bounced",
+            "sank"
+           ],
+           "clue": "safely; the boat missed the rocks"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "By evening, the wind howled around the tower, and waves crashed against the rocks below, sending spray as high as the windows.",
+           "word": "spray",
+           "c": "tiny drops of water flying through the air",
+           "d": [
+            "paint from a can",
+            "a bunch of flowers",
+            "a loud noise"
+           ],
+           "clue": "waves crashed against the rocks; it reached the windows"
+          }
+         ],
+         "Story: The Missing Library Book": [
+          {
+           "rigor": "basic",
+           "sentence": "I marched into Max's room and demanded that he give it back.",
+           "word": "demanded",
+           "c": "asked for something in a strong, bossy way",
+           "d": [
+            "asked politely",
+            "whispered",
+            "forgot"
+           ],
+           "clue": "he marched in, was angry, and did not believe Max"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "She knew Owen was busy with soccer practice, so she tucked the book into her bag to return it early on her way to work.",
+           "word": "tucked",
+           "c": "put something neatly into a small space",
+           "d": [
+            "threw",
+            "tore",
+            "lost"
+           ],
+           "clue": "into her bag"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "He spent the week feeling hurt and confused, wondering why Owen would not believe him.",
+           "word": "confused",
+           "c": "not able to understand something",
+           "d": [
+            "excited",
+            "sleepy",
+            "proud"
+           ],
+           "clue": "wondering why Owen would not believe him"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "She noticed that it had been returned early, and she set it aside so she could thank Owen in person.",
+           "word": "set it aside",
+           "c": "put it somewhere separate to save it",
+           "d": [
+            "threw it away",
+            "read it aloud",
+            "put it back on the shelf"
+           ],
+           "clue": "so she could thank Owen; she holds it up when he comes in"
+          }
+         ],
+         "Informational Text: Honeybees, Small Insects with Big Jobs": [
+          {
+           "rigor": "basic",
+           "sentence": "When a bee lands on a flower to drink its sweet nectar, yellow pollen sticks to the tiny hairs on its body.",
+           "word": "nectar",
+           "c": "a sweet liquid inside flowers",
+           "d": [
+            "a kind of bee",
+            "a hard seed",
+            "a flower petal"
+           ],
+           "clue": "drink, sweet, in a flower"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "This important job is called pollination.",
+           "word": "pollination",
+           "c": "moving pollen between flowers so plants can make seeds and fruit",
+           "d": [
+            "making honey",
+            "building a hive",
+            "stinging an enemy"
+           ],
+           "clue": "the next sentences explain how pollen moves from flower to flower"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Farms and cities have replaced many wildflower fields, so bees have fewer places to find food.",
+           "word": "replaced",
+           "c": "taken the place of",
+           "d": [
+            "protected",
+            "watered",
+            "added more"
+           ],
+           "clue": "bees now have fewer places to find food"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Some chemicals sprayed on plants to kill pests can also harm bees.",
+           "word": "pests",
+           "c": "insects or animals that cause damage",
+           "d": [
+            "pets",
+            "flowers",
+            "farmers"
+           ],
+           "clue": "chemicals are sprayed to kill them; mites are tiny pests"
+          }
+         ],
+         "Informational Text: All About Volcanoes": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Some eruptions are gentle, with lava oozing slowly down the sides.",
+           "word": "oozing",
+           "c": "flowing slowly",
+           "d": [
+            "exploding",
+            "freezing",
+            "flying"
+           ],
+           "clue": "gentle; slowly down the sides"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Others are explosive, blasting ash high into the sky.",
+           "word": "explosive",
+           "c": "bursting out with great force",
+           "d": [
+            "quiet and calm",
+            "very small",
+            "cold"
+           ],
+           "clue": "blasting ash high into the sky; the opposite of gentle"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Scientists called volcanologists study volcanoes to predict eruptions.",
+           "word": "predict",
+           "c": "tell what will happen before it happens",
+           "d": [
+            "cause",
+            "stop",
+            "remember"
+           ],
+           "clue": "they warn people so they can leave in time"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Pressure builds up as gases and magma push upward.",
+           "word": "Pressure",
+           "c": "a strong pushing force",
+           "d": [
+            "a cool breeze",
+            "a kind of rock",
+            "a loud sound"
+           ],
+           "clue": "gases and magma push upward; when it is too strong, the volcano erupts"
+          }
+         ],
+         "Informational Text: The Lunchroom Trash Problem": [
+          {
+           "rigor": "basic",
+           "sentence": "Half-eaten apples, milk cartons, plastic forks, and paper trays filled the bins until they overflowed.",
+           "word": "overflowed",
+           "c": "were so full that things spilled out",
+           "d": [
+            "were empty",
+            "were washed",
+            "were locked"
+           ],
+           "clue": "filled the bins; too much trash"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "The students proposed three solutions.",
+           "word": "proposed",
+           "c": "suggested an idea or plan",
+           "d": [
+            "refused",
+            "forgot",
+            "hid"
+           ],
+           "clue": "the next sentences list First, Second, Third"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Food scraps could be composted, cartons and bottles could be recycled, and plastic forks could be replaced.",
+           "word": "composted",
+           "c": "left to break down into rich soil",
+           "d": [
+            "thrown in a dumpster",
+            "cooked again",
+            "frozen"
+           ],
+           "clue": "the food scraps later feed the vegetable garden"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "What started as a pile of garbage became a lesson in teamwork, science, and caring for the planet.",
+           "word": "lesson",
+           "c": "something that is learned",
+           "d": [
+            "a pile",
+            "a problem",
+            "a lunch"
+           ],
+           "clue": "teamwork, science, and caring for the planet were learned"
+          }
+         ],
+         "Persuasive Article: Every School Needs a Garden": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Second, gardens encourage healthy eating.",
+           "word": "encourage",
+           "c": "help or cause someone to do something",
+           "d": [
+            "stop",
+            "forget",
+            "punish"
+           ],
+           "clue": "children who grow vegetables are more likely to eat them"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Many families, local stores, and community groups are happy to donate seeds, soil, and tools.",
+           "word": "donate",
+           "c": "give for free to help",
+           "d": [
+            "sell",
+            "borrow",
+            "break"
+           ],
+           "clue": "happy to give supplies to help the school"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Spending time outdoors, surrounded by green plants, can help students feel calm and happy.",
+           "word": "surrounded",
+           "c": "with things all around",
+           "d": [
+            "far away from",
+            "hidden under",
+            "standing on top of"
+           ],
+           "clue": "green plants all around them in a garden"
+          }
+         ],
+         "Paired Passages: Dogs on the Job": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Service dogs are specially trained to help people with disabilities live more independently.",
+           "word": "independently",
+           "c": "without needing help from others",
+           "d": [
+            "with many people",
+            "very slowly",
+            "only at night"
+           ],
+           "clue": "the dog helps so the person can do things on their own"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "They learn to ignore loud noises, other animals, and tasty food on the floor.",
+           "word": "ignore",
+           "c": "pay no attention to",
+           "d": [
+            "eat",
+            "chase",
+            "bark at"
+           ],
+           "clue": "they must stay calm in crowded places"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "When a dog finds a person, it barks to alert its handler.",
+           "word": "alert",
+           "c": "warn or let someone know",
+           "d": [
+            "scare away",
+            "play with",
+            "feed"
+           ],
+           "clue": "it barks when it finds a person"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "They practice following a scent through woods, over rocks, and across rubble.",
+           "word": "rubble",
+           "c": "broken pieces of stone and buildings",
+           "d": [
+            "soft grass",
+            "deep water",
+            "tall trees"
+           ],
+           "clue": "listed with woods and rocks; places where people could be trapped"
+          }
+         ],
+         "Story: Field Day Fever": [
+          {
+           "rigor": "basic",
+           "sentence": "The burlap sack scratched my legs, and the finish line danced in front of me, always just out of reach.",
+           "word": "out of reach",
+           "c": "too far away to get to",
+           "d": [
+            "very close",
+            "behind me",
+            "under my feet"
+           ],
+           "clue": "the finish line kept seeming far away while the narrator hopped"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "My stomach was full of butterflies as I lined up for the sack race.",
+           "word": "full of butterflies",
+           "c": "feeling nervous",
+           "d": [
+            "very hungry",
+            "full of real insects",
+            "feeling sleepy"
+           ],
+           "clue": "lining up for a race; the friend says 'You've got this'"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Suddenly, my bad mood melted away like an ice pop in July.",
+           "word": "melted away",
+           "c": "went away",
+           "d": [
+            "got bigger",
+            "froze",
+            "stayed the same"
+           ],
+           "clue": "Talia cheered the narrator up"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "I didn't win a single ribbon, but I went home with a smile as wide as the playground.",
+           "word": "ribbon",
+           "c": "a prize given to a winner",
+           "d": [
+            "a hair bow",
+            "a piece of rope",
+            "a kind of race"
+           ],
+           "clue": "Field Day races; winning or not winning"
+          }
          ]
+        };
+
+        // Questions for the added passages. p = the passage id the question needs.
+        const NEW_QUESTIONS = {
+            'garden-mystery': { std: '4.RC.1', items: [
+                {"rigor": "basic", "q": "In 'The Garden Mystery', what did Sofia find near the hole under the fence?", "c": "Tufts of soft brown fur", "d": ["Large muddy paw prints", "A broken trash can", "Pieces of orange carrot"]},
+                {"rigor": "basic", "q": "In 'The Garden Mystery', what did the camera's pictures show?", "c": "A mother rabbit and three babies eating the carrot tops", "d": ["The neighbor's dog digging under the fence", "A raccoon knocking over a trash can", "Grandpa picking carrots at dawn"]},
+                {"rigor": "on-grade", "q": "What can you infer about Sofia from the way she solves the mystery?", "c": "She is curious and observant.", "d": ["She is lazy and careless.", "She is afraid of animals.", "She does not care about the garden."]},
+                {"rigor": "on-grade", "q": "Which detail best supports the inference that a small animal was eating the carrots?", "c": "There was a hole under the fence just wide enough for a small animal.", "d": ["Grandpa grew the biggest garden on Maple Street.", "Grandpa promised Sofia the first carrot.", "The carrot was crunchy and sweet."]},
+                {"rigor": "advanced", "q": "Why does Grandpa plant lettuce on the other side of the fence?", "c": "He wants to protect his garden while still giving the rabbits food.", "d": ["He wants to trap the rabbits.", "He thinks lettuce will scare the rabbits away.", "He has run out of room for carrots."]},
+                {"rigor": "advanced", "q": "What does Grandpa's line, 'Everybody deserves a snack,' suggest about him?", "c": "He is kind, even to animals that cause him trouble.", "d": ["He is angry about losing his carrots.", "He thinks the rabbits should be punished.", "He wants Sofia to stop eating carrots."]},
+            ] },
+            'squirrel': { std: '4.RC.2', items: [
+                {"rigor": "basic", "q": "In 'The Squirrel Who Kept Everything', what problem does Pip face in the middle of the story?", "c": "An ice storm destroys his log and scatters his acorns.", "d": ["The chipmunks steal his acorns.", "He cannot find any acorns in autumn.", "Mrs. Rabbit takes over his log."]},
+                {"rigor": "basic", "q": "How do the chipmunks respond when Pip comes to their door for help?", "c": "They share their food with him.", "d": ["They tell him to gather his own.", "They shut the door on him.", "They ask him to pay them back."]},
+                {"rigor": "on-grade", "q": "Which sentence best summarizes 'The Squirrel Who Kept Everything'?", "c": "A selfish squirrel refuses to share, loses his food in a storm, is helped by others, and learns to share.", "d": ["A squirrel gathers acorns faster than anyone else in the forest.", "Some chipmunks have a hard winter after an early frost.", "An ice storm knocks down branches in a forest."]},
+                {"rigor": "on-grade", "q": "What is the theme of 'The Squirrel Who Kept Everything'?", "c": "Kindness and sharing help everyone through hard times.", "d": ["The fastest animal always wins.", "Storms are dangerous in the winter.", "You should never ask others for help."]},
+                {"rigor": "advanced", "q": "Why is it important that the chipmunks help Pip even though he refused to help them?", "c": "Their kindness, given even when it was not returned, teaches Pip to change.", "d": ["It shows the chipmunks wanted to take his log.", "It proves that Pip was right not to share.", "It shows the chipmunks had more food than they needed."]},
+                {"rigor": "advanced", "q": "Which detail from the end of the fable best shows how Pip has changed?", "c": "He fills a second log and hangs a sign that says, 'Take what you need.'", "d": ["He gathers acorns as fast as ever.", "He was very proud of being the fastest gatherer.", "He shut the door on the chipmunks."]},
+            ] },
+            'lighthouse': { std: '4.RC.3', items: [
+                {"rigor": "basic", "q": "Where does most of 'Light in the Storm' take place?", "c": "At a lighthouse on a rocky island", "d": ["On a fishing boat in the harbor", "In a cottage in the city", "At a school during spring break"]},
+                {"rigor": "basic", "q": "In 'Light in the Storm', what problem happens when the storm hits?", "c": "The power goes out and the lighthouse lamp goes dark.", "d": ["Grandma falls down the stairs.", "The Martin family's boat sinks.", "Nora gets lost in the tide pools."]},
+                {"rigor": "on-grade", "q": "How does the setting cause the main problem in 'Light in the Storm'?", "c": "The storm knocks out the power, so boats cannot see the rocky cliffs.", "d": ["The island is small, so Nora is bored.", "The tide pools are too far from the lighthouse.", "The harbor is closed for spring break."]},
+                {"rigor": "on-grade", "q": "Which word best describes Nora when she offers to carry the lantern oil?", "c": "Brave", "d": ["Lazy", "Rude", "Careless"]},
+                {"rigor": "advanced", "q": "Why does the author include the detail that Nora hates the dark, twisting stairs?", "c": "To show that Nora has to overcome her fear to help others", "d": ["To explain why the lighthouse is so tall", "To show that Grandma does not like visitors", "To describe what the island looks like"]},
+                {"rigor": "advanced", "q": "How does Nora's choice affect the end of 'Light in the Storm'?", "c": "She helps light the lantern, which guides the Martins' boat safely into the harbor.", "d": ["Her choice makes the storm stop.", "Her choice makes the power come back on.", "Her choice makes Grandma's knee feel better."]},
+            ] },
+            'library-book': { std: '4.RC.4', items: [
+                {"rigor": "basic", "q": "From which point of view is Part 1 of 'The Missing Library Book' told?", "c": "First person, by Owen", "d": ["Third person, by a narrator", "First person, by Max", "Third person, by Ms. Patel"]},
+                {"rigor": "basic", "q": "Which word from Part 2 of 'The Missing Library Book' shows that it is told in the third person?", "c": "she", "d": ["I", "my", "we"]},
+                {"rigor": "on-grade", "q": "What does the narrator in Part 2 know that Owen does not know in Part 1?", "c": "Owen's mother returned the book to the library early.", "d": ["The book was about sharks.", "The book was due on Friday.", "Owen felt angry all week."]},
+                {"rigor": "on-grade", "q": "How is Owen's account different from the narrator's account in Part 2?", "c": "Owen knows only his own thoughts, but the narrator can tell what several characters did and felt.", "d": ["Owen tells more about his mother than the narrator does.", "Owen's account takes place at school, but the narrator's takes place at the library.", "Both accounts tell exactly the same information."]},
+                {"rigor": "advanced", "q": "Why does the author tell 'The Missing Library Book' from two points of view?", "c": "To show how a misunderstanding happened and how differently each person saw it", "d": ["To make the story longer", "To teach readers facts about sharks", "To prove that Max took the book"]},
+                {"rigor": "advanced", "q": "How would Part 1 change if Max told it in the first person?", "c": "It would show how hurt and confused Max felt when Owen blamed him.", "d": ["It would explain how Ms. Patel found the book.", "It would describe Owen's soccer practice.", "It would be exactly the same."]},
+            ] },
+            'honeybees': { std: '4.RC.5', items: [
+                {"rigor": "basic", "q": "According to 'Honeybees, Small Insects with Big Jobs', what is the queen bee's main job?", "c": "To lay eggs", "d": ["To guard the hive", "To collect nectar", "To make honey"]},
+                {"rigor": "basic", "q": "According to the article, what happens to pollen when a bee visits the next flower?", "c": "Some of it rubs off and helps the plant make seeds and fruit.", "d": ["The bee eats all of it.", "It turns into honey on the flower.", "It sticks to the flower's leaves forever."]},
+                {"rigor": "on-grade", "q": "What is the main idea of 'Honeybees, Small Insects with Big Jobs'?", "c": "Honeybees do important work, like pollination, and need people's help to stay safe.", "d": ["Honeybees can sting when they feel threatened.", "Honeybees live in hives.", "Sunflowers are a kind of flower."]},
+                {"rigor": "on-grade", "q": "Which detail best supports the idea that bees are important to people?", "c": "About one out of every three bites of food we eat depends on pollinators like bees.", "d": ["Drones have only one job.", "Bees have tiny hairs on their bodies.", "Lavender is a kind of flower."]},
+                {"rigor": "advanced", "q": "Which is the best summary of the paragraph about the dangers honeybees face?", "c": "Bees are harmed by lost habitat, harmful chemicals, and mites.", "d": ["Mites are tiny pests.", "Farms grow many fruits and vegetables.", "Bees fly from flower to flower."]},
+                {"rigor": "advanced", "q": "How does the final paragraph connect to the main idea of the honeybee article?", "c": "It explains how kids can help protect bees so they can keep doing their important work.", "d": ["It introduces a new topic about gardens.", "It explains how bees make honey.", "It describes the parts of a flower."]},
+            ] },
+            'volcanoes': { std: '4.RC.6', items: [
+                {"rigor": "basic", "q": "In 'All About Volcanoes', under which subheading would a reader learn how scientists warn people about eruptions?", "c": "Staying Safe", "d": ["What Is a Volcano?", "Parts of a Volcano", "Famous Eruptions"]},
+                {"rigor": "basic", "q": "In 'All About Volcanoes', why are words like magma, vent, and crater printed in bold?", "c": "They are important vocabulary words that are defined in the glossary.", "d": ["They are the names of famous volcanoes.", "They are the most exciting words in the article.", "They show where a new paragraph begins."]},
+                {"rigor": "on-grade", "q": "How does the glossary in 'All About Volcanoes' help a reader?", "c": "It gives the meanings of important words from the article.", "d": ["It lists the page numbers of each topic.", "It shows a map of volcanoes.", "It tells the main idea of the article."]},
+                {"rigor": "on-grade", "q": "Which text feature would BEST help a reader understand how magma moves up through a volcano?", "c": "A labeled diagram of the parts of a volcano", "d": ["A list of famous eruptions", "The title of the article", "The glossary entry for volcanologist"]},
+                {"rigor": "advanced", "q": "A student wants to know the difference between magma and lava. Which TWO parts of 'All About Volcanoes' would help MOST?", "c": "The section 'What Is a Volcano?' and the glossary", "d": ["The sections 'Famous Eruptions' and 'Staying Safe'", "The title and the section 'Staying Safe'", "The section 'Famous Eruptions' and the glossary entry for volcanologist"]},
+                {"rigor": "advanced", "q": "Why did the author organize 'All About Volcanoes' with subheadings?", "c": "To divide the information into topics so readers can quickly find what they need", "d": ["To make the article funnier", "To tell the events of a story in order", "To show the author's opinion about volcanoes"]},
+            ] },
+            'lunchroom': { std: '4.RC.7', items: [
+                {"rigor": "basic", "q": "What problem is described at the beginning of 'The Lunchroom Trash Problem'?", "c": "The lunchroom produced too much trash every day.", "d": ["Students did not like the lunch food.", "The school garden needed more water.", "The playground fence was broken."]},
+                {"rigor": "basic", "q": "Which signal phrase in 'The Lunchroom Trash Problem' shows a result?", "c": "As a result", "d": ["First", "However", "At Lincoln Elementary"]},
+                {"rigor": "on-grade", "q": "Which text structure does the author mainly use in 'The Lunchroom Trash Problem'?", "c": "Problem and solution", "d": ["The life story of one person", "Compare and contrast", "A description of a place"]},
+                {"rigor": "on-grade", "q": "Why does the author use the words First, Second, and Third in the paragraph about the students' ideas?", "c": "To list the solutions in order", "d": ["To compare two schools", "To describe the lunchroom", "To give the author's opinion"]},
+                {"rigor": "advanced", "q": "How does the paragraph that begins with 'However, one problem remained' add to the structure of the article?", "c": "It introduces a new problem and then explains its solution.", "d": ["It compares two different lunchrooms.", "It tells the events of a story in time order.", "It gives the conclusion of the article."]},
+                {"rigor": "advanced", "q": "Which sentence best shows a cause and effect relationship in 'The Lunchroom Trash Problem'?", "c": "Because students sorted and composted, the trash dropped from ten bags a day to two.", "d": ["Students threw away milk cartons.", "The Green Team stood by the bins.", "The school had a vegetable garden."]},
+            ] },
+            'school-garden': { std: '4.RC.8', items: [
+                {"rigor": "basic", "q": "What is the author's main claim in 'Every School Needs a Garden'?", "c": "Every school should have a garden.", "d": ["Gardens cost too much money.", "Carrots taste better from a bag.", "Students should spend less time outside."]},
+                {"rigor": "basic", "q": "Which sentence from 'Every School Needs a Garden' is an OPINION?", "c": "A school garden is the most wonderful gift a school can give its students.", "d": ["Students can plant seeds and measure how fast they grow.", "A garden can start with just a few raised beds.", "Many community groups donate seeds and tools."]},
+                {"rigor": "on-grade", "q": "Which reason does the author give to support the claim that every school needs a garden?", "c": "Gardens encourage healthy eating.", "d": ["Gardens make the playground smaller.", "Gardens are only useful in the summer.", "Gardens replace the need for science books."]},
+                {"rigor": "on-grade", "q": "How does the author respond to people who say school gardens cost too much?", "c": "By explaining that gardens can start small and many people donate supplies", "d": ["By agreeing that schools should not build gardens", "By saying that money does not matter", "By ignoring the argument"]},
+                {"rigor": "advanced", "q": "Which piece of evidence is the STRONGEST support for the reason that gardens help students learn?", "c": "Teachers report that students remember lessons better when they can touch and see what they are learning.", "d": ["A carrot you pulled yourself simply tastes better.", "Gardens give students a peaceful place to relax.", "A garden can start with a few raised beds."]},
+                {"rigor": "advanced", "q": "Why does the author of 'Every School Needs a Garden' use the words First, Second, and Finally?", "c": "To organize the reasons that support the claim", "d": ["To tell the steps for planting a garden", "To compare gardens with playgrounds", "To show the opinions of other people"]},
+            ] },
+            'dogs': { std: '4.RC.9', items: [
+                {"rigor": "basic", "q": "In 'Dogs on the Job', what is Text A mostly about?", "c": "How service dogs help people with disabilities", "d": ["How dogs find people after earthquakes", "How to teach a puppy to sit", "Why dogs have strong noses"]},
+                {"rigor": "basic", "q": "According to Text B of 'Dogs on the Job', what do search and rescue dogs use most to find people?", "c": "Their powerful sense of smell", "d": ["Their sharp eyesight", "Special maps", "Their working vests"]},
+                {"rigor": "on-grade", "q": "Which information about dogs is found in BOTH Text A and Text B?", "c": "Both kinds of dogs train for about two years.", "d": ["Both kinds of dogs search for people under buildings.", "Both kinds of dogs guide people across streets.", "Both kinds of dogs wear special boots."]},
+                {"rigor": "on-grade", "q": "Which detail is found in Text B but NOT in Text A?", "c": "Dogs bark to alert their handlers when they find a person.", "d": ["Dogs must stay calm in crowded places.", "Dogs are loyal partners for the people they help.", "Dogs train for about two years."]},
+                {"rigor": "advanced", "q": "What conclusion can you draw by reading BOTH texts in 'Dogs on the Job'?", "c": "Dogs can be trained to do many different jobs that help people.", "d": ["All dogs should become search and rescue dogs.", "Service dogs are smarter than rescue dogs.", "Dogs only help people who are lost."]},
+                {"rigor": "advanced", "q": "How are the jobs of the dogs in Text A and Text B DIFFERENT?", "c": "Service dogs help one owner every day, while rescue dogs search for people in emergencies.", "d": ["Service dogs search in forests, while rescue dogs work in grocery stores.", "Service dogs do not need training, while rescue dogs do.", "There is no difference between the two jobs."]},
+            ] },
+            'field-day': { std: '4.RC.13', items: [
+                {"rigor": "basic", "q": "Which sentence from 'Field Day Fever' contains a SIMILE?", "c": "My face was as red as a tomato.", "d": ["The sun was a giant spotlight shining down on the playground.", "I had been waiting for this day for a million years.", "My best friend gave me a thumbs-up."]},
+                {"rigor": "basic", "q": "In 'Field Day Fever', the narrator says, 'I had been waiting for this day for a million years.' What type of figurative language is this?", "c": "Hyperbole", "d": ["Simile", "Personification", "Metaphor"]},
+                {"rigor": "on-grade", "q": "In 'Field Day Fever', what does 'my stomach was full of butterflies' mean?", "c": "The narrator felt nervous.", "d": ["The narrator ate butterflies for breakfast.", "The narrator felt sick from the heat.", "The narrator was very hungry."]},
+                {"rigor": "on-grade", "q": "The narrator says 'the finish line danced in front of me.' What does this personification help the reader understand?", "c": "The finish line seemed hard to reach while the narrator was hopping.", "d": ["The finish line was moving across the field.", "The narrator was dancing instead of racing.", "The finish line was decorated with music."]},
+                {"rigor": "advanced", "q": "What does the metaphor 'the sun was a giant spotlight' suggest about Field Day?", "c": "The day was bright, and the narrator felt like everyone was watching.", "d": ["The day was cloudy and dark.", "The race was held inside a theater.", "The sun was very small that morning."]},
+                {"rigor": "advanced", "q": "Why does the author compare the narrator's bad mood to 'an ice pop in July'?", "c": "To show the bad mood disappeared quickly, the way an ice pop melts in summer heat", "d": ["To show the narrator was hungry for a snack", "To explain why Field Day was held in July", "To show the narrator's mood got colder and worse"]},
+            ] },
+        };
+        const NEW_WRITTEN = {
+            'garden-mystery': { std: '4.RC.1', items: [
+                {"q": "What clues did Sofia use to figure out what was eating the carrots? Use at least TWO details from the story.", "key": "Look for: nibbled carrots, small round droppings, a small hole under the fence, tufts of brown fur, the pictures of the rabbits."},
+                {"q": "What can you infer about Grandpa? Support your answer with evidence from the text.", "key": "Inference: he is kind and patient. Evidence: he laughs instead of getting angry; he plants lettuce so the rabbits still have food."},
+            ] },
+            'squirrel': { std: '4.RC.2', items: [
+                {"q": "What is the theme of 'The Squirrel Who Kept Everything'? Explain how Pip's actions at the beginning and at the end of the story help show this theme.", "key": "Theme: sharing and kindness help everyone. Beginning: Pip refuses to share and shuts the door. End: he fills a second log with a 'Take what you need' sign."},
+                {"q": "Summarize 'The Squirrel Who Kept Everything' in 3 to 4 sentences. Include the beginning, middle, and end.", "key": "Pip gathers many acorns but refuses to share; an ice storm destroys his stash; the chipmunks share with him anyway; the next autumn he shares with everyone."},
+            ] },
+            'lighthouse': { std: '4.RC.3', items: [
+                {"q": "Describe the setting of 'Light in the Storm.' Explain how the setting creates the problem in the story.", "key": "Lighthouse on a rocky island during a storm; howling wind and crashing waves knock out the power, so the fishing boat might crash into the rocks."},
+                {"q": "How does Nora change during 'Light in the Storm'? What causes her to change?", "key": "She is afraid of the dark stairs but climbs them anyway; thinking about the family in danger on the water gives her courage."},
+            ] },
+            'library-book': { std: '4.RC.4', items: [
+                {"q": "Compare Part 1 and Part 2 of 'The Missing Library Book.' How does the point of view change what the reader learns about the missing book?", "key": "Part 1 is first person (Owen), so readers only know he thinks Max took it. Part 2 is third person, so readers learn Mom returned it early and Max feels hurt."},
+                {"q": "Rewrite this sentence from Part 1 in the third person: 'I felt angry all week.' Then explain what changed.", "key": "'Owen felt angry all week.' (or 'He felt angry all week.') The pronoun I changes to Owen or he, because the narrator is outside the story."},
+            ] },
+            'honeybees': { std: '4.RC.5', items: [
+                {"q": "State the main idea of 'Honeybees, Small Insects with Big Jobs.' Give TWO key details that support it.", "key": "Main idea: honeybees do important work and need protection. Details: they pollinate plants; one in three bites of food depends on pollinators; they face dangers like lost habitat, chemicals, and mites."},
+                {"q": "In your own words, summarize how bees pollinate flowers.", "key": "Pollen sticks to a bee's hairs when it drinks nectar; it rubs off on the next flower; this helps the plant make seeds and fruit."},
+            ] },
+            'volcanoes': { std: '4.RC.6', items: [
+                {"q": "Choose two text features from 'All About Volcanoes.' Explain how each one helps a reader understand the topic.", "key": "Look for: subheadings organize topics; bold words mark key vocabulary; the glossary defines terms; a diagram or caption shows the parts of a volcano."},
+                {"q": "If you added a new section to 'All About Volcanoes' about how volcanoes can build islands, what subheading would you give it? Explain why.", "key": "Any clear topic subheading (for example, 'Volcanic Islands') with an explanation that a subheading tells readers what a section is about."},
+            ] },
+            'lunchroom': { std: '4.RC.7', items: [
+                {"q": "Explain the problem and TWO solutions described in 'The Lunchroom Trash Problem.' Use signal words from the text.", "key": "Problem: too much trash (ten bags a day). Solutions: separate compost, recycling, and trash bins; metal forks and washable trays; a Green Team; a share table. Signal words: First, Second, Third, As a result, However."},
+                {"q": "Why do you think the author ended 'The Lunchroom Trash Problem' with a paragraph about teamwork? Explain how it connects to the problem and solution structure.", "key": "It sums up the solution: people working together solved a big problem."},
+            ] },
+            'school-garden': { std: '4.RC.8', items: [
+                {"q": "Identify the author's claim in 'Every School Needs a Garden.' Then explain TWO reasons and the evidence the author uses to support them.", "key": "Claim: every school should have a garden. Reasons: hands-on science (students remember lessons better), healthy eating (children who grow vegetables eat them), a peaceful place to relax."},
+                {"q": "Find one fact and one opinion in 'Every School Needs a Garden.' Explain how you know which is which.", "key": "Fact example: a garden can start with a few raised beds, or community groups donate seeds. Opinion example: a carrot you pulled yourself tastes better, or a garden is the most wonderful gift."},
+            ] },
+            'dogs': { std: '4.RC.9', items: [
+                {"q": "Use information from BOTH texts in 'Dogs on the Job' to explain how dogs help people. Include one detail from Text A and one from Text B.", "key": "Text A: guide people who are blind, pick up objects, alert an owner who is deaf. Text B: use their sense of smell to find lost or trapped people and bark to alert handlers."},
+                {"q": "How are service dogs and search and rescue dogs alike? How are they different? Use details from both texts.", "key": "Alike: both train for about two years; both are partners and friends. Different: service dogs help one person every day; rescue dogs search for missing people."},
+            ] },
+            'field-day': { std: '4.RC.13', items: [
+                {"q": "Find one simile and one hyperbole in 'Field Day Fever.' Explain what each one means.", "key": "Simile: as quick as a rabbit, like a kangaroo, as red as a tomato, like an ice pop in July, or a smile as wide as the playground. Hyperbole: waiting for a million years. Meanings should match."},
+                {"q": "How does the author of 'Field Day Fever' use figurative language to show how the narrator's feelings change?", "key": "Nervous (butterflies), embarrassed (red as a tomato), then happy (mood melted away like an ice pop; smile as wide as the playground)."},
+            ] },
         };
 
         const QUESTION_POOLS = {
@@ -1326,6 +2079,12 @@ const STANDARDS = [
                 sel: { '4.RC.1': { mc: 5, wr: 1 }, '4.RC.2': { mc: 5, wr: 1 }, '4.RC.3': { mc: 5, wr: 1 }, '4.RC.10': { mc: 5, wr: 1 } },
                 defaultCounts: { mc: 5, wr: 1 }
             },
+            morning: {
+                title: 'Morning Work', sub: '',
+                genre: 'auto', rigor: 'mix', newPage: true, score: false, days: '5', perDay: '4', written: false,
+                sel: { '4.RC.1': { mc: 2, wr: 0 }, '4.RC.2': { mc: 2, wr: 0 }, '4.RC.3': { mc: 2, wr: 0 }, '4.RC.10': { mc: 1, wr: 0 }, '4.RC.11': { mc: 1, wr: 0 } },
+                defaultCounts: { mc: 2, wr: 0 }
+            },
             exit: {
                 title: 'Exit Ticket', sub: '',
                 genre: 'auto', rigor: 'mix', newPage: false, score: false, copies: '2', passage: false,
@@ -1376,9 +2135,23 @@ const STANDARDS = [
 
         // ---------- Question selection ----------
         // A question "needs" a passage when the standard has a passage of the question's genre.
-        function passageNeeded(stdId, genre) {
-            const group = PASSAGES[stdId] || {};
-            return group[genre] ? genre : null;
+        // Merge the questions for the added passages into the banks, tagged with the passage they need
+        Object.entries(NEW_QUESTIONS).forEach(([pid, { std, items }]) => {
+            const genre = PASSAGES[std].find(p => p.id === pid).genre;
+            items.forEach(q => QUESTION_POOLS[std].push({ ...q, genre, p: pid }));
+        });
+        Object.entries(NEW_WRITTEN).forEach(([pid, { std, items }]) => {
+            const genre = PASSAGES[std].find(p => p.id === pid).genre;
+            items.forEach(w => WRITTEN_QUESTION_POOLS[std].push({ ...w, genre, p: pid }));
+        });
+
+        // Which passage (by id) a question needs, or null if it stands on its own.
+        // Older questions have no p, so they belong to the standard's first passage of their genre.
+        function passageNeeded(stdId, item) {
+            if (item.p) return item.p;
+            if (item.genre === 'any') return null;
+            const match = (PASSAGES[stdId] || []).find(p => p.genre === item.genre);
+            return match ? match.id : null;
         }
 
         function orderForLevel(pool, rigor, genrePref, rng) {
@@ -1405,18 +2178,20 @@ const STANDARDS = [
             };
         }
 
-        function buildSection(stdId, mcWanted, wrWanted, genre, rigor, rng, notices) {
-            const group = PASSAGES[stdId] || {};
-            const available = Object.keys(group);
-            // Which passages may be used, in the order they should be tried
+        function buildSection(stdId, mcWanted, wrWanted, genre, rigor, rng, notices, seenQ = new Set()) {
+            const list = PASSAGES[stdId] || [];
+            const group = Object.fromEntries(list.map(p => [p.id, p]));
+            // Which passages may be used (by id), in the order they should be tried
+            const fits = list.filter(p => p.genre === genre || p.genre === 'both');
             let allowed;
-            if (genre !== 'auto' && group[genre]) allowed = [genre];
-            else if (genre !== 'auto' && available.length && !group[genre] && !group.both) {
-                allowed = available;
+            if (genre === 'auto' || !list.length) allowed = shuffle(list.map(p => p.id), rng);
+            else if (fits.length) allowed = shuffle(fits.map(p => p.id), rng);
+            else {
+                allowed = shuffle(list.map(p => p.id), rng);
                 notices.swap.push(stdId);
-            } else allowed = shuffle(available, rng);
+            }
 
-            const bank = (QUESTION_POOLS[stdId] || []).map(q => ({ ...q, need: passageNeeded(stdId, q.genre) }));
+            const bank = (QUESTION_POOLS[stdId] || []).filter(q => !seenQ.has(q.q)).map(q => ({ ...q, need: passageNeeded(stdId, q) }));
 
             // Multiple choice: start with the first passage, open the next one only if the bank runs short
             const chosen = [];
@@ -1441,11 +2216,12 @@ const STANDARDS = [
 
             // Written: prefer prompts tied to passages already on the page, then standalone ones
             const used = new Set(chosen.map(q => q.need).filter(Boolean));
-            const wBank = (WRITTEN_QUESTION_POOLS[stdId] || []).map(w => ({ ...w, need: w.genre === 'any' ? null : passageNeeded(stdId, w.genre) }));
+            const wBank = (WRITTEN_QUESTION_POOLS[stdId] || []).filter(w => !seenQ.has(w.q)).map(w => ({ ...w, need: passageNeeded(stdId, w) }));
             const wFits = w => w.need === null || used.has(w.need) || (used.size === 0 && allowed.includes(w.need));
             const linked = shuffle(wBank.filter(w => wFits(w) && w.need), rng);
             const loose = shuffle(wBank.filter(w => wFits(w) && !w.need), rng);
             const written = [...linked, ...loose].slice(0, wrWanted);
+            chosen.forEach(q => seenQ.add(q.q)); written.forEach(w => seenQ.add(w.q));
             written.forEach(w => { if (w.need) used.add(w.need); });
             if (written.length < wrWanted) {
                 notices.short.push(`${stdId}: ${written.length} of ${wrWanted} written prompts added. The bank has no more that fit.`);
@@ -1472,7 +2248,7 @@ const STANDARDS = [
         const CONTEXT_STD = '4.RC.10';
         const shortTitle = t => t.replace(/^(Story|Informational Text|Persuasive Article|Passage):\s*/, '');
 
-        function addContextClues(sections, mcWanted, wrWanted, genre, rigor, rng, notices) {
+        function addContextClues(sections, mcWanted, wrWanted, genre, rigor, rng, notices, seenQ = new Set()) {
             let hosts = [];
             sections.forEach(sec => sec.blocks.forEach(block => {
                 if (block.passage && CONTEXT_CLUES[block.passage.title]) hosts.push({ sec, block });
@@ -1480,8 +2256,8 @@ const STANDARDS = [
             if (!hosts.length) {
                 // Nothing to borrow from, so give 4.RC.10 one passage from another standard
                 const all = [];
-                Object.entries(PASSAGES).forEach(([id, group]) => Object.entries(group).forEach(([g, p]) => {
-                    if (CONTEXT_CLUES[p.title]) all.push({ g, p });
+                Object.values(PASSAGES).forEach(list => list.forEach(p => {
+                    if (CONTEXT_CLUES[p.title]) all.push({ g: p.genre, p });
                 }));
                 const fits = all.filter(x => genre === 'auto' || x.g === genre || x.g === 'both');
                 const choice = shuffle(fits.length ? fits : all, rng)[0];
@@ -1493,12 +2269,13 @@ const STANDARDS = [
             }
 
             // Multiple choice: take turns across the host passages
-            const queues = hosts.map(h => orderForLevel(CONTEXT_CLUES[h.block.passage.title].map(v => ({ ...v, host: h })), rigor, 'auto', rng));
+            const queues = hosts.map(h => orderForLevel(CONTEXT_CLUES[h.block.passage.title].filter(v => !seenQ.has(v.sentence + v.word)).map(v => ({ ...v, host: h })), rigor, 'auto', rng));
             const picked = [];
             for (let round = 0; picked.length < mcWanted && queues.some(q => q.length); round++) {
                 queues.forEach(q => { if (picked.length < mcWanted && q.length) picked.push(q.shift()); });
             }
             picked.forEach(v => {
+                seenQ.add(v.sentence + v.word);
                 const title = shortTitle(v.host.block.passage.title);
                 const q = { std: CONTEXT_STD, rigor: v.rigor, c: v.c, d: v.d,
                     q: `Read this sentence from "${title}": "${v.sentence}" What does "${v.word}" mean in this sentence?` };
@@ -1528,10 +2305,48 @@ const STANDARDS = [
             hosts.forEach(h => { h.sec.hasContext = true; });
         }
 
+        // ---------- Morning work (spiral review) ----------
+        // Each day: one passage from the next reading standard in the rotation, its questions,
+        // plus a context-clue item on that passage (if 4.RC.10 is picked) and one word-work item
+        // from 4.RC.11, 4.RC.12, or 4.RC.13 (these stand on their own, without a passage).
+        const WORD_STDS = ['4.RC.11', '4.RC.12', '4.RC.13'];
+        function buildMorning(s, rng, notices) {
+            const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id]);
+            const P = shuffle(ids.filter(id => !WORD_STDS.includes(id) && id !== CONTEXT_STD), rng);
+            const W = shuffle(ids.filter(id => WORD_STDS.includes(id)), rng);
+            const ctx = ids.includes(CONTEXT_STD);
+            const seenQ = new Set();
+            const out = [];
+            const perDay = Number(s.perDay) || 4;
+            for (let d = 0; d < Number(s.days); d++) {
+                const daySecs = [];
+                const extras = (ctx ? 1 : 0) + (W.length ? 1 : 0);
+                if (P.length) daySecs.push(buildSection(P[d % P.length], Math.max(1, perDay - extras), s.written ? 1 : 0, s.genre, s.rigor, rng, notices, seenQ));
+                if (ctx) addContextClues(daySecs, 1, 0, s.genre, s.rigor, rng, notices, seenQ);
+                if (W.length) {
+                    const w = W[d % W.length];
+                    const pool = (QUESTION_POOLS[w] || []).filter(q => !seenQ.has(q.q));
+                    const need = P.length || ctx ? 1 : perDay;
+                    const items = orderForLevel(pool, s.rigor, 'auto', rng).slice(0, need).map(q => ({ ...q, std: w, ...shuffleOptions(q.c, q.d, rng) }));
+                    items.forEach(q => seenQ.add(q.q));
+                    if (!daySecs.length) daySecs.push({ stdId: w, blocks: [], written: [] });
+                    daySecs[daySecs.length - 1].blocks.push({ passage: null, questions: items, word: true });
+                }
+                daySecs.forEach((sec, j) => { sec.day = d; sec.firstOfDay = j === 0; });
+                out.push(...daySecs);
+            }
+            return out;
+        }
+
         function build() {
             const s = S();
             const notices = { swap: [], level: [], short: [] };
             const rng = makeRng(state.code + '|' + state.mode);
+            if (state.mode === 'morning') {
+                state.built = { sections: buildMorning(s, rng, notices), notices: [...new Set(notices.short)] };
+                renderNotices(); renderSheet();
+                return;
+            }
             const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id] && id !== CONTEXT_STD);
             const sections = ids.map(id => buildSection(id, s.sel[id].mc, s.sel[id].wr, s.genre, s.rigor, rng, notices));
             if (s.sel[CONTEXT_STD]) addContextClues(sections, s.sel[CONTEXT_STD].mc, s.sel[CONTEXT_STD].wr, s.genre, s.rigor, rng, notices);
@@ -1550,8 +2365,13 @@ const STANDARDS = [
             document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
             document.body.dataset.mode = state.mode;
             $('f-copies').value = s.copies || '2';
+            $('f-days').value = s.days || '5';
+            $('f-perday').value = s.perDay || '4';
+            $('f-written').checked = !!s.written;
             $('f-passage').checked = !!s.passage;
-            $('std-hint').textContent = state.mode === 'exit'
+            $('std-hint').textContent = state.mode === 'morning'
+                ? 'Pick the standards to spiral. Each day uses the next reading passage in the rotation, plus a context-clue question (4.RC.10) and a word-work question (4.RC.11 to 4.RC.13) if those are picked.'
+                : state.mode === 'exit'
                 ? 'Pick one standard (4.RC.10 can be added to it). Two or three questions is plenty for an exit ticket.'
                 : state.mode === 'cfa'
                 ? `Pick up to ${CFA_MAX_STANDARDS} standards: one main target and an optional second. Set how many of each question type.`
@@ -1672,7 +2492,10 @@ const STANDARDS = [
             const out = exit ? el('div', 'ticket') : sheet;   // an exit ticket is built once, then copied
             const stdIds = STANDARDS.map(x => x.id).filter(id => sections.some(x => x.stdId === id || (id === CONTEXT_STD && x.hasContext)));
 
-            if (exit) {
+            const morning = state.mode === 'morning';
+            if (morning) {
+                // each day gets its own header below
+            } else if (exit) {
                 const head = el('div', 'x-head');
                 const left = el('div');
                 left.appendChild(el('h1', 'x-title', (s.title || 'Exit Ticket') + (state.showKey ? ' (Teacher Key)' : '')));
@@ -1707,8 +2530,21 @@ const STANDARDS = [
 
             sections.forEach((sec, i) => {
                 const std = STANDARDS.find(x => x.id === sec.stdId);
-                const wrap = el('div', 'section' + (!exit && s.newPage && i > 0 ? ' newpage' : ''));
-                if (!exit) wrap.appendChild(el('p', 'sec-label', std.label + (sec.hasContext && sec.stdId !== CONTEXT_STD ? ', with 4.RC.10: Context Clues' : '')));
+                const wrap = el('div', 'section' + (morning ? (sec.firstOfDay && i > 0 ? ' newpage' : '') : (!exit && s.newPage && i > 0 ? ' newpage' : '')));
+                if (morning && sec.firstOfDay) {
+                    n = 1;
+                    const dayIds = new Set();
+                    sections.filter(x => x.day === sec.day).forEach(x => x.blocks.forEach(b => b.questions.forEach(q => dayIds.add(q.std || x.stdId))));
+                    sections.filter(x => x.day === sec.day).forEach(x => x.written.forEach(w => dayIds.add(w.std || x.stdId)));
+                    const head = el('div', 'x-head');
+                    const left = el('div');
+                    left.appendChild(el('h1', 'x-title', `${s.title || 'Morning Work'}: Day ${sec.day + 1}` + (state.showKey ? ' (Teacher Key)' : '')));
+                    left.appendChild(el('p', 'x-std', 'Review: ' + STANDARDS.map(x => x.id).filter(id => dayIds.has(id)).join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + state.code));
+                    const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
+                    head.append(left, nm);
+                    wrap.appendChild(head);
+                }
+                if (!exit && !morning) wrap.appendChild(el('p', 'sec-label', std.label + (sec.hasContext && sec.stdId !== CONTEXT_STD ? ', with 4.RC.10: Context Clues' : '')));
                 const tally = (id, kind) => {
                     let r = perStd.find(x => x.id === id);
                     if (!r) { r = { id, nums: [], mc: 0, wr: 0 }; perStd.push(r); }
@@ -1719,6 +2555,8 @@ const STANDARDS = [
                     if (block.passage && exit && !s.passage) {
                         const k = block.questions.length;
                         wrap.appendChild(el('p', 'x-note', `Use "${block.passage.title.replace(/^[^:]*:\s*/, '')}" to answer ${k > 1 ? `questions ${n} to ${n + k - 1}` : `question ${n}`}${sec.written.length ? ' and the written response' : ''}.`));
+                    } else if (block.word) {
+                        if (block.questions.length) wrap.appendChild(el('div', 'wr-head', 'Word work'));
                     } else if (block.passage) {
                         const p = el('div', 'passage');
                         p.appendChild(el('h3', '', block.passage.title));
@@ -1747,7 +2585,7 @@ const STANDARDS = [
                         body.appendChild(opts);
                         qd.appendChild(body);
                         wrap.appendChild(qd);
-                        keyRows.push([n, q.correctLetter, q.std || sec.stdId, LEVEL_NAME[q.rigor]]);
+                        keyRows.push([n, q.correctLetter, q.std || sec.stdId, LEVEL_NAME[q.rigor], sec.day]);
                         tally(q.std || sec.stdId, 'mc');
                         n++;
                     });
@@ -1774,7 +2612,7 @@ const STANDARDS = [
                         }
                         qd.appendChild(body);
                         wrap.appendChild(qd);
-                        keyRows.push([n, 'Written', w.std || sec.stdId, '']);
+                        keyRows.push([n, 'Written', w.std || sec.stdId, '', sec.day]);
                         tally(w.std || sec.stdId, 'wr');
                         n++;
                     });
@@ -1793,6 +2631,19 @@ const STANDARDS = [
                     sheet.appendChild(copy);
                 }
                 if (tooTall) flash('This ticket is too long for two per page, so each copy prints on its own page. Use fewer questions or leave the passage off to fit two.');
+                return;
+            }
+
+            if (morning) {
+                if (state.showKey) {
+                    const page = el('div', 'end-block newpage');
+                    page.appendChild(el('h3', '', `Morning work answers, version ${state.code}`));
+                    const t = el('table', 'grid');
+                    const days = [...new Set(keyRows.map(r => r[4]))];
+                    t.innerHTML = '<tr><th>Day</th><th>Answers</th></tr>' + days.map(d => `<tr><td>Day ${d + 1}</td><td>${keyRows.filter(r => r[4] === d).map(r => `${r[0]}. <b>${r[1] === 'Written' ? 'written' : r[1]}</b> <span style="color:#666">(${r[2]})</span>`).join('&nbsp;&nbsp; ')}</td></tr>`).join('');
+                    page.appendChild(t);
+                    sheet.appendChild(page);
+                }
                 return;
             }
 
@@ -1839,6 +2690,9 @@ const STANDARDS = [
             bindField('f-newpage', 'newPage', 'change');
             bindField('f-score', 'score', 'change');
             bindField('f-copies', 'copies', 'change');
+            bindField('f-days', 'days', 'change');
+            bindField('f-perday', 'perDay', 'change');
+            bindField('f-written', 'written', 'change');
             bindField('f-passage', 'passage', 'change');
             $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
             $('btn-new').addEventListener('click', () => { state.code = newCode(); $('f-code').value = state.code; build(); });
