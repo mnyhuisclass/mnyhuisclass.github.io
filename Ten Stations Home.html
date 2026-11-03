@@ -1,0 +1,2049 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ten Stations Home</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Layout: a single-theme cockpit. Starfield behind everything; each screen is a console panel.
+   Reading panels use a hyperlegible face at a large size; HUD labels use a squared tech face. */
+:root {
+  --space: #0d0a22;
+  --panel: #19153a;
+  --panel-2: #231e4d;
+  --line: #3a3370;
+  --ink: #f1edff;
+  --muted: #aaa3d6;
+  --graw: #f08a3c;
+  --graw-deep: #b8571c;
+  --fuel: #5fe3b5;
+  --fuel-deep: #1f8f6b;
+  --miss: #ff7a8a;
+  --gold: #ffd166;
+  --f-display: "Bungee", "Impact", "Arial Black", system-ui, sans-serif;
+  --f-read: "Atkinson Hyperlegible", "Verdana", system-ui, sans-serif;
+  --f-hud: "Chakra Petch", "Trebuchet MS", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--space);
+  color: var(--ink);
+  font-family: var(--f-read);
+  font-size: 17px;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+#stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+.wrap {
+  position: relative; z-index: 1;
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.display { font-family: var(--f-display); font-weight: 400; letter-spacing: .01em; }
+.hud { font-family: var(--f-hud); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; font-weight: 600; color: var(--muted); }
+p { margin: 0; }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+.btn {
+  font-family: var(--f-hud); font-weight: 700; font-size: 16px; letter-spacing: .08em; text-transform: uppercase;
+  border: 0; border-radius: 10px; padding: 14px 22px;
+  background: var(--graw); color: #1d0e02;
+  box-shadow: 0 4px 0 var(--graw-deep);
+  transition: transform .08s, box-shadow .08s, filter .15s;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--graw-deep); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn.go { background: var(--fuel); color: #032319; box-shadow: 0 4px 0 var(--fuel-deep); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.brand { font-family: var(--f-display); font-size: 18px; color: var(--graw); }
+.icon-btn { background: var(--panel); color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-family: var(--f-hud); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+
+/* ---------- Intro ---------- */
+.intro { display: grid; grid-template-columns: 1.15fr .85fr; gap: 32px; align-items: center; min-height: 80vh; }
+.intro h1 { font-family: var(--f-display); font-size: clamp(40px, 7vw, 84px); line-height: .95; color: var(--ink); }
+.intro h1 span { color: var(--graw); display: block; }
+.log { margin-top: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; max-width: 60ch; }
+.log .hud { margin-bottom: 8px; color: var(--graw); }
+.log p { font-size: 18px; }
+.namebox { margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.namebox label { display: grid; gap: 6px; flex: 1 1 220px; }
+.namebox input {
+  font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 10px;
+  border: 2px solid var(--line); background: var(--space); color: var(--ink);
+}
+.namebox input:focus { border-color: var(--graw); outline: none; }
+.intro-art { position: relative; aspect-ratio: 1; max-width: 100%; }
+.graw-planet {
+  position: absolute; inset: 8% 4% 4% 8%; border-radius: 50%;
+  background:
+    radial-gradient(circle at 70% 30%, rgba(255,255,255,.18), transparent 35%),
+    radial-gradient(circle at 30% 70%, #9a4210 0 6%, transparent 7%),
+    radial-gradient(circle at 62% 64%, #a84a14 0 4%, transparent 5%),
+    radial-gradient(circle at 45% 40%, #c45e1d 0 3%, transparent 4%),
+    radial-gradient(circle at 35% 35%, #ffb06a, #e2722a 50%, #7d3209 100%);
+  box-shadow: 0 0 80px rgba(240,138,60,.35), inset -30px -40px 70px rgba(30,8,0,.55);
+}
+.ted { position: absolute; width: 34%; right: 6%; bottom: 0; }
+.bubble {
+  position: relative; background: var(--ink); color: #1a1438; border-radius: 14px; padding: 12px 14px;
+  font-size: 16px; line-height: 1.45;
+}
+.ted-row { display: flex; gap: 12px; align-items: flex-start; }
+.ted-row .ted-mini { flex: 0 0 64px; width: 64px; }
+.ted-row .bubble { flex: 1; min-width: 0; }
+.ted-row .bubble::before {
+  content: ""; position: absolute; left: -8px; top: 18px; border: 8px solid transparent; border-left: 0; border-right-color: var(--ink);
+}
+.bubble b { color: #8a3a0a; }
+
+/* ---------- Map ---------- */
+.map-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.map-head h2 { font-family: var(--f-display); font-size: clamp(24px, 4vw, 38px); }
+.map-card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 10px; overflow: hidden; }
+.map-card svg { display: block; width: 100%; height: auto; }
+.map-foot { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; margin-top: 18px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+/* ---------- Planet ---------- */
+.planet-head { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; flex-wrap: wrap; }
+.orb { width: 72px; height: 72px; border-radius: 50%; flex: 0 0 auto; }
+.planet-head h2 { font-family: var(--f-display); font-size: clamp(26px, 4.5vw, 44px); line-height: 1; }
+.planet-head .grow { flex: 1 1 260px; min-width: 0; }
+.gauge { display: grid; gap: 6px; flex: 0 0 auto; }
+.cells { display: flex; gap: 4px; }
+.cell { width: 34px; height: 22px; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--line); transition: background .3s, box-shadow .3s; }
+.cell.on { background: var(--fuel); border-color: var(--fuel); box-shadow: 0 0 12px rgba(95,227,181,.55); }
+.cell.off { background: repeating-linear-gradient(45deg, #3b1a28 0 4px, #2a1430 4px 8px); border-color: #5a2a3e; }
+
+.station { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: start; }
+.passage { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; min-width: 0; }
+.passage h3 { font-family: var(--f-read); font-size: 24px; font-weight: 700; margin: 6px 0 14px; }
+.passage .paras { display: grid; gap: 14px; }
+.para { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 18.5px; line-height: 1.65; max-width: 66ch; }
+.para p { white-space: pre-line; }
+.para .n { font-family: var(--f-hud); font-size: 13px; color: var(--muted); padding-top: 5px; text-align: right; }
+.para.flash { animation: flash 1.6s ease; border-radius: 6px; }
+@keyframes flash { 0%,100% { background: transparent; } 20%,60% { background: rgba(255,209,102,.18); } }
+.qpanel { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 14px; min-width: 0; }
+.qcard { background: var(--panel-2); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.qmeta { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.dok { font-family: var(--f-hud); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; }
+.dok1 { background: #2b4a8a; color: #cfe0ff; }
+.dok2 { background: #6b3a8f; color: #f0d9ff; }
+.dok3 { background: #8f4a1f; color: #ffe2cc; }
+.qtext { font-size: 19px; font-weight: 700; line-height: 1.45; }
+.choices { display: grid; gap: 10px; margin-top: 14px; }
+.choice {
+  text-align: left; background: var(--panel); color: var(--ink); border: 2px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; font-size: 17px; line-height: 1.4; display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start;
+  transition: border-color .15s, background .15s;
+}
+.choice:hover:not([disabled]) { border-color: var(--graw); }
+.choice .k { font-family: var(--f-hud); font-weight: 700; color: var(--graw); }
+.choice[disabled] { cursor: default; }
+.choice.right { border-color: var(--fuel); background: rgba(95,227,181,.12); }
+.choice.wrong { border-color: var(--miss); background: rgba(255,122,138,.12); }
+.choice.dim { opacity: .5; }
+.feedback { margin-top: 14px; border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+.feedback.good { background: rgba(95,227,181,.12); border: 1px solid var(--fuel-deep); }
+.feedback.bad { background: rgba(255,122,138,.1); border: 1px solid #8a3346; }
+.feedback strong { display: block; font-family: var(--f-hud); letter-spacing: .08em; text-transform: uppercase; font-size: 13px; margin-bottom: 4px; }
+.feedback.good strong { color: var(--fuel); }
+.feedback.bad strong { color: var(--miss); }
+.qnav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.dots i.cur { background: var(--gold); }
+.dots i.ok { background: var(--fuel); }
+.dots i.no { background: var(--miss); }
+.look { background: none; border: 0; color: var(--gold); text-decoration: underline; padding: 0; font-size: 15px; }
+
+.result { text-align: center; display: grid; gap: 14px; justify-items: center; }
+.result h3 { font-family: var(--f-display); font-size: 28px; }
+
+/* ---------- Home ---------- */
+.home { display: grid; gap: 22px; }
+.home-hero { position: relative; border-radius: 22px; overflow: hidden; background: linear-gradient(#1c2f6b, #3b6fb3 60%, #7fb8e0); min-height: 340px; }
+.home-hero svg { display: block; width: 100%; height: auto; }
+.banner {
+  position: absolute; left: 50%; top: 18px; transform: translateX(-50%) rotate(-1.5deg);
+  background: var(--gold); color: #3a2300; font-family: var(--f-display); font-size: clamp(16px, 3.4vw, 32px);
+  padding: 8px 22px; border-radius: 6px; white-space: nowrap; box-shadow: 0 6px 0 #b8871c; max-width: 94%; overflow: hidden; text-overflow: ellipsis;
+}
+.home h2 { font-family: var(--f-display); font-size: clamp(30px, 6vw, 60px); line-height: 1; }
+.home h2 span { color: var(--gold); }
+.home-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 22px; }
+.story-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 12px; }
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.stat { background: var(--panel-2); border-radius: 12px; padding: 14px; text-align: center; }
+.stat b { display: block; font-family: var(--f-display); font-size: 28px; color: var(--fuel); font-variant-numeric: tabular-nums; }
+.dokbars { display: grid; gap: 10px; }
+.dokbar { display: grid; grid-template-columns: 74px 1fr 52px; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+.dokbar .track { height: 12px; background: var(--panel-2); border-radius: 6px; overflow: hidden; }
+.dokbar .fill { height: 100%; background: var(--fuel); border-radius: 6px; }
+.medal-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.medal { width: 22px; height: 22px; border-radius: 50%; flex: 0 0 auto; }
+.read-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 15px; }
+.read-list li { display: flex; gap: 10px; align-items: center; }
+
+.fade-in { animation: fadeIn .45s ease both; }
+@keyframes fadeIn { from { opacity: .001; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+
+/* ---------- Flight ---------- */
+html.flying, html.flying body { overflow: hidden; overscroll-behavior: none; }
+.flight {
+  position: fixed; inset: 0; z-index: 20; background: #07051a; overflow: hidden;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+}
+.flight canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fhud {
+  position: absolute; left: 0; right: 0; top: 0; z-index: 2; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px); padding-bottom: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(rgba(7,5,26,.92), rgba(7,5,26,.55)); border-bottom: 1px solid var(--line);
+}
+.fgroup { display: grid; gap: 4px; }
+.fgroup.grow { flex: 1 1 160px; min-width: 0; }
+.pips { display: flex; gap: 5px; }
+.pips i { width: 22px; height: 12px; border-radius: 3px; background: var(--panel-2); border: 1px solid var(--line); }
+.pips i.on { background: #7fd6ff; border-color: #7fd6ff; box-shadow: 0 0 8px rgba(127,214,255,.6); }
+.bar { height: 12px; background: var(--panel-2); border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.bar.small { width: 90px; }
+.bar > div { height: 100%; width: 0; background: var(--gold); border-radius: 6px; }
+.bar > div.laser { background: var(--fuel); }
+.bar > div.laser.low { background: var(--miss); }
+.fscore { font-family: var(--f-display); font-size: 18px; color: var(--fuel); font-variant-numeric: tabular-nums; line-height: 1; }
+.fire {
+  position: absolute; z-index: 2; width: 112px; height: 112px; border-radius: 50%;
+  right: calc(max(16px, env(safe-area-inset-right, 0px)) + 10px); bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  border: 4px solid rgba(255,255,255,.35); background: radial-gradient(circle at 35% 30%, #ff9a7a, #e0443a 60%, #8a1c22);
+  color: #fff; font-family: var(--f-display); font-size: 20px; letter-spacing: .04em;
+  box-shadow: 0 6px 0 #5a1016, 0 0 30px rgba(255,90,80,.35); touch-action: none;
+}
+.fire.down { transform: translateY(4px); box-shadow: 0 2px 0 #5a1016, 0 0 40px rgba(255,90,80,.6); }
+.flight.lefty .fire { right: auto; left: calc(max(16px, env(safe-area-inset-left, 0px)) + 10px); }
+.steer-hint {
+  position: absolute; z-index: 1; pointer-events: none; width: 150px; height: 150px; border-radius: 50%;
+  left: calc(max(16px, env(safe-area-inset-left, 0px)) + 20px); bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  border: 2px dashed rgba(241,237,255,.35); display: grid; place-items: center; text-align: center;
+  font-family: var(--f-hud); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: rgba(241,237,255,.7);
+}
+.flight.lefty .steer-hint { left: auto; right: calc(max(16px, env(safe-area-inset-right, 0px)) + 20px); }
+.ftoast {
+  position: absolute; z-index: 3; left: 50%; top: 32%; transform: translate(-50%, -50%); pointer-events: none;
+  font-family: var(--f-display); font-size: clamp(22px, 5vw, 44px); color: var(--gold); text-align: center; text-shadow: 0 3px 0 #3a2300, 0 0 20px rgba(0,0,0,.6);
+  width: 90%;
+}
+.ftoast.pop { animation: pop .35s ease; }
+@keyframes pop { from { transform: translate(-50%, -50%) scale(.6); } to { transform: translate(-50%, -50%) scale(1); } }
+.fover { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; background: rgba(7,5,26,.6); touch-action: pan-y;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px)); }
+.fover:empty { display: none; }
+.fpanel { width: min(620px, 100%); max-height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: grid; gap: 14px; }
+.fpanel h3 { font-family: var(--f-display); font-size: clamp(22px, 4vw, 30px); line-height: 1.05; }
+.controls { display: grid; gap: 10px; }
+.ctl { display: grid; grid-template-columns: 110px 1fr; gap: 12px; background: var(--panel-2); border-radius: 10px; padding: 10px 12px; font-size: 16px; }
+.ctl b { font-family: var(--f-hud); text-transform: uppercase; letter-spacing: .08em; font-size: 13px; color: var(--graw); padding-top: 3px; }
+.lefty-opt { display: flex; gap: 10px; align-items: center; font-size: 16px; }
+.lefty-opt input { width: 22px; height: 22px; accent-color: var(--graw); }
+.fbtns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.fbtns .btn { min-height: 52px; min-width: 180px; }
+.fstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+.fstats > div { background: var(--panel-2); border-radius: 12px; padding: 12px 6px; }
+.fstats b { display: block; font-family: var(--f-display); font-size: 26px; color: var(--fuel); font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) {
+  .fhud { gap: 10px 14px; }
+  .bar.small { width: 60px; }
+  .fire { width: 92px; height: 92px; font-size: 17px; }
+  .ctl { grid-template-columns: 1fr; gap: 2px; }
+}
+@media (max-width: 860px) {
+  .intro { grid-template-columns: 1fr; min-height: 0; }
+  .intro-art { max-width: 300px; margin: 0 auto; order: -1; }
+  .station { grid-template-columns: 1fr; }
+  .qpanel { position: static; }
+  .home-grid { grid-template-columns: 1fr; }
+  .map-foot { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .para { grid-template-columns: 18px 1fr; font-size: 17.5px; }
+  .passage { padding: 18px 16px; }
+  .cell { width: 26px; }
+  .stat b { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<canvas id="stars" aria-hidden="true"></canvas>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<main class="wrap" id="app" aria-live="polite"></main>
+
+<script>
+/* =================== CONTENT =================== */
+const DOK_NAMES = { 1: "DOK 1 · Recall", 2: "DOK 2 · Skill & Concept", 3: "DOK 3 · Strategic Thinking" };
+
+const PLANETS = [
+  {
+    name: "Mossmoor", colors: ["#9be37a", "#3f8f45", "#13361b"], keeper: "Grandma Burl, a toad in a rain hat",
+    greet: "Welcome, pilot! Grab a cattail stool. Here's a story every frog on Mossmoor knows by heart.",
+    title: "The Frog Who Could Not Glow", genre: "Story",
+    paras: [
+      "Mossmoor is a soggy green planet covered in bogs and tall reeds. Every night, thousands of glowfrogs climb onto lily pads and light up the swamp with a soft blue shine. The light helps travelers find their way along the narrow wooden paths.",
+      "A young glowfrog named Pip had a problem. No matter how hard he puffed his throat, he could not make his skin glow. The other frogs called him \"Dim Pip,\" and he spent most nights hiding under a log.",
+      "One stormy night, the wind blew so hard that the glowfrogs dove underwater to stay safe. The swamp went completely dark. Pip heard a cry from the path. A family of travelers had lost their way and were close to stepping into deep mud.",
+      "Pip could not glow, but he had something else: the loudest croak in Mossmoor. He hopped to the edge of the path and croaked again and again. The travelers followed his voice, one careful step at a time, until they reached the filling station safely.",
+      "The next morning, nobody called him \"Dim Pip.\" They called him \"Pip the Guide.\""
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "What do the glowfrogs do every night?",
+        a: "They light up the swamp with a soft blue shine.",
+        d: ["They sing songs to the travelers.", "They build wooden paths through the bog.", "They hide underwater until morning."],
+        why: "Paragraph 1 says the glowfrogs \"light up the swamp with a soft blue shine.\"" },
+      { dok: 1, p: 3, q: "Why did the swamp go completely dark on the stormy night?",
+        a: "The glowfrogs dove underwater to stay safe from the wind.",
+        d: ["Pip blew out all the lanterns.", "The travelers covered the lily pads.", "The glowfrogs were too tired to glow."],
+        why: "Paragraph 3 says the wind was so strong that the glowfrogs dove underwater, so the swamp went dark." },
+      { dok: 2, p: 2, q: "How did Pip's feelings about himself most likely change from the beginning of the story to the end?",
+        a: "He went from feeling embarrassed to feeling proud.",
+        d: ["He went from feeling proud to feeling embarrassed.", "He went from feeling angry to feeling bored.", "His feelings never changed."],
+        why: "At first Pip hid under a log after being teased. By the end, everyone called him \"Pip the Guide,\" which would make him feel proud." },
+      { dok: 2, p: 5, q: "Why did the frogs change Pip's nickname to \"Pip the Guide\"?",
+        a: "He used his loud croak to lead the lost travelers to safety.",
+        d: ["He finally learned how to glow.", "He showed the frogs a new path through the reeds.", "He won a croaking contest the next morning."],
+        why: "Paragraph 4 explains that Pip croaked again and again so the travelers could follow his voice to the station. That is what a guide does." }
+    ]
+  },
+  {
+    name: "Aquara", colors: ["#7fd6ff", "#2a78c2", "#0b2a5a"], keeper: "Marin, who steers a raft-town",
+    greet: "Ahoy! Our whole town is floating, so hold on to your seat while you read.",
+    title: "The Shell Rafts of Aquara", genre: "Informational",
+    paras: [
+      "Aquara is a planet almost completely covered by water. There is no dry land at all, so the people of Aquara, called Aquarans, live on giant rafts made from the empty shells of sea creatures called bellowbacks.",
+      "A bellowback is a gentle sea animal about the size of a school bus. Every ten years, a bellowback grows too big for its shell. It wriggles out, leaves the old shell floating on the waves, and grows a new one. Aquarans tie these empty shells together with ropes made from seaweed. A single raft can hold more than fifty homes.",
+      "Because the rafts drift with the ocean currents, Aquaran towns are always moving. A town that is near the equator in spring might be far to the south by winter. To keep track of each other, Aquarans send messages using trained flying fish that can glide for miles above the water.",
+      "Aquarans never hunt bellowbacks. They believe the giant animals give them a gift, so every year they hold a Shell Festival to thank them. Children sing songs into the water, and the bellowbacks often sing back with deep, rumbling hums."
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "What are the Aquarans' rafts made from?",
+        a: "Empty bellowback shells tied together with seaweed rope",
+        d: ["Wooden logs from the forest", "Ice blocks frozen together", "Metal pieces from old spaceships"],
+        why: "Paragraphs 1 and 2 say the rafts are made from empty bellowback shells tied with ropes made from seaweed." },
+      { dok: 1, p: 2, q: "How often does a bellowback leave its old shell?",
+        a: "Every ten years",
+        d: ["Every year", "Every winter", "Every fifty years"],
+        why: "Paragraph 2 says, \"Every ten years, a bellowback grows too big for its shell.\"" },
+      { dok: 2, p: 3, q: "Why are Aquaran towns \"always moving\"?",
+        a: "The rafts drift with the ocean currents.",
+        d: ["The bellowbacks pull the rafts.", "The people paddle to a new spot every day.", "Flying fish carry the towns."],
+        why: "Paragraph 3 begins with the cause: \"Because the rafts drift with the ocean currents, Aquaran towns are always moving.\"" },
+      { dok: 2, p: 4, q: "Which word best describes how Aquarans feel about bellowbacks?",
+        a: "Grateful",
+        d: ["Afraid", "Jealous", "Bored"],
+        why: "In paragraph 4, Aquarans believe the bellowbacks give them a gift and hold a festival to thank them. That shows they are grateful." }
+    ]
+  },
+  {
+    name: "Cindral", colors: ["#ffb35c", "#c2361b", "#2a0a06"], keeper: "Mara Flint, the lava baker",
+    greet: "Mind the hot rocks, pilot! Fresh bread is on the vents. Read while it bakes.",
+    title: "The Lava Bakery", genre: "Story",
+    paras: [
+      "Cindral is a planet of black rock and glowing volcanoes. The air smells like smoke, and the ground is warm enough to cook on. That is exactly what Mara Flint does. She runs the only bakery on Cindral, and she bakes her bread on flat stones above the lava vents.",
+      "Every morning Mara wakes before the volcanoes rumble. She mixes flour, water, and a pinch of ember salt. Then she carries the dough to the vents with long iron tongs. She has to be careful. If she leaves the bread too long, it turns to charcoal. If she takes it off too soon, it is gooey in the middle. Mara counts slowly, \"One volcano, two volcano, three volcano...\" all the way to ninety.",
+      "One day, Mara's helper, Jory, wanted to finish quickly so he could go exploring. He counted fast and pulled the loaves off early. When the miners bit into the bread at lunch, it was raw and sticky. Jory felt terrible.",
+      "The next morning, Jory was at the bakery before Mara. He counted every single volcano slowly, all the way to ninety. The bread came out golden and crunchy."
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "Where does Mara bake her bread?",
+        a: "On flat stones above the lava vents",
+        d: ["In a stone oven in her kitchen", "Inside the mouth of a volcano", "Over a campfire in the mines"],
+        why: "Paragraph 1 says she \"bakes her bread on flat stones above the lava vents.\"" },
+      { dok: 1, p: 2, q: "How high does Mara count while the bread bakes?",
+        a: "Ninety",
+        d: ["Ten", "Fifty", "One hundred"],
+        why: "Paragraph 2 says Mara counts \"all the way to ninety.\"" },
+      { dok: 2, p: 3, q: "What caused the miners' bread to be raw and sticky?",
+        a: "Jory rushed because he wanted to go exploring, so he took the bread off too early.",
+        d: ["Mara forgot to add ember salt.", "The lava vents were not hot enough that day.", "The miners left the bread out in the smoke."],
+        why: "Paragraph 3 says Jory counted fast and pulled the loaves off early. Paragraph 2 explains that bread taken off too soon is gooey in the middle." },
+      { dok: 2, p: 4, q: "What lesson did Jory most likely learn?",
+        a: "Doing a job carefully matters more than doing it fast.",
+        d: ["Exploring is more fun than baking.", "Miners do not like bread.", "It is best to wake up before the volcanoes."],
+        why: "After his rushed bread failed, Jory came back the next day and counted slowly. The bread came out perfect, which shows he learned to be careful." }
+    ]
+  },
+  {
+    name: "Frostveil", colors: ["#e8f6ff", "#8fc3e8", "#2d5578"], keeper: "Elder Saska, wrapped in silver furs",
+    greet: "Brrr! Come close to the fire, traveler. This story warms us every winter.",
+    title: "The Long Glide", genre: "Story",
+    paras: [
+      "Frostveil is so cold that even the clouds are made of tiny ice crystals. Once a year, the young people of Frostveil compete in the Long Glide, a sled race across the frozen Silver Lake. The winner earns a crystal medal and gets to light the Great Lantern at the festival.",
+      "Nella had practiced for months. Her sled was fast, and her team of snow-hares was the strongest she had ever raised. Her biggest rival was a boy named Corrin, who had won the race the year before.",
+      "Halfway across the lake, Nella heard a loud crack. Corrin's sled had hit a ridge of ice, and one of the runners had snapped. His hares were tangled, and he was stuck. Nella could see the finish line glowing in the distance. If she kept going, she would surely win.",
+      "Nella pulled her reins and turned around. Together, she and Corrin untangled his hares and tied the broken runner with a strap from her own sled. By the time they crossed the finish line side by side, three other racers had already passed them.",
+      "That night, the elders asked Nella to light the Great Lantern anyway. \"The lantern,\" said the oldest elder, \"is meant to be lit by someone who shows us the way.\""
+    ],
+    qs: [
+      { dok: 1, p: 3, q: "What happened to Corrin's sled during the race?",
+        a: "It hit a ridge of ice and one of the runners snapped.",
+        d: ["It sank through thin ice.", "His snow-hares ran away without him.", "It crashed into Nella's sled."],
+        why: "Paragraph 3 says Corrin's sled \"hit a ridge of ice, and one of the runners had snapped.\"" },
+      { dok: 2, p: 2, q: "In paragraph 2, what does the word \"rival\" most likely mean?",
+        a: "Someone you compete against",
+        d: ["Someone who builds sleds", "A close family member", "A type of snow-hare"],
+        why: "The clue is that Corrin won the race the year before and Nella wants to win. A rival is someone you are competing against." },
+      { dok: 2, p: 4, q: "Why didn't Nella win the race?",
+        a: "She stopped to help Corrin, and other racers passed her.",
+        d: ["Her snow-hares were too tired.", "Her sled broke on the ice.", "She got lost on Silver Lake."],
+        why: "Paragraph 4 says Nella turned around to help Corrin, and \"three other racers had already passed them.\"" },
+      { dok: 3, p: 5, q: "What did the elder most likely mean by \"someone who shows us the way\"?",
+        a: "Nella showed everyone how to act by choosing kindness over winning.",
+        d: ["Nella knew the fastest path across the lake.", "Nella was the only one who could see the finish line.", "Nella would be the best person to guide sleds next year."],
+        why: "Nella did not win, but she helped her rival. The elder is saying that her actions were an example for others to follow, which matters more than speed." }
+    ]
+  },
+  {
+    name: "Zephyrine", colors: ["#d9fbff", "#7ad0cf", "#2b6f7a"], keeper: "Kestrel, a kite messenger",
+    greet: "Hold onto your hat! The wind here never takes a day off. Read fast, but read carefully.",
+    title: "Kite Messengers of Zephyrine", genre: "Informational",
+    paras: [
+      "Zephyrine is a small moon where the wind never stops blowing. Some days it is a gentle breeze. Other days it howls hard enough to knock a person off their feet. Because of the wind, there are no roads on Zephyrine. Instead, its people send letters and packages by kite.",
+      "Kite messengers train for years. They must learn to read the sky the way sailors read the sea. Different clouds mean different winds. Long, thin clouds called ribbon clouds mean the wind will be steady, which is perfect for flying. Puffy, gray clouds called tumble clouds warn of sudden gusts that can tear a kite apart.",
+      "Each kite is built for a different job. Small, light kites carry letters quickly over short distances. Large box kites can lift heavy packages but move slowly. For very long trips, messengers use relay kites. One messenger flies the package to a tower, and another messenger sends it on to the next tower, like runners passing a baton.",
+      "Today, some people on Zephyrine want to replace the kites with flying drones. Drones are faster and can fly even when tumble clouds roll in. Others say kites are cheaper, quieter, and never need batteries. The moon is still deciding."
+    ],
+    qs: [
+      { dok: 1, p: 2, q: "What do ribbon clouds tell a kite messenger?",
+        a: "The wind will be steady, which is perfect for flying.",
+        d: ["A storm with sudden gusts is coming.", "The wind is about to stop.", "It is time to switch to box kites."],
+        why: "Paragraph 2 says ribbon clouds \"mean the wind will be steady, which is perfect for flying.\"" },
+      { dok: 2, p: 3, q: "How is sending a package by relay kite like a relay race?",
+        a: "The package is passed from one messenger to the next, like a baton.",
+        d: ["The messengers run while they fly the kites.", "The fastest kite wins a prize.", "Only one messenger carries the package the whole way."],
+        why: "Paragraph 3 compares relay kites to \"runners passing a baton.\" Each messenger hands the package off to the next tower." },
+      { dok: 2, p: 3, q: "What is the main idea of paragraph 3?",
+        a: "Different kinds of kites are built for different jobs.",
+        d: ["Box kites are the best kind of kite.", "Kite messengers train for many years.", "Towers are the tallest buildings on Zephyrine."],
+        why: "The first sentence of paragraph 3 states it: \"Each kite is built for a different job.\" The rest of the paragraph gives examples." },
+      { dok: 3, p: 4, q: "Why did the author most likely end the passage with \"The moon is still deciding\"?",
+        a: "To show that both kites and drones have good points, so the question is not settled yet.",
+        d: ["To prove that drones are better than kites.", "To show that the people of Zephyrine do not care about messages.", "To explain how drones work."],
+        why: "Paragraph 4 lists reasons for drones (faster, fly in gusts) and for kites (cheaper, quieter, no batteries). Ending with \"still deciding\" tells the reader that both sides have strong reasons." }
+    ]
+  },
+  {
+    name: "Quillon", colors: ["#e7c4ff", "#9a5bd6", "#33175a"], keeper: "Tobin, the new Echo Keeper",
+    greet: "Shh, the crystals are listening. My grandmother told me this story. Now it's yours.",
+    title: "The Echo Keeper", genre: "Story",
+    paras: [
+      "On Quillon, tall purple crystals grow out of the ground like trees. If you speak into one, it keeps your voice inside, and anyone who touches it later will hear your words. For hundreds of years, Quillonians have used the crystals to save stories, songs, and advice for the future.",
+      "Old Wren was the Echo Keeper. Her job was to care for the Crystal Grove, where the most important voices were kept. One day she told her grandson, Tobin, that it was time for him to add his own voice to the grove.",
+      "Tobin panicked. \"But I'm not important,\" he said. \"I've never done anything worth saving.\"",
+      "Wren led him to the smallest crystal in the grove. When Tobin touched it, he heard a little girl giggling and saying, \"Today I learned to whistle!\" Then came a whistle, high and wobbly.",
+      "\"Who was that?\" Tobin asked. \"That was me,\" Wren said, \"sixty-two years ago. It is my favorite crystal.\"",
+      "Tobin thought for a long time. Then he leaned toward a fresh crystal and said, \"Today I was scared, but I tried anyway.\""
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "What happens when someone speaks into a Quillon crystal?",
+        a: "The crystal keeps their voice so others can hear it later.",
+        d: ["The crystal changes color.", "The crystal grows taller.", "The crystal answers back with advice."],
+        why: "Paragraph 1 says the crystal \"keeps your voice inside, and anyone who touches it later will hear your words.\"" },
+      { dok: 2, p: 3, q: "Why did Tobin panic when Wren asked him to add his voice?",
+        a: "He believed he had not done anything important enough to save.",
+        d: ["He was afraid of the dark grove.", "He did not know how to speak into a crystal.", "He wanted to save a song instead."],
+        why: "In paragraph 3, Tobin says, \"I'm not important\" and \"I've never done anything worth saving.\"" },
+      { dok: 2, p: 5, q: "Why is the smallest crystal Wren's favorite?",
+        a: "It holds a happy memory from when she was a little girl.",
+        d: ["It is the oldest crystal in the grove.", "It holds the most important advice on Quillon.", "It was a gift from the first Echo Keeper."],
+        why: "Paragraphs 4 and 5 reveal that the giggling girl who learned to whistle was Wren herself, sixty-two years ago." },
+      { dok: 3, p: 4, q: "Why did Wren show Tobin the smallest crystal instead of just telling him he was important?",
+        a: "So he could discover for himself that small, everyday moments are worth saving.",
+        d: ["So he would learn how to whistle.", "Because she wanted him to replace that crystal.", "Because the big crystals were too heavy to touch."],
+        why: "Wren's favorite memory is about something small: learning to whistle. Hearing it helps Tobin realize his own small brave moment is worth saving, which is what he records at the end." }
+    ]
+  },
+  {
+    name: "Hollowstone", colors: ["#ffc59a", "#c4643a", "#4d1e10"], keeper: "Sabe, the well engineer",
+    greet: "Have a cup of water, traveler. On Hollowstone, every cup has a story behind it.",
+    title: "The Well Diggers", genre: "Story",
+    paras: [
+      "Hollowstone is a desert planet of red canyons and dry riverbeds. It has not rained there in eleven years. The people of the canyon village of Dustreach used to get water from the Copper River, but the river has shrunk to a thin, muddy trickle.",
+      "The village council argued for weeks. Some people wanted to leave Dustreach and search for a new home. Others wanted to stay and wait for the rain to return. A young engineer named Sabe had a different idea. She had studied old maps and noticed that the Copper River had once flowed through a different canyon, long ago. \"Rivers leave water behind,\" she said. \"It might still be hiding underground.\"",
+      "Few people believed her. Digging would take months, and they might find nothing. Still, Sabe started digging alone. After a week, two of her friends joined her. After a month, half the village was helping, taking turns in the heat.",
+      "On the fifty-third day, the bottom of the well turned dark and damp. On the fifty-fourth day, cool water began to bubble up. That night, the village held a feast, and every cup on every table was full."
+    ],
+    qs: [
+      { dok: 2, p: 2, q: "Before Sabe shared her idea, what two choices was the village council arguing about?",
+        a: "Leaving to find a new home, or staying to wait for rain",
+        d: ["Digging a well, or building a dam", "Fixing the Copper River, or moving it", "Buying water, or trading for it"],
+        why: "Paragraph 2 says some people wanted to leave and others wanted to stay and wait for the rain." },
+      { dok: 2, p: 2, q: "What evidence did Sabe use to support her idea?",
+        a: "Old maps showed the Copper River once flowed through a different canyon.",
+        d: ["She saw water bubbling up from the ground.", "An elder told her a legend about a hidden lake.", "It had rained in that canyon the year before."],
+        why: "Paragraph 2 says she \"studied old maps and noticed that the Copper River had once flowed through a different canyon.\"" },
+      { dok: 3, p: 3, q: "Which detail best shows that Sabe's determination slowly changed other people's minds?",
+        a: "\"After a week, two of her friends joined her. After a month, half the village was helping.\"",
+        d: ["\"It has not rained there in eleven years.\"", "\"Digging would take months, and they might find nothing.\"", "\"The village council argued for weeks.\""],
+        why: "This detail shows the number of helpers growing over time. People who once doubted her chose to join because she kept going." },
+      { dok: 3, p: 4, q: "Which statement best expresses a theme of the story?",
+        a: "Sticking with an idea that is backed by evidence can solve a problem others think is impossible.",
+        d: ["It is always better to leave home when times are hard.", "Old maps are usually wrong.", "Councils should never argue."],
+        why: "Sabe's idea came from evidence (old maps), and she kept digging even when few believed her. Her persistence found the water." }
+    ]
+  },
+  {
+    name: "Nocturna", colors: ["#7c86d9", "#2c2f72", "#07081f"], keeper: "Dr. Lume, a night-side scientist",
+    greet: "Welcome to the dark side, pilot. Let your eyes adjust. Life here is full of surprises.",
+    title: "Life in the Long Night", genre: "Informational",
+    paras: [
+      "Nocturna is a planet that is always dark on one side. It spins so slowly that the same half always faces away from its sun. Scientists call this side the Long Night. Temperatures there can drop far below freezing, and no plants can grow without sunlight. For a long time, explorers believed nothing could live there.",
+      "They were wrong. The Long Night is full of life that has adapted to the dark. The shadow moth has wings covered in tiny hairs that sense movement in the air, so it can fly without seeing. The deepfur yak grows fur so thick that snow sits on its back without melting. Many animals glow, using light to find mates or to trick hungry predators.",
+      "Since there is no sunlight, food is hard to find. Some creatures live near cracks in the ground where heat escapes from deep inside the planet. Tiny living things called heat mats grow around these cracks, and larger animals eat them. Each crack becomes a small, busy neighborhood in the dark.",
+      "Scientists now believe that if life can survive in Nocturna's Long Night, it might survive in other places once thought impossible."
+    ],
+    qs: [
+      { dok: 2, p: 1, q: "Why is one side of Nocturna always dark?",
+        a: "The planet spins so slowly that the same half always faces away from its sun.",
+        d: ["Thick clouds block all the sunlight.", "The planet is too far from any star.", "The animals there block out the light."],
+        why: "Paragraph 1 explains the cause: \"It spins so slowly that the same half always faces away from its sun.\"" },
+      { dok: 2, p: 3, q: "How do the cracks in the ground help life survive in the Long Night?",
+        a: "Heat escapes from them, so heat mats grow there and become food for larger animals.",
+        d: ["They give animals a place to hide from the sun.", "They collect rainwater for animals to drink.", "They let light shine up from underground."],
+        why: "Paragraph 3 connects the steps: heat escapes, heat mats grow around the cracks, and larger animals eat the heat mats." },
+      { dok: 3, p: 2, q: "Paragraph 2 begins, \"They were wrong.\" How does the author support this claim?",
+        a: "By giving examples of animals that have adapted to live in the dark",
+        d: ["By describing what explorers ate on their trips", "By comparing Nocturna to Earth's moon", "By telling a story about one lost explorer"],
+        why: "Right after the claim, the author describes the shadow moth, the deepfur yak, and glowing animals. Each one is evidence that life does exist there." },
+      { dok: 3, p: 4, q: "Which conclusion is best supported by the whole passage?",
+        a: "Living things can adapt in surprising ways to survive in extreme places.",
+        d: ["The Long Night will soon become warm and sunny.", "Nocturna has more animals than any other planet.", "Explorers should never visit dark planets."],
+        why: "The passage shows animals sensing, staying warm, glowing, and finding food without sunlight. Paragraph 4 says this means life might survive in other \"impossible\" places." }
+    ]
+  },
+  {
+    name: "Tessera", colors: ["#d7dde6", "#7d8796", "#2a2f38"], keeper: "Unit Twelve, a guard robot",
+    greet: "GREETINGS, PILOT. FUEL AVAILABLE. ALSO... A STORY. I HAVE BEEN WAITING TO TELL IT.",
+    title: "Unit Seven's Garden", genre: "Story",
+    paras: [
+      "Tessera is a planet of metal towers and humming machines. The people who built it left long ago, but their robots stayed behind to keep everything running. Each robot has one job. Unit Seven's job is to sweep the plaza in front of the old filling station. It has swept the plaza every day for four hundred years.",
+      "One morning, Unit Seven found something strange between two metal tiles: a small green sprout. Its programming told it to sweep away anything that did not belong. Unit Seven raised its broom. Then it stopped. It scanned the sprout and found that it was alive. Nothing else on the plaza was alive.",
+      "Unit Seven swept around it.",
+      "Each day after that, Unit Seven swept a little more slowly near the sprout. It began collecting drops of clean water from the cooling pipes and carrying them over in its dustpan. The sprout grew into a stalk, and the stalk grew a single yellow flower.",
+      "The other robots noticed. Unit Three, the window-washer, began cleaning the glass above the flower so more light could reach it. Unit Twelve, the guard, began standing nearby. None of them had been programmed to do any of it."
+    ],
+    qs: [
+      { dok: 2, p: 2, q: "Why did Unit Seven stop before sweeping away the sprout?",
+        a: "It scanned the sprout and found that it was alive.",
+        d: ["Its broom was broken.", "Another robot told it to stop.", "The sprout was too big to sweep."],
+        why: "Paragraph 2 says Unit Seven \"scanned the sprout and found that it was alive. Nothing else on the plaza was alive.\"" },
+      { dok: 2, p: 3, q: "What does the sentence \"Unit Seven swept around it\" show?",
+        a: "Unit Seven chose to protect the sprout instead of following its programming.",
+        d: ["Unit Seven did not see the sprout.", "Unit Seven was programmed to care for plants.", "Unit Seven was too slow to finish its job."],
+        why: "Its programming said to sweep away anything that did not belong. Sweeping around the sprout was a choice to keep it safe." },
+      { dok: 3, p: 3, q: "Why did the author most likely make \"Unit Seven swept around it.\" its own one-sentence paragraph?",
+        a: "To make the reader pause on the moment Unit Seven makes its big choice",
+        d: ["Because the author ran out of things to say", "To show that sweeping is boring", "To introduce a new character"],
+        why: "A very short paragraph stands out. Setting it apart makes readers notice that this is the turning point of the story." },
+      { dok: 3, p: 5, q: "Which theme is best supported by the last paragraph?",
+        a: "Caring for something can inspire others to care too.",
+        d: ["Robots should always follow their programming.", "Flowers cannot grow on metal planets.", "Guards are the most important robots."],
+        why: "After Unit Seven cared for the flower, Unit Three and Unit Twelve began helping without being told. One act of care spread to others." }
+    ]
+  },
+  {
+    name: "Veyra", colors: ["#b7e9ff", "#4f8fd1", "#132f5c"], keeper: "Captain Oda, an old navigator",
+    greet: "Last stop before home, pilot. You've come a long way. Sit. Let me show you something.",
+    title: "The Navigator's Map", genre: "Story",
+    paras: [
+      "Veyra is the last filling station before home. It sits on a quiet blue planet where an old navigator named Captain Oda keeps the fuel pumps. Captain Oda has traveled to every planet in the sector, and the walls of her station are covered in maps.",
+      "Most of the maps are perfect, drawn with straight lines and careful numbers. But one map, hung in a frame by the door, is a mess. The lines are crooked. There are coffee stains in one corner and notes scribbled in the margins: \"Got lost here.\" \"Wrong turn. Found a waterfall.\" \"Met a friend.\"",
+      "A traveler once asked Captain Oda why she kept such a sloppy map in a place of honor.",
+      "\"The neat maps show where I meant to go,\" she said. \"That one shows where I actually went. It was my very first trip. I made every mistake a pilot can make, and I learned something from each one.\"",
+      "She tapped a small star drawn at the edge of the paper. Next to it, in shaky letters, were two words: \"Made it.\"",
+      "\"Every pilot who gets home,\" Captain Oda said, \"is carrying a map like that. Most of them just don't know it yet.\""
+    ],
+    qs: [
+      { dok: 3, p: 4, q: "Why does Captain Oda keep the messy map in a place of honor?",
+        a: "It reminds her that her mistakes taught her how to become a real pilot.",
+        d: ["It is the most accurate map she owns.", "She plans to sell it to a museum.", "She forgot to throw it away."],
+        why: "In paragraph 4 she says she made every mistake and \"learned something from each one.\" The map honors that learning, not neatness." },
+      { dok: 3, p: 2, q: "Notes like \"Wrong turn. Found a waterfall.\" suggest that Captain Oda believes...",
+        a: "Mistakes can sometimes lead to good discoveries.",
+        d: ["Pilots should never take wrong turns.", "Waterfalls are dangerous for pilots.", "Maps should only show straight lines."],
+        why: "A wrong turn is a mistake, but it led her to a waterfall. The note shows she valued what she found because of the mistake." },
+      { dok: 3, p: 6, q: "What does Captain Oda most likely mean when she says every pilot who gets home \"is carrying a map like that\"?",
+        a: "Every traveler's journey is full of mistakes and lessons that helped them get home.",
+        d: ["Every pilot is given a messy map before they leave.", "Pilots should draw maps while they fly.", "Only pilots who get lost ever make it home."],
+        why: "She is not talking about a real paper map. She means every journey home includes wrong turns and lessons, even if the pilot hasn't noticed yet." },
+      { dok: 3, p: 4, q: "Think back on your whole journey. Which earlier planet's story shares the most similar lesson with Captain Oda's map?",
+        a: "Cindral, where Jory ruined the bread, learned from it, and baked it perfectly the next day",
+        d: ["Aquara, where the people thank the bellowbacks", "Zephyrine, where people use kites to send letters", "Nocturna, where the animals glow in the dark"],
+        why: "Captain Oda's map is about learning from mistakes. Jory made a mistake by rushing, learned from it, and did it right the next day. That is the same lesson." }
+    ]
+  }
+];
+
+/* ---------- Extra stories: each planet has 3; a play-through uses one per planet ---------- */
+const ORIGINAL_META = {
+  Mossmoor:    { theme: "strengths",   recap: "Pip couldn't glow, so he used his loud croak to guide lost travelers" },
+  Aquara:      { theme: "gratitude",   recap: "the people hold a festival to thank the bellowbacks for their shells" },
+  Cindral:     { theme: "mistakes",    recap: "Jory rushed the bread, learned from his mistake, and baked it right the next day" },
+  Frostveil:   { theme: "kindness",    recap: "Nella gave up winning the race to help her rival" },
+  Zephyrine:   { theme: "choices",     recap: "people are deciding whether to replace their kites with drones" },
+  Quillon:     { theme: "courage",     recap: "Tobin was scared to record his voice, but he tried anyway" },
+  Hollowstone: { theme: "persistence", recap: "Sabe kept digging for fifty-four days until she found water" },
+  Nocturna:    { theme: "nature",      recap: "animals have adapted to live in total darkness" },
+  Tessera:     { theme: "kindness",    recap: "Unit Seven protected a sprout, and other robots began to help" },
+  Veyra:       { theme: "mistakes",    recap: "Captain Oda kept a messy map of her first trip" }
+};
+
+const EXTRA = {
+  Mossmoor: [
+    { title: "How Mossmoor Builds a Boardwalk", genre: "Informational", theme: "teamwork",
+      recap: "frogs, toads, and beavers each did a different job to rebuild the boardwalks",
+      paras: [
+        "The wooden paths that wind through Mossmoor's bogs are called boardwalks. Without them, travelers would sink up to their knees in mud. Every spring, the frogs and toads of Mossmoor work together to fix the boardwalks that were damaged during the winter storms.",
+        "First, the toads search the forest edge for fallen cedar logs. Cedar is the best wood for boardwalks because it does not rot quickly when it gets wet. Next, the beavers chew the logs into flat planks. Beavers are the only animals in Mossmoor with teeth strong enough for the job.",
+        "Then the frogs take over. They line up in a long row and pass each plank from frog to frog until it reaches the broken spot. Finally, the oldest toads tie the planks in place with strong vines. The whole job takes about three days.",
+        "When the boardwalks are finished, everyone celebrates with a Plank Party. Each helper carves their initials into the last plank laid that year, so everyone remembers who built the path."
+      ],
+      qs: [
+        { dok: 1, p: 2, q: "Why is cedar the best wood for boardwalks?",
+          a: "It does not rot quickly when it gets wet.", d: ["It is the lightest wood in the forest.", "It smells nice to travelers.", "It grows right in the middle of the bog."],
+          why: "Paragraph 2 says cedar is best \"because it does not rot quickly when it gets wet.\"" },
+        { dok: 1, p: 2, q: "Who chews the logs into flat planks?",
+          a: "The beavers", d: ["The oldest toads", "The frogs", "The travelers"],
+          why: "Paragraph 2 says, \"the beavers chew the logs into flat planks.\"" },
+        { dok: 2, p: 1, q: "In paragraph 1, what does the word \"damaged\" most likely mean?",
+          a: "Broken or harmed", d: ["Brand new", "Painted", "Very long"],
+          why: "The boardwalks need to be fixed after winter storms. Things that need fixing after a storm have been broken or harmed." },
+        { dok: 2, p: 3, q: "What is the main idea of the whole passage?",
+          a: "Different animals each do a special job so they can repair the boardwalks together.", d: ["Beavers have the strongest teeth in Mossmoor.", "Winter storms on Mossmoor are dangerous.", "The Plank Party is the best party of the year."],
+          why: "Each paragraph shows a different group doing its part: toads find logs, beavers make planks, frogs pass them, and old toads tie them. The big idea is teamwork." }
+      ] },
+    { title: "Bo and the Silver Ring", genre: "Story", theme: "honesty",
+      recap: "Bo returned a silver ring that he really wanted to keep",
+      paras: [
+        "Bo was the smallest bullfrog in his family, but he was the best at diving. Every afternoon he plunged to the bottom of Mossmoor's deepest pond to look for interesting stones.",
+        "One afternoon, something flashed in the mud. Bo grabbed it and swam to the surface. It was a silver ring with a tiny blue star on it. Bo had never seen anything so beautiful. He slipped it onto his toe and admired it in the sunlight.",
+        "That evening, Bo heard a traveler talking at the filling station. \"I lost my grandmother's ring when my boat tipped over,\" she said sadly. \"It had a little blue star on it.\"",
+        "Bo looked down at his toe. He wanted to keep the ring. Nobody had seen him find it. But he thought about how he would feel if he lost something that had belonged to his own grandmother.",
+        "Bo hopped over and held out the ring. The traveler gasped and hugged him so tightly he squeaked. Before she left, she gave Bo a gift: a smooth blue stone shaped like a star. Bo still keeps it on the windowsill of his lily-pad home."
+      ],
+      qs: [
+        { dok: 1, p: 2, q: "Where did Bo find the ring?",
+          a: "In the mud at the bottom of the deepest pond", d: ["On the boardwalk", "Inside the traveler's boat", "Under a lily pad near his home"],
+          why: "Paragraph 1 says Bo dives to the bottom of the deepest pond, and paragraph 2 says something flashed in the mud." },
+        { dok: 1, p: 2, q: "What did the ring look like?",
+          a: "It was silver with a tiny blue star on it.", d: ["It was gold with a green frog on it.", "It was made of smooth blue stone.", "It was silver with a red heart on it."],
+          why: "Paragraph 2 describes \"a silver ring with a tiny blue star on it.\"" },
+        { dok: 2, p: 4, q: "What helped Bo decide to give the ring back?",
+          a: "He imagined how he would feel if he lost something that belonged to his grandmother.", d: ["Someone saw him find the ring.", "The ring did not fit on his toe.", "The traveler offered him a reward first."],
+          why: "Paragraph 4 says Bo \"thought about how he would feel if he lost something that had belonged to his own grandmother.\"" },
+        { dok: 2, p: 5, q: "Which word best describes Bo at the end of the story?",
+          a: "Honest", d: ["Greedy", "Lazy", "Shy"],
+          why: "Bo wanted the ring and nobody saw him find it, but he still gave it back. That is what an honest person does." }
+      ] }
+  ],
+  Aquara: [
+    { title: "Zip the Flying Fish", genre: "Story", theme: "persistence",
+      recap: "Kai practiced with Zip every day until the fish could carry a letter",
+      paras: [
+        "On Aquara, every raft-town has a fish keeper who trains the flying fish that carry messages between towns. When Kai turned ten, the fish keeper gave him his very first fish to train. It was small and silver, and Kai named it Zip.",
+        "Zip was not a good flier. On the first day, he glided only as far as the edge of the raft before he splashed into the water. On the second day, he flew in a circle and landed in a bucket of seaweed. The other kids laughed.",
+        "Kai did not give up. Every morning, he tossed Zip a little farther and gave him a tiny shrimp each time he flew straight. Slowly, Zip's glides grew longer.",
+        "After two months, the fish keeper handed Kai a letter wrapped in a waterproof leaf. \"This goes to the town of Coralbend,\" she said. Kai whispered, \"Fly straight, Zip,\" and let him go. Three days later, Zip came back carrying a reply."
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "What is the fish keeper's job on Aquara?",
+          a: "Training the flying fish that carry messages", d: ["Catching fish for dinner", "Steering the raft-town", "Cleaning bellowback shells"],
+          why: "Paragraph 1 says the fish keeper \"trains the flying fish that carry messages between towns.\"" },
+        { dok: 1, p: 3, q: "What did Kai give Zip each time he flew straight?",
+          a: "A tiny shrimp", d: ["A piece of seaweed", "A shiny shell", "A new name"],
+          why: "Paragraph 3 says Kai \"gave him a tiny shrimp each time he flew straight.\"" },
+        { dok: 2, p: 3, q: "Which word best describes Kai?",
+          a: "Patient", d: ["Careless", "Bossy", "Jealous"],
+          why: "Even when Zip kept failing and other kids laughed, Kai practiced a little every day for two months. That shows patience." },
+        { dok: 2, p: 4, q: "What lesson does this story teach?",
+          a: "Practicing a little at a time can help you get better.", d: ["Fish are better than birds at carrying mail.", "You should not care what others think about anything.", "Some animals can never learn new things."],
+          why: "Zip started out flying poorly, but daily practice slowly made his glides longer until he could deliver a letter." }
+      ] },
+    { title: "Tali's Storm Journal", genre: "Journal", theme: "teamwork",
+      recap: "raft-towns tied themselves together to stay safe in a storm",
+      paras: [
+        "Day 1\nThe sky turned green this morning. Grandpa says a green sky means a big storm is coming. All the raft-towns nearby are sailing toward each other so we can tie our rafts together. Grandpa says one raft can tip over in big waves, but ten rafts tied together are as steady as land.",
+        "Day 2\nThe storm hit last night. Waves crashed over the edge of our raft, and the wind howled like a hungry bellowback. My job was to hold the lantern while Mom and the neighbors tightened the ropes. My arms got so tired, but I didn't put it down.",
+        "Day 3\nThe storm is over! Not a single raft tipped. Today, kids from four different towns played tag across all the rafts. I made a new friend named Rook from the town of Driftwell.",
+        "Day 4\nThe towns untied the ropes this morning and drifted apart. I waved to Rook until his raft was just a speck. Grandpa says we will probably meet again in a few years, when the currents bring us back together."
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "According to Grandpa, what does a green sky mean?",
+          a: "A big storm is coming.", d: ["The bellowbacks are singing.", "It is time for the Shell Festival.", "The water will be calm."],
+          why: "In the Day 1 entry, Tali writes, \"Grandpa says a green sky means a big storm is coming.\"" },
+        { dok: 1, p: 2, q: "What was Tali's job during the storm?",
+          a: "Holding the lantern", d: ["Tightening the ropes", "Steering the raft", "Feeding the flying fish"],
+          why: "The Day 2 entry says, \"My job was to hold the lantern while Mom and the neighbors tightened the ropes.\"" },
+        { dok: 2, p: 1, q: "Why did the raft-towns tie themselves together?",
+          a: "Many rafts tied together are steadier and less likely to tip over.", d: ["So the kids could play tag.", "So they could all sail to Driftwell.", "So the bellowbacks could find them."],
+          why: "Grandpa explains in Day 1 that one raft can tip, but ten rafts tied together are \"as steady as land.\"" },
+        { dok: 2, p: 4, q: "How does Tali most likely feel in the Day 4 entry?",
+          a: "A little sad to say goodbye, but hopeful about seeing Rook again", d: ["Angry that the storm is over", "Scared that another storm is coming", "Glad to be rid of Rook"],
+          why: "Tali waves until Rook is just a speck, which shows she will miss him. Grandpa's words that they will meet again give her hope." }
+      ] }
+  ],
+  Cindral: [
+    { title: "Emberglass", genre: "Informational", theme: "nature",
+      recap: "emberglass forms when lava cools too fast to make crystals",
+      paras: [
+        "On Cindral, the most valuable treasure is not gold or jewels. It is emberglass, a shiny black glass that forms when lava cools very quickly. Cindralians use emberglass to make windows, bowls, and even mirrors.",
+        "Emberglass forms in a special way. When hot lava flows into the cold water of Cindral's underground lakes, the outside of the lava cools in just a few seconds. It cools so fast that it does not have time to form crystals the way normal rock does. Instead, it becomes smooth and glassy.",
+        "Gathering emberglass is dangerous work. Collectors wear thick suits made from fireproof moss and use long poles with nets on the end. They must wait until the steam clears before they can see the glass sparkling in the water.",
+        "Emberglass has one surprising feature. When you hold a piece up to the light, you can see thin red lines glowing inside it, like tiny rivers of fire frozen in place. Cindralians call these lines \"the volcano's memory.\""
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "What do Cindralians make from emberglass?",
+          a: "Windows, bowls, and mirrors", d: ["Bread pans and tongs", "Fireproof suits", "Coins and jewelry"],
+          why: "Paragraph 1 says Cindralians \"use emberglass to make windows, bowls, and even mirrors.\"" },
+        { dok: 1, p: 3, q: "What do emberglass collectors wear?",
+          a: "Thick suits made from fireproof moss", d: ["Suits made of emberglass", "Light cotton clothes", "Metal armor"],
+          why: "Paragraph 3 says, \"Collectors wear thick suits made from fireproof moss.\"" },
+        { dok: 2, p: 2, q: "Why does emberglass turn smooth instead of forming crystals?",
+          a: "It cools so fast that crystals don't have time to form.", d: ["It is polished by the collectors.", "It stays hot for a very long time.", "The steam melts the crystals away."],
+          why: "Paragraph 2 explains the cause: the lava \"cools so fast that it does not have time to form crystals.\"" },
+        { dok: 2, p: 4, q: "Why do Cindralians call the red lines \"the volcano's memory\"?",
+          a: "The lines look like the lava the glass came from, frozen in place.", d: ["The lines show a map of the volcano.", "Volcanoes can think and remember.", "The lines appear only on old pieces of glass."],
+          why: "Paragraph 4 describes the lines as \"tiny rivers of fire frozen in place.\" They are like a leftover picture of the lava, which is why it seems like a memory." }
+      ] },
+    { title: "Ollie and the Cinder Lizards", genre: "Story", theme: "courage",
+      recap: "Ollie warned the village about the volcano even when grown-ups laughed",
+      paras: [
+        "Ollie spent every afternoon watching the cinder lizards that lived on the slopes of Mount Grumble. The little red lizards napped on warm rocks and chased beetles. Ollie knew all of their favorite spots.",
+        "One afternoon, something was wrong. The lizards were not napping. They were running down the mountain as fast as their tiny legs could carry them. Ollie remembered something his grandmother had told him: \"Animals can feel the ground shake before people can.\"",
+        "Ollie ran to the village square. \"Mount Grumble is going to erupt!\" he shouted. Some of the grown-ups laughed. \"That volcano has been quiet for twenty years,\" one miner said.",
+        "Ollie's heart pounded, but he did not stop. He told the mayor about the lizards and about his grandmother's words. The mayor listened carefully. Then she rang the warning bell, and everyone moved to the safe caves on the other side of the valley.",
+        "That night, Mount Grumble roared to life. Lava poured down the slope, but everyone in the village was safe."
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "Where did the cinder lizards live?",
+          a: "On the slopes of Mount Grumble", d: ["In the village square", "In the safe caves", "Inside the bakery"],
+          why: "Paragraph 1 says the lizards \"lived on the slopes of Mount Grumble.\"" },
+        { dok: 1, p: 4, q: "What did the mayor do after she listened to Ollie?",
+          a: "She rang the warning bell.", d: ["She laughed at him.", "She climbed the volcano.", "She went to look at the lizards."],
+          why: "Paragraph 4 says, \"Then she rang the warning bell.\"" },
+        { dok: 2, p: 2, q: "How did Ollie figure out that something was wrong?",
+          a: "The lizards were running away instead of napping, and he remembered his grandmother's words.", d: ["He felt the ground shaking.", "A miner told him the volcano would erupt.", "He saw lava coming down the slope."],
+          why: "Paragraph 2 shows Ollie noticed the lizards acting differently and connected it to his grandmother's saying about animals feeling the ground shake." },
+        { dok: 2, p: 4, q: "Which word best describes Ollie in paragraph 4?",
+          a: "Brave", d: ["Silly", "Bored", "Rude"],
+          why: "Even though grown-ups laughed and his heart pounded, Ollie kept going and told the mayor. That takes bravery." }
+      ] }
+  ],
+  Frostveil: [
+    { title: "The Ice Gardens", genre: "Informational", theme: "problem-solving",
+      recap: "people grow vegetables inside domes made of clear ice",
+      paras: [
+        "Frostveil is far too cold for plants to grow outside. Even so, the people who live there eat fresh vegetables every day. Their secret is the ice garden.",
+        "An ice garden is a dome built from blocks of perfectly clear ice. Ice may seem like a strange material for a garden, but clear ice lets sunlight pass through, just like glass. Inside the dome, the sunlight warms the air. The thick ice walls also block the freezing wind, so the warm air stays trapped inside.",
+        "Gardeners must be careful about one thing: the dome cannot get too warm. If the air inside gets much warmer than a cool spring day, the walls start to drip and melt. To prevent this, gardeners open small vents in the roof whenever the dome warms up too much. They are always balancing between too cold for the plants and too warm for the walls.",
+        "The most popular crop in the ice gardens is the snowbean, a purple bean that grows well in cool air. Frostveil families add snowbeans to almost every meal, from breakfast porridge to bedtime soup."
+      ],
+      qs: [
+        { dok: 1, p: 4, q: "What is the most popular crop in the ice gardens?",
+          a: "The snowbean", d: ["The frost carrot", "The ice berry", "The silver pea"],
+          why: "Paragraph 4 says, \"The most popular crop in the ice gardens is the snowbean.\"" },
+        { dok: 2, p: 2, q: "How does an ice garden stay warm enough for plants?",
+          a: "Sunlight shines through the clear ice to warm the air, and the thick walls keep the wind out.", d: ["Fires are kept burning inside all day.", "The plants make their own heat.", "Hot water runs under the floor."],
+          why: "Paragraph 2 gives two reasons: clear ice lets sunlight in to warm the air, and the walls block wind so the warm air stays trapped." },
+        { dok: 2, p: 3, q: "In paragraph 3, what does \"balancing\" mean?",
+          a: "Keeping things just right between two problems", d: ["Standing on one foot", "Counting the vegetables", "Building the walls thicker"],
+          why: "The gardeners have to stop the dome from getting too cold for plants and too warm for the walls. Keeping it in between is balancing." },
+        { dok: 3, p: 2, q: "Which statement would the author most likely agree with?",
+          a: "The people of Frostveil solved a hard problem by using their cold world as a tool.", d: ["Frostveil should bring in vegetables from other planets.", "Ice gardens are too much work to be worth it.", "Glass would be a better material than ice."],
+          why: "The author shows how ice, the very thing that makes Frostveil cold, is used to build warm gardens. The tone of paragraph 1 (\"Their secret...\") shows the author admires this clever solution." }
+      ] },
+    { title: "Waiting for the Thaw", genre: "Poem", unit: "Stanza", theme: "patience",
+      recap: "a grandpa carved a wooden bird to help a child wait for spring",
+      greet: "This poem was written by a Frostveil child during the long dark. Read it slowly, like we do.",
+      paras: [
+        "For ninety days the sun stays hidden,\nthe lake is locked in white.\nMy grandpa says, \"The thaw is coming.\"\nI say, \"It's always night.\"",
+        "I count the stars, I count the drifts,\nI count each frozen day.\nMy grandpa carves a wooden bird\nand whittles time away.",
+        "Then one gray morning, something drips\nfrom icicles outside.\nA crack runs singing down the lake.\nThe sky turns pink and wide.",
+        "My grandpa sets his bird outside\nupon the melting sill.\n\"I carved it so you'd have a bird\nbefore the real ones will.\"",
+        "The real ones come a few weeks late\nand land on every tree.\nBut I still like the wooden bird\nmy grandpa carved for me."
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "How many days does the sun stay hidden?",
+          a: "Ninety", d: ["Nine", "Nineteen", "One hundred"],
+          why: "Stanza 1 begins, \"For ninety days the sun stays hidden.\"" },
+        { dok: 2, p: 1, q: "What does the speaker mean by saying \"It's always night\"?",
+          a: "The dark winter feels like it will never end.", d: ["The speaker likes nighttime best.", "The speaker cannot sleep.", "Frostveil has no sun at all."],
+          why: "The sun really does come back later in the poem, so the speaker is exaggerating. The long darkness just feels endless." },
+        { dok: 2, p: 3, q: "Which details in stanza 3 show that the thaw has begun?",
+          a: "Icicles drip, the lake ice cracks, and the sky turns pink.", d: ["The real birds land on the trees.", "Grandpa carves a wooden bird.", "The speaker counts the stars."],
+          why: "Dripping icicles, a cracking lake, and a pink sky are all signs that warmth and sunlight are returning." },
+        { dok: 3, p: 5, q: "Why does the speaker still like the wooden bird, even after the real birds arrive?",
+          a: "It reminds the speaker of how Grandpa cared for them during the long wait.", d: ["The wooden bird can sing better.", "The real birds are too far away to see.", "The speaker doesn't like real birds."],
+          why: "Grandpa carved it \"so you'd have a bird before the real ones will.\" It was a gift to help the child through the dark days, so it means more than a real bird." }
+      ] }
+  ],
+  Zephyrine: [
+    { title: "Pell and the Tumble Clouds", genre: "Story", theme: "mistakes",
+      recap: "Pell ignored a warning, tore his kite, and learned to read the sky",
+      paras: [
+        "Pell had built the most beautiful kite on Zephyrine. It was shaped like a dragon, with a long silk tail painted in every color of the sunset. Pell couldn't wait to fly it in the Windday Parade.",
+        "On the morning of the parade, Pell's teacher, Master Gale, looked at the sky and frowned. Puffy gray clouds were rolling in over the hills. \"Tumble clouds,\" she said. \"Fly your small kite today, Pell. Save the dragon for a calmer day.\"",
+        "Pell didn't want to wait. Everyone would see the dragon kite! When Master Gale wasn't looking, Pell sent the dragon soaring into the sky. For a few moments, it was perfect. The crowd pointed and cheered.",
+        "Then a gust slammed into the kite. The silk ripped down the middle, and the dragon tumbled into a thorn bush.",
+        "That evening, Master Gale helped Pell sew the silk back together. She didn't scold him. She just said, \"The sky always tells you what it's going to do. The hard part is listening.\" The next week, under long ribbon clouds, the dragon kite flew higher than ever."
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "What shape was Pell's kite?",
+          a: "A dragon", d: ["A bird", "A box", "A fish"],
+          why: "Paragraph 1 says the kite \"was shaped like a dragon.\"" },
+        { dok: 2, p: 2, q: "Why did Master Gale tell Pell to fly his small kite instead?",
+          a: "Tumble clouds meant strong gusts that could ruin the dragon kite.", d: ["The dragon kite was not finished yet.", "Small kites always win the parade.", "She wanted to fly the dragon kite herself."],
+          why: "Master Gale saw tumble clouds. Clouds like that warn of sudden gusts, so she wanted Pell to save the dragon for a calmer day." },
+        { dok: 2, p: 3, q: "Why did Pell fly the dragon kite anyway?",
+          a: "He wanted everyone at the parade to see it.", d: ["He didn't hear Master Gale.", "His small kite was broken.", "The tumble clouds had gone away."],
+          why: "Paragraph 3 says, \"Pell didn't want to wait. Everyone would see the dragon kite!\"" },
+        { dok: 3, p: 5, q: "What does Master Gale mean when she says, \"The hard part is listening\"?",
+          a: "It's easy to notice warning signs, but hard to pay attention to them when you really want something.", d: ["Pell has trouble hearing.", "The wind is too loud on parade day.", "Teachers should talk more quietly."],
+          why: "Pell saw the clouds and heard the warning, but he wanted to show off his kite. Master Gale is saying the real challenge is choosing to pay attention." }
+      ] },
+    { title: "The Wind Harps", genre: "Informational", theme: "nature",
+      recap: "wind harps sing louder and higher as the wind grows stronger",
+      paras: [
+        "If you visit Zephyrine, you might hear music before you even land. The sound comes from wind harps, tall wooden frames strung with dozens of metal strings. When the wind blows across the strings, they hum and sing.",
+        "Wind harps are not just for music. They are also a way to predict the weather. A gentle breeze makes the harps hum softly in low notes. A strong wind makes them play high, fast notes. When the harps begin to shriek, it means a dangerous windstorm is on its way, and everyone hurries indoors.",
+        "The first wind harp was built more than three hundred years ago by a shepherd named Alon. He noticed that the wind made a whistling sound when it blew through his fence. He tied strings across the fence posts to see what would happen. Within a few years, every village had a harp of its own.",
+        "Today, there are more than two thousand wind harps on Zephyrine. Children learn to \"read\" the harps the same way they learn to read books. A Zephyrine saying goes, \"Trust the harp before you trust the sky.\""
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "What are wind harps made of?",
+          a: "Tall wooden frames strung with metal strings", d: ["Glass tubes filled with air", "Kites tied to tall towers", "Stone walls with holes in them"],
+          why: "Paragraph 1 describes \"tall wooden frames strung with dozens of metal strings.\"" },
+        { dok: 2, p: 2, q: "How are the sounds of the harps related to the strength of the wind?",
+          a: "The stronger the wind, the higher and faster the notes.", d: ["The harps are quiet when the wind is strong.", "The harps play the same song in every wind.", "Only gentle winds make the harps play."],
+          why: "Paragraph 2 moves from a gentle breeze (soft, low notes) to strong wind (high, fast notes) to dangerous wind (shrieking)." },
+        { dok: 2, p: 3, q: "What led Alon to build the first wind harp?",
+          a: "He heard the wind whistling through his fence and wanted to see what strings would do.", d: ["The village asked him to build one.", "He wanted to scare away wolves.", "He read about harps in a book."],
+          why: "Paragraph 3 says Alon noticed the whistling and \"tied strings across the fence posts to see what would happen.\"" },
+        { dok: 3, p: 4, q: "What does the saying \"Trust the harp before you trust the sky\" suggest?",
+          a: "The harps can warn of dangerous wind before you can see any signs in the sky.", d: ["The sky on Zephyrine is always clear.", "Harp music is more beautiful than clouds.", "People should never look at the sky."],
+          why: "The harps react to the wind itself, so they can signal a coming storm early. The saying tells people to rely on the harps' warning." }
+      ] }
+  ],
+  Quillon: [
+    { title: "How Quillon Crystals Grow", genre: "Informational", theme: "nature",
+      recap: "crystals grow a hair's width each night as minerals dry",
+      paras: [
+        "The crystals of Quillon look like trees, but they are not alive. They grow in a completely different way. Deep underground, water filled with minerals slowly seeps upward through tiny cracks in the rock.",
+        "When this water reaches the surface, it dries up in the cool night air. The minerals that were in the water are left behind and stick to the crystal. Layer by layer, night after night, the crystal grows taller. A crystal grows only about the width of a hair each night.",
+        "Because they grow so slowly, the tallest crystals in the Crystal Grove are thousands of years old. Scientists can tell a crystal's age by shining a light through it and counting its thin layers, much like counting the rings of a tree.",
+        "The voice-holding power of the crystals is still a mystery. Some scientists think the layers trap sound waves, the way a seashell seems to hold the sound of the ocean. Others think the answer is hidden in the special minerals. Every year, researchers come to Quillon hoping to solve the puzzle."
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "Where does the water that helps crystals grow come from?",
+          a: "Deep underground, seeping up through cracks", d: ["Rain that falls from the clouds", "Rivers that flow through the grove", "Gardeners who water them"],
+          why: "Paragraph 1 says water \"slowly seeps upward through tiny cracks in the rock\" from deep underground." },
+        { dok: 2, p: 2, q: "Why are the tallest crystals thousands of years old?",
+          a: "They grow only a hair's width each night, so getting tall takes a very long time.", d: ["They were planted by the first Quillonians.", "Crystals stop growing after one year.", "Old crystals grow faster than young ones."],
+          why: "Paragraph 2 says crystals grow only about the width of a hair each night. Paragraph 3 connects that slow growth to their great age." },
+        { dok: 2, p: 3, q: "How is finding a crystal's age like finding a tree's age?",
+          a: "In both, you count layers or rings.", d: ["In both, you measure how tall they are.", "In both, you ask the oldest Quillonian.", "In both, you cut them in half."],
+          why: "Paragraph 3 says scientists count a crystal's layers \"much like counting the rings of a tree.\"" },
+        { dok: 3, p: 4, q: "Why did the author include two different scientific ideas in paragraph 4?",
+          a: "To show that scientists disagree and the mystery is not solved yet", d: ["To prove that the seashell idea is correct", "To explain exactly how the crystals hold voices", "To show that scientists are not interested in the crystals"],
+          why: "The author presents two possible explanations and then says researchers keep coming \"hoping to solve the puzzle.\" No answer has been proven yet." }
+      ] },
+    { title: "Words That Stay", genre: "Story", theme: "kindness",
+      recap: "Isa apologized after her unkind words were saved in a crystal",
+      paras: [
+        "Isa and her best friend, Dov, were practicing for the Quillon Song Contest. Dov was trying his hardest, but his voice cracked on every high note.",
+        "Later, Isa walked through the grove, still grumbling. \"Dov sounds like a squeaky door,\" she muttered. \"We're going to lose because of him.\" She didn't notice that her hand was resting on a young crystal.",
+        "The next day, Dov touched that same crystal and heard every word. He walked away without saying anything, and he didn't come to practice.",
+        "Isa felt sick. She asked her grandmother if there was a way to erase a crystal. \"No,\" her grandmother said gently. \"Words that go into a crystal stay forever. Words that go into a person stay a long time too.\"",
+        "Isa found Dov sitting by the river. She told him she was sorry and that she had been wrong. Then she said something she should have said all along: \"You're the bravest singer I know. You keep trying even when it's hard.\" Dov was quiet for a while. Then he nodded, and they walked back to practice together."
+      ],
+      qs: [
+        { dok: 1, p: 1, q: "What was hard for Dov when he sang?",
+          a: "His voice cracked on the high notes.", d: ["He forgot the words.", "He sang too quietly.", "He was afraid of the crystals."],
+          why: "Paragraph 1 says \"his voice cracked on every high note.\"" },
+        { dok: 2, p: 3, q: "How did Dov find out what Isa had said about him?",
+          a: "He touched the crystal she had been touching when she spoke.", d: ["Isa told him at practice.", "Her grandmother told him.", "He was hiding in the grove."],
+          why: "Paragraph 2 says Isa's hand was on a crystal, and paragraph 3 says Dov \"touched that same crystal and heard every word.\"" },
+        { dok: 2, p: 4, q: "How did Isa's feelings change from paragraph 2 to paragraph 4?",
+          a: "She went from annoyed to guilty.", d: ["She went from happy to bored.", "She went from guilty to proud.", "Her feelings stayed the same."],
+          why: "In paragraph 2 she grumbles about Dov. In paragraph 4 she \"felt sick\" and wanted to erase what she said, which shows guilt." },
+        { dok: 3, p: 4, q: "What does the grandmother mean by \"Words that go into a person stay a long time too\"?",
+          a: "Hurtful words can stay in someone's memory and feelings for a long time.", d: ["People have crystals inside them.", "People should never talk to each other.", "Dov will forget what Isa said by tomorrow."],
+          why: "She compares a person to a crystal. Crystals keep words forever, and people also remember words that hurt them, so we should choose words carefully." }
+      ] }
+  ],
+  Hollowstone: [
+    { title: "The Fog Catchers", genre: "Informational", theme: "problem-solving",
+      recap: "fine nets catch water from the morning fog",
+      paras: [
+        "On Hollowstone, it almost never rains. But on many mornings, a thick fog rolls through the canyons. For years, people watched the fog drift past and disappear by noon. Then someone wondered: what if the water in the fog could be caught?",
+        "Today, tall nets called fog catchers stand along the canyon rims. Each net is made of very fine mesh, like a giant window screen. When fog blows through the net, tiny droplets of water stick to the threads. The droplets join together, grow heavier, and slide down into a gutter at the bottom. From there, pipes carry the water to storage tanks in the village.",
+        "A single large fog catcher can collect hundreds of liters of water on a foggy morning. That is enough to fill about a thousand cups. The nets do not need electricity or fuel, and they make no noise.",
+        "Fog catchers have limits, though. They only work where fog is common, and they collect nothing on clear days. For that reason, most villages use fog catchers alongside wells, not instead of them."
+      ],
+      qs: [
+        { dok: 2, p: 2, q: "Which choice best summarizes how a fog catcher collects water?",
+          a: "Droplets stick to the mesh, join together, slide into a gutter, and flow through pipes to tanks.", d: ["Rain falls into the net and is poured into cups.", "A pump pulls water out of the fog.", "The net is dipped into a river each morning."],
+          why: "Paragraph 2 describes these steps in order, from droplets sticking to the threads to pipes carrying water to the tanks." },
+        { dok: 2, p: 2, q: "Why does the author compare the net to \"a giant window screen\"?",
+          a: "To help readers picture how fine the mesh is", d: ["To show that the nets keep out bugs", "To explain that the nets are made of glass", "To show that the nets are found inside houses"],
+          why: "Most readers know what a window screen looks like. The comparison helps them imagine a net with very tiny holes." },
+        { dok: 3, p: 3, q: "Which sentence best supports the idea that fog catchers are good for the environment?",
+          a: "\"The nets do not need electricity or fuel, and they make no noise.\"", d: ["\"Then someone wondered: what if the water in the fog could be caught?\"", "\"They only work where fog is common.\"", "\"Tall nets called fog catchers stand along the canyon rims.\""],
+          why: "Using no electricity or fuel and making no noise means fog catchers don't pollute. That is the strongest evidence for this idea." },
+        { dok: 3, p: 4, q: "How does the author most likely feel about fog catchers?",
+          a: "They are a clever and useful invention, but they can't solve the water problem alone.", d: ["They are useless and should be taken down.", "They are the only water source villages need.", "They are too noisy to use near homes."],
+          why: "The author praises how much water they collect without fuel (paragraph 3), then explains their limits and why villages also need wells (paragraph 4)." }
+      ] },
+    { title: "Two Villages, One Spring", genre: "Story", theme: "teamwork",
+      recap: "two rival villages started trading water for honey cakes",
+      paras: [
+        "For a hundred years, the villages of Redcliff and Stonebrook had been rivals. They sat on opposite sides of the Great Canyon, and they argued about everything: whose goats were fatter, whose bread was better, and whose side of the canyon got the best sunsets.",
+        "Then the drought came. Redcliff's well dried up first. The people of Redcliff knew that Stonebrook still had a spring, but no one wanted to ask for help. \"We'd rather go thirsty than beg from Stonebrook,\" the Redcliff elders grumbled.",
+        "A girl from Redcliff named Tamsin thought this was foolish. One morning, she climbed down into the canyon and up the other side, carrying an empty jug and a basket of Redcliff's famous honey cakes. She knocked on the door of Stonebrook's leader.",
+        "\"We need water,\" she said. \"We can't pay with coins, but we can trade. Our village has the best beekeepers on Hollowstone.\" The leader of Stonebrook tasted a honey cake and raised an eyebrow. \"These are better than ours,\" he admitted.",
+        "By the end of the month, a rope bridge stretched across the canyon. Water jugs went one way, and honey cakes went the other. The two villages still argue about sunsets, but now they do it over dinner together."
+      ],
+      qs: [
+        { dok: 2, p: 2, q: "Why didn't the people of Redcliff ask Stonebrook for help at first?",
+          a: "They were too proud to ask their rivals for anything.", d: ["They didn't know Stonebrook had a spring.", "The canyon was too dangerous to cross.", "They had plenty of water already."],
+          why: "The elders said they would \"rather go thirsty than beg from Stonebrook.\" Pride kept them from asking." },
+        { dok: 2, p: 4, q: "Why did Tamsin bring honey cakes to Stonebrook?",
+          a: "To trade them for water, since Redcliff had no coins to pay", d: ["To celebrate the end of the drought", "To win a baking contest", "To apologize for an old argument"],
+          why: "In paragraph 4 Tamsin says, \"We can't pay with coins, but we can trade.\"" },
+        { dok: 3, p: 5, q: "Why did the author end with the sentence about arguing over sunsets at dinner?",
+          a: "To show that the villages became friends, even though they still disagree about small things", d: ["To prove that Stonebrook has better sunsets", "To show that the villages are still enemies", "To explain how the rope bridge was built"],
+          why: "Arguing \"over dinner together\" is a friendly picture. The villages still have small disagreements, but their relationship has changed." },
+        { dok: 3, p: 3, q: "Which statement best expresses the theme of the story?",
+          a: "Working with others, even rivals, can solve problems that pride makes worse.", d: ["Honey cakes are the best food on Hollowstone.", "It is better to go thirsty than to ask for help.", "Children should never cross canyons alone."],
+          why: "Pride kept Redcliff thirsty. When Tamsin reached out to make a fair trade, both villages gained something and became friends." }
+      ] }
+  ],
+  Nocturna: [
+    { title: "Juna Turns Off the Lamp", genre: "Story", theme: "courage",
+      recap: "Juna turned off her lamp and discovered the glowing night",
+      paras: [
+        "Juna's mother was a scientist at the research station on Nocturna's Long Night side. Juna loved the station's bright hallways and warm kitchen. What she did not love was the darkness outside the windows. It pressed against the glass like a heavy black blanket.",
+        "\"Come out on the observation deck with me,\" her mother said one evening. \"There's something I want you to see.\" Juna shook her head. \"It's too dark. There's nothing out there.\"",
+        "Her mother handed her a small lamp. \"Then bring this. You can keep it on the whole time.\" Juna followed her mother onto the deck, holding the lamp so tightly her fingers hurt.",
+        "They sat together in silence. After a while, her mother said, \"Now, try turning the lamp off. Just for one minute.\" Juna's heart thumped. Slowly, she pressed the switch.",
+        "At first, there was only black. Then, one by one, tiny lights appeared. Blue specks drifted over the snow. Green ribbons rippled across a frozen pond. Far away, a herd of deepfur yaks glowed faintly as they walked. Juna let out a long breath. \"It was here all along,\" she whispered. She did not turn the lamp back on."
+      ],
+      qs: [
+        { dok: 2, p: 1, q: "What does the comparison \"like a heavy black blanket\" show about how Juna feels?",
+          a: "The darkness feels heavy and scary to her.", d: ["She thinks the darkness is cozy and warm.", "She wants to go to sleep.", "She thinks the windows need curtains."],
+          why: "Something heavy pressing against the glass sounds smothering and threatening. The comparison shows how uneasy the dark makes Juna feel." },
+        { dok: 2, p: 3, q: "Why did Juna's mother let her bring a lamp?",
+          a: "So Juna would feel safe enough to come outside", d: ["So they could read on the deck", "Because the deck was dangerous", "So Juna could find the yaks"],
+          why: "Juna refused to go because it was too dark. Letting her keep a light on was a way to help her feel safe enough to try." },
+        { dok: 3, p: 4, q: "Why did the mother ask Juna to turn off the lamp for \"just one minute\"?",
+          a: "Trying something scary for a short time is an easier first step.", d: ["The lamp's battery was running low.", "She wanted Juna to fall asleep.", "One minute is how long the lights last."],
+          why: "Asking for only one minute made the challenge feel small enough to try. That small step let Juna discover the lights, and then she chose to keep the lamp off." },
+        { dok: 3, p: 5, q: "What does \"It was here all along\" show about how Juna has changed?",
+          a: "She realizes the darkness she feared was full of beauty she couldn't see before.", d: ["She is still too scared to look outside.", "She thinks the lights were brought there by her mother.", "She wants to go back inside right away."],
+          why: "At the start, Juna said \"There's nothing out there.\" At the end, she sees the night was full of life the whole time, and she leaves the lamp off." }
+      ] },
+    { title: "Six Years in the Dark", genre: "Interview", theme: "curiosity",
+      recap: "an explorer learned to be curious about the things that scared her",
+      paras: [
+        "Explorer Ren Takada has spent more time on Nocturna's Long Night side than anyone else: six full years. We asked her about life in the dark.",
+        "Q: What was the hardest part of living in the Long Night?\nA: Honestly, it was sleep. Your body expects the sun to rise and set. Without it, I'd feel wide awake at strange hours. Our team finally solved it with lamps that slowly brightened each \"morning\" and dimmed each \"night.\"",
+        "Q: What surprised you most?\nA: The noise! People imagine the dark side is silent, but it's loud. The ice cracks and groans. Shadow moths buzz. Deepfur yaks call to each other with long, low hoots that you can feel in your chest.",
+        "Q: Were you ever scared?\nA: All the time, at first. Once, my light ran out of power during a storm, and I had to walk back to camp in total darkness, following a rope we had tied between the tents. That's when I learned to trust my other senses.",
+        "Q: What advice would you give young explorers?\nA: Be curious about the things that scare you. Nearly everything I was afraid of on Nocturna turned out to be something amazing I didn't understand yet."
+      ],
+      qs: [
+        { dok: 2, p: 2, q: "How did Ren's team solve their sleep problem?",
+          a: "They used lamps that copied a sunrise and sunset.", d: ["They moved to the sunny side of the planet.", "They slept only during storms.", "They listened to the deepfur yaks."],
+          why: "Paragraph 2 says the lamps \"slowly brightened each 'morning' and dimmed each 'night,'\" just like the sun would." },
+        { dok: 2, p: 4, q: "In paragraph 4, what does \"trust my other senses\" most likely mean?",
+          a: "Rely on hearing and touch instead of sight", d: ["Ask other explorers for directions", "Use a different flashlight", "Stay in one place and wait"],
+          why: "Ren was in total darkness and followed a rope. Without her eyes, she had to use touch and hearing to find her way." },
+        { dok: 3, p: 5, q: "How did Ren's feelings about the Long Night change over six years?",
+          a: "She went from being scared to being curious and amazed.", d: ["She went from loving it to hating it.", "She was never scared at all.", "She became more scared every year."],
+          why: "In paragraph 4 she says she was scared \"all the time, at first.\" In paragraph 5, she says the scary things turned out to be amazing." },
+        { dok: 3, p: 5, q: "Why did the interviewer most likely end with Ren's advice?",
+          a: "To leave readers with a lesson they can use in their own lives", d: ["To explain how the sleep lamps work", "To list every animal on Nocturna", "To show that exploring is too dangerous for kids"],
+          why: "The advice speaks directly to \"young explorers.\" Ending with it gives readers an idea to take with them, even if they never visit Nocturna." }
+      ] }
+  ],
+  Tessera: [
+    { title: "The Great Clock", genre: "Story", theme: "teamwork",
+      recap: "three robots combined their skills to fix the Great Clock",
+      paras: [
+        "In the center of Tessera stands the Great Clock, the tallest tower on the planet. For four hundred years, its bells have rung every hour, telling the robots when to begin and end their jobs.",
+        "One night, the bells went silent. The clock's main gear had cracked in half. Without the bells, the robots didn't know when to start their work. Window-washers washed all night. Sweepers swept in circles. The whole planet began to fall apart.",
+        "Unit Forty, the repair robot, knew how to fix the gear, but the gear was at the very top of the tower, and Unit Forty's legs were not built for climbing. Unit Nine, the crane robot, could reach the top, but its claws were too big to hold tiny tools. Unit Twenty-Two, the welder, could seal the crack, but it did not know how a clock worked.",
+        "For three days, each robot tried alone and failed. Then, on the fourth day, Unit Nine lifted Unit Forty and Unit Twenty-Two to the top of the tower together. Unit Forty pointed to each part, and Unit Twenty-Two welded it into place.",
+        "At exactly noon, the bells rang again. All across Tessera, robots stopped and listened. Then they went back to work, right on time."
+      ],
+      qs: [
+        { dok: 2, p: 2, q: "What problem was caused when the bells stopped ringing?",
+          a: "The robots didn't know when to start and stop, so they worked at the wrong times.", d: ["The robots all shut down.", "The tower fell over.", "The robots forgot their names."],
+          why: "Paragraph 2 explains that without the bells, the robots lost track of time: window-washers washed all night and sweepers swept in circles." },
+        { dok: 2, p: 3, q: "Why couldn't Unit Forty fix the gear by itself?",
+          a: "Its legs couldn't climb to the top of the tower.", d: ["It didn't know how clocks work.", "Its claws were too big.", "It was too busy sweeping."],
+          why: "Paragraph 3 says Unit Forty knew how to fix it, but \"Unit Forty's legs were not built for climbing.\"" },
+        { dok: 3, p: 3, q: "Why did the author describe what each robot could and could not do in paragraph 3?",
+          a: "To show that each robot had one piece of the solution and needed the others", d: ["To show that Unit Nine was the best robot", "To explain why the gear cracked", "To prove that robots cannot fix anything"],
+          why: "Each robot had a skill and a weakness. Laying them side by side sets up the ending, where they combine their skills to succeed." },
+        { dok: 3, p: 4, q: "Which statement best expresses the theme of the story?",
+          a: "A problem too big for one can be solved when everyone adds their own strength.", d: ["Clocks are the most important machines.", "Robots should only do one job.", "It is better to work alone than in a group."],
+          why: "Each robot failed alone for three days. Together, with each one doing what it did best, they fixed the clock in one try." }
+      ] },
+    { title: "The Missing Builders", genre: "Informational", theme: "curiosity",
+      recap: "explorers study clues to learn where the Builders went",
+      paras: [
+        "Tessera's metal towers, humming machines, and thousands of robots were all made by a group of people known as the Builders. About four hundred years ago, the Builders disappeared. They left behind no message explaining where they went. Ever since, explorers have tried to solve the mystery.",
+        "Some explorers believe the Builders left on purpose. They point to the empty launch pads at the edge of the city. Every ship is gone, and the hangar doors were neatly closed and locked. \"People who are leaving in a hurry don't lock the doors,\" explains historian Mira Volk.",
+        "Other explorers think the Builders planned to return. In the Builders' homes, beds are made and dishes are stacked on shelves. Most surprising of all, every robot was given instructions to keep the city running \"until we come back.\"",
+        "A third group believes the answer may be written in the Builders' library. The library holds more than a million metal books, but they are written in a language no one has been able to read. A team of language experts has studied the books for twenty years. They have figured out only twelve words so far. One of them means \"home.\""
+      ],
+      qs: [
+        { dok: 2, p: 2, q: "What evidence do some explorers use to argue that the Builders left on purpose?",
+          a: "The ships are gone, and the hangar doors were neatly locked.", d: ["The beds were left unmade.", "A message was found in the library.", "The robots stopped working."],
+          why: "Paragraph 2 points to the empty launch pads and the locked hangar doors. Locking up shows the Builders had time to plan." },
+        { dok: 2, p: 4, q: "Why haven't the library's books solved the mystery yet?",
+          a: "They are written in a language that almost no one can read.", d: ["The books were taken by the Builders.", "The library is locked.", "The books are blank."],
+          why: "Paragraph 4 says the books are in a language \"no one has been able to read,\" and only twelve words have been figured out." },
+        { dok: 3, p: 3, q: "Which detail best supports the idea that the Builders planned to come back?",
+          a: "Every robot was told to keep the city running \"until we come back.\"", d: ["The Builders made thousands of robots.", "The library holds a million metal books.", "The launch pads are at the edge of the city."],
+          why: "The robots' instructions directly say \"until we come back.\" That is the strongest clue that the Builders meant to return." },
+        { dok: 3, p: 4, q: "Why does the author most likely end by saying one of the words means \"home\"?",
+          a: "To leave readers wondering what the clue means, keeping the mystery alive", d: ["To prove the Builders went back to their home planet", "To show that the language experts have given up", "To explain where the robots came from"],
+          why: "The author doesn't explain the word. Ending on this small, puzzling clue makes readers think and keeps the mystery open." }
+      ] }
+  ],
+  Veyra: [
+    { title: "The Light Nobody Thanked", genre: "Story", theme: "persistence",
+      recap: "Captain Oda kept the Beacon lit for eleven years without thanks",
+      link: { themes: ["persistence", "patience"], near: ["courage", "kindness", "honesty", "strengths"],
+        prompt: "Captain Oda kept her light burning even when no one noticed. Which story from earlier in your journey shares the most similar lesson?",
+        why: "Captain Oda's story is about sticking with something important even when it is hard or no one is cheering you on." },
+      fallback: { dok: 3, p: 5, q: "Which statement best expresses the theme of the story?",
+        a: "Doing the right thing matters, even when no one is there to thank you.", d: ["Pilots should always thank lighthouse keepers.", "Storms are the most dangerous part of flying.", "It is better to wait for morning than to work at night."],
+        why: "Oda kept the Beacon burning for years with no thanks, and she didn't even tell the pilot it was her. Knowing she helped was enough." },
+      paras: [
+        "Before Captain Oda kept the fuel pumps on Veyra, she was the keeper of the Beacon, a tall tower with a bright light that guided ships through the dangerous Shard Field. Every night, she climbed two hundred stairs to clean the lens and light the lamp.",
+        "For eleven years, Oda kept the Beacon burning. In all that time, not a single pilot stopped to thank her. Ships zipped past the tower without even slowing down. Some nights, Oda wondered if anyone noticed the light at all.",
+        "One winter, a terrible storm knocked out the power. The lamp went dark. Oda could have stayed in bed and waited for morning. Instead, she carried oil lanterns up all two hundred stairs, one at a time, until the top of the tower glowed again.",
+        "Years later, an old pilot landed at Oda's filling station. \"I flew through the Shard Field during that storm,\" he said. \"My instruments were broken. I couldn't see anything except one small light. I followed it all the way here.\" He paused. \"I always wondered who kept that light burning.\"",
+        "Captain Oda smiled and poured his fuel. She didn't say anything. She didn't need to."
+      ],
+      qs: [
+        { dok: 3, p: 2, q: "Why does the author include the detail that no pilot thanked Oda for eleven years?",
+          a: "To show she kept doing her job without praise, which makes the ending more meaningful", d: ["To show that pilots on Veyra are rude", "To explain why the power went out", "To show that Oda wanted to quit"],
+          why: "Knowing that no one ever thanked her makes the old pilot's story at the end powerful. Her work mattered all along." },
+        { dok: 3, p: 5, q: "Why didn't Captain Oda tell the pilot that she was the one who kept the light burning?",
+          a: "She didn't need credit. Knowing she had helped was enough.", d: ["She had forgotten about that night.", "She was angry with the pilot.", "She wasn't sure it was her light."],
+          why: "The final line, \"She didn't need to,\" shows that Oda was satisfied just knowing her light saved someone." },
+        { dok: 3, p: 3, q: "Which evidence best shows Captain Oda's determination?",
+          a: "\"She carried oil lanterns up all two hundred stairs, one at a time, until the top of the tower glowed again.\"", d: ["\"Ships zipped past the tower without even slowing down.\"", "\"Captain Oda smiled and poured his fuel.\"", "\"My instruments were broken.\""],
+          why: "Climbing two hundred stairs again and again in a storm, when she could have waited for morning, shows she refused to give up." },
+        null
+      ] },
+    { title: "A Letter to a New Pilot", genre: "Letter", theme: "teamwork",
+      recap: "Captain Oda wrote advice to new pilots about helping each other",
+      link: { themes: ["teamwork", "kindness"], near: ["honesty", "gratitude", "mistakes", "persistence", "strengths", "courage"],
+        prompt: "Captain Oda's letter says pilots should ask for help and help each other. Which story from earlier in your journey best shows that lesson?",
+        why: "Captain Oda's letter is about people helping each other instead of trying to do everything alone." },
+      fallback: { dok: 3, p: 4, q: "How do Captain Oda's three pieces of advice connect to each other?",
+        a: "They are all about learning from other people and sharing with them, instead of flying alone.", d: ["They are all about how to fix an engine.", "They are all about flying faster.", "They are all about saving fuel."],
+        why: "Asking for help, listening to keepers, and helping the next pilot all involve connecting with other people." },
+      paras: [
+        "Dear New Pilot,\nIf you are reading this, you have just earned your wings. Congratulations! Before you fly off, I want to share the three most important things I've learned in fifty years of flying. None of them are in the pilot handbook.",
+        "First, ask for help. When I was young, I thought asking for help meant I wasn't good enough. So when my engine started making a strange noise over the planet Drell, I said nothing. I ended up stranded for nine days. A mechanic there fixed it in ten minutes. Pride cost me more than fuel that week.",
+        "Second, every station keeper has a story. Take time to listen. The keepers on these planets have seen thousands of pilots come and go. The pilots who rush past miss the best maps, the best shortcuts, and the best friends a person could have.",
+        "Third, help the next pilot. Someday you will be the one who knows the way. When you meet a pilot who is lost or scared, remember how you felt on your first trip. Then share what you learned.",
+        "Fly safe, and come visit. The fuel is always ready on Veyra.\nCaptain Oda"
+      ],
+      qs: [
+        { dok: 3, p: 1, q: "What is Captain Oda's main purpose for writing this letter?",
+          a: "To pass on lessons she learned so new pilots can avoid her mistakes and help others", d: ["To sell fuel to new pilots", "To explain the rules in the pilot handbook", "To tell a funny story about Drell"],
+          why: "She says she wants to share the most important things she has learned in fifty years. Each piece of advice helps a new pilot do better." },
+        { dok: 3, p: 2, q: "Why does Captain Oda include the story about being stranded on Drell?",
+          a: "To give a real example of why asking for help matters", d: ["To show that Drell is a dangerous planet", "To brag about her flying skills", "To explain how to fix an engine"],
+          why: "Her nine days stuck on Drell could have been a ten-minute fix if she had asked. The story proves her first piece of advice." },
+        { dok: 3, p: 2, q: "What does Captain Oda mean by \"Pride cost me more than fuel that week\"?",
+          a: "Being too proud to ask for help cost her much more than the problem itself would have.", d: ["She had to buy expensive fuel on Drell.", "She lost a contest that week.", "She was proud of saving fuel."],
+          why: "Because she wouldn't admit she needed help, a ten-minute repair turned into nine lost days. Her pride was the real cost." },
+        null
+      ] }
+  ]
+};
+
+/* Build PLANETS[i].stories from the original story + extras */
+PLANETS.forEach(p => {
+  const orig = { title: p.title, genre: p.genre, paras: p.paras, qs: p.qs, ...ORIGINAL_META[p.name] };
+  if (p.name === "Veyra") {
+    orig.link = { themes: ["mistakes"], near: ["persistence", "patience", "kindness", "honesty"],
+      prompt: "Captain Oda's messy map is about learning from mistakes. Which story from earlier in your journey shares that lesson?",
+      why: "Captain Oda's map honors the mistakes that taught her how to be a pilot." };
+    orig.fallback = { dok: 3, p: 4, q: "Which statement best expresses the theme of the story?",
+      a: "Mistakes can teach us important lessons on the way to our goals.", d: ["Neat maps are always better than messy ones.", "Pilots should never take wrong turns.", "Coffee stains ruin important papers."],
+      why: "Captain Oda says she \"learned something from each\" mistake, and she honors the messy map because of those lessons." };
+    orig.qs = orig.qs.slice(0, 3).concat([null]);
+  }
+  p.stories = [orig, ...(EXTRA[p.name] || [])];
+});
+PLANETS.find(p => p.name === "Quillon").greet = "Shh, the crystals are listening. Touch one, and you'll hear a story.";
+
+/* Pick one story per planet for a new game, favoring the ones this device has seen least */
+const SEEN_KEY = "ten-stations-home-seen";
+function pickStories() {
+  let seen = {};
+  try { seen = JSON.parse(localStorage.getItem(SEEN_KEY)) || {}; } catch (e) {}
+  const picks = PLANETS.map((p, i) => {
+    const counts = p.stories.map((_, k) => seen[i + ":" + k] || 0);
+    const min = Math.min(...counts);
+    const options = counts.map((c, k) => (c === min ? k : -1)).filter(k => k >= 0);
+    const k = options[Math.floor(Math.random() * options.length)];
+    seen[i + ":" + k] = (seen[i + ":" + k] || 0) + 1;
+    return k;
+  });
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
+  return picks;
+}
+
+/* Questions for a planet. Veyra's last question links back to stories this player actually read. */
+function buildQs(planet, story) {
+  return story.qs.map(q => {
+    if (q) return q;
+    const L = story.link;
+    const read = S.picks.slice(0, 9).map((k, i) => ({ planet: PLANETS[i].name, s: PLANETS[i].stories[k] }));
+    const match = shuffle(read.filter(r => L.themes.includes(r.s.theme)));
+    const others = shuffle(read.filter(r => !L.themes.includes(r.s.theme) && !L.near.includes(r.s.theme)));
+    if (!match.length || others.length < 3) return story.fallback;
+    const fmt = r => `${r.planet}: ${r.s.recap}`;
+    return { dok: 3, p: story.fallback.p, q: L.prompt, a: fmt(match[0]), d: others.slice(0, 3).map(fmt),
+      why: `${L.why} On ${match[0].planet}, ${match[0].s.recap}. That is the same kind of lesson.` };
+  });
+}
+
+const TIER = i => i < 3 ? { label: "Tier 1 · DOK 1–2", tip: "These answers are right there in the passage. If you're stuck, go back and find the sentence that says it." }
+  : i < 6 ? { label: "Tier 2 · DOK 1–3", tip: "Some answers are in the text and some need you to put clues together. Check the paragraph number on each question." }
+  : i < 9 ? { label: "Tier 3 · DOK 2–3", tip: "Now you're thinking like a detective. Use evidence from the text to explain why, not just what." }
+  : { label: "Tier 4 · DOK 3", tip: "The last station is the hardest. Every question asks you to think deeply and use evidence. You can do this." };
+
+const NEED = 3; // fuel cells needed to launch (out of 4)
+
+/* =================== STATE =================== */
+const KEY = "ten-stations-home-v1";
+let S = freshState();
+function freshState() {
+  return { screen: "intro", name: "", at: 0, results: [], attempts: 0, q: 0, cur: null, muted: false, finishedAt: null };
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function load() { try { const v = JSON.parse(localStorage.getItem(KEY)); return v && typeof v === "object" ? v : null; } catch (e) { return null; } }
+
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* =================== SOUND =================== */
+let actx = null;
+function beep(type) {
+  if (S.muted) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (type === "pew" || type === "boom") {
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+      o.type = type === "pew" ? "square" : "triangle";
+      o.frequency.setValueAtTime(type === "pew" ? 1400 : 180, t);
+      o.frequency.exponentialRampToValueAtTime(type === "pew" ? 300 : 40, t + (type === "pew" ? 0.09 : 0.3));
+      g.gain.setValueAtTime(type === "pew" ? 0.04 : 0.15, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (type === "pew" ? 0.1 : 0.32));
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.35);
+      return;
+    }
+    const notes = { good: [660, 880], bad: [220, 170], launch: [200, 400, 800], cheer: [523, 659, 784, 1046], tick: [520] }[type] || [440];
+    notes.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type === "bad" ? "sawtooth" : "triangle";
+      o.frequency.value = f;
+      const t = actx.currentTime + i * 0.11;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.25);
+    });
+  } catch (e) {}
+}
+
+/* =================== ART =================== */
+function orbStyle(c) {
+  return `background: radial-gradient(circle at 70% 28%, rgba(255,255,255,.35), transparent 30%), radial-gradient(circle at 34% 34%, ${c[0]}, ${c[1]} 55%, ${c[2]} 100%); box-shadow: 0 0 26px ${c[1]}66, inset -10px -12px 22px rgba(0,0,0,.45);`;
+}
+function tedSVG(cls = "") {
+  return `<svg class="${cls}" viewBox="0 0 120 140" role="img" aria-label="Ted the Grawlien">
+    <path d="M38 22 Q30 4 22 6" stroke="#e2722a" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="21" cy="6" r="6" fill="#ffd166"/>
+    <path d="M82 22 Q92 2 100 8" stroke="#e2722a" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="101" cy="8" r="6" fill="#ffd166"/>
+    <ellipse cx="60" cy="128" rx="38" ry="8" fill="#000" opacity=".25"/>
+    <path d="M14 70 Q14 18 60 18 Q106 18 106 70 L106 112 Q106 126 92 126 L28 126 Q14 126 14 112 Z" fill="#f08a3c"/>
+    <path d="M14 70 Q14 18 60 18 Q106 18 106 70" fill="none" stroke="#ffb06a" stroke-width="4" opacity=".7"/>
+    <circle cx="34" cy="98" r="4" fill="#b8571c"/><circle cx="88" cy="104" r="5" fill="#b8571c"/><circle cx="74" cy="114" r="3" fill="#b8571c"/>
+    <circle cx="40" cy="58" r="13" fill="#fff"/><circle cx="60" cy="48" r="10" fill="#fff"/><circle cx="80" cy="58" r="13" fill="#fff"/>
+    <circle cx="42" cy="60" r="6" fill="#1a1438"/><circle cx="61" cy="50" r="5" fill="#1a1438"/><circle cx="82" cy="60" r="6" fill="#1a1438"/>
+    <circle cx="44" cy="58" r="2" fill="#fff"/><circle cx="63" cy="48" r="1.6" fill="#fff"/><circle cx="84" cy="58" r="2" fill="#fff"/>
+    <path d="M44 84 Q60 98 76 84" stroke="#1a1438" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M14 92 Q2 88 4 76" stroke="#f08a3c" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M106 92 Q118 84 114 70" stroke="#f08a3c" stroke-width="9" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+function shipSVG() {
+  return `<g class="ship">
+    <path d="M-10 -9 L-22 -16 L-16 0 L-22 16 L-10 9 Z" fill="#ff7a4a"/>
+    <path d="M-14 -6 L20 -6 Q32 0 20 6 L-14 6 Z" fill="#e9e6ff"/>
+    <circle cx="10" cy="0" r="3.4" fill="#5fe3b5"/>
+    <path d="M-16 -3 L-26 0 L-16 3 Z" fill="#ffd166"/>
+  </g>`;
+}
+function tedTalk(html) {
+  return `<div class="ted-row">${tedSVG("ted-mini")}<div class="bubble">${html}</div></div>`;
+}
+
+/* =================== SCREENS =================== */
+function render() {
+  save();
+  const s = S.screen;
+  stopConfetti();
+  if (s !== "flight") stopFlight();
+  if (s === "flight") return renderFlight();
+  if (s === "intro") return renderIntro();
+  if (s === "map") return renderMap();
+  if (s === "planet") return renderPlanet();
+  if (s === "home") return renderHome();
+}
+
+function topbar(extra = "") {
+  return `<div class="topbar"><div class="brand">Ten Stations Home</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${extra}
+      <button class="icon-btn" id="mute" aria-pressed="${S.muted}">${S.muted ? "Sound off" : "Sound on"}</button></div></div>`;
+}
+function bindTop() {
+  const m = document.getElementById("mute");
+  if (m) m.onclick = () => { S.muted = !S.muted; render(); };
+  const r = document.getElementById("restart");
+  if (r) r.onclick = () => {
+    if (r.dataset.armed) { const muted = S.muted; S = freshState(); S.muted = muted; render(); }
+    else { r.dataset.armed = "1"; r.textContent = "Tap again to restart"; setTimeout(() => { if (r.isConnected) { delete r.dataset.armed; r.textContent = "Restart"; } }, 3000); }
+  };
+}
+
+function renderIntro() {
+  const saved = S.results.length > 0 && S.name;
+  app.innerHTML = `${topbar()}
+  <section class="intro fade-in">
+    <div>
+      <div class="hud">Planet Graw · Emergency landing</div>
+      <h1 style="margin-top:10px">Ten Stations <span>Home</span></h1>
+      <div class="log">
+        <div class="hud">Captain's log</div>
+        <p>Your space ship made a hard landing after running out of fuel on the orange, dusty planet <b>Graw</b>. You meet a Grawlien named <b>Ted</b>, who tells you about the filling stations on 10 planets between Graw and home. Each planet has a story to tell, and filling your ship depends on your attention to details.</p>
+      </div>
+      <div style="margin-top:18px;max-width:60ch">${tedTalk(`Hiya, pilot! I'm <b>Ted</b>. Each station keeper will tell you a story, then ask you 4 questions. Every right answer on your first try fills one fuel cell. Fill at least <b>${NEED} of 4</b> cells and you can blast off. Every trip, the keepers tell different stories, so no two journeys are the same. Between planets you'll fly through asteroid belts, so steer around the rocks and blast the ones you can't dodge!`)}</div>
+      <form class="namebox" id="nameform">
+        <label><span class="hud">Pilot name</span><input id="pilot" maxlength="24" autocomplete="off" placeholder="Type your name" value="${esc(S.name)}" required></label>
+        <button class="btn" type="submit">${saved ? "Start over" : "Start the journey"}</button>
+        ${saved ? `<button class="btn go" type="button" id="resume">Continue · ${S.flight ? "Flight " + (S.flight.to - 1) : "Planet " + (S.at + 1)}</button>` : ""}
+      </form>
+    </div>
+    <div class="intro-art" aria-hidden="true"><div class="graw-planet"></div>${tedSVG("ted")}</div>
+  </section>`;
+  bindTop();
+  document.getElementById("nameform").onsubmit = e => {
+    e.preventDefault();
+    const n = document.getElementById("pilot").value.trim();
+    if (!n) return;
+    const muted = S.muted; S = freshState(); S.muted = muted; S.name = n; S.picks = pickStories(); S.screen = "map";
+    beep("good"); render();
+  };
+  const r = document.getElementById("resume");
+  if (r) r.onclick = () => { S.screen = S.flight ? "flight" : S.cur ? "planet" : "map"; render(); };
+}
+
+/* Map: 12 stops snaking in two rows: Graw, P1..P10, Home */
+function mapNodes() {
+  const pts = [];
+  for (let i = 0; i < 6; i++) pts.push({ x: 60 + i * 96, y: 82 });
+  for (let i = 0; i < 6; i++) pts.push({ x: 540 - i * 96, y: 238 });
+  return pts;
+}
+function mapSVG(shipAt) {
+  const pts = mapNodes();
+  const stops = [{ name: "Graw", colors: ["#ffb06a", "#e2722a", "#7d3209"] }, ...PLANETS, { name: "Home", colors: ["#9fe0ff", "#2f7fd0", "#0b3b2a"] }];
+  let d = `M${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) {
+    if (i === 6) d += ` C ${pts[5].x + 60} ${pts[5].y}, ${pts[6].x + 60} ${pts[6].y}, ${pts[6].x} ${pts[6].y}`;
+    else d += ` L ${pts[i].x} ${pts[i].y}`;
+  }
+  const doneIdx = S.at; // stops 0..S.at reached (0 = Graw)
+  let defs = "", nodes = "";
+  stops.forEach((st, i) => {
+    const p = pts[i], c = st.colors, id = "g" + i;
+    defs += `<radialGradient id="${id}" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="${c[0]}"/><stop offset=".55" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></radialGradient>`;
+    const r = i === 0 || i === 11 ? 26 : 21;
+    const reached = i <= doneIdx;
+    const next = i === doneIdx + 1;
+    const ring = next ? `<circle cx="${p.x}" cy="${p.y}" r="${r + 9}" fill="none" stroke="#ffd166" stroke-width="3" stroke-dasharray="6 6"><animateTransform attributeName="transform" type="rotate" from="0 ${p.x} ${p.y}" to="360 ${p.x} ${p.y}" dur="12s" repeatCount="indefinite"/></circle>` : "";
+    const check = reached && i > 0 ? `<circle cx="${p.x + r - 4}" cy="${p.y - r + 4}" r="9" fill="#5fe3b5"/><path d="M${p.x + r - 8} ${p.y - r + 4} l3 3 l6 -6" stroke="#032319" stroke-width="2.4" fill="none"/>` : "";
+    const num = "";
+    nodes += `<g opacity="${reached || next || i === 11 ? 1 : .55}">${ring}<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="url(#${id})"/>${check}
+      <text x="${p.x}" y="${p.y + r + 22}" text-anchor="middle" font-family="Chakra Petch, sans-serif" font-weight="700" font-size="15" fill="${next ? "#ffd166" : "#f1edff"}">${num}${st.name}</text></g>`;
+  });
+  const sp = pts[shipAt];
+  return `<svg viewBox="0 0 600 310" role="img" aria-label="Star map from Graw to Home with ten planets. You are at stop ${shipAt} of 11.">
+    <defs>${defs}</defs>
+    <path d="${d}" fill="none" stroke="#3a3370" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round"/>
+    ${nodes}
+    <g id="shipg" transform="translate(${sp.x} ${sp.y - 40})">${shipSVG()}</g>
+  </svg>`;
+}
+
+function renderMap() {
+  const next = PLANETS[S.at];
+  const tier = TIER(S.at);
+  app.innerHTML = `${topbar(`<button class="icon-btn" id="restart">Restart</button>`)}
+  <section class="fade-in">
+    <div class="map-head">
+      <div><div class="hud">Pilot ${esc(S.name)} · ${S.at} of 10 stations refueled</div>
+      <h2>${S.arrived ? "In orbit: " : "Next stop: "}${esc(next.name)}</h2></div>
+      <div class="hud">${tier.label}</div>
+    </div>
+    <div class="map-card">${mapSVG(S.arrived ? S.at + 1 : S.at)}</div>
+    <div class="map-foot">
+      ${tedTalk(S.at === 0 ? `First stop is <b>Mossmoor</b>! The keeper there is ${esc(next.keeper)}. ${tier.tip}` : `Nice flying through that belt! You're orbiting <b>${esc(next.name)}</b>, home of ${esc(next.keeper)}. ${tier.tip}`)}
+      <button class="btn go" id="land">Land on ${esc(next.name)}</button>
+    </div>
+  </section>`;
+  bindTop();
+  document.getElementById("land").onclick = () => {
+    if (S.cur && S.cur.planet === S.at) { S.screen = "planet"; render(); window.scrollTo({ top: 0 }); }
+    else startPlanet();
+  };
+}
+
+function startPlanet() {
+  if (!S.picks) S.picks = pickStories();
+  const story = S.picks[S.at];
+  const qs = buildQs(S.at, PLANETS[S.at].stories[story]);
+  S.cur = {
+    planet: S.at, story, qs,
+    items: qs.map((q, i) => ({ i, order: shuffle([q.a, ...q.d]), picked: null })),
+    q: 0
+  };
+  S.attempts = (S.attempts || 0);
+  S.arrived = false;
+  S.screen = "planet";
+  render();
+  window.scrollTo({ top: 0 });
+}
+
+function renderPlanet() {
+  const P = PLANETS[S.cur.planet];
+  const C = S.cur;
+  const ST = P.stories[C.story];
+  const unit = ST.unit || "Paragraph";
+  const done = C.items.every(it => it.picked !== null);
+  const fuel = C.items.filter(it => it.picked !== null && it.order[it.picked] === C.qs[it.i].a).length;
+  const cells = C.items.map(it => {
+    if (it.picked === null) return `<span class="cell"></span>`;
+    return it.order[it.picked] === C.qs[it.i].a ? `<span class="cell on"></span>` : `<span class="cell off"></span>`;
+  }).sort((a, b) => (b.includes("on") - a.includes("on"))).join("");
+
+  const paras = ST.paras.map((t, i) => `<div class="para" id="para${i + 1}"><span class="n">${i + 1}</span><p>${esc(t)}</p></div>`).join("");
+
+  let right;
+  if (!done || C.q < C.items.length) {
+    const it = C.items[C.q];
+    const Q = C.qs[it.i];
+    const answered = it.picked !== null;
+    const correctIdx = it.order.indexOf(Q.a);
+    const choices = it.order.map((c, k) => {
+      let cls = "choice";
+      if (answered) {
+        if (k === correctIdx) cls += " right";
+        else if (k === it.picked) cls += " wrong";
+        else cls += " dim";
+      }
+      return `<button class="${cls}" data-k="${k}" ${answered ? "disabled" : ""}><span class="k">${"ABCD"[k]}</span><span>${esc(c)}</span></button>`;
+    }).join("");
+    const ok = answered && it.picked === correctIdx;
+    const dots = C.items.map((x, k) => {
+      let c = "";
+      if (x.picked !== null) c = x.order[x.picked] === C.qs[x.i].a ? "ok" : "no";
+      if (k === C.q) c += " cur";
+      return `<i class="${c}"></i>`;
+    }).join("");
+    right = `<div class="qcard fade-in" id="qcard">
+      <div class="qmeta"><span class="hud">Question ${C.q + 1} of 4 · ${unit} ${Q.p}</span><span class="dok dok${Q.dok}">${DOK_NAMES[Q.dok]}</span></div>
+      <div class="qtext">${esc(Q.q)}</div>
+      <div class="choices">${choices}</div>
+      ${answered ? `<div class="feedback ${ok ? "good" : "bad"}"><strong>${ok ? "Fuel cell filled!" : "Cell sealed. No fuel this time."}</strong>${esc(Q.why)}</div>` : ""}
+      <div class="qnav">
+        <div class="dots" aria-hidden="true">${dots}</div>
+        ${answered ? `<button class="btn" id="nextq">${C.q < 3 ? "Next question" : "Check fuel tank"}</button>` : `<button class="look" id="lookback">Look back at ${unit.toLowerCase()} ${Q.p}</button>`}
+      </div>
+    </div>`;
+  }
+  if (done && C.q >= C.items.length) {
+    const pass = fuel >= NEED;
+    right = `<div class="qcard result fade-in">
+      <div class="hud">Fuel tank report</div>
+      <h3 style="color:${pass ? "var(--fuel)" : "var(--miss)"}">${fuel} of 4 cells filled</h3>
+      ${pass
+        ? tedTalk(fuel === 4 ? `A perfect fill! ${esc(P.keeper.split(",")[0])} is waving you off. Next stop: ${S.at === 9 ? "<b>HOME</b>!" : `<b>${esc(PLANETS[S.at + 1].name)}</b>.`}` : `That's enough fuel to fly! Next stop: ${S.at === 9 ? "<b>HOME</b>!" : `<b>${esc(PLANETS[S.at + 1].name)}</b>.`}`)
+        : tedTalk(`Not quite enough to launch. You need ${NEED} cells. No worries, pilot: reread the story, look closely at the paragraph numbers, and try the station again. The answers will be in a new order.`)}
+      ${pass ? `<button class="btn go" id="launch">${S.at === 9 ? "Fly home!" : "Launch"}</button>` : `<button class="btn" id="retry">Reread and try again</button>`}
+    </div>`;
+  }
+
+  app.innerHTML = `${topbar(`<button class="icon-btn" id="tomap">Star map</button>`)}
+  <section class="fade-in">
+    <div class="planet-head">
+      <div class="orb" style="${orbStyle(P.colors)}" aria-hidden="true"></div>
+      <div class="grow"><div class="hud">Station ${S.cur.planet + 1} of 10 · ${TIER(S.cur.planet).label}</div><h2>${esc(P.name)}</h2></div>
+      <div class="gauge"><span class="hud">Fuel · need ${NEED}</span><div class="cells" role="img" aria-label="${fuel} of 4 fuel cells filled">${cells}</div></div>
+    </div>
+    <div style="margin-bottom:18px;max-width:72ch">${tedTalk(`<b>${esc(P.keeper)}</b> says: “${esc(ST.greet || P.greet)}”`)}</div>
+    <div class="station">
+      <article class="passage">
+        <div class="hud">${esc(ST.genre)}</div>
+        <h3>${esc(ST.title)}</h3>
+        <div class="paras">${paras}</div>
+      </article>
+      <div class="qpanel">${right}</div>
+    </div>
+  </section>`;
+  bindTop();
+  document.getElementById("tomap").onclick = () => { S.screen = "map"; render(); };
+  app.querySelectorAll(".choice:not([disabled])").forEach(b => b.onclick = () => answer(+b.dataset.k));
+  const nq = document.getElementById("nextq");
+  if (nq) nq.onclick = () => { C.q++; render(); focusQ(); };
+  const lb = document.getElementById("lookback");
+  if (lb) lb.onclick = () => {
+    const el = document.getElementById("para" + C.qs[C.items[C.q].i].p);
+    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  };
+  const rt = document.getElementById("retry");
+  if (rt) rt.onclick = () => { S.attempts++; startPlanet(); };
+  const ln = document.getElementById("launch");
+  if (ln) ln.onclick = launch;
+}
+function focusQ() {
+  const q = document.getElementById("qcard");
+  if (q && window.innerWidth <= 860) q.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+}
+
+function answer(k) {
+  const C = S.cur;
+  const it = C.items[C.q];
+  it.picked = k;
+  const ok = it.order[k] === C.qs[it.i].a;
+  beep(ok ? "good" : "bad");
+  // Record the first attempt at this planet for stats
+  S.results[C.planet] = S.results[C.planet] || { tries: 0, log: [] };
+  const R = S.results[C.planet];
+  if (C.items.every(x => x.picked !== null)) {
+    R.tries++;
+    if (R.tries === 1) R.log = C.items.map(x => ({ dok: C.qs[x.i].dok, ok: x.order[x.picked] === C.qs[x.i].a }));
+    R.best = Math.max(R.best || 0, C.items.filter(x => x.order[x.picked] === C.qs[x.i].a).length);
+  }
+  render();
+}
+
+/* =================== FLIGHT (asteroid belt between planets) =================== */
+const HOME_STOP = { name: "Home", colors: ["#9fe0ff", "#2f7fd0", "#0b3b2a"] };
+const destOf = to => (to <= 10 ? PLANETS[to - 1] : HOME_STOP);
+const isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
+let FL = null;          // live flight runtime (not saved)
+const keys = { up: 0, down: 0, left: 0, right: 0, fire: 0 };
+
+function launch() {
+  beep("launch");
+  const from = S.at + 1; // map stop of the planet just refueled
+  S.at++;
+  S.cur = null;
+  S.flight = { to: from + 1 > 10 ? 11 : from + 1, tries: 0 };
+  S.screen = "flight";
+  render();
+}
+
+function renderFlight() {
+  const dest = destOf(S.flight.to);
+  document.documentElement.classList.add("flying");
+  app.innerHTML = `
+  <div class="flight ${S.fireLeft ? "lefty" : ""}" id="flight">
+    <canvas id="fc" aria-label="Asteroid belt. Steer the ship and fire lasers."></canvas>
+    <div class="fhud" id="fhud">
+      <div class="fgroup"><span class="hud">Shields</span><div class="pips" id="pips"></div></div>
+      <div class="fgroup grow"><span class="hud">Distance to ${esc(dest.name)}</span><div class="bar"><div id="pbar"></div></div></div>
+      <div class="fgroup"><span class="hud">Laser</span><div class="bar small"><div id="ebar" class="laser"></div></div></div>
+      <div class="fgroup"><span class="hud">Score</span><b id="fscore" class="fscore">0</b></div>
+      <button class="icon-btn" id="fpause">Pause</button>
+    </div>
+    <div class="ftoast" id="ftoast" hidden></div>
+    <div class="steer-hint" id="steerhint" ${isTouch ? "" : "hidden"}><span>Drag anywhere<br>to steer</span></div>
+    <button class="fire" id="fire" aria-label="Fire lasers">FIRE</button>
+    <div class="fover" id="fover"></div>
+  </div>`;
+  setupFlight();
+  briefing();
+}
+
+function overlay(html) {
+  const o = document.getElementById("fover");
+  o.innerHTML = html ? `<div class="fpanel fade-in">${html}</div>` : "";
+  o.hidden = !html;
+  return o;
+}
+
+function briefing() {
+  const F = S.flight, dest = destOf(F.to), fromName = PLANETS[F.to - 2].name;
+  const n = F.to - 1;
+  const o = overlay(`
+    <div class="hud">Flight ${n} of 10 · ${esc(fromName)} to ${esc(dest.name)}</div>
+    <h3>${n === 1 ? "Asteroid belt ahead!" : F.to === 11 ? "The final belt. Home is on the other side!" : "Another belt to cross"}</h3>
+    ${tedTalk(n === 1
+      ? `The space between planets is full of rocks and old satellite junk. <b>Dodge</b> what you can. If something is about to hit you and you can't get around it, <b>blast it</b>! Lasers need time to recharge, so don't waste shots.`
+      : `Rocks get faster the closer you get to home. Watch for <b>rock walls</b>: if there's no gap, blast one open!`)}
+    <div class="controls">
+      <div class="ctl"><b>${isTouch ? "Steer" : "Steer with the mouse"}</b><span>${isTouch ? "Put a finger anywhere on the screen and slide it. The ship moves the same way your finger moves, so your finger never covers the ship." : "Move the mouse and the ship follows. Click and hold to fire."}</span></div>
+      <div class="ctl"><b>Fire</b><span>Press and hold the <b>FIRE</b> button to shoot lasers.${isTouch ? " A second finger tapped anywhere also fires." : ""}</span></div>
+      <div class="ctl"><b>Keyboard</b><span>Arrow keys or W A S D to steer. Space bar to fire. P to pause.</span></div>
+    </div>
+    ${isTouch ? `<label class="lefty-opt"><input type="checkbox" id="lefty" ${S.fireLeft ? "checked" : ""}> Put the FIRE button on the left side</label>` : ""}
+    <div class="fbtns"><button class="btn go" id="fgo">Launch</button></div>`);
+  const l = document.getElementById("lefty");
+  if (l) l.onchange = () => { S.fireLeft = l.checked; save(); document.getElementById("flight").classList.toggle("lefty", l.checked); };
+  document.getElementById("fgo").onclick = () => { overlay(""); countdown(); };
+}
+
+function countdown() {
+  newRun();
+  let n = 3;
+  const tick = () => {
+    if (!FL) return;
+    if (n === 0) { toast("Go!", 700); FL.run.running = true; return; }
+    toast(String(n), 800); beep("tick"); n--; FL.cd = setTimeout(tick, 800);
+  };
+  tick();
+}
+
+function toast(text, ms = 1600) {
+  const t = document.getElementById("ftoast"); if (!t) return;
+  t.textContent = text; t.hidden = false;
+  t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop");
+  clearTimeout(toast.h); toast.h = setTimeout(() => { t.hidden = true; }, ms);
+}
+
+function setupFlight() {
+  stopFlight();
+  const el = document.getElementById("flight"), cv = document.getElementById("fc");
+  FL = { el, cv, ctx: cv.getContext("2d"), W: 0, H: 0, L: 50, top: 70, run: null, last: performance.now(),
+         steerId: null, sx: 0, sy: 0, firePtrs: new Set(), mouseFire: false, bg: [] };
+  sizeFlight();
+  FL.bg = [0.25, 0.5, 1].flatMap((sp, layer) => Array.from({ length: 40 + layer * 20 }, () => ({ x: Math.random(), y: Math.random(), sp, r: 0.5 + layer * 0.6 })));
+
+  // keep iOS from scrolling, zooming or showing the callout menu during play
+  const stop = e => { if (!e.target.closest(".fpanel")) e.preventDefault(); };
+  el.addEventListener("touchmove", stop, { passive: false });
+  el.addEventListener("touchstart", e => { if (!e.target.closest(".fpanel, button, input, label")) e.preventDefault(); }, { passive: false });
+  el.addEventListener("gesturestart", e => e.preventDefault());
+  el.addEventListener("contextmenu", e => e.preventDefault());
+
+  cv.addEventListener("pointerdown", e => {
+    const p = local(e);
+    if (e.pointerType === "mouse") { FL.mouseFire = true; setTarget(p.x, p.y); return; }
+    if (FL.steerId === null) {
+      FL.steerId = e.pointerId; FL.sx = p.x; FL.sy = p.y;
+      const h = document.getElementById("steerhint"); if (h) h.hidden = true;
+    } else FL.firePtrs.add(e.pointerId); // second finger fires
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  cv.addEventListener("pointermove", e => {
+    const p = local(e);
+    if (e.pointerType === "mouse") { setTarget(p.x, p.y); return; }
+    if (e.pointerId !== FL.steerId || !FL.run) return;
+    const k = 1.6; // finger travel multiplier, so small thumb motions cover the screen
+    FL.run.ship.tx += (p.x - FL.sx) * k; FL.run.ship.ty += (p.y - FL.sy) * k;
+    FL.sx = p.x; FL.sy = p.y; clampShip();
+  });
+  const up = e => {
+    if (e.pointerType === "mouse") { FL.mouseFire = false; return; }
+    if (e.pointerId === FL.steerId) FL.steerId = null;
+    FL.firePtrs.delete(e.pointerId);
+  };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up); cv.addEventListener("lostpointercapture", up);
+
+  const fire = document.getElementById("fire");
+  fire.addEventListener("pointerdown", e => { e.preventDefault(); FL.firePtrs.add("b" + e.pointerId); fire.classList.add("down"); try { fire.setPointerCapture(e.pointerId); } catch (_) {} });
+  const fup = e => { FL.firePtrs.delete("b" + e.pointerId); fire.classList.remove("down"); };
+  fire.addEventListener("pointerup", fup); fire.addEventListener("pointercancel", fup); fire.addEventListener("lostpointercapture", fup);
+
+  document.getElementById("fpause").onclick = pauseFlight;
+  FL.raf = requestAnimationFrame(frame);
+}
+function local(e) { const r = FL.cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function setTarget(x, y) { if (!FL.run) return; FL.run.ship.tx = x; FL.run.ship.ty = y; clampShip(); }
+function clampShip() {
+  const s = FL.run.ship, L = FL.L;
+  s.tx = Math.max(L * 0.7, Math.min(FL.W * 0.62, s.tx));
+  s.ty = Math.max(FL.top + L * 0.4, Math.min(FL.H - L * 0.5, s.ty));
+}
+function sizeFlight() {
+  if (!FL) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  FL.W = FL.el.clientWidth; FL.H = FL.el.clientHeight;
+  FL.cv.width = FL.W * dpr; FL.cv.height = FL.H * dpr; FL.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  FL.L = Math.max(42, Math.min(78, Math.min(FL.W, FL.H) * 0.085));
+  const hud = document.getElementById("fhud");
+  FL.top = hud ? hud.getBoundingClientRect().bottom - FL.el.getBoundingClientRect().top + 4 : 70;
+  if (FL.run) clampShip();
+}
+addEventListener("resize", () => sizeFlight());
+addEventListener("orientationchange", () => setTimeout(sizeFlight, 300));
+document.addEventListener("visibilitychange", () => { if (document.hidden && FL && FL.run && FL.run.running) pauseFlight(); });
+
+function stopFlight() {
+  if (FL) { cancelAnimationFrame(FL.raf); clearTimeout(FL.cd); }
+  FL = null;
+  document.documentElement.classList.remove("flying");
+}
+
+function newRun() {
+  const lvl = S.flight.to - 1; // 1..10
+  FL.lvl = lvl;
+  FL.run = {
+    t: 0, dur: 32 + Math.min(lvl, 8), running: false, paused: false, done: false,
+    ship: { x: FL.W * 0.18, y: (FL.top + FL.H) / 2, tx: FL.W * 0.18, ty: (FL.top + FL.H) / 2 },
+    shields: 3, inv: 0, energy: 100, cool: 0, rocks: [], bolts: [], parts: [],
+    spawnT: 1.4, wallT: 8 + Math.random() * 3, firstWall: true, blasted: 0, hits: 0, score: 0, shake: 0
+  };
+  updHud();
+}
+
+function pauseFlight() {
+  const R = FL && FL.run; if (!R || !R.running || R.done) return;
+  R.paused = true;
+  overlay(`<div class="hud">Paused</div><h3>Ship on hold</h3>${tedTalk("Take a breath, pilot. The rocks will wait.")}<div class="fbtns"><button class="btn go" id="fresume">Resume</button></div>`);
+  document.getElementById("fresume").onclick = () => { overlay(""); R.paused = false; FL.last = performance.now(); };
+}
+
+const rand = (a, b) => a + Math.random() * (b - a);
+function makeRock(type, y, vx) {
+  const L = FL.L;
+  const r = type === "big" ? L * rand(0.55, 0.7) : type === "junk" ? L * 0.42 : L * rand(0.27, 0.34);
+  const verts = Array.from({ length: 10 }, () => rand(0.72, 1.08));
+  const craters = Array.from({ length: type === "big" ? 3 : 1 }, () => ({ a: rand(0, 6.28), d: rand(0, 0.5), s: rand(0.12, 0.22) }));
+  return { type, x: FL.W + r + 10, y, r, vx, vy: type === "wall" ? 0 : rand(-0.06, 0.06) * FL.H, rot: rand(0, 6.28), vr: rand(-1.5, 1.5),
+           hp: type === "big" ? 2 : 1, pts: type === "big" ? 25 : type === "junk" ? 15 : 10, verts, craters, flash: 0,
+           tint: Math.random() < 0.5 ? ["#8a7868", "#5d4e42"] : ["#7d7f8f", "#4f5262"] };
+}
+function baseSpeed() { return FL.W / Math.max(2.6, 5.4 - FL.lvl * 0.26); }
+function spawnOne() {
+  const R = FL.run, roll = Math.random();
+  const type = roll < 0.28 ? "big" : (FL.lvl >= 2 && roll > 0.74) ? "junk" : "small";
+  let y = rand(FL.top + FL.L * 0.5, FL.H - FL.L * 0.5);
+  if (Math.random() < 0.3) y = Math.max(FL.top + FL.L * 0.5, Math.min(FL.H - FL.L * 0.5, R.ship.y + rand(-FL.L, FL.L))); // aimed at the ship
+  const v = baseSpeed() * rand(0.85, 1.25) * (type === "big" ? 0.8 : 1);
+  R.rocks.push(makeRock(type, y, -v));
+}
+function spawnWall() {
+  const R = FL.run, rs = FL.L * 0.3, step = rs * 2.4;
+  const n = Math.floor((FL.H - FL.top) / step);
+  const y0 = FL.top + ((FL.H - FL.top) - (n - 1) * step) / 2;
+  const sealed = FL.lvl >= 5;
+  const gap = Math.floor(rand(1, n - 2));
+  const v = -baseSpeed() * 0.6;
+  for (let i = 0; i < n; i++) {
+    if (!sealed && (i === gap || i === gap + 1)) continue;
+    const r = makeRock("small", y0 + i * step, v);
+    r.r = rs; r.vy = 0; r.wall = true; r.x += rand(-4, 4);
+    R.rocks.push(r);
+  }
+  toast(sealed ? (R.firstWall ? "Rock wall! No gap: blast an opening!" : "Rock wall!") : (R.firstWall ? "Rock wall! Find the gap!" : "Rock wall!"), 1800);
+  R.firstWall = false;
+}
+function boom(x, y, n, col) {
+  const R = FL.run;
+  for (let i = 0; i < n; i++) { const a = rand(0, 6.28), s = rand(40, 220); R.parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(0.35, 0.8), max: 0.8, c: col || (Math.random() < 0.5 ? "#ffd166" : "#ff7a4a"), r: rand(1.5, 3.5) }); }
+}
+
+function update(dt) {
+  const R = FL.run, s = R.ship, L = FL.L;
+  R.t += dt;
+  const kx = keys.right - keys.left, ky = keys.down - keys.up;
+  if (kx || ky) { s.tx += kx * FL.H * 1.0 * dt; s.ty += ky * FL.H * 1.0 * dt; clampShip(); }
+  const k = Math.min(1, dt * 14);
+  s.x += (s.tx - s.x) * k; s.y += (s.ty - s.y) * k;
+
+  R.cool -= dt; R.energy = Math.min(100, R.energy + 26 * dt);
+  const firing = keys.fire || FL.mouseFire || FL.firePtrs.size > 0;
+  if (firing && R.cool <= 0 && R.energy >= 12) {
+    R.energy -= 12; R.cool = 0.16;
+    R.bolts.push({ x: s.x + L * 0.55, y: s.y });
+    beep("pew");
+  }
+
+  const ending = R.t > R.dur - 3.5;
+  if (!ending) {
+    R.spawnT -= dt;
+    if (R.spawnT <= 0) { spawnOne(); R.spawnT = rand(0.6, 1.2) * Math.max(0.42, 1.15 - FL.lvl * 0.07); }
+    R.wallT -= dt;
+    if (R.wallT <= 0 && R.t < R.dur - 7) { spawnWall(); R.wallT = rand(9, 12); }
+  }
+
+  for (const r of R.rocks) {
+    r.x += r.vx * dt; r.y += r.vy * dt; r.rot += r.vr * dt; r.flash = Math.max(0, r.flash - dt);
+    if (r.y < FL.top + r.r || r.y > FL.H - r.r) r.vy *= -1;
+  }
+  for (const b of R.bolts) b.x += FL.W * 1.5 * dt;
+
+  for (const b of R.bolts) for (const r of R.rocks) {
+    if (b.dead || r.dead) continue;
+    if (Math.hypot(b.x - r.x, b.y - r.y) < r.r + 5) {
+      b.dead = true; r.hp--; r.flash = 0.1; boom(b.x, b.y, 4, "#9ff5d8");
+      if (r.hp <= 0) { r.dead = true; R.blasted++; R.score += r.pts; boom(r.x, r.y, r.type === "big" ? 22 : 12); beep("boom"); }
+    }
+  }
+  R.inv = Math.max(0, R.inv - dt);
+  if (R.inv <= 0) for (const r of R.rocks) {
+    if (r.dead) continue;
+    if (Math.hypot(r.x - s.x, r.y - s.y) < r.r * 0.85 + L * 0.28) {
+      r.dead = true; R.shields--; R.hits++; R.inv = 1.6; R.shake = 0.35;
+      boom(r.x, r.y, 18, "#ff7a8a"); beep("bad");
+      if (R.shields <= 0) { flightFail(); break; }
+      toast(R.shields === 1 ? "Shields low!" : "Hit! Shields down to " + R.shields, 1100);
+      break;
+    }
+  }
+  R.rocks = R.rocks.filter(r => !r.dead && r.x > -r.r * 2);
+  R.bolts = R.bolts.filter(b => !b.dead && b.x < FL.W + 20);
+  for (const p of R.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
+  R.parts = R.parts.filter(p => p.life > 0);
+  R.shake = Math.max(0, R.shake - dt);
+  if (R.t >= R.dur && !R.done) flightWin();
+  updHud();
+}
+
+function updHud() {
+  const R = FL.run; if (!R) return;
+  const pips = document.getElementById("pips");
+  if (pips) pips.innerHTML = [0, 1, 2].map(i => `<i class="${i < R.shields ? "on" : ""}"></i>`).join("");
+  const pb = document.getElementById("pbar"); if (pb) pb.style.width = Math.min(100, 100 * R.t / R.dur) + "%";
+  const eb = document.getElementById("ebar"); if (eb) { eb.style.width = R.energy + "%"; eb.classList.toggle("low", R.energy < 12); }
+  const sc = document.getElementById("fscore"); if (sc) sc.textContent = R.score;
+}
+
+function frame(now) {
+  if (!FL) return;
+  const dt = Math.min(0.05, (now - FL.last) / 1000); FL.last = now;
+  const R = FL.run;
+  if (R && R.running && !R.paused && !R.done) update(dt);
+  drawFlight(dt, R && R.running && !R.paused);
+  FL.raf = requestAnimationFrame(frame);
+}
+
+function drawFlight(dt, moving) {
+  const { ctx, W, H, L } = FL, R = FL.run;
+  ctx.save();
+  if (R && R.shake > 0 && !reduced) ctx.translate(rand(-6, 6) * R.shake * 2, rand(-6, 6) * R.shake * 2);
+  ctx.fillStyle = "#07051a"; ctx.fillRect(-10, -10, W + 20, H + 20);
+  const neb = ctx.createRadialGradient(W * 0.7, H * 0.3, 0, W * 0.7, H * 0.3, W * 0.7);
+  neb.addColorStop(0, "rgba(110,60,180,.25)"); neb.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = neb; ctx.fillRect(0, 0, W, H);
+  for (const s of FL.bg) {
+    if (moving) { s.x -= s.sp * dt * 0.25; if (s.x < 0) { s.x = 1; s.y = Math.random(); } }
+    ctx.fillStyle = `rgba(241,237,255,${0.25 + s.sp * 0.6})`;
+    ctx.fillRect(s.x * W, s.y * H, s.r * (moving ? 1 + s.sp * 3 : 1), s.r);
+  }
+  if (!R) { ctx.restore(); return; }
+
+  // destination planet slides in for the last few seconds
+  const left = R.dur - R.t;
+  if (left < 4) {
+    const c = destOf(S.flight.to).colors, pr = H * 0.38, k = Math.min(1, (4 - left) / 3.5);
+    const px = W + pr - k * pr * 1.25, py = H * 0.55;
+    const g = ctx.createRadialGradient(px - pr * 0.3, py - pr * 0.3, pr * 0.1, px, py, pr);
+    g.addColorStop(0, c[0]); g.addColorStop(0.55, c[1]); g.addColorStop(1, c[2]);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, pr, 0, 6.283); ctx.fill();
+  }
+
+  for (const r of R.rocks) drawRock(r);
+  ctx.strokeStyle = "#5fe3b5"; ctx.lineWidth = 3; ctx.shadowColor = "#5fe3b5"; ctx.shadowBlur = 10;
+  for (const b of R.bolts) { ctx.beginPath(); ctx.moveTo(b.x - 16, b.y); ctx.lineTo(b.x + 4, b.y); ctx.stroke(); }
+  ctx.shadowBlur = 0;
+  for (const p of R.parts) { ctx.globalAlpha = Math.max(0, p.life / p.max); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  if (!(R.inv > 0 && Math.floor(R.inv * 10) % 2 === 0) && R.shields > 0) drawShip(R.ship.x, R.ship.y, L, R.ship.ty - R.ship.y);
+  ctx.restore();
+}
+
+function drawRock(r) {
+  const ctx = FL.ctx;
+  ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.rot);
+  if (r.type === "junk") {
+    const s = r.r;
+    ctx.fillStyle = "#2f6fb3"; ctx.fillRect(-s * 1.1, -s * 0.28, s * 0.7, s * 0.56); ctx.fillRect(s * 0.4, -s * 0.28, s * 0.7, s * 0.56);
+    ctx.strokeStyle = "#9cc7ff"; ctx.lineWidth = 1;
+    for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-s * 1.1 + i * s * 0.23, -s * 0.28); ctx.lineTo(-s * 1.1 + i * s * 0.23, s * 0.28); ctx.moveTo(s * 0.4 + i * s * 0.23, -s * 0.28); ctx.lineTo(s * 0.4 + i * s * 0.23, s * 0.28); ctx.stroke(); }
+    ctx.fillStyle = r.flash ? "#fff" : "#c9ccd6"; ctx.fillRect(-s * 0.4, -s * 0.45, s * 0.8, s * 0.9);
+    ctx.fillStyle = "#ff7a4a"; ctx.fillRect(-s * 0.1, -s * 0.15, s * 0.2, s * 0.3);
+    ctx.strokeStyle = "#c9ccd6"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -s * 0.45); ctx.lineTo(0, -s * 0.85); ctx.stroke();
+  } else {
+    ctx.beginPath();
+    r.verts.forEach((v, i) => { const a = i / r.verts.length * 6.283; const x = Math.cos(a) * r.r * v, y = Math.sin(a) * r.r * v; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.closePath();
+    const g = ctx.createRadialGradient(-r.r * 0.3, -r.r * 0.3, r.r * 0.1, 0, 0, r.r);
+    g.addColorStop(0, r.flash ? "#ffffff" : r.tint[0]); g.addColorStop(1, r.tint[1]);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    for (const c of r.craters) { ctx.beginPath(); ctx.arc(Math.cos(c.a) * c.d * r.r, Math.sin(c.a) * c.d * r.r, c.s * r.r, 0, 6.283); ctx.fill(); }
+    if (r.type === "big" && r.hp === 1) { ctx.strokeStyle = "#ffd166"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r.r * 0.5, -r.r * 0.2); ctx.lineTo(0, 0.1 * r.r); ctx.lineTo(r.r * 0.4, -r.r * 0.3); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+
+function drawShip(x, y, L, tilt) {
+  const ctx = FL.ctx, s = L / 50;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(Math.max(-0.35, Math.min(0.35, tilt * 0.01))); ctx.scale(s, s);
+  const f = Math.random();
+  ctx.fillStyle = "#ffd166"; ctx.beginPath(); ctx.moveTo(-22, -5); ctx.lineTo(-34 - f * 12, 0); ctx.lineTo(-22, 5); ctx.fill();
+  ctx.fillStyle = "#ff7a4a"; ctx.beginPath(); ctx.moveTo(-10, -9); ctx.lineTo(-22, -17); ctx.lineTo(-16, 0); ctx.lineTo(-22, 17); ctx.lineTo(-10, 9); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#e9e6ff"; ctx.beginPath(); ctx.moveTo(-16, -7); ctx.lineTo(20, -7); ctx.quadraticCurveTo(34, 0, 20, 7); ctx.lineTo(-16, 7); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#5fe3b5"; ctx.beginPath(); ctx.arc(10, 0, 3.6, 0, 6.283); ctx.fill();
+  if (FL.run && FL.run.inv > 0) { ctx.strokeStyle = "rgba(127,214,255,.6)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(2, 0, 30, 0, 6.283); ctx.stroke(); }
+  ctx.restore();
+}
+
+function logFlight(extra) {
+  const R = FL.run;
+  S.flightLog = S.flightLog || {};
+  const prev = S.flightLog[S.flight.to] || { blasted: 0 };
+  S.flightLog[S.flight.to] = Object.assign({ blasted: prev.blasted + R.blasted, hits: R.hits, tries: S.flight.tries + 1, score: R.score }, extra);
+}
+
+function flightFail() {
+  const R = FL.run; R.done = true; R.running = false;
+  S.flight.tries++; save();
+  logFlight({ crashed: true });
+  setTimeout(() => {
+    if (!FL) return;
+    overlay(`<div class="hud">Shields at zero</div><h3>Ted towed you back!</h3>
+      ${tedTalk(`Whoa, that was a bumpy ride! I hooked a tow cable to your ship and pulled you back to the start of the belt. Shields are recharged. Remember: <b>dodge first</b>, and <b>blast</b> anything you can't get around.`)}
+      <div class="fbtns"><button class="btn go" id="fagain">Try the flight again</button>
+      ${S.flight.tries >= 2 ? `<button class="btn ghost" id="fauto">Use autopilot</button>` : ""}</div>`);
+    document.getElementById("fagain").onclick = () => { overlay(""); countdown(); };
+    const a = document.getElementById("fauto");
+    if (a) a.onclick = () => { logFlight({ auto: true }); arrive(); };
+  }, 700);
+}
+
+function flightWin() {
+  const R = FL.run; R.done = true; R.running = false;
+  if (R.hits === 0) R.score += 50;
+  logFlight({});
+  const dest = destOf(S.flight.to);
+  beep("good");
+  overlay(`<div class="hud">Belt cleared</div><h3>${S.flight.to === 11 ? "Home is in sight!" : "Arrived at " + esc(dest.name) + "!"}</h3>
+    <div class="fstats"><div><b>${R.blasted}</b><span class="hud">Rocks blasted</span></div><div><b>${R.hits}</b><span class="hud">Hits taken</span></div><div><b>${R.score}</b><span class="hud">Score</span></div></div>
+    ${R.hits === 0 ? `<p class="hud" style="color:var(--gold);text-align:center">No-hit bonus +50</p>` : ""}
+    ${tedTalk(S.flight.to === 11 ? "I can see your home planet! I think... is that a crowd down there?" : `Great flying! The station on <b>${esc(dest.name)}</b> is waving you in.`)}
+    <div class="fbtns"><button class="btn go" id="fland">${S.flight.to === 11 ? "Land at home" : "Enter orbit"}</button></div>`);
+  document.getElementById("fland").onclick = arrive;
+}
+
+function arrive() {
+  const to = S.flight.to;
+  S.flight = null;
+  if (to === 11) { S.finishedAt = new Date().toISOString(); S.screen = "home"; render(); window.scrollTo({ top: 0 }); beep("cheer"); }
+  else { S.arrived = true; S.screen = "map"; render(); window.scrollTo({ top: 0 }); }
+}
+
+addEventListener("keydown", e => {
+  if (!FL) return;
+  const k = e.key.toLowerCase();
+  const map = { arrowup: "up", w: "up", arrowdown: "down", s: "down", arrowleft: "left", a: "left", arrowright: "right", d: "right", " ": "fire" };
+  if (map[k]) { keys[map[k]] = 1; if (!e.target.closest || !e.target.closest("input")) e.preventDefault(); }
+  if (k === "p" || k === "escape") pauseFlight();
+});
+addEventListener("keyup", e => {
+  const map = { arrowup: "up", w: "up", arrowdown: "down", s: "down", arrowleft: "left", a: "left", arrowright: "right", d: "right", " ": "fire" };
+  const k = map[e.key.toLowerCase()]; if (k) keys[k] = 0;
+});
+addEventListener("blur", () => { for (const k in keys) keys[k] = 0; });
+
+/* =================== HOME =================== */
+function homeSVG() {
+  // crowd of cheering figures, a landing pad, flags and Ted
+  let crowd = "";
+  const skin = ["#f3c7a0", "#d89a6a", "#a86b3c", "#6e4325", "#ffd9b8"];
+  const shirts = ["#ff7a4a", "#5fe3b5", "#ffd166", "#b18cff", "#ff7a8a", "#7fd6ff"];
+  for (let i = 0; i < 26; i++) {
+    const x = 20 + i * 37 + (i % 2) * 8;
+    if (x > 380 && x < 620) continue;
+    const y = 300 + (i % 3) * 10;
+    const sk = skin[i % skin.length], sh = shirts[(i * 7) % shirts.length];
+    const up = i % 2 === 0;
+    crowd += `<g class="fan" style="animation-delay:${(i % 5) * 0.12}s">
+      <rect x="${x - 9}" y="${y}" width="18" height="30" rx="6" fill="${sh}"/>
+      <circle cx="${x}" cy="${y - 9}" r="9" fill="${sk}"/>
+      <path d="M${x - 8} ${y + 6} L${x - 16} ${up ? y - 14 : y + 18}" stroke="${sh}" stroke-width="5" stroke-linecap="round"/>
+      <path d="M${x + 8} ${y + 6} L${x + 16} ${y - 14}" stroke="${sh}" stroke-width="5" stroke-linecap="round"/>
+    </g>`;
+  }
+  let flags = "";
+  for (let i = 0; i < 14; i++) {
+    const x = 40 + i * 66, y = 70 + Math.sin(i / 13 * Math.PI) * 26;
+    flags += `<path d="M${x} ${y} l18 0 l-9 18 z" fill="${shirts[i % shirts.length]}"/>`;
+  }
+  return `<svg viewBox="0 0 1000 360" aria-hidden="true">
+    <style>.fan{animation:hop .7s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom}@keyframes hop{to{transform:translateY(-8px)}}
+    .landed{animation:drop 1.4s cubic-bezier(.2,.8,.3,1) both}@keyframes drop{from{transform:translateY(-260px)}to{transform:none}}
+    @media (prefers-reduced-motion: reduce){.fan,.landed{animation:none}}</style>
+    <path d="M0 70 Q500 130 1000 70" stroke="#ffffff88" stroke-width="2" fill="none"/>
+    ${flags}
+    <path d="M0 300 Q250 270 500 290 T1000 280 L1000 360 L0 360 Z" fill="#3d8a4f"/>
+    <path d="M0 330 Q300 315 600 330 T1000 325 L1000 360 L0 360 Z" fill="#2c6b3c"/>
+    <ellipse cx="500" cy="318" rx="120" ry="16" fill="#e9e6ff" opacity=".85"/>
+    <ellipse cx="500" cy="318" rx="88" ry="10" fill="none" stroke="#ffd166" stroke-width="3" stroke-dasharray="8 8"/>
+    <g class="landed"><g transform="translate(500 268) rotate(-90) scale(3)">${shipSVG()}</g></g>
+    ${crowd}
+    <g transform="translate(610 238) scale(.62)">${tedSVG().replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "")}</g>
+  </svg>`;
+}
+
+function renderHome() {
+  const all = S.results.flatMap(r => (r && r.log) || []);
+  const firstRight = all.filter(x => x.ok).length;
+  const totalTries = S.results.reduce((n, r) => n + ((r && r.tries) || 0), 0);
+  const firstTryPlanets = S.results.filter(r => r && r.tries === 1).length;
+  const blasted = Object.values(S.flightLog || {}).reduce((n, f) => n + (f.blasted || 0), 0);
+  const byDok = [1, 2, 3].map(d => { const xs = all.filter(x => x.dok === d); return { d, n: xs.length, ok: xs.filter(x => x.ok).length }; });
+  const date = new Date(S.finishedAt || Date.now()).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  const medals = PLANETS.map((p, i) => `<li><span class="medal" style="${orbStyle(p.colors)}"></span><span><b>${esc(p.name)}</b> · ${esc(p.stories[(S.picks || [])[i] || 0].title)}</span></li>`).join("");
+
+  app.innerHTML = `${topbar(`<button class="icon-btn" id="restart">Restart</button>`)}
+  <section class="home fade-in">
+    <div class="home-hero">${homeSVG()}<div class="banner">Welcome home, ${esc(S.name)}!</div></div>
+    <div>
+      <div class="hud">${date} · Mission complete</div>
+      <h2 style="margin-top:8px">A hero's welcome for <span>${esc(S.name)}</span></h2>
+    </div>
+    <div class="home-grid">
+      <div class="story-card">
+        <p style="font-size:19px">The whole town is at the landing pad. Bands are playing, kids are waving flags, and someone has painted your name on a giant banner. You left Graw with an empty tank and no map home. You crossed ten planets, listened to ten stories, and earned every drop of fuel by reading closely.</p>
+        <p style="font-size:19px">The mayor pins a star-shaped medal on your jacket and calls you the <b>Hero of the Ten Stations</b>.</p>
+        ${tedTalk(`Psst! Look who stowed away in your cargo hold. I wasn't going to miss your party! You did it, ${esc(S.name)}. Just like Captain Oda said, you're carrying a map full of lessons now.`)}
+        <div><div class="hud" style="margin-bottom:8px">Stories you read</div><ul class="read-list">${medals}</ul></div>
+      </div>
+      <div class="story-card">
+        <div class="hud">Flight report</div>
+        <div class="stats">
+          <div class="stat"><b>10</b><span class="hud">Planets</span></div>
+          <div class="stat"><b>${firstRight}/40</b><span class="hud">First-try</span></div>
+          <div class="stat"><b>${firstTryPlanets}</b><span class="hud">One-try stops</span></div>
+          <div class="stat"><b>${blasted}</b><span class="hud">Rocks blasted</span></div>
+        </div>
+        <div class="hud" style="margin-top:6px">First-try accuracy by DOK level</div>
+        <div class="dokbars">
+          ${byDok.map(b => `<div class="dokbar"><span class="dok dok${b.d}">DOK ${b.d}</span><div class="track"><div class="fill" style="width:${b.n ? Math.round(100 * b.ok / b.n) : 0}%"></div></div><span>${b.ok}/${b.n}</span></div>`).join("")}
+        </div>
+        <p style="color:var(--muted);font-size:15px">Total station visits: ${totalTries}. Show this screen to your teacher.</p>
+        <button class="btn go" id="again" style="justify-self:start;align-self:end">Fly again</button>
+      </div>
+    </div>
+  </section>`;
+  bindTop();
+  document.getElementById("again").onclick = () => { const m = S.muted, n = S.name; S = freshState(); S.muted = m; S.name = n; S.screen = "intro"; render(); };
+  startConfetti();
+}
+
+/* =================== BACKGROUND FX =================== */
+const sc = document.getElementById("stars"), sx = sc.getContext("2d");
+let stars = [];
+function sizeStars() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  sc.width = innerWidth * dpr; sc.height = innerHeight * dpr; sx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  stars = Array.from({ length: Math.round(innerWidth * innerHeight / 3500) }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: Math.random() * 1.4 + .2, t: Math.random() * 6, s: Math.random() * .25 + .03 }));
+}
+function drawStars(t) {
+  sx.clearRect(0, 0, innerWidth, innerHeight);
+  const g = sx.createRadialGradient(innerWidth * .85, innerHeight * .1, 0, innerWidth * .85, innerHeight * .1, innerWidth * .6);
+  g.addColorStop(0, "rgba(120,70,190,.22)"); g.addColorStop(1, "rgba(0,0,0,0)");
+  sx.fillStyle = g; sx.fillRect(0, 0, innerWidth, innerHeight);
+  for (const s of stars) {
+    if (!reduced) { s.x -= s.s; if (s.x < 0) s.x = innerWidth; }
+    const a = .5 + .5 * Math.sin(t / 700 + s.t);
+    sx.fillStyle = `rgba(241,237,255,${.25 + a * .6})`;
+    sx.beginPath(); sx.arc(s.x, s.y, s.r, 0, 6.283); sx.fill();
+  }
+  requestAnimationFrame(drawStars);
+}
+addEventListener("resize", () => { sizeStars(); sizeConfetti(); });
+
+const cc = document.getElementById("confetti"), cx = cc.getContext("2d");
+let bits = [], confRun = false, confEnd = 0;
+function sizeConfetti() { cc.width = innerWidth; cc.height = innerHeight; }
+function startConfetti() {
+  if (reduced) return;
+  sizeConfetti();
+  const cols = ["#ffd166", "#5fe3b5", "#ff7a4a", "#b18cff", "#7fd6ff", "#ff7a8a"];
+  bits = Array.from({ length: 180 }, () => ({ x: Math.random() * innerWidth, y: -Math.random() * innerHeight, w: 6 + Math.random() * 6, h: 8 + Math.random() * 8, vy: 1.5 + Math.random() * 2.5, vx: -1 + Math.random() * 2, r: Math.random() * 6, vr: -.2 + Math.random() * .4, c: cols[Math.floor(Math.random() * cols.length)] }));
+  confEnd = performance.now() + 9000;
+  if (!confRun) { confRun = true; requestAnimationFrame(drawConfetti); }
+}
+function stopConfetti() { confEnd = 0; }
+function drawConfetti(t) {
+  cx.clearRect(0, 0, cc.width, cc.height);
+  if (t > confEnd) { confRun = false; return; }
+  for (const b of bits) {
+    b.y += b.vy; b.x += b.vx + Math.sin(t / 400 + b.r); b.r += b.vr;
+    if (b.y > innerHeight + 20) { b.y = -20; b.x = Math.random() * innerWidth; }
+    cx.save(); cx.translate(b.x, b.y); cx.rotate(b.r); cx.fillStyle = b.c; cx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); cx.restore();
+  }
+  requestAnimationFrame(drawConfetti);
+}
+
+/* =================== BOOT =================== */
+function start(hotData) {
+  const prev = (hotData && hotData.state) || load();
+  if (prev && prev.screen) S = Object.assign(freshState(), prev);
+  if (S.screen === "planet" && !S.cur) S.screen = "map";
+  if (S.screen !== "intro" && !S.name) S.screen = "intro";
+  // land returning players on the intro so they can choose Continue
+  if (!hotData || !hotData.state) { if (S.screen === "map" || S.screen === "planet" || S.screen === "flight") S.screen = "intro"; }
+  if (S.screen === "flight" && !S.flight) S.screen = "map";
+  if (!S.picks) S.picks = pickStories();
+  if (S.cur && !S.cur.qs) S.cur = null;
+  sizeStars(); requestAnimationFrame(drawStars);
+  render();
+}
+window.claude?.hot?.snapshot?.(() => ({ state: S }));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+
+</body></html>
