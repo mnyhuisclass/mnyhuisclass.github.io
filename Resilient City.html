@@ -1,0 +1,1231 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Resilient City</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800&family=Overpass+Mono:wght@500;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: a municipal planning desk. Highway-sign header, zoning map on the left, planner's drawer (build / library / journal) on the right. */
+:root{
+  --paper:#E8EEEA; --panel:#F6F8F6; --panel2:#DDE5E0; --ink:#1B2A33; --muted:#53666F; --line:#C1CDC7;
+  --sign:#0E6B4A; --sign-ink:#FFFFFF; --warnsign:#F2C230; --warnsign-ink:#1B1B12;
+  --accent:#0E6B4A; --accent-ink:#FFFFFF; --focus:#1F6FC9;
+  --good:#2C7A4C; --warn:#A8660A; --bad:#B23A2E; --scrim:rgba(14,24,34,.55);
+  --grass:#C4D9A8; --forest:#6E9A5B; --tree:#2F5A2A; --river:#6FA3CF; --ocean:#4A7FAE; --wave:#E3F0F9; --sand:#E8DAAE; --rubble:#9A9488; --road:#5E6770; --roadline:#F2E6A8; --gridline:rgba(27,42,51,.10); --safe:#0E6B4A;
+  --res:#E9C23F; --com:#D2544A; --ind:#8A69B5; --park:#4F9A4C;
+  --flood:#1F6FC9; --fire:#D9531E; --hurricane:#0F8C8B; --quake:#8C5A2B; --tornado:#6A4FC0; --drought:#B98208; --shelter:#34495E; --on-haz:#FFFFFF;
+  --power:#A86F00; --water:#1A80A6; --smog:#5E554B;
+  --f-ui:'Overpass','Segoe UI',system-ui,sans-serif;
+  --f-read:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --f-mono:'Overpass Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E1822; --panel:#13212E; --panel2:#1B2D3C; --ink:#E2EBEE; --muted:#97A9B2; --line:#2A3E4F;
+  --sign:#0B5A3E; --sign-ink:#FFFFFF; --warnsign:#E8B923; --warnsign-ink:#1B1B12;
+  --accent:#43C08D; --accent-ink:#06241A; --focus:#7DB6F5;
+  --good:#5CC98A; --warn:#E3A33A; --bad:#EF6B5E; --scrim:rgba(0,0,0,.6);
+  --grass:#2C4632; --forest:#1D3A24; --tree:#5C9A55; --river:#2F6496; --ocean:#1F4A73; --wave:#8DBCE3; --sand:#5E5438; --rubble:#5F5D55; --road:#8E99A5; --roadline:#3B4652; --gridline:rgba(226,235,238,.07); --safe:#5CD39E;
+  --res:#E2BB38; --com:#E0675C; --ind:#A386D6; --park:#5DAA58;
+  --flood:#4C93E6; --fire:#F07038; --hurricane:#2DB5B2; --quake:#C28A55; --tornado:#9077E0; --drought:#E0A92A; --shelter:#8EA5BA; --on-haz:#0B141C; --power:#E8B54A; --water:#4BB8DA; --smog:#A39A8F;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0E1822; --panel:#13212E; --panel2:#1B2D3C; --ink:#E2EBEE; --muted:#97A9B2; --line:#2A3E4F;
+  --sign:#0B5A3E; --sign-ink:#FFFFFF; --warnsign:#E8B923; --warnsign-ink:#1B1B12;
+  --accent:#43C08D; --accent-ink:#06241A; --focus:#7DB6F5;
+  --good:#5CC98A; --warn:#E3A33A; --bad:#EF6B5E; --scrim:rgba(0,0,0,.6);
+  --grass:#2C4632; --forest:#1D3A24; --tree:#5C9A55; --river:#2F6496; --ocean:#1F4A73; --wave:#8DBCE3; --sand:#5E5438; --rubble:#5F5D55; --road:#8E99A5; --roadline:#3B4652; --gridline:rgba(226,235,238,.07); --safe:#5CD39E;
+  --res:#E2BB38; --com:#E0675C; --ind:#A386D6; --park:#5DAA58;
+  --flood:#4C93E6; --fire:#F07038; --hurricane:#2DB5B2; --quake:#C28A55; --tornado:#9077E0; --drought:#E0A92A; --shelter:#8EA5BA; --on-haz:#0B141C; --power:#E8B54A; --water:#4BB8DA; --smog:#A39A8F;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1340px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px;display:flex;flex-direction:column;gap:14px}
+
+/* Highway guide sign header */
+.sign{background:var(--sign);color:var(--sign-ink);border-radius:10px;padding:5px}
+.sign-in{border:2px solid color-mix(in srgb,var(--sign-ink) 85%,transparent);border-radius:7px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand h1{margin:0;font-weight:800;font-size:clamp(22px,3.2vw,32px);letter-spacing:.02em;line-height:1;text-transform:uppercase}
+.brand span{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;margin-top:4px}
+.stats{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center}
+.stat{display:flex;flex-direction:column;line-height:1.1}
+.stat b{font-family:var(--f-mono);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}
+.stat small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.forecast{display:flex;align-items:center;gap:10px;background:var(--warnsign);color:var(--warnsign-ink);border-radius:6px;padding:6px 12px 6px 8px;border:2px solid var(--warnsign-ink);max-width:100%}
+.forecast .dia{width:26px;height:26px;flex:none;transform:rotate(45deg);border:2px solid var(--warnsign-ink);border-radius:3px;display:grid;place-items:center}
+.forecast .dia i{transform:rotate(-45deg);font-style:normal;font-weight:800;font-size:15px}
+.forecast b{display:block;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:14px;line-height:1.1}
+.forecast small{font-size:12px}
+
+.idrow{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end}
+.field{display:flex;flex-direction:column;gap:2px;min-width:0}
+.field label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.field input{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;width:220px;max-width:100%}
+.idrow .spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:600;line-height:1.2}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn.small{padding:4px 9px;font-size:13px}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+
+.workspace{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start}
+.workspace>.mapcard{grid-column:2}
+#build-drawer{grid-column:1;margin-right:16px}
+#lib-drawer{grid-column:3;margin-left:16px}
+.mtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0}
+.btn.toggle{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 14px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.btn.toggle[aria-expanded="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.chev{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg)}
+.btn.toggle[aria-expanded="true"] .chev{transform:rotate(135deg)}
+.chev.r{transform:rotate(135deg)}
+.btn.toggle[aria-expanded="true"] .chev.r{transform:rotate(-45deg)}
+.toolchip{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.toolchip .pill{font-family:var(--f-ui);font-size:13px;padding:5px 10px;border-color:var(--accent)}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:6px 10px 6px 14px;min-height:50px}
+.dhead h2{margin:0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:800}
+.dbody{padding:12px;display:flex;flex-direction:column;gap:14px;overflow:auto;-webkit-overflow-scrolling:touch;min-height:0}
+@media (max-width:1099px){
+  .workspace>.drawer{position:fixed;z-index:40;margin:0!important;top:calc(12px + env(safe-area-inset-top,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));max-height:none!important;width:min(370px,calc(100vw - 24px));box-shadow:0 12px 40px rgba(0,0,0,.35)}
+  #build-drawer{left:max(12px,env(safe-area-inset-left,0px))}
+  #lib-drawer{right:max(12px,env(safe-area-inset-right,0px))}
+}
+
+.mapcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.maphead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.maphead h2{margin:0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.maphead select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+#mapwrap{position:relative;width:100%;min-width:0}
+#map{display:block;margin:0 auto;border-radius:4px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:crosshair}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent)}
+.info{min-height:44px;font-size:13.5px;background:var(--panel2);border-radius:6px;padding:8px 10px}
+.info b{font-weight:800}
+.status{font-size:13.5px;font-weight:600;min-height:20px}
+.status.bad{color:var(--bad)} .status.good{color:var(--good)}
+.turnbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.turnbar .income{font-size:13px;color:var(--muted)}
+.turnbar .income b{font-family:var(--f-mono);color:var(--ink)}
+
+/* Drawer */
+.drawer{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-width:0;width:350px;position:sticky;top:calc(12px + env(safe-area-inset-top,0px));max-height:calc(100vh - 24px)}
+.tabs{display:flex;flex:1}
+.tabs button{flex:1;background:none;border:0;padding:11px 6px;cursor:pointer;font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:3px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.forecast{cursor:pointer;text-align:left;font-family:inherit}
+.lower{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:10px}
+@media (max-width:760px){.lower{grid-template-columns:minmax(0,1fr)}}
+.advisor,.dash{display:flex;flex-direction:column;gap:6px;min-width:0}
+.advisor h3,.dash h3{margin:0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.dash{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.dash h3+.drow{margin-top:-2px}
+.adv{display:grid;grid-template-columns:5px minmax(0,1fr);gap:10px;font-size:13.5px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.adv p{margin:0}
+.adv b{display:inline-block;min-width:66px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sev{border-radius:3px;background:var(--good)}
+.sev.s1{background:var(--accent)} .sev.s2{background:var(--warn)} .sev.s3{background:var(--bad)}
+.drow{display:grid;grid-template-columns:52px minmax(0,1fr) 58px;gap:8px;align-items:center;font-size:12.5px}
+.drow .v{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.drow .v.over{color:var(--bad);font-weight:700}
+.dbar{position:relative;height:10px;background:var(--panel2);border-radius:5px;overflow:hidden}
+.dbar i{position:absolute;top:0;bottom:0;background:var(--c)}
+.dbar.center::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--ink);opacity:.5}
+.stat.clock b{min-width:3.2em}
+.stat.clock b.low{color:var(--warnsign)}
+.checklist{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.checklist ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 16px}
+.checklist li{display:grid;grid-template-columns:16px minmax(0,1fr);gap:6px;align-items:start}
+.checklist li .ok{color:var(--good);font-weight:800}
+.checklist li .no{color:var(--bad);font-weight:800}
+.checklist small{display:block;color:var(--muted);font-size:12.5px}
+.checklist p{margin:0;font-weight:600}
+
+.group{display:flex;flex-direction:column;gap:6px}
+.ghead{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.ghead .dot{width:10px;height:10px;border-radius:50%}
+.ghead em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tool{display:flex;gap:8px;align-items:center;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 8px;cursor:pointer;min-width:0}
+.tool:hover{border-color:var(--ink)}
+.tool[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.tool .sw{flex:none;width:28px;height:28px;border-radius:5px;display:grid;place-items:center;font-family:var(--f-mono);font-weight:700;font-size:11px;background:var(--c);color:var(--on-haz)}
+.tool .tx{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.tool .tx b{font-size:13px}
+.tool .tx small{font-size:11.5px;color:var(--muted);font-family:var(--f-mono)}
+.locked{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px dashed var(--line);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--muted)}
+
+.pcard{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--paper);border-left:5px solid var(--c)}
+.pcard .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--c)}
+.pcard h3{margin:0;font-family:var(--f-read);font-weight:600;font-size:18px;text-wrap:balance}
+.pcard p{margin:0;font-size:13px;color:var(--muted)}
+.meters{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:11.5px;border-radius:99px;padding:2px 8px;border:1px solid var(--line);font-family:var(--f-mono);font-variant-numeric:tabular-nums;background:var(--panel)}
+.pill.ok{border-color:var(--good);color:var(--good)}
+.pill.bonus{border-color:var(--warn);color:var(--warn)}
+.pcard .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+
+.jentry{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:3px}
+.jentry .jt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.jentry b{font-size:14px}
+.jentry p{margin:0;font-family:var(--f-read);font-size:14.5px}
+details.teacher{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+details.teacher summary{cursor:pointer;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.trow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.trow select{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.note{font-size:12.5px;color:var(--muted)}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;background:var(--scrim);z-index:50;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.dialog{background:var(--panel);color:var(--ink);border-radius:12px;border:1px solid var(--line);width:100%;max-width:640px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;margin:auto 0}
+.dialog h2{margin:0;font-size:22px;font-weight:800;text-wrap:balance}
+.dialog .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--c,var(--muted))}
+.dialog p{margin:0}
+.dialog .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.dialog textarea,.reader textarea{width:100%;min-height:90px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-family:var(--f-read);font-size:15px;resize:vertical}
+.choices{display:flex;flex-direction:column;gap:6px}
+.choice{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:6px;padding:7px 10px;cursor:pointer;background:var(--paper)}
+.choice:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.choice input{margin-top:3px;accent-color:var(--accent)}
+.choice.right{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.choice.wrong{border-color:var(--bad)}
+.choice.disabled{cursor:default}
+.steps{display:flex;flex-direction:column;gap:8px;margin:0;padding-left:22px}
+.steps li{padding-left:4px}
+.feedback{font-size:14px;border-radius:6px;padding:8px 10px;background:var(--panel2)}
+.feedback.good{color:var(--good)} .feedback.bad{color:var(--bad)}
+.feedback.good,.feedback.bad{font-weight:600}
+.feedback span{color:var(--ink);font-weight:400}
+.reportgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.reportgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rstat{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px;display:flex;flex-direction:column}
+.rstat b{font-family:var(--f-mono);font-size:22px;font-variant-numeric:tabular-nums}
+.rstat small{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ps{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14.5px}
+.ps dt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted);padding-top:3px}
+.ps dd{margin:0}
+
+/* Reader */
+.reader{background:var(--panel);border-radius:12px;border:1px solid var(--line);width:100%;max-width:1240px;display:flex;flex-direction:column;margin:auto 0;min-height:0}
+.rhead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);border-top:6px solid var(--c);border-radius:12px 12px 0 0}
+.rhead .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--c)}
+.rhead h2{margin:0;font-family:var(--f-read);font-weight:600;font-size:clamp(22px,3vw,30px);text-wrap:balance}
+.rbody{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+@media (max-width:860px){.rbody{grid-template-columns:minmax(0,1fr)}}
+.passage{padding:18px 22px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:14px}
+@media (max-width:860px){.passage{border-right:0;border-bottom:1px solid var(--line)}}
+.para{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 8px}
+.para .pn{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding-top:4px}
+.para p{margin:0;font-family:var(--f-read);font-size:17px;line-height:1.62;max-width:66ch}
+.para .role{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.para .role select{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:100%}
+.tag{font-size:12px;font-weight:800;border-radius:4px;padding:2px 7px;letter-spacing:.04em}
+.tag.ok{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.tag.no{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.qpane{padding:16px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.steptabs{display:flex;flex-wrap:wrap;gap:6px}
+.steptabs button{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.steptabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.q{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:8px;padding:12px}
+.q .qh{display:flex;justify-content:space-between;gap:8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.q .qt{font-weight:600;font-size:15.5px}
+.wc{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.bank{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px;background:var(--panel2);border-radius:6px;padding:8px 10px}
+.bank dt{font-weight:800}
+.bank dd{margin:0;font-style:italic;font-family:var(--f-read)}
+.lockbox{border:1px dashed var(--line);border-radius:8px;padding:14px;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.tool,.btn,.choice{transition:border-color .12s,box-shadow .12s,filter .12s}}
+</style>
+
+<div class="wrap" id="app">
+  <header class="sign" aria-label="City status">
+    <div class="sign-in">
+      <div class="brand"><h1>Resilient City</h1><span>Planning Department · Problem &amp; Solution Division</span></div>
+      <div class="stats">
+        <div class="stat"><b id="s-money">$0</b><small>Budget</small></div>
+        <div class="stat"><b id="s-pop">0</b><small>Residents</small></div>
+        <div class="stat"><b id="s-year">1</b><small>Day</small></div>
+        <div class="stat clock"><b id="s-clock">6:00</b><small id="s-clock-l">Left today</small></div>
+        <button class="forecast" id="forecast" title="Open the passage for this disaster"></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="idrow">
+    <div class="field"><label for="student">Planner (your name)</label><input id="student" autocomplete="off" placeholder="First and last name"></div>
+    <div class="field"><label for="cityname">City name</label><input id="cityname" autocomplete="off" placeholder="Name your city"></div>
+    <div class="spacer"></div>
+    <button class="btn" id="howto">How to play</button>
+    <button class="btn danger" id="restart">Start over</button>
+  </div>
+
+  <div class="workspace" id="workspace">
+    <aside class="drawer" id="build-drawer" aria-label="Build menu" hidden>
+      <div class="dhead"><h2>Build</h2><button class="btn small" data-collapse="build" aria-label="Collapse build menu">Collapse</button></div>
+      <div class="dbody" id="build-body"></div>
+    </aside>
+    <section class="mapcard" aria-label="City map">
+      <div class="maphead">
+        <div class="mtools"><button class="btn toggle" id="toggle-build" aria-controls="build-drawer" aria-expanded="false"><span class="chev" aria-hidden="true"></span>Build</button><span id="toolchip" class="toolchip"></span></div>
+        <div class="mtools"><label class="sr" for="overlay">Map overlay</label>
+        <select id="overlay">
+          <option value="">Overlay: none</option>
+          <option value="flood">Risk: Flood zone</option>
+          <option value="fire">Risk: Wildfire zone</option>
+          <option value="hurricane">Risk: Hurricane surge zone</option>
+          <option value="quake">Risk: Earthquake fault zone</option>
+          <option value="tornado">Risk: Tornado (anywhere)</option>
+          <option value="drought">Risk: Drought (citywide)</option>
+          <option value="utilities">City: Power &amp; water</option>
+          <option value="landvalue">City: Land value</option>
+          <option value="pollution">City: Pollution</option>
+          <option value="last">Last disaster damage</option>
+        </select>
+        <button class="btn toggle" id="toggle-lib" aria-controls="lib-drawer" aria-expanded="false">Library<span class="chev r" aria-hidden="true"></span></button></div>
+      </div>
+      <div id="mapwrap"><canvas id="map" aria-label="City grid. Choose a tool, then tap a tile to build."></canvas></div>
+      <div class="legend">
+        <span><i style="background:var(--res)"></i>Residential</span>
+        <span><i style="background:var(--com)"></i>Commercial</span>
+        <span><i style="background:var(--ind)"></i>Industrial</span>
+        <span><i style="background:var(--park)"></i>Park</span>
+        <span><i style="background:var(--road)"></i>Road</span>
+        <span><i style="background:var(--bad);border-radius:50%"></i>Needs a road</span>
+        <span><i style="background:var(--warn);border-radius:50%"></i>No power or water</span>
+        <span><i style="background:transparent;border:2px solid var(--safe)"></i>Protected (with overlay)</span>
+        <span><i style="background:transparent;border:2px dashed var(--flood)"></i>Flood protection area</span>
+      </div>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+      <div class="info" id="info"></div>
+      <div class="lower"><div class="advisor" id="advisor" aria-live="polite"></div><div class="dash" id="dash"></div></div>
+      <div class="turnbar">
+        <div class="income" id="income"></div>
+        <button class="btn" id="endyear">End Day early</button>
+      </div>
+    </section>
+
+    <aside class="drawer" id="lib-drawer" aria-label="Library and journal" hidden>
+      <div class="dhead">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="tab-library" data-tab="library">Library</button>
+          <button role="tab" id="tab-journal" data-tab="journal">Journal</button>
+        </div>
+        <button class="btn small" data-collapse="lib" aria-label="Collapse library">Collapse</button>
+      </div>
+      <div class="dbody" id="lib-body"></div>
+    </aside>
+  </div>
+</div>
+
+<div class="overlay" id="modal" hidden></div>
+
+<script>
+(function(){
+"use strict";
+// ---------- Map ----------
+const W=24,H=16,N=W*H;
+const GRID=Array.from({length:H},()=>Array(W).fill('.'));
+const put=(ch,pts)=>pts.forEach(([x,y])=>{if(x>=0&&x<W&&y>=0&&y<H)GRID[y][x]=ch});
+const span=(y,x0,x1)=>Array.from({length:x1-x0+1},(_,k)=>[x0+k,y]);
+for(let y=0;y<H;y++){put('O',[[22,y],[23,y]]);put('s',[[21,y]])}
+put('s',[[20,14],[20,15]]);
+put('F',[...span(0,0,5),...span(1,0,4),...span(2,0,3),...span(3,0,2),...span(4,0,1),[0,5],...span(0,17,19),...span(1,18,19),[18,2]]);
+put('~',[[7,0],[7,1],[7,2],[7,3],[8,3],[8,4],[8,5],[8,6],[9,6],[9,7],[9,8],[9,9],[10,9],[10,10],[10,11],[11,11],[11,12],...span(13,11,21)]);
+put('~',[[16,0],[16,1],[16,2],[16,3],[15,3],[15,4],[15,5],[14,5],[14,6],[14,7],[13,7],[13,8],[12,8],[12,9],[11,9]]);
+put('x',[[0,10],[1,11],[2,12],[3,13],[4,14],[5,15]]);
+const MAP=GRID.map(r=>r.join(''));
+const TN={'.':'grass','F':'forest','~':'river','O':'ocean','s':'sand','x':'fault'};
+const TNAME={grass:'Open land',forest:'State forest',river:'River',ocean:'Ocean',sand:'Sandy coastline',fault:'Fault line'};
+const terr=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++)terr.push(TN[MAP[y][x]]);
+const tx=i=>i%W, ty=i=>Math.floor(i/W);
+const cheb=(a,b)=>Math.max(Math.abs(tx(a)-tx(b)),Math.abs(ty(a)-ty(b)));
+const eucl=(a,b)=>Math.hypot(tx(a)-tx(b),ty(a)-ty(b));
+function distField(pred){const src=[];for(let i=0;i<N;i++)if(pred(terr[i]))src.push(i);return Array.from({length:N},(_,i)=>src.length?Math.min(...src.map(j=>cheb(i,j))):99)}
+const dRiver=distField(t=>t==='river'),dForest=distField(t=>t==='forest'),dOcean=distField(t=>t==='ocean'),dFault=distField(t=>t==='fault');
+const isLand=i=>terr[i]!=='river'&&terr[i]!=='ocean';
+
+// ---------- Hazards ----------
+const HAZ={
+ flood:{name:'Flood',color:'--flood',icon:'F',problem:'Heavy rain sent the river over its banks and into the low land nearby.'},
+ fire:{name:'Wildfire',color:'--fire',icon:'W',problem:'Hot, dry wind pushed a wildfire out of the state forest toward town.'},
+ hurricane:{name:'Hurricane',color:'--hurricane',icon:'H',problem:'A hurricane pushed a wall of storm surge onto the coast.'},
+ quake:{name:'Earthquake',color:'--quake',icon:'E',problem:'Rocks along the fault slipped, and the ground shook across the city.'},
+ tornado:{name:'Tornado',color:'--tornado',icon:'T',problem:'A tornado dropped from a thunderstorm and tore a path across the city.'},
+ drought:{name:'Drought',color:'--drought',icon:'D',problem:'Weeks without rain shrank the river and emptied the city’s water supply.'}
+};
+const HKEYS=Object.keys(HAZ);
+const SCHEDULE=['flood','fire','hurricane','quake','tornado','drought'];
+const DISASTER_GAP=3, FIRST_DISASTER=4;
+
+function zoneChance(h,i,path){
+  if(!isLand(i))return 0;
+  switch(h){
+    case 'flood':return dRiver[i]<=2?.75:0;
+    case 'fire':return (dForest[i]<=2&&terr[i]!=='forest')?.75:0;
+    case 'hurricane':return dOcean[i]<=4?.7:.12;
+    case 'quake':return dFault[i]<=2?.55:.2;
+    case 'tornado':return path&&path.has(i)?.85:0;
+    case 'drought':return .35;
+  }return 0;
+}
+function highRisk(h,i,path){
+  if(!isLand(i))return false;
+  switch(h){
+    case 'flood':return dRiver[i]<=2;
+    case 'fire':return dForest[i]<=2&&terr[i]!=='forest';
+    case 'hurricane':return dOcean[i]<=4;
+    case 'quake':return dFault[i]<=2;
+    case 'tornado':return path?path.has(i):true;
+    case 'drought':return true;
+  }return false;
+}
+
+// ---------- Buildings ----------
+const BASIC={
+ road:{name:'Road',cost:10,code:'',color:'--road',desc:'Homes, shops and factories must touch a road to count.'},
+ bridge:{name:'Bridge',cost:40,code:'=',color:'--road',ruleText:'on river',desc:'Carries a road across the river. Connects like a road.'},
+ house:{name:'Residential Zone',cost:40,code:'R',color:'--res',home:true,zone:'R',desc:'Grows from a small house (6 residents) to townhomes (14) to apartments (24). Each resident pays $2 a day.'},
+ shop:{name:'Commercial Zone',cost:60,code:'C',color:'--com',zone:'C',desc:'Shops and offices. Each level earns $8 a day and adds 4 jobs.'},
+ factory:{name:'Industrial Zone',cost:80,code:'I',color:'--ind',zone:'I',desc:'Factories. Each level earns $10 a day and adds 8 jobs, but pollutes nearby land.'},
+ powerline:{name:'Power Line',cost:10,code:'',color:'--power',desc:'Carries electricity from a power plant or solar farm. Runs across empty land, the river, and Residential or Commercial zones. Tap a line again to remove it.'},
+ park:{name:'Park',cost:30,code:'P',color:'--park',desc:'Raises land value for 2 tiles around it.'},
+ power:{name:'Power Plant',cost:150,code:'PP',color:'--power',util:'power',cap:60,upkeep:6,pollute:30,desc:'Powers 60 zone levels on its road network. Upkeep $6 a day. Pollutes nearby land.'},
+ solar:{name:'Solar Farm',cost:220,code:'SF',color:'--power',util:'power',cap:35,upkeep:2,desc:'Clean power for 35 zone levels. Upkeep $2 a day. No pollution.'},
+ tower:{name:'Water Treatment',cost:80,code:'WT',color:'--water',util:'water',cap:40,upkeep:3,desc:'Water for 40 zone levels on its road network. Upkeep $3 a day.'},
+ pump:{name:'Pump Station',cost:130,code:'PS',color:'--water',util:'water',cap:90,upkeep:4,rule:'river1',ruleText:'next to river',desc:'Pumps river water for 90 zone levels. Upkeep $4 a day.'}
+};
+const STRATS={
+ levee:{name:'Levee',from:['flood'],cost:120,code:'LV',r:2,prot:{flood:{p:.8,h:.5}},rule:'river1',ruleText:'next to river',desc:'Earthen wall that holds the river in its channel. Protects tiles within 2.'},
+ wetland:{name:'Wetland Park',from:['flood'],cost:150,code:'WP',r:3,prot:{flood:{p:.6,h:.3}},rule:'river2',ruleText:'within 2 of river',desc:'Soaks up floodwater like a sponge. Protects tiles within 3.'},
+ raisedhome:{name:'Raised Home',from:['flood'],cost:90,code:'RH',home:true,prot:{flood:{p:1,h:1}},desc:'House on stilts. Floodwater flows underneath. 6 residents.'},
+ firebreak:{name:'Firebreak',from:['fire'],cost:60,code:'FB',r:2,prot:{fire:{p:.7,h:.4}},rule:'forest1',ruleText:'next to forest',desc:'Cleared strip with no fuel, so fire slows. Protects tiles within 2.'},
+ firestation:{name:'Fire Station',from:['fire'],cost:200,code:'FS',r:4,prot:{fire:{p:.45,h:.7}},desc:'Crews arrive in minutes. Protects tiles within 4.'},
+ firesafehome:{name:'Fire-Safe Home',from:['fire'],cost:90,code:'FH',home:true,prot:{fire:{p:.85,h:1}},desc:'Tile roof, ember screens, 30 ft of defensible space. 6 residents.'},
+ seawall:{name:'Seawall',from:['hurricane'],cost:150,code:'SW',r:3,prot:{hurricane:{p:.8,h:.5}},rule:'sand',ruleText:'on coastline',desc:'Concrete wall that blocks storm surge. Protects tiles within 3.'},
+ dunes:{name:'Dunes & Mangroves',from:['hurricane'],cost:100,code:'DM',r:2,prot:{hurricane:{p:.6,h:.3}},rule:'sand',ruleText:'on coastline',desc:'Natural barrier that slows waves. Cheaper than a wall. Protects within 2.'},
+ shelter:{name:'Storm Shelter',from:['hurricane','tornado'],cost:160,code:'SS',color:'--shelter',r:3,prot:{hurricane:{p:0,h:.95},tornado:{p:0,h:.95}},desc:'Keeps people safe in hurricanes and tornadoes. Protects people within 3.'},
+ quakehome:{name:'Quake-Safe Home',from:['quake'],cost:100,code:'QH',home:true,prot:{quake:{p:1,h:1}},desc:'Base-isolation pads absorb shaking. 6 residents.'},
+ retrofit:{name:'Retrofit Office',from:['quake'],cost:180,code:'RO',r:3,prot:{quake:{p:.6,h:.5}},desc:'Crews add steel braces to older buildings within 3.'},
+ eew:{name:'Quake Warning Sensor',from:['quake'],cost:120,code:'EW',r:5,prot:{quake:{p:0,h:.7}},desc:'Alerts seconds before shaking: drop, cover, hold on. Protects people within 5.'},
+ siren:{name:'Warning Siren',from:['tornado'],cost:80,code:'WS',r:4,prot:{tornado:{p:0,h:.7}},desc:'Tells everyone to get inside now. Protects people within 4.'},
+ saferoom:{name:'Safe-Room Home',from:['tornado'],cost:100,code:'SR',home:true,prot:{tornado:{p:.5,h:1}},desc:'Reinforced safe room and roof straps. 6 residents.'},
+ reservoir:{name:'Reservoir',from:['drought'],cost:200,code:'RV',r:5,prot:{drought:{p:.7,h:0}},rule:'river1',ruleText:'next to river',desc:'Stores water from wet seasons for dry ones. Protects within 5.'},
+ recycling:{name:'Water Recycling Plant',from:['drought'],cost:180,code:'WR',r:4,prot:{drought:{p:.6,h:0}},desc:'Cleans used water so it can be used again. Protects within 4.'},
+ raingarden:{name:'Rain Garden',from:['drought'],cost:50,code:'RG',r:2,prot:{drought:{p:.4,h:0}},desc:'Catches runoff and refills groundwater. Protects within 2.'}
+};
+for(const k in STRATS){const s=STRATS[k];if(!s.color)s.color=HAZ[s.from[0]].color;if(s.home)s.zone='R'}
+const DEF=k=>BASIC[k]||STRATS[k];
+const isHome=t=>!!(t&&DEF(t)&&DEF(t).home);
+const needsRoad=t=>isHome(t)||t==='shop'||t==='factory'||(BASIC[t]&&!!BASIC[t].util);
+const destroyable=t=>isHome(t)||t==='shop'||t==='factory'||t==='park';
+const roadLike=t=>t==='road'||t==='bridge';
+const zoneOf=t=>t&&DEF(t)?DEF(t).zone||null:null;
+const isUtil=t=>!!(t&&BASIC[t]&&BASIC[t].util);
+const linesOK=t=>{const z=zoneOf(t);return z==='R'||z==='C'};
+
+// ---------- Passages ----------
+const ROLES={problem:'Problem',cause:'Cause of the problem',solution:'Solution',result:'Result'};
+const PASSAGES=[
+{id:'flood',title:'When the River Rises',teaser:'Why riverside towns flood, and three ways to fight back.',
+ unlocks:['levee','wetland','raisedhome'],
+ keywords:['levee','wetland','floodplain','pavement','paved','raise','raised','stilts','sponge','inspect','weak spot','soak','low land','dollar','combine'],
+ paras:[
+ ['problem','Many towns are built beside rivers because rivers provide water, transportation, and rich soil for farming. But living near a river comes with a serious problem: flooding. When heavy rain falls or snow melts quickly, a river can rise over its banks and pour into streets, homes, and businesses. Floods are the most common natural disaster in the United States, and they cause billions of dollars in damage every year.'],
+ ['cause','Why do floods hurt cities so badly? One reason is pavement. In a forest or meadow, rainwater soaks into the soil. In a city, roads, parking lots, and rooftops cover the ground, so the water has nowhere to go. It rushes into the river all at once, making the water rise faster and higher. Many cities also built homes on low land called floodplains, right where a river naturally spreads out.'],
+ ['solution','One solution is to build levees. A levee is a long wall of packed earth or concrete built along a riverbank to hold water inside the river’s channel. Levees have protected cities like Sacramento, California, for over a century. However, engineers warn that levees must be inspected and repaired often, because a single weak spot can let water break through.'],
+ ['solution','Another solution works with nature instead of against it. Wetlands act like giant sponges, soaking up floodwater and releasing it slowly. Some cities are turning low land beside the river into wetland parks. Families can also raise their homes on tall foundations or stilts so floodwater flows underneath instead of through the living room.'],
+ ['result','These solutions are making a difference. Studies show that every dollar spent preparing for disasters can save about six dollars in repairs later. Cities that combine strong levees, healthy wetlands, and raised buildings suffer less damage and recover more quickly when the river rises again.']],
+ dok2:[
+ {q:'What problem does the author describe in paragraph 1?',o:['Rivers make it hard for people to travel between towns.','Towns built beside rivers can be damaged by flooding.','Snow melts too slowly in the spring.','Cities do not have enough rich soil for farming.'],a:1,ex:'Paragraph 1 says living near a river “comes with a serious problem: flooding.”'},
+ {q:'According to paragraph 2, how does pavement make floods worse?',o:['It cracks and lets water leak into homes.','It soaks up too much water during storms.','It keeps rain from soaking into the ground, so water rushes into the river all at once.','It makes rivers wider and slower.'],a:2,ex:'Paragraph 2: in a city “the water has nowhere to go. It rushes into the river all at once.”'},
+ {q:'Which phrase from paragraph 4 signals that the author is introducing a second solution?',o:['“soaking up floodwater”','“Another solution works with nature”','“on tall foundations”','“through the living room”'],a:1,ex:'“Another solution” is a signal phrase that tells the reader a new solution is coming.'}],
+ dok3:[
+ {q:'Riverton has money for only ONE flood project. The town owns a lot of empty, low land beside the river. Based on the passage, which project makes the most sense?',o:['Pave the empty land to make a parking lot','Turn the low land into a wetland park','Build new homes on the low land','Do nothing, because floods are rare'],a:1,ex:'Wetlands soak up floodwater like sponges, and Riverton already has low riverside land to use. Paving would make flooding worse (paragraph 2), and floods are the most common disaster (paragraph 1).'},
+ {q:'The author warns that levees “must be inspected and repaired often, because a single weak spot can let water break through.” What can you conclude about relying on levees alone?',o:['Levees are useless and should never be built.','Levees work best when no one inspects them.','A city is safer when it combines levees with other solutions.','Levees only work in California.'],a:2,ex:'Because one weak spot can fail, the last paragraph says cities that combine levees, wetlands, and raised buildings suffer less damage.'}]},
+{id:'fire',title:'Living with Fire',teaser:'Why wildfires are getting worse, and how towns at the forest edge stay standing.',
+ unlocks:['firebreak','firestation','firesafehome'],
+ keywords:['firebreak','fuel','ember','embers','defensible','roof','vent','vents','brush','fire station','cleared','minutes','together','wind','drought'],
+ paras:[
+ ['problem','In the western United States, wildfires are growing larger and more dangerous. Each year, fires burn millions of acres of forest and grassland. As more people build homes at the edge of forests, an area experts call the wildland-urban interface, more neighborhoods sit directly in the path of these fires.'],
+ ['cause','Several causes have made today’s fires worse. Hotter summers and longer droughts dry out trees and grass, turning them into fuel. For many years, people also put out every small fire as quickly as possible. That sounds helpful, but it allowed dead branches and brush to pile up on the forest floor. When a fire finally starts, all that extra fuel makes it burn hotter and spread faster. Strong winds can carry burning embers more than a mile ahead of the flames.'],
+ ['solution','To solve this problem, communities create firebreaks. A firebreak is a wide strip of land where trees and brush have been cleared away. When a wildfire reaches the firebreak, it runs out of fuel and slows down, giving firefighters a chance to stop it. Fire stations built close to at-risk neighborhoods also help, because crews can arrive in minutes instead of hours.'],
+ ['solution','Homeowners can be part of the solution, too. Most homes that burn in wildfires are lit by flying embers, not by the wall of flames. Fire-safe homes have metal or tile roofs, screens over vents to block embers, and a “defensible space” of at least 30 feet where plants are trimmed and dry leaves are cleared away.'],
+ ['result','These steps work best together. Researchers who studied neighborhoods after large California wildfires found that homes with fire-resistant roofs and cleared space around them were much more likely to survive. When a community combines firebreaks, nearby fire stations, and fire-safe homes, a fire that could have destroyed a town may pass by with far less damage.']],
+ dok2:[
+ {q:'According to paragraph 1, why are more neighborhoods in danger from wildfires?',o:['Firefighters have moved away from forests.','More people are building homes at the edge of forests.','Forests are growing into the middle of cities.','Grassland is being turned into farms.'],a:1,ex:'Paragraph 1: “As more people build homes at the edge of forests… more neighborhoods sit directly in the path.”'},
+ {q:'According to paragraph 2, why did putting out every small fire make later fires worse?',o:['Firefighters ran out of water.','Small fires stopped new trees from growing.','Dead branches and brush piled up, giving future fires more fuel.','It made summers hotter.'],a:2,ex:'Paragraph 2: it “allowed dead branches and brush to pile up,” and “extra fuel makes it burn hotter.”'},
+ {q:'How does a firebreak help stop a wildfire?',o:['It removes fuel, so the fire slows down and firefighters can stop it.','It sprays water on the flames automatically.','It warns people to leave their homes.','It blocks the wind from blowing embers.'],a:0,ex:'Paragraph 3: the fire “runs out of fuel and slows down, giving firefighters a chance to stop it.”'}],
+ dok3:[
+ {q:'The author states that most homes are lit by flying embers, not by the wall of flames. Which solution does this fact support most strongly?',o:['Putting out every small fire quickly','Building more homes at the forest edge','Fire-safe homes with ember screens and metal or tile roofs','Planting more trees close to houses'],a:2,ex:'If embers are the main danger, homes need roofs and vent screens that embers cannot ignite (paragraph 4).'},
+ {q:'Pine Valley’s mayor says, “We’ll build one big fire station. We don’t need firebreaks or fire-safe homes.” Based on the passage, how would you evaluate this plan?',o:['It is strong, because fire stations are the only solution the author trusts.','It is weak, because the author says the steps work best together, and firebreaks slow fires so crews can stop them.','It is strong, because embers cannot reach homes near a fire station.','It is weak, because the author says fire stations make fires spread faster.'],a:1,ex:'Paragraph 5 opens with “These steps work best together.” One station alone leaves fuel and embers unchecked.'}]},
+{id:'hurricane',title:'Holding Back the Sea',teaser:'Storm surge is a hurricane’s deadliest weapon. Walls, dunes, and shelters push back.',
+ unlocks:['seawall','dunes','shelter'],
+ keywords:['seawall','surge','dune','dunes','mangrove','mangroves','shelter','galveston','barrier','coast','waves','marsh','cost','cheaper','less','miles','natural'],
+ paras:[
+ ['problem','Hurricanes are giant spinning storms that form over warm ocean water. When they reach land, they bring winds of at least 74 miles per hour, heavy rain, and a dangerous rise in seawater called storm surge. Coastal cities face the greatest danger, and nearly 40 percent of Americans live in counties along the shoreline.'],
+ ['cause','Storm surge is often the deadliest part of a hurricane. The storm’s winds push ocean water toward the shore, piling it into a wall of water that can be more than 20 feet high. Many coastal towns have made this danger worse by removing their natural defenses. Sand dunes were flattened to build beach houses, and marshes and mangrove forests were cleared away, leaving nothing to slow the water down.'],
+ ['solution','One solution is a seawall, a strong wall of concrete or stone built along the shore. A seawall blocks waves and surge before they reach streets and buildings. After a hurricane in 1900 killed thousands of people in Galveston, Texas, the city built a seawall more than three miles long. It has protected the city from many storms since then.'],
+ ['solution','Nature offers another solution. Healthy sand dunes act as a natural barrier, and the tangled roots of mangrove trees slow waves and hold sand in place. Restoring dunes and mangroves costs less than building walls and can protect long stretches of coastline. For people, sturdy storm shelters provide a safe place to wait out the storm when they cannot leave in time.'],
+ ['result','Communities that use both built walls and natural barriers are better protected than those that rely on just one. Together with better forecasts and shelters, these solutions have helped the number of hurricane deaths in the United States drop sharply over the past century, even as more people have moved to the coast.']],
+ dok2:[
+ {q:'According to paragraph 2, what did coastal towns do that made storm surge more dangerous?',o:['Built seawalls that were too tall','Moved people away from the coast','Removed natural defenses such as dunes, marshes, and mangroves','Planted too many trees along the beach'],a:2,ex:'Paragraph 2: dunes “were flattened” and marshes and mangroves “were cleared away.”'},
+ {q:'Why did Galveston, Texas, build a seawall?',o:['A hurricane in 1900 killed thousands of people there.','The city wanted a longer beach for tourists.','Sand dunes were blocking the harbor.','A law required every coastal city to build one.'],a:0,ex:'Paragraph 3 explains the 1900 hurricane that killed thousands led the city to build the seawall.'},
+ {q:'Based on the passage, what is storm surge?',o:['Heavy rain that falls during a storm','A rise in seawater pushed toward shore by a storm’s winds','A fast wind that knocks down trees','A crack that forms in a seawall'],a:1,ex:'Paragraphs 1 and 2 define storm surge as a rise in seawater that the winds push toward the shore.'}],
+ dok3:[
+ {q:'Sandport has ten miles of beach and a small budget. Using the passage, which plan is the best choice?',o:['Build a seawall along all ten miles','Restore dunes and mangroves along the coast and add a storm shelter','Flatten the dunes to build more beach houses','Wait until after a hurricane to decide'],a:1,ex:'Paragraph 4: restoring dunes and mangroves “costs less than building walls and can protect long stretches of coastline,” and shelters protect people.'},
+ {q:'Why did the author most likely include the story of Galveston?',o:['To show that hurricanes only hit Texas','To explain how hurricanes form over warm water','To argue that seawalls are cheaper than dunes','To give real-world evidence that a seawall can protect a city for many years'],a:3,ex:'The Galveston example is evidence that the seawall solution worked: “It has protected the city from many storms since then.”'}]},
+{id:'quake',title:'When the Ground Shakes',teaser:'Earthquakes don’t topple people. Weak buildings do. Engineers have answers.',
+ unlocks:['quakehome','retrofit','eew'],
+ keywords:['retrofit','retrofitting','base isolation','pads','fault','brick','steel','brace','braces','warning','sensor','sensors','building rules','haiti','chile','collapse','crumble','older'],
+ paras:[
+ ['problem','Earthquakes strike without warning. Deep underground, huge slabs of rock called tectonic plates slowly push and slide against each other. When stress builds up and the rocks suddenly slip, the ground shakes. In a city, the shaking itself rarely hurts people. The greatest danger comes from buildings that crack and collapse.'],
+ ['cause','Many older buildings were never designed to handle strong shaking. Brick and stone walls without steel support can crumble when the ground moves. Buildings close to a fault, the crack in the earth where the rocks slip, feel the strongest shaking. Soft, wet soil can make shaking even worse, the same way a bowl of gelatin jiggles more than a block of wood.'],
+ ['solution','Engineers have found ways to make new buildings earthquake-resistant. One method is called base isolation. The building rests on thick, flexible pads made of rubber and steel. When the ground moves, the pads absorb much of the motion, so the building above sways gently instead of shaking apart. Even small houses are safer when they are bolted tightly to their foundations.'],
+ ['solution','Older buildings can be strengthened, too. This process, called retrofitting, adds steel braces, stronger walls, and better connections to buildings that already exist. Cities such as Los Angeles and San Francisco now require owners of certain older buildings to retrofit them. Early warning systems help people as well. Sensors detect the first, weaker waves of an earthquake and send alerts seconds before the strongest shaking arrives, giving people time to drop, cover, and hold on.'],
+ ['result','The difference these solutions make can be seen in two earthquakes from 2010. In January, an earthquake in Haiti killed more than 100,000 people, in part because many buildings were poorly built. Weeks later, a far stronger earthquake struck Chile, a country with strict building rules, and fewer than 600 people died.']],
+ dok2:[
+ {q:'According to paragraph 1, what causes the most harm to people during an earthquake?',o:['The shaking ground itself','Buildings that crack and collapse','Tectonic plates rising to the surface','Loud noises from the moving rocks'],a:1,ex:'Paragraph 1: “The greatest danger comes from buildings that crack and collapse.”'},
+ {q:'How does base isolation protect a building?',o:['Steel walls stop the ground from moving.','Sensors move the building away from the fault.','The building is built completely underground.','Flexible pads absorb the motion, so the building sways gently.'],a:3,ex:'Paragraph 3: “the pads absorb much of the motion, so the building above sways gently.”'},
+ {q:'Based on paragraph 4, what does retrofitting mean?',o:['Adding supports to make an existing building stronger','Tearing down old buildings','Building new homes on flexible pads','Moving a building away from a fault'],a:0,ex:'Retrofitting “adds steel braces, stronger walls, and better connections to buildings that already exist.”'}],
+ dok3:[
+ {q:'What conclusion is best supported by comparing the earthquakes in Haiti and Chile?',o:['Stronger earthquakes always cause more deaths.','How well buildings are built can matter more than how strong an earthquake is.','Earthquakes happen less often in Chile than in Haiti.','Early warning systems are the only solution that works.'],a:1,ex:'Chile’s quake was far stronger, yet far fewer people died because of strict building rules.'},
+ {q:'Old Town has many brick buildings without steel support, and it sits right next to a fault. Which solution should the town start with?',o:['Build a few new base-isolated homes on the edge of town','Rely only on phone alerts','Retrofit the old brick buildings with steel braces and stronger walls','Add more brick buildings near the fault'],a:2,ex:'Paragraph 2 says unsupported brick crumbles and buildings near a fault shake hardest. Retrofitting fixes the buildings people already use.'}]},
+{id:'tornado',title:'Ready for the Twister',teaser:'Tornadoes give only minutes of warning. Sirens, shelters, and stronger homes buy back time.',
+ unlocks:['siren','saferoom','shelter'],
+ keywords:['siren','sirens','warning','warnings','safe room','shelter','shelters','reinforced','concrete','minutes','fema','anchored','moore','roof straps','time','safe place'],
+ paras:[
+ ['problem','A tornado is a violently spinning column of air that reaches from a thunderstorm down to the ground. The strongest tornadoes have winds over 200 miles per hour, powerful enough to rip houses from their foundations. The United States has more tornadoes than any other country, about 1,200 every year.'],
+ ['cause','Tornadoes are especially dangerous because they form quickly and are hard to predict exactly. Forecasters can tell when conditions are right for tornadoes, but on average they can warn people only about 10 to 15 minutes before one touches down. Many houses are not built to survive such strong winds, so people caught outside or in weak buildings face the greatest risk.'],
+ ['solution','Since there is so little time, fast warnings are critical. Outdoor warning sirens sound across a whole town when a tornado warning is issued, telling everyone to get inside immediately. Alerts on phones, radios, and TV spread the message even further.'],
+ ['solution','Once people are warned, they need a safe place to go. Community storm shelters are built from thick, reinforced concrete and are designed to stand up to the strongest tornadoes. Families can also add a safe room to their homes. A safe room is a small room with reinforced walls, ceiling, and door that is anchored to the foundation. FEMA, the Federal Emergency Management Agency, designs safe rooms to survive winds of 250 miles per hour.'],
+ ['result','After a powerful tornado destroyed much of Moore, Oklahoma, in 2013, the city adopted some of the strongest home-building rules in the country. New houses must be built with stronger connections and roof straps to resist high winds. Experts say that combining fast warnings, strong shelters, and sturdy homes saves lives, because people have both time to act and a safe place to go.']],
+ dok2:[
+ {q:'According to paragraph 2, why are tornadoes especially dangerous?',o:['They only happen at night.','They last for several days.','They form quickly and give people only minutes of warning.','They always hit large cities.'],a:2,ex:'Paragraph 2: they “form quickly,” and warnings come “only about 10 to 15 minutes” ahead.'},
+ {q:'What is the purpose of outdoor warning sirens?',o:['To tell everyone to get inside immediately','To scare tornadoes away from town','To measure the wind speed','To call firefighters to a fire'],a:0,ex:'Paragraph 3: sirens sound “telling everyone to get inside immediately.”'},
+ {q:'Which detail best supports the idea that safe rooms are a strong solution?',o:['“Alerts on phones, radios, and TV spread the message.”','“The United States has … about 1,200 every year.”','“A tornado is a violently spinning column of air.”','“FEMA … designs safe rooms to survive winds of 250 miles per hour.”'],a:3,ex:'250 mph is stronger than the strongest tornado winds (over 200 mph) described in paragraph 1.'}],
+ dok3:[
+ {q:'Why does the author say that warnings and shelters work best together?',o:['Sirens make shelters stronger.','Warnings give people time to act, and shelters give them a safe place to go.','Shelters are only needed in towns with no siren.','Warnings stop tornadoes from forming.'],a:1,ex:'Paragraph 5: people need “both time to act and a safe place to go.”'},
+ {q:'How did Moore, Oklahoma, respond to the 2013 tornado, and what does that response show?',o:['It moved the whole city, showing tornadoes cannot be prepared for.','It removed its sirens, showing warnings did not help.','It required stronger houses, showing the city treated the disaster as a problem to solve before the next storm.','It did nothing, showing tornadoes never strike the same place twice.'],a:2,ex:'Moore adopted stronger building rules (roof straps, stronger connections), a solution aimed at the next tornado.'}]},
+{id:'drought',title:'Every Drop Counts',teaser:'Droughts sneak up slowly. Cities that store, recycle, and catch water stay ahead.',
+ unlocks:['reservoir','recycling','raingarden'],
+ keywords:['reservoir','recycle','recycling','rain garden','runoff','xeriscaping','store','stores','dam','cape town','day zero','saving','save','lawns','storm drains','soak','refill','pavement','paved'],
+ paras:[
+ ['problem','A drought is a long period with much less rain than normal. Unlike a tornado or an earthquake, a drought arrives slowly, over months or even years. As rivers shrink and lakes dry up, cities can run short of water for drinking, growing food, and fighting fires.'],
+ ['cause','Growing cities make the problem harder. More people means more water used for showers, lawns, and factories. In hot, dry places, as much as half of a home’s water can go to watering plants and grass outside. And when rain does fall on paved streets, most of it rushes into storm drains and is carried away instead of soaking in to refill the ground.'],
+ ['solution','One solution is to save water when it is plentiful. A reservoir is a large lake, often made by building a dam across a river, that stores water during wet seasons so a city can use it during dry ones. Another solution is recycling water. Water recycling plants clean used water from sinks and showers until it is safe to use again. Orange County, California, cleans enough used water each day to supply hundreds of thousands of people.'],
+ ['solution','Cities can also catch more of the rain that falls. Rain gardens are shallow beds of native plants placed where water collects. They hold runoff from roofs and streets and let it soak slowly into the ground, refilling underground water supplies. Replacing thirsty lawns with plants that need little water, called xeriscaping, saves even more.'],
+ ['result','In 2018, Cape Town, South Africa, came close to running out of water. Officials warned of “Day Zero,” when taps would be shut off. By saving water and finding new sources, residents cut their daily water use roughly in half, and Day Zero never came. Cape Town’s story shows that a city that plans ahead can survive even a severe drought.']],
+ dok2:[
+ {q:'According to paragraph 1, how is a drought different from a tornado?',o:['A drought causes stronger winds.','A drought arrives slowly, over months or years.','A drought only happens near the ocean.','A drought ends in a few minutes.'],a:1,ex:'Paragraph 1: “a drought arrives slowly, over months or even years.”'},
+ {q:'According to paragraph 2, what happens to most rain that falls on paved streets?',o:['It soaks in and refills the ground.','It is stored in reservoirs.','It rushes into storm drains and is carried away.','It freezes overnight.'],a:2,ex:'Paragraph 2: “most of it rushes into storm drains and is carried away.”'},
+ {q:'What is the main purpose of a reservoir?',o:['To clean used water from sinks','To grow native plants','To carry rain into storm drains','To store water during wet seasons for use in dry ones'],a:3,ex:'Paragraph 3: a reservoir “stores water during wet seasons so a city can use it during dry ones.”'}],
+ dok3:[
+ {q:'Which solution best addresses the cause at the end of paragraph 2, where rain runs off paved streets instead of refilling the ground?',o:['Rain gardens','Water recycling plants','Bigger lawns','More paved parking lots'],a:0,ex:'Rain gardens “hold runoff from roofs and streets and let it soak slowly into the ground”, the exact opposite of runoff lost to storm drains.'},
+ {q:'What lesson does Cape Town’s story best support?',o:['Droughts always end before a city runs out of water.','Only cities in South Africa have droughts.','Saving water does not make a real difference.','When people save water and find new sources, a city can avoid running out.'],a:3,ex:'Residents “cut their daily water use roughly in half, and Day Zero never came.”'}]}
+];
+const PBY=Object.fromEntries(PASSAGES.map(p=>[p.id,p]));
+const PAY={role:15,d2:50,d3:150};
+const MAX_STD=5*PAY.role+3*PAY.d2, MAX_BONUS=2*PAY.d3;
+
+// ---------- State ----------
+const KEY='resilient-city-v1';
+const DAY_MS=6*60*1000;
+const RES=[0,6,14,24];
+let state, sim=null, ui={tab:'library',drawers:null,tool:null,hover:null,inspect:null,overlay:'',drafts:{},choices:{},reader:null,msg:'',msgKind:''};
+function fresh(){
+  const b=Array(N).fill(null),lv=Array(N).fill(0);
+  const at=(x,y)=>y*W+x;
+  for(let x=15;x<=20;x++)b[at(x,9)]='road';
+  for(const [x,y] of [[16,8],[17,8],[19,8]]){b[at(x,y)]='house';lv[at(x,y)]=1}
+  b[at(18,10)]='shop';lv[at(18,10)]=1;
+  b[at(15,10)]='power';b[at(20,10)]='tower';
+  return {v:1,student:'',city:'',money:300,year:1,b,lv,pl:Array(N).fill(false),dayMs:DAY_MS,timerPaused:false,read:{},permits:{},journal:[],dIndex:0,nextYear:FIRST_DISASTER,history:[],last:null,pending:null,seenIntro:false,lastIncome:0};
+}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(!s||s.v!==1||!Array.isArray(s.b))return null;
+  if(s.b.length!==N){let refund=0;for(const t of s.b){if(t&&t!=='rubble'&&DEF(t))refund+=DEF(t).cost}refund=Math.max(0,refund-280);const f=fresh();s.b=f.b;s.lv=f.lv;s.last=null;s.pending=null;s.money+=refund;s.migrated=refund}
+  if(!Array.isArray(s.lv)||s.lv.length!==N){s.lv=s.b.map(t=>zoneOf(t)?1:0);if(!s.b.some(isUtil)){s.money+=250;s.utilGrant=true}}
+  if(typeof s.dayMs!=='number')s.dayMs=DAY_MS;
+  if(!Array.isArray(s.pl)||s.pl.length!==N)s.pl=Array(N).fill(false);
+  return s}catch(e){}return null}
+const UIKEY='resilient-city-ui';
+const overlayMode=()=>matchMedia('(max-width:1099px)').matches;
+function loadDrawers(){try{const d=JSON.parse(localStorage.getItem(UIKEY));if(d&&typeof d.build==='boolean')return d}catch(e){}return{build:!overlayMode(),lib:false}}
+function saveDrawers(){try{localStorage.setItem(UIKEY,JSON.stringify(ui.drawers))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function rs(pid){if(!state.read[pid])state.read[pid]={roles:{picks:[],submitted:false,correct:0,earned:0},q:{},announced:false};return state.read[pid]}
+function dok2Done(pid){const r=state.read[pid];if(!r||!r.roles.submitted)return false;return PBY[pid].dok2.every((_,k)=>r.q['d2-'+k]&&r.q['d2-'+k].done)}
+function dok3Done(pid){const r=state.read[pid];if(!r)return false;return PBY[pid].dok3.every((_,k)=>r.q['d3-'+k]&&r.q['d3-'+k].done)}
+function earned(pid){const r=state.read[pid];let s=0,b=0;if(!r)return{s,b};s+=r.roles.earned||0;for(const k in r.q){if(k.startsWith('d2'))s+=r.q[k].earned||0;else b+=r.q[k].earned||0}return{s,b}}
+const unlocked=k=>!STRATS[k]||STRATS[k].from.some(dok2Done);
+function nbrs(i){const x=tx(i),y=ty(i),o=[];if(x>0)o.push(i-1);if(x<W-1)o.push(i+1);if(y>0)o.push(i-W);if(y<H-1)o.push(i+W);return o}
+function connected(i){return nbrs(i).some(k=>roadLike(state.b[k]))}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+// ---------- Simulation: utilities, pollution, land value, demand ----------
+function analyze(){
+  const b=state.b,lv=state.lv,pl=state.pl;
+  const label=isNode=>{const comp=Array(N).fill(-1);let nc=0;for(let i=0;i<N;i++){if(!isNode(i)||comp[i]>=0)continue;const st=[i];comp[i]=nc;while(st.length){const j=st.pop();for(const k of nbrs(j))if(isNode(k)&&comp[k]<0){comp[k]=nc;st.push(k)}}nc++}return[comp,nc]};
+  const [comp,nc]=label(i=>roadLike(b[i]));
+  const [pcomp,npc]=label(i=>roadLike(b[i])||pl[i]||(isUtil(b[i])&&BASIC[b[i]].util==='power'));
+  const comps=i=>[...new Set(nbrs(i).map(k=>comp[k]).filter(c=>c>=0))];
+  const pcomps=i=>[...new Set([pcomp[i],...nbrs(i).map(k=>pcomp[k])].filter(c=>c>=0))];
+  const pcapC=Array(npc).fill(0),wcapC=Array(nc).fill(0);
+  let upkeep=0;
+  for(let i=0;i<N;i++){const t=b[i];if(!isUtil(t))continue;const d=BASIC[t];upkeep+=d.upkeep;
+    if(d.util==='power'){const cs=pcomps(i);if(cs.length)pcapC[cs[0]]+=d.cap}else{const cs=comps(i);if(cs.length)wcapC[cs[0]]+=d.cap}}
+  const prem=pcapC.slice(),wrem=wcapC.slice();
+  const power=Array(N).fill(false),water=Array(N).fill(false),road=Array(N).fill(false);
+  let puse=0,wuse=0;const pcap=pcapC.reduce((x,y)=>x+y,0),wcap=wcapC.reduce((x,y)=>x+y,0);
+  for(let i=0;i<N;i++){const z=zoneOf(b[i]);if(!z)continue;const cs=comps(i),pcs=pcomps(i);road[i]=cs.length>0;
+    const use=Math.max(1,lv[i]||0);
+    if(road[i]){wuse+=use;const wc=cs.find(c=>wrem[c]>=use);if(wc!=null){water[i]=true;wrem[wc]-=use}}
+    if(pcs.length){puse+=use;const pc=pcs.find(c=>prem[c]>=use);if(pc!=null){power[i]=true;prem[pc]-=use}}}
+  const pol=Array(N).fill(0);
+  for(let j=0;j<N;j++){const t=b[j];let src=0;if(t==='factory')src=12*(lv[j]||0);else if(BASIC[t]&&BASIC[t].pollute)src=BASIC[t].pollute;if(!src)continue;
+    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const X=tx(j)+dx,Y=ty(j)+dy;if(X<0||Y<0||X>=W||Y>=H)continue;const d=Math.max(Math.abs(dx),Math.abs(dy));pol[Y*W+X]+=src*(1-d/5)}}
+  for(let i=0;i<N;i++)pol[i]=Math.round(clamp(pol[i],0,100));
+  const val=Array(N).fill(0);
+  for(let i=0;i<N;i++){if(!isLand(i))continue;let v=40;
+    if(dRiver[i]<=2||dOcean[i]<=3)v+=10;if(dForest[i]<=2&&terr[i]!=='forest')v+=5;
+    let parks=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const X=tx(i)+dx,Y=ty(i)+dy;if(X<0||Y<0||X>=W||Y>=H)continue;const t=b[Y*W+X];if(t==='park'||t==='wetland'||t==='raingarden')parks++}
+    v+=Math.min(36,parks*12);v-=pol[i]*.8;val[i]=Math.round(clamp(v,0,100))}
+  let pop=0,jobsC=0,jobsI=0,cL=0,iL=0;
+  for(let i=0;i<N;i++){const z=zoneOf(b[i]);if(!z||!road[i])continue;const L=lv[i]||0;if(z==='R')pop+=RES[L];else if(z==='C'){jobsC+=4*L;cL+=L}else{jobsI+=8*L;iL+=L}}
+  const workers=Math.round(pop*.5);
+  const dR=jobsC+jobsI+18-workers, dC=Math.round(pop*.25)+4-jobsC, dI=20+Math.round(pop*.12)-jobsI;
+  const taxes=pop*2, biz=cL*8+iL*10;
+  return {comp,power,water,road,pol,val,dR,dC,dI,pop,jobs:jobsC+jobsI,workers,taxes,biz,upkeep,income:taxes+biz-upkeep,pcap,puse,wcap,wuse};
+}
+function economy(){const s=analyze();return{pop:s.pop,income:s.income}}
+function capLevel(i,s){if(zoneOf(state.b[i])==='I')return 3;const v=s.val[i];return v<30?1:v<50?2:3}
+function growCity(){
+  const s=analyze();const demand={R:s.dR,C:s.dC,I:s.dI};let grew=0,shrank=0;
+  const order=[...Array(N).keys()].sort(()=>Math.random()-.5);
+  for(const i of order){const z=zoneOf(state.b[i]);if(!z)continue;let L=state.lv[i]||0;const before=L;
+    const ok=s.road[i]&&s.power[i]&&s.water[i];
+    if(!ok){if(L>0&&Math.random()<.5)L--}
+    else if(z==='R'&&s.pol[i]>45&&L>0&&Math.random()<.35)L--;
+    else if(demand[z]<-10&&L>0&&Math.random()<.3)L--;
+    else if(L>capLevel(i,s)&&Math.random()<.3)L--;
+    else if(demand[z]>0&&L<capLevel(i,s)&&Math.random()<.6){L++;demand[z]-=z==='R'?(RES[L]-RES[L-1])*.5:z==='C'?4:8}
+    if(L>before)grew++;else if(L<before)shrank++;state.lv[i]=L}
+  return{grew,shrank};
+}
+function advise(s){
+  const A=[];const add=(sev,problem,solution)=>A.push({sev,problem,solution});
+  let noRoad=0,noPow=0,noWat=0,smog=0,lowVal=0;
+  for(let i=0;i<N;i++){const z=zoneOf(state.b[i]);if(!z)continue;if(!s.road[i]){noRoad++;continue}
+    if(!s.power[i])noPow++;if(!s.water[i])noWat++;if(z==='R'&&s.pol[i]>45)smog++;if(z!=='I'&&s.val[i]<30&&(state.lv[i]||0)>=1)lowVal++}
+  const h=nextHazard(),days=state.nextYear-state.year;let risk=0,prot=0;
+  for(let i=0;i<N;i++){if(!destroyable(state.b[i])||!highRisk(h,i))continue;risk++;if(protFor(i,h).p>0)prot++}
+  const pl=n=>n===1?'':'s';
+  if(days<=2&&risk>prot)add(3,`A ${HAZ[h].name.toLowerCase()} is forecast for Day ${state.nextYear}. ${risk-prot} of ${risk} buildings in its danger zone have no protection.`,dok2Done(h)?`Build ${PBY[h].unlocks.map(k=>STRATS[k].name).join(', ')} near them. Turn on the ${HAZ[h].name.toLowerCase()} risk overlay to find them.`:`Read “${PBY[h].title}” in the Library to unlock solutions.`);
+  if(noPow)add(3,`${noPow} zone${pl(noPow)} ha${noPow===1?'s':'ve'} no electricity${s.pcap&&s.puse>s.pcap?' because the power supply is overloaded':''}, so nobody will move in.`,s.pcap&&s.puse>s.pcap?'Build another Power Plant or Solar Farm on the same road network.':'Build a Power Plant or Solar Farm, then connect it to these zones with roads or Power Lines.');
+  if(noWat)add(3,`${noWat} zone${pl(noWat)} ha${noWat===1?'s':'ve'} no running water${s.wcap&&s.wuse>s.wcap?' because the water supply is maxed out':''}.`,s.wcap&&s.wuse>s.wcap?'Build another Water Treatment plant, or a Pump Station next to the river.':'Build a Water Treatment plant or Pump Station touching a road that connects to these zones.');
+  if(noRoad)add(2,`${noRoad} zone${pl(noRoad)} can’t be reached because ${noRoad===1?'it does':'they do'} not touch a road.`,'Connect them with a Road, or a Bridge across the river.');
+  if(smog)add(2,`Residents in ${smog} home${pl(smog)} are complaining about smoke from factories and power plants. Families are moving out.`,'Keep industry and coal power at least 4 tiles from homes, or switch to a Solar Farm.');
+  if(s.income<0)add(2,'The city spends more on upkeep than it collects each day.','Grow more homes and businesses, or bulldoze utilities you don’t need.');
+  if(lowVal)add(1,`${lowVal} home${pl(lowVal)} and shop${pl(lowVal)} can’t grow bigger because land value is low.`,'Build Parks nearby and keep pollution away to raise land value.');
+  if(s.dI>8)add(1,'There are not enough jobs in the city.','Zone Industrial land, away from homes.');
+  if(s.dR>8)add(1,'Workers want to move here, but there are no homes for them.','Zone more Residential land with a road, power, and water.');
+  if(s.dC>6)add(1,'Residents have nowhere to shop.','Zone more Commercial land near homes.');
+  if(s.dR<-10)add(1,'Homes are emptying because there are too few jobs.','Zone Commercial or Industrial land to create jobs.');
+  if(!A.length)add(0,'No major problems today.','Keep reading passages to unlock solutions before the next disaster.');
+  return A.sort((a,b)=>b.sev-a.sev);
+}
+function protFor(i,h){
+  let pm=1,hm=1;const src=[];const t=state.b[i];const s=STRATS[t];
+  if(s&&s.home&&s.prot[h]){pm*=1-s.prot[h].p;hm*=1-s.prot[h].h;src.push(s.name)}
+  for(let j=0;j<N;j++){const u=state.b[j];const d=STRATS[u];if(!d||d.home||!d.prot[h])continue;if(eucl(i,j)<=d.r+.3){pm*=1-d.prot[h].p;hm*=1-d.prot[h].h;src.push(d.name)}}
+  return{p:1-pm,h:1-hm,src:[...new Set(src)]};
+}
+function nextHazard(){return state.dIndex<SCHEDULE.length?SCHEDULE[state.dIndex]:(state.nextHaz||(state.nextHaz=HKEYS[Math.floor(Math.random()*HKEYS.length)]))}
+
+// ---------- Helpers ----------
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'$'+Math.round(n).toLocaleString('en-US');
+const words=s=>(s||'').trim().split(/\s+/).filter(Boolean).length;
+function hasEvidence(text,pid){const t=(text||'').toLowerCase();if(/["“”]/.test(text||''))return true;return PBY[pid].keywords.some(k=>t.includes(k))}
+function say(msg,kind){ui.msg=msg;ui.msgKind=kind||'';const el=$('#status');el.textContent=msg;el.className='status '+(kind||'')}
+function journal(type,title,text){state.journal.push({type,title,text,year:state.year})}
+
+// ---------- Canvas ----------
+const cv=$('#map'),ctx=cv.getContext('2d');let TS=40,TOK={};
+const TOKNAMES=['paper','ink','muted','grass','forest','tree','river','ocean','wave','sand','rubble','road','roadline','gridline','safe','res','com','ind','park','bad','good','warn','power','water','smog','flood','fire','hurricane','quake','tornado','drought','shelter','on-haz','panel'];
+const ZC={R:'--res',C:'--com',I:'--ind'};
+function readTok(){const cs=getComputedStyle(document.documentElement);TOK={};for(const n of TOKNAMES)TOK[n]=cs.getPropertyValue('--'+n).trim()||'#888';TOK.mono=cs.getPropertyValue('--f-mono')}
+const col=v=>TOK[v.replace(/^--/,'')];
+function resize(){const ww=$('#mapwrap').clientWidth;if(!ww)return;const availH=Math.max(300,window.innerHeight-210);TS=Math.min(ww/W,availH/H);const w=TS*W,h=TS*H;const dpr=window.devicePixelRatio||1;cv.style.width=w+'px';cv.style.height=h+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(cv.width/w,0,0,cv.height/h,0,0);draw()}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+const LW=f=>Math.max(1,TS*f);
+function drawTerrain(i){
+  const x=tx(i)*TS,y=ty(i)*TS,t=terr[i];
+  const base={grass:'grass',fault:'grass',forest:'forest',river:'river',ocean:'ocean',sand:'sand'}[t];
+  ctx.fillStyle=TOK[base];ctx.fillRect(x,y,TS+.5,TS+.5);
+  if(t==='forest'){ctx.fillStyle=TOK.tree;for(const [a,b,r] of [[.3,.35,.17],[.68,.3,.15],[.5,.7,.19]]){ctx.beginPath();ctx.arc(x+a*TS,y+b*TS,r*TS,0,7);ctx.fill()}}
+  if(t==='river'||t==='ocean'){ctx.strokeStyle=TOK.wave;ctx.globalAlpha=.55;ctx.lineWidth=LW(.04);for(const b of (t==='ocean'?[.3,.7]:[.5])){ctx.beginPath();for(let k=0;k<=8;k++){const px=x+TS*(.15+.7*k/8),py=y+TS*b+Math.sin(k*1.6+i)*TS*.05;k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke()}ctx.globalAlpha=1}
+  if(t==='sand'){ctx.fillStyle=TOK.muted;ctx.globalAlpha=.35;for(let k=0;k<5;k++){ctx.fillRect(x+TS*((k*37+i*13)%90/100+.05),y+TS*((k*53+i*7)%90/100+.05),1.5,1.5)}ctx.globalAlpha=1}
+}
+function drawFault(){
+  const pts=[];for(let i=0;i<N;i++)if(terr[i]==='fault')pts.push(i);pts.sort((a,b)=>ty(a)-ty(b));
+  ctx.strokeStyle=TOK.quake;ctx.lineWidth=Math.max(1.5,TS*.07);ctx.setLineDash([TS*.18,TS*.1]);ctx.beginPath();
+  pts.forEach((i,k)=>{const cx=(tx(i)+.5)*TS,cy=(ty(i)+.5)*TS;const j=(k%2?1:-1)*TS*.15;if(!k)ctx.moveTo(cx-TS*.6,cy-TS*.6);ctx.lineTo(cx+j,cy-j*.3);});
+  const l=pts[pts.length-1];ctx.lineTo((tx(l)+1)*TS,(ty(l)+1)*TS);ctx.stroke();ctx.setLineDash([]);
+}
+function drawRoad(i){
+  const x=tx(i)*TS,y=ty(i)*TS,c=TS/2,w=TS*.44;ctx.fillStyle=TOK.road;
+  ctx.fillRect(x+c-w/2,y+c-w/2,w,w);
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const X=tx(i)+dx,Y=ty(i)+dy;if(X<0||Y<0||X>=W||Y>=H||!roadLike(state.b[Y*W+X]))continue;
+    if(dx)ctx.fillRect(dx>0?x+c:x,y+c-w/2,c+.5,w);else ctx.fillRect(x+c-w/2,dy>0?y+c:y,w,c+.5);
+    ctx.strokeStyle=TOK.roadline;ctx.lineWidth=LW(.035);ctx.setLineDash([TS*.08,TS*.08]);ctx.beginPath();ctx.moveTo(x+c,y+c);ctx.lineTo(x+c+dx*c,y+c+dy*c);ctx.stroke();ctx.setLineDash([]);}
+}
+function drawBridge(i){const x=tx(i)*TS,y=ty(i)*TS,c=TS/2,w=TS*.44;const nb=d=>{const X=tx(i)+d[0],Y=ty(i)+d[1];return X>=0&&Y>=0&&X<W&&Y<H&&roadLike(state.b[Y*W+X])};const vert=(nb([0,1])||nb([0,-1]))&&!(nb([1,0])||nb([-1,0]));ctx.fillStyle=TOK.road;if(vert)ctx.fillRect(x+c-w/2,y,w,TS+.5);else ctx.fillRect(x,y+c-w/2,TS+.5,w);ctx.strokeStyle=TOK.ink;ctx.lineWidth=Math.max(1.5,TS*.06);ctx.beginPath();if(vert){ctx.moveTo(x+c-w/2,y);ctx.lineTo(x+c-w/2,y+TS);ctx.moveTo(x+c+w/2,y);ctx.lineTo(x+c+w/2,y+TS)}else{ctx.moveTo(x,y+c-w/2);ctx.lineTo(x+TS,y+c-w/2);ctx.moveTo(x,y+c+w/2);ctx.lineTo(x+TS,y+c+w/2)}ctx.stroke();ctx.strokeStyle=TOK.roadline;ctx.lineWidth=LW(.035);ctx.setLineDash([TS*.08,TS*.08]);ctx.beginPath();if(vert){ctx.moveTo(x+c,y);ctx.lineTo(x+c,y+TS)}else{ctx.moveTo(x,y+c);ctx.lineTo(x+TS,y+c)}ctx.stroke();ctx.setLineDash([])}
+function drawHouse(x,y,fill){const p=TS*.2;ctx.fillStyle=fill;ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.04);
+  ctx.beginPath();ctx.moveTo(x+p*.7,y+TS*.48);ctx.lineTo(x+TS/2,y+TS*.18);ctx.lineTo(x+TS-p*.7,y+TS*.48);ctx.lineTo(x+TS-p,y+TS*.48);ctx.lineTo(x+TS-p,y+TS*.82);ctx.lineTo(x+p,y+TS*.82);ctx.lineTo(x+p,y+TS*.48);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=TOK.ink;ctx.fillRect(x+TS*.45,y+TS*.6,TS*.1,TS*.22)}
+function drawTownhomes(x,y){const p=TS*.12,w=(TS-2*p)/2;ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.035);for(let k=0;k<2;k++){const bx=x+p+k*w;ctx.fillStyle=TOK.res;ctx.beginPath();ctx.moveTo(bx,y+TS*.45);ctx.lineTo(bx+w/2,y+TS*.18);ctx.lineTo(bx+w,y+TS*.45);ctx.lineTo(bx+w,y+TS*.84);ctx.lineTo(bx,y+TS*.84);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle=TOK.ink;ctx.fillRect(bx+w*.4,y+TS*.64,w*.2,TS*.2)}}
+function drawTower(x,y,fill,top,cols){const p=TS*.2;ctx.fillStyle=fill;ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.04);ctx.fillRect(x+p,y+TS*top,TS-2*p,TS*(.88-top));ctx.strokeRect(x+p,y+TS*top,TS-2*p,TS*(.88-top));ctx.fillStyle=TOK.ink;ctx.globalAlpha=.55;const rows=Math.floor((.78-top)/.12);const ww=(TS-2*p)/(cols*2+1);for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)ctx.fillRect(x+p+ww*(1+2*c),y+TS*(top+.07+r*.12),ww,TS*.06);ctx.globalAlpha=1}
+function drawShop(x,y){const p=TS*.16;ctx.fillStyle=TOK.com;ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.04);ctx.fillRect(x+p,y+TS*.3,TS-2*p,TS*.52);ctx.strokeRect(x+p,y+TS*.3,TS-2*p,TS*.52);
+  ctx.fillStyle=TOK.panel;const n=4,sw=(TS-2*p)/n;for(let k=0;k<n;k+=2)ctx.fillRect(x+p+k*sw,y+TS*.3,sw,TS*.14);ctx.fillStyle=TOK.ink;ctx.fillRect(x+TS*.42,y+TS*.58,TS*.16,TS*.24)}
+function drawFactory(x,y,L){const p=TS*.14;ctx.fillStyle=TOK.ind;ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.04);ctx.beginPath();
+  const b=y+TS*.84,t=y+TS*.42;ctx.moveTo(x+p,b);ctx.lineTo(x+p,t);for(let k=0;k<3;k++){const sx=x+p+k*(TS-2*p)/3;ctx.lineTo(sx+(TS-2*p)/3,t-TS*.14);ctx.lineTo(sx+(TS-2*p)/3,t)}ctx.lineTo(x+TS-p,b);ctx.closePath();ctx.fill();ctx.stroke();
+  const stacks=L>=2?[.66,.44]:[.66];for(const a of stacks){ctx.fillStyle=TOK.ind;ctx.fillRect(x+TS*a,y+TS*.12,TS*.1,TS*.18);ctx.strokeRect(x+TS*a,y+TS*.12,TS*.1,TS*.18)}
+  if(L>=3){ctx.fillStyle=TOK.smog;ctx.globalAlpha=.75;for(const a of stacks){ctx.beginPath();ctx.arc(x+TS*(a+.05),y+TS*.07,TS*.07,0,7);ctx.fill()}ctx.globalAlpha=1}}
+function drawPark(x,y){ctx.fillStyle=TOK.park;ctx.globalAlpha=.35;ctx.fillRect(x+TS*.08,y+TS*.08,TS*.84,TS*.84);ctx.globalAlpha=1;ctx.fillStyle=TOK.ink;ctx.fillRect(x+TS*.47,y+TS*.5,TS*.06,TS*.3);ctx.fillStyle=TOK.park;ctx.beginPath();ctx.arc(x+TS/2,y+TS*.42,TS*.24,0,7);ctx.fill();ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.035);ctx.stroke()}
+function drawRubble(x,y){ctx.fillStyle=TOK.rubble;rr(x+TS*.12,y+TS*.12,TS*.76,TS*.76,TS*.08);ctx.fill();ctx.strokeStyle=TOK.ink;ctx.globalAlpha=.45;ctx.lineWidth=LW(.04);ctx.beginPath();for(let k=0;k<3;k++){ctx.moveTo(x+TS*(.2+k*.2),y+TS*.8);ctx.lineTo(x+TS*(.4+k*.2),y+TS*.2)}ctx.stroke();ctx.globalAlpha=1}
+function drawStrat(x,y,s){ctx.fillStyle=col(s.color);rr(x+TS*.1,y+TS*.1,TS*.8,TS*.8,TS*.14);ctx.fill();ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.035);ctx.stroke();ctx.fillStyle=TOK['on-haz'];ctx.font=`700 ${Math.max(8,TS*.3)}px ${TOK.mono}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.code,x+TS/2,y+TS*.54)}
+const BOLT=[[.57,.16],[.3,.54],[.47,.54],[.41,.86],[.71,.44],[.53,.44],[.6,.16]];
+const DROPS={tower:[[.5,.5,.62]],pump:[[.36,.44,.44],[.64,.6,.44]]};
+function dropPath(cx,cy,s){return [[cx,cy-s*.6],[cx+s*.5,cy-s*.05,cx+s*.45,cy+s*.45,cx,cy+s*.45],[cx-s*.45,cy+s*.45,cx-s*.5,cy-s*.05,cx,cy-s*.6]]}
+function drawUtil(x,y,t){
+  const d=BASIC[t];ctx.fillStyle=col(d.color);rr(x+TS*.1,y+TS*.1,TS*.8,TS*.8,TS*.14);ctx.fill();ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.035);ctx.stroke();
+  const fg=TOK['on-haz'];ctx.fillStyle=fg;ctx.strokeStyle=fg;
+  if(t==='power'){ctx.beginPath();BOLT.forEach(([a,b],k)=>k?ctx.lineTo(x+a*TS,y+b*TS):ctx.moveTo(x+a*TS,y+b*TS));ctx.closePath();ctx.fill()}
+  else if(t==='solar'){ctx.beginPath();ctx.arc(x+TS*.5,y+TS*.5,TS*.14,0,7);ctx.fill();ctx.lineWidth=LW(.06);ctx.lineCap='round';ctx.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4;ctx.moveTo(x+TS*(.5+Math.cos(a)*.22),y+TS*(.5+Math.sin(a)*.22));ctx.lineTo(x+TS*(.5+Math.cos(a)*.31),y+TS*(.5+Math.sin(a)*.31))}ctx.stroke();ctx.lineCap='butt'}
+  else for(const [a,b,s] of DROPS[t]){const [m,c1,c2]=dropPath(x+a*TS,y+b*TS,s*TS);ctx.beginPath();ctx.moveTo(m[0],m[1]);ctx.bezierCurveTo(...c1);ctx.bezierCurveTo(...c2);ctx.closePath();ctx.fill()}
+}
+function utilSvg(t){
+  let inner='';
+  if(t==='powerline')inner='<path d="M50 10 L28 90 M50 10 L72 90 M33 70 L67 70 M38 50 L62 50 M18 28 L82 28" stroke-width="8" fill="none" stroke-linecap="round"/>';
+  else if(t==='power')inner=`<polygon points="${BOLT.map(([a,b])=>a*100+','+b*100).join(' ')}"/>`;
+  else if(t==='solar'){inner='<circle cx="50" cy="50" r="15"/>';for(let k=0;k<8;k++){const a=k*Math.PI/4;inner+=`<line x1="${(50+Math.cos(a)*24).toFixed(1)}" y1="${(50+Math.sin(a)*24).toFixed(1)}" x2="${(50+Math.cos(a)*36).toFixed(1)}" y2="${(50+Math.sin(a)*36).toFixed(1)}" stroke-width="8" stroke-linecap="round"/>`}}
+  else if(DROPS[t])inner=DROPS[t].map(([a,b,s])=>{const [m,c1,c2]=dropPath(a*100,b*100,s*100);const f=v=>v.map(n=>n.toFixed(1)).join(' ');return `<path d="M${f(m)} C${f(c1)} C${f(c2)}Z"/>`}).join('');
+  else return '';
+  return `<svg viewBox="0 0 100 100" width="22" height="22" fill="currentColor" stroke="currentColor" aria-hidden="true">${inner}</svg>`;
+}
+function drawLot(x,y,z){const c=col(ZC[z]);ctx.fillStyle=c;ctx.globalAlpha=.22;ctx.fillRect(x+TS*.08,y+TS*.08,TS*.84,TS*.84);ctx.globalAlpha=1;ctx.strokeStyle=c;ctx.lineWidth=LW(.05);ctx.setLineDash([TS*.12,TS*.08]);ctx.strokeRect(x+TS*.1,y+TS*.1,TS*.8,TS*.8);ctx.setLineDash([]);ctx.fillStyle=TOK.ink;ctx.globalAlpha=.6;ctx.font=`700 ${Math.max(8,TS*.34)}px ${TOK.mono}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(z,x+TS/2,y+TS*.54);ctx.globalAlpha=1}
+function drawZone(i,t){
+  const x=tx(i)*TS,y=ty(i)*TS,z=zoneOf(t),L=state.lv[i]||0;
+  if(L===0)drawLot(x,y,z);
+  else if(z==='R'){if(L===1)drawHouse(x,y,TOK.res);else if(L===2)drawTownhomes(x,y);else drawTower(x,y,TOK.res,.14,2)}
+  else if(z==='C'){if(L===1)drawShop(x,y);else if(L===2){drawShop(x,y);ctx.fillStyle=TOK.ink;ctx.fillRect(x+TS*.28,y+TS*.13,TS*.44,TS*.11)}else drawTower(x,y,TOK.com,.08,3)}
+  else drawFactory(x,y,L);
+  const s=STRATS[t];if(s&&s.home){ctx.fillStyle=col(s.color);ctx.beginPath();ctx.arc(x+TS*.8,y+TS*.2,TS*.16,0,7);ctx.fill();ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.03);ctx.stroke()}
+}
+function dot(x,y,c){ctx.fillStyle=c;ctx.strokeStyle=TOK.ink;ctx.lineWidth=LW(.025);ctx.beginPath();ctx.arc(x+TS*.2,y+TS*.2,TS*.11,0,7);ctx.fill();ctx.stroke()}
+function drawBuilding(i){
+  const t=state.b[i];if(!t)return;const x=tx(i)*TS,y=ty(i)*TS;
+  if(t==='road')return drawRoad(i);
+  if(t==='bridge')return drawBridge(i);
+  if(t==='rubble')return drawRubble(x,y);
+  if(zoneOf(t)){drawZone(i,t);if(!sim.road[i])dot(x,y,TOK.bad);else if(!sim.power[i]||!sim.water[i])dot(x,y,TOK.warn);return}
+  if(t==='park')return drawPark(x,y);
+  if(isUtil(t)){drawUtil(x,y,t);if(!(BASIC[t].util==='power'?nbrs(i).some(k=>roadLike(state.b[k])||state.pl[k]):connected(i)))dot(x,y,TOK.bad);return}
+  if(STRATS[t])drawStrat(x,y,STRATS[t]);
+}
+function drawLines(){
+  ctx.strokeStyle=TOK.ink;
+  for(let i=0;i<N;i++){if(!state.pl[i])continue;const cx=(tx(i)+.5)*TS,cy=(ty(i)+.5)*TS;let any=false;ctx.lineWidth=LW(.045);
+    for(const k of nbrs(i)){const u=state.b[k];if(state.pl[k]||roadLike(u)||(isUtil(u)&&BASIC[u].util==='power')){any=true;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo((cx+(tx(k)+.5)*TS)/2,(cy+(ty(k)+.5)*TS)/2);ctx.stroke()}}
+    if(!any){ctx.beginPath();ctx.moveTo(cx-TS*.3,cy);ctx.lineTo(cx+TS*.3,cy);ctx.stroke()}
+    ctx.fillStyle=TOK.power;ctx.lineWidth=LW(.03);ctx.beginPath();ctx.arc(cx,cy,TS*.1,0,7);ctx.fill();ctx.stroke()}
+}
+function drawCoverage(types,c){
+  const src=[];for(let j=0;j<N;j++){const s=STRATS[state.b[j]];if(s&&types.includes(state.b[j]))src.push([j,s.r])}
+  if(!src.length)return;
+  const cov=new Uint8Array(N);for(let i=0;i<N;i++)if(src.some(([j,r])=>eucl(i,j)<=r+.3))cov[i]=1;
+  const inC=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&cov[y*W+x];
+  for(let i=0;i<N;i++)if(cov[i])tint(i,c,.1);
+  ctx.strokeStyle=c;ctx.lineWidth=Math.max(2,TS*.07);ctx.setLineDash([TS*.2,TS*.12]);ctx.lineCap='round';ctx.beginPath();
+  for(let i=0;i<N;i++){if(!cov[i])continue;const x=tx(i),y=ty(i),X=x*TS,Y=y*TS;
+    if(!inC(x,y-1)){ctx.moveTo(X,Y);ctx.lineTo(X+TS,Y)}
+    if(!inC(x,y+1)){ctx.moveTo(X,Y+TS);ctx.lineTo(X+TS,Y+TS)}
+    if(!inC(x-1,y)){ctx.moveTo(X,Y);ctx.lineTo(X,Y+TS)}
+    if(!inC(x+1,y)){ctx.moveTo(X+TS,Y);ctx.lineTo(X+TS,Y+TS)}}
+  ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';
+}
+function tint(i,c,a){if(a<=0)return;ctx.fillStyle=c;ctx.globalAlpha=Math.min(a,.85);ctx.fillRect(tx(i)*TS,ty(i)*TS,TS,TS);ctx.globalAlpha=1}
+function draw(){
+  if(!state)return;readTok();if(!sim)sim=analyze();
+  const w=TS*W,h=TS*H;ctx.clearRect(0,0,w,h);
+  for(let i=0;i<N;i++)drawTerrain(i);
+  drawFault();
+  ctx.strokeStyle=TOK.gridline;ctx.lineWidth=1;ctx.beginPath();for(let x=1;x<W;x++){ctx.moveTo(x*TS,0);ctx.lineTo(x*TS,h)}for(let y=1;y<H;y++){ctx.moveTo(0,y*TS);ctx.lineTo(w,y*TS)}ctx.stroke();
+  const ov=ui.overlay;
+  if(HAZ[ov]){const c=col(HAZ[ov].color);for(let i=0;i<N;i++)if(highRisk(ov,i,null))tint(i,c,ov==='tornado'||ov==='drought'?.12:.3)}
+  if(ov==='landvalue')for(let i=0;i<N;i++)if(isLand(i))tint(i,TOK.good,sim.val[i]/100*.7);
+  if(ov==='pollution')for(let i=0;i<N;i++)if(sim.pol[i]>2)tint(i,TOK.smog,sim.pol[i]/100*.9);
+  if(ov==='last'&&state.last){const c=col(HAZ[state.last.h].color);for(const i of state.last.zone)tint(i,c,.3)}
+  for(let i=0;i<N;i++)drawBuilding(i);
+  drawLines();
+  drawCoverage(['levee','wetland'],TOK.flood);
+  if(HAZ[ov]){ctx.strokeStyle=TOK.safe;ctx.lineWidth=Math.max(2,TS*.07);for(let i=0;i<N;i++){if(!destroyable(state.b[i]))continue;const pr=protFor(i,ov);if(pr.p>0||pr.h>0)ctx.strokeRect(tx(i)*TS+TS*.06,ty(i)*TS+TS*.06,TS*.88,TS*.88)}}
+  if(ov==='utilities'){ctx.lineWidth=Math.max(2,TS*.07);for(let i=0;i<N;i++){if(!zoneOf(state.b[i]))continue;ctx.strokeStyle=sim.power[i]&&sim.water[i]?TOK.safe:TOK.bad;ctx.strokeRect(tx(i)*TS+TS*.06,ty(i)*TS+TS*.06,TS*.88,TS*.88)}}
+  if(ov==='last'&&state.last){ctx.strokeStyle=TOK.bad;ctx.lineWidth=Math.max(2,TS*.08);for(const i of state.last.lost){const x=tx(i)*TS,y=ty(i)*TS;ctx.beginPath();ctx.moveTo(x+TS*.2,y+TS*.2);ctx.lineTo(x+TS*.8,y+TS*.8);ctx.moveTo(x+TS*.8,y+TS*.2);ctx.lineTo(x+TS*.2,y+TS*.8);ctx.stroke()}}
+  const hv=ui.hover??ui.inspect;
+  if(hv!=null){
+    const s=STRATS[ui.tool];
+    if(s&&!s.home&&ui.hover!=null){const c=col(s.color);for(let j=0;j<N;j++)if(eucl(hv,j)<=s.r+.3)tint(j,c,.18);ctx.strokeStyle=c;ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc((tx(hv)+.5)*TS,(ty(hv)+.5)*TS,(s.r+.5)*TS,0,7);ctx.stroke();ctx.setLineDash([])}
+    ctx.strokeStyle=TOK.ink;ctx.lineWidth=2;ctx.strokeRect(tx(hv)*TS+1,ty(hv)*TS+1,TS-2,TS-2);
+  }
+}
+function tileAt(e){const r=cv.getBoundingClientRect();const x=Math.floor((e.clientX-r.left)/(r.width/W)),y=Math.floor((e.clientY-r.top)/(r.height/H));return(x>=0&&y>=0&&x<W&&y<H)?y*W+x:null}
+cv.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const i=tileAt(e);if(i!==ui.hover){ui.hover=i;draw();renderInfo()}});
+cv.addEventListener('pointerleave',()=>{ui.hover=null;draw();renderInfo()});
+cv.addEventListener('click',e=>{const i=tileAt(e);if(i==null)return;act(i)});
+
+// ---------- Info ----------
+const ZNAME={R:'Residential',C:'Commercial',I:'Industrial'};
+const LVNAME={R:['Empty lot','Small house','Townhomes','Apartments'],C:['Empty lot','Corner shop','Store','Office tower'],I:['Empty lot','Workshop','Factory','Large factory']};
+function tileRisks(i){return HKEYS.filter(h=>h!=='tornado'&&h!=='drought'&&highRisk(h,i))}
+function growthChecklist(i){
+  const s=sim,z=zoneOf(state.b[i]),L=state.lv[i]||0,cap=capLevel(i,s);
+  const dem={R:s.dR,C:s.dC,I:s.dI}[z],meter={R:'Homes',C:'Shops',I:'Jobs'}[z];
+  const want={R:'more homes',C:'more shops',I:'more factories'}[z];
+  const demFix={R:'Create jobs: zone Commercial or Industrial land.',C:'Grow more homes so shops have customers.',I:'Grow more homes so factories have workers.'}[z];
+  const pOver=s.pcap&&s.puse>s.pcap,wOver=s.wcap&&s.wuse>s.wcap;
+  const items=[
+    [s.road[i],'Touches a road','Connect it to a road.'],
+    [s.power[i],'Has power',pOver?'Power is overloaded. Build another Power Plant or Solar Farm.':'Connect it to a Power Plant or Solar Farm with a road or power line.'],
+    [s.water[i],'Has water',wOver?'Water is maxed out. Build another Water Treatment plant or Pump Station.':'Connect it by road to a Water Treatment plant or Pump Station.'],
+    [dem>0,`People want ${want} (${meter} meter ${dem>0?'+':''}${Math.round(dem)})`,demFix]];
+  if(z!=='I')items.push(L>=3?[true,'Already the biggest size','']:[L<cap,`Land value ${s.val[i]} allows up to: ${LVNAME[z][cap]}`,'Raise land value: build Parks nearby and keep smoke away.']);
+  if(z==='R')items.push([s.pol[i]<=45,`Air is clean enough (smoke ${s.pol[i]})`,'Too smoky, so families move out. Keep factories and coal power 4+ tiles away, or use a Solar Farm.']);
+  const allOk=items.every(x=>x[0]);
+  const sum=L>=3&&allOk?'This zone is fully grown.':allOk?'Everything is ready. It has a 60% chance to grow when the day ends.':'Fix the ✗ items so it can grow.';
+  return `<div class="checklist"><b>Why isn’t this growing?</b><ul>${items.map(([ok,label,fix])=>`<li><span class="${ok?'ok':'no'}" aria-label="${ok?'Yes':'No'}">${ok?'✓':'✗'}</span><span>${esc(label)}${!ok&&fix?`<small>${esc(fix)}</small>`:''}</span></li>`).join('')}</ul><p>${sum}</p></div>`;
+}
+function renderInfo(){
+  const el=$('#info');const i=ui.hover??ui.inspect;let html='';if(!sim)sim=analyze();
+  const tool=ui.tool&&ui.tool!=='inspect'?ui.tool:null;
+  if(tool){
+    if(tool==='bulldoze'){const bt=i!=null?state.b[i]:null;html=`<b>Bulldoze</b> · Get half the cost back for any road or building. Clearing rubble costs $20.${bt?(bt==='rubble'?' · <b>This tile: costs $20</b>':` · <b>This tile: refund ${money(Math.floor(DEF(bt).cost/2))}</b>`):''}`}
+    else{const d=DEF(tool);html=`<b>${esc(d.name)}</b> · ${money(d.cost)}${d.ruleText?' · must be '+d.ruleText:''} · ${esc(d.desc)}`}
+  }
+  if(i!=null){
+    const t=state.b[i];const risks=tileRisks(i);const z=zoneOf(t);
+    let line=`<br>Tile ${tx(i)+1},${ty(i)+1}: ${TNAME[terr[i]]}`;
+    if(t)line+=` · <b>${t==='rubble'?'Rubble':esc(DEF(t).name)}</b>`;
+    if(state.pl[i])line+=' · Power line';
+    if(z){const L=state.lv[i]||0;line+=` (${LVNAME[z][L]}${z==='R'?`, ${RES[L]} residents`:L?`, ${(z==='C'?4:8)*L} jobs`:''})`;
+      line+=` · Power ${sim.power[i]?'✓':'✗'} · Water ${sim.water[i]?'✓':'✗'}${sim.road[i]?'':' · needs a road'}`}
+    else if(t&&(isUtil(t))&&!connected(i))line+=' (needs a road)';
+    if(isLand(i)){line+=` · Land value ${sim.val[i]} · Pollution ${sim.pol[i]}`;line+=risks.length?` · Risk: ${risks.map(h=>HAZ[h].name).join(', ')}`:' · Low hazard risk'}
+    if(isLand(i)&&t&&destroyable(t)){const ps=HKEYS.map(h=>[h,protFor(i,h)]).filter(([,p])=>p.src.length);if(ps.length)line+=` · Protected from: ${ps.map(([h])=>HAZ[h].name).join(', ')}`}
+    html+=html?line:line.slice(4);
+    if(zoneOf(state.b[i])&&(!ui.tool||ui.tool==='inspect'))html+=growthChecklist(i);
+  }
+  if(!html)html='Open the <b>Build</b> menu, choose a tool, then tap a tile. Hover or use <b>Inspect</b> to see a tile’s power, water, land value, and risks.';
+  el.innerHTML=html;
+}
+
+// ---------- Actions ----------
+function validate(i,tool){
+  const t=terr[i],d=DEF(tool);
+  if(tool==='bridge'){if(t!=='river')return'Bridges can only be built on river tiles. Use Road on land.'}else if(!isLand(i))return'You can’t build on water. Build a Bridge to cross the river.';
+  if(t==='forest')return'This is protected state forest. Build next to it instead.';
+  if(state.b[i])return'This lot is taken. Use Bulldoze to clear it first.';
+  if(state.pl[i]&&!linesOK(tool))return'A power line runs here. Only Residential or Commercial zones can go under it. Tap the line with the Power Line tool to remove it.';
+  if(STRATS[tool]&&!unlocked(tool))return`${d.name} is locked. Finish the standard questions for “${PBY[d.from[0]].title}” in the Library.`;
+  if(d.rule==='river1'&&dRiver[i]>1)return`A ${d.name} must be built right next to the river.`;
+  if(d.rule==='river2'&&dRiver[i]>2)return`A ${d.name} must be within 2 tiles of the river.`;
+  if(d.rule==='forest1'&&dForest[i]>1)return`A ${d.name} must be built right next to the forest.`;
+  if(d.rule==='sand'&&t!=='sand')return`${d.name} must be built on the sandy coastline.`;
+  if(state.money<d.cost)return`You need ${money(d.cost)} but have ${money(state.money)}. Read a passage in the Library to earn more.`;
+  return null;
+}
+function place(i,tool){const d=DEF(tool);state.money-=d.cost;state.b[i]=tool;state.lv[i]=0;save();say(`Built ${d.name} for ${money(d.cost)}.${zoneOf(tool)?' It will grow when it has a road, power, water, and demand.':''}`,'good');renderAll()}
+function act(i){
+  const tool=ui.tool;
+  if(!tool||tool==='inspect'){ui.inspect=i;draw();renderInfo();return}
+  if(tool==='powerline'){
+    if(state.pl[i]){state.pl[i]=false;state.money+=5;save();say('Removed the power line. You got $5 back.','good');renderAll();return}
+    const t=state.b[i],tr=terr[i];
+    if(tr==='ocean')return say('Power lines can\u2019t go in the ocean.','bad');
+    if(tr==='forest')return say('This is protected state forest. Run the line around it.','bad');
+    if(t&&roadLike(t))return say('Roads already carry power. Put power lines where there is no road.','bad');
+    if(t&&!linesOK(t))return say('Power lines can only cross empty land, the river, and Residential or Commercial zones.','bad');
+    if(state.money<10)return say('A power line costs $10.','bad');
+    state.money-=10;state.pl[i]=true;save();say('Built a power line for $10.','good');renderAll();return}
+  if(tool==='bulldoze'){
+    const t=state.b[i];if(!t){if(state.pl[i]){state.pl[i]=false;state.money+=5;save();say('Removed the power line. You got $5 back.','good');renderAll();return}return say('Nothing to clear here.','bad')}
+    if(t==='rubble'){if(state.money<20)return say('Clearing rubble costs $20.','bad');state.money-=20;state.b[i]=null;state.lv[i]=0;save();say('Cleared the rubble for $20.','good');renderAll();return}
+    const d=DEF(t),refund=Math.floor(d.cost/2);state.money+=refund;state.b[i]=null;state.lv[i]=0;save();say(`Bulldozed the ${d.name}. You got ${money(refund)} back, half of what it cost.`,'good');renderAll();return}
+  const err=validate(i,tool);if(err)return say(err,'bad');
+  if(STRATS[tool]&&!state.permits[tool])return openPermit(tool,i);
+  place(i,tool);
+}
+function endDay(auto){
+  const s=analyze();state.money=Math.max(0,state.money+s.income);state.lastIncome=s.income;
+  const g=growCity();state.year++;state.dayMs=DAY_MS;
+  say(`${auto?'Time’s up! ':''}Day ${state.year} begins. The city earned ${money(s.income)}. ${g.grew} zone${g.grew===1?'':'s'} grew${g.shrank?`, ${g.shrank} shrank`:''}.`,s.income>=0?'good':'bad');
+  if(state.year>=state.nextYear){if(ui.modal)state.disasterDue=true;else runDisaster(nextHazard(),true)}
+  save();renderAll();
+}
+function tornadoPath(){const y0=Math.random()*(H-2),y1=Math.random()*(H-2);const s=new Set();for(let x=0;x<W;x++){const y=Math.round(y0+(y1-y0)*x/(W-1));s.add(y*W+x);if(y+1<H)s.add((y+1)*W+x)}return s}
+function runDisaster(h,scheduled){
+  state.disasterDue=false;
+  const path=h==='tornado'?tornadoPath():null;
+  let atRisk=0,lostHigh=0,saved=0,hurt=0;const lost=[],zone=[];
+  for(let i=0;i<N;i++){if(highRisk(h,i,path)&&isLand(i))zone.push(i)}
+  const before=state.b.slice(),blv=state.lv.slice();
+  for(let i=0;i<N;i++){
+    const t=before[i];if(!destroyable(t))continue;const c=zoneChance(h,i,path);if(c<=0)continue;
+    const hi=highRisk(h,i,path);const pr=protFor(i,h);if(hi)atRisk++;
+    if(Math.random()<c*(1-pr.p)){lost.push(i);if(hi)lostHigh++;
+      if(isHome(t)&&h!=='drought'){for(let k=0;k<RES[blv[i]||0];k++)if(Math.random()<.5*(1-pr.h))hurt++}}
+    else if(hi&&pr.p>0)saved++;
+  }
+  for(const i of lost){state.b[i]='rubble';state.lv[i]=0}
+  const cost=hurt*10;state.money=Math.max(0,state.money-cost);
+  const pct=atRisk?Math.round(100*(atRisk-lostHigh)/atRisk):100;
+  const grade=pct>=90?'A':pct>=75?'B':pct>=60?'C':pct>=40?'D':'F';
+  const used=new Set();for(let i=0;i<N;i++){const s=STRATS[before[i]];if(s&&s.prot[h])used.add(s.name)}
+  const rec={year:state.year,h,atRisk,lost:lost.length,saved,hurt,cost,pct,grade,solutions:[...used]};
+  state.history.push(rec);state.last={h,zone,lost,year:state.year};state.pending=state.history.length-1;
+  journal('disaster',`${HAZ[h].name} · grade ${grade}`,`${atRisk} buildings were in the danger zone. ${lost.length} lost, ${hurt} residents hurt. Solutions in place: ${rec.solutions.length?rec.solutions.join(', '):'none'}.`);
+  if(scheduled){state.dIndex++;state.nextHaz=null;state.nextYear=state.year+DISASTER_GAP}
+  ui.overlay='last';$('#overlay').value='last';
+  save();renderAll();openReport(state.pending);
+}
+
+// ---------- Rendering: header, panel ----------
+const mmss=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+function clockRunning(){return !!state&&!state.timerPaused&&document.visibilityState==='visible'&&ui.modal!=='report'&&ui.modal!=='intro'}
+function renderClock(){
+  const c=$('#s-clock');c.textContent=mmss(state.dayMs);c.classList.toggle('low',state.dayMs<60000&&clockRunning());
+  $('#s-clock-l').textContent=state.timerPaused?'Paused by teacher':clockRunning()?`Left in day ${state.year}`:'Paused';
+}
+function renderHeader(){
+  const s=sim;
+  $('#s-money').textContent=money(state.money);$('#s-pop').textContent=s.pop.toLocaleString('en-US');$('#s-year').textContent=state.year;
+  const h=nextHazard();const d=state.nextYear-state.year;const p=PBY[h];
+  $('#forecast').innerHTML=`<span class="dia"><i>!</i></span><span><b>${HAZ[h].name} on Day ${state.nextYear}</b><small>${d<=1?'Tomorrow! ':d+' days away. '}Read “${esc(p.title)}”</small></span>`;
+  $('#income').innerHTML=`End-of-day income: <b>${s.income<0?'−':''}${money(Math.abs(s.income))}</b> (taxes ${money(s.taxes)} + business ${money(s.biz)} − upkeep ${money(s.upkeep)})`;
+  $('#endyear').textContent=`End Day ${state.year} early →`;
+  const sI=$('#student'),cI=$('#cityname');if(document.activeElement!==sI)sI.value=state.student;if(document.activeElement!==cI)cI.value=state.city;
+  renderClock();
+}
+function meter(label,v,c,max){const w=clamp(Math.abs(v)/max*50,0,50);const pos=v>=0;return `<div class="drow"><span>${label}</span><div class="dbar center" role="img" aria-label="${label} demand ${v}"><i style="--c:var(${c});${pos?'left:50%':'right:50%'};width:${w}%"></i></div><span class="v">${v>0?'+':''}${Math.round(v)}</span></div>`}
+function usage(label,use,cap,c){const pct=cap?clamp(use/cap*100,0,100):(use?100:0);const over=use>cap;return `<div class="drow"><span>${label}</span><div class="dbar" role="img" aria-label="${label} ${use} of ${cap} used"><i style="--c:var(${over?'--bad':c});left:0;width:${pct}%"></i></div><span class="v ${over?'over':''}">${use}/${cap}</span></div>`}
+function renderDash(){
+  const s=sim;
+  $('#dash').innerHTML=`<h3>Demand</h3>${meter('Homes',s.dR,'--res',30)}${meter('Shops',s.dC,'--com',30)}${meter('Jobs',s.dI,'--ind',30)}
+  <h3>Utilities</h3>${usage('Power',s.puse,s.pcap,'--power')}${usage('Water',s.wuse,s.wcap,'--water')}
+  <p class="note">${s.pop} residents · ${s.workers} workers · ${s.jobs} jobs</p>`;
+  $('#advisor').innerHTML=`<h3>City advisor</h3>`+advise(s).slice(0,3).map(a=>`<div class="adv"><span class="sev s${a.sev}" aria-hidden="true"></span><div><p><b>Problem</b> ${esc(a.problem)}</p><p><b>Solution</b> ${esc(a.solution)}</p></div></div>`).join('');
+}
+function toolBtn(k){const d=k==='inspect'?{name:'Inspect',cost:0,code:'?',color:'--muted'}:k==='bulldoze'?{name:'Bulldoze',cost:5,code:'✕',color:'--bad'}:DEF(k);
+  const sub=k==='inspect'?'free · see details':k==='bulldoze'?'½ refund · rubble $20':money(d.cost)+(d.r?` · r${d.r}`:'')+(d.home&&!BASIC[k]?' · home':'')+(d.zone&&BASIC[k]?' · zone':'')+(d.cap?` · serves ${d.cap}`:'')+(d.ruleText?' · '+d.ruleText:'');
+  const code=k==='road'?'':d.code;
+  return `<button class="tool" data-tool="${k}" aria-pressed="${ui.tool===k}" title="${esc(d.desc||'')}"><span class="sw" style="--c:var(${d.color})">${utilSvg(k)||esc(code)}</span><span class="tx"><b>${esc(d.name)}</b><small>${esc(sub)}</small></span></button>`}
+function renderPanel(){
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
+  let h='';
+  h+=`<div class="group"><div class="ghead">Zones &amp; roads</div><div class="tools">${['inspect','road','bridge','house','shop','factory','park','bulldoze'].map(toolBtn).join('')}</div></div>`;
+  h+=`<div class="group"><div class="ghead">Utilities</div><div class="tools">${['power','solar','powerline','tower','pump'].map(toolBtn).join('')}</div><p class="note">Water travels through roads. Power travels through roads and power lines, and lines can run right over homes and shops.</p></div>`;
+  for(const p of PASSAGES){
+    const hz=HAZ[p.id];const ok=dok2Done(p.id);
+    h+=`<div class="group"><div class="ghead"><span class="dot" style="background:var(${hz.color})"></span>${hz.name} solutions <em>· from “${esc(p.title)}”</em></div>`;
+    h+=ok?`<div class="tools">${p.unlocks.map(toolBtn).join('')}</div>`:`<div class="locked"><span>Locked. Answer the standard questions to unlock 3 solutions.</span><button class="btn small" data-open="${p.id}">Read</button></div>`;
+    h+='</div>';
+  }
+  $('#build-body').innerHTML=h;h='';
+  if(ui.tab==='library'){
+    let ts=0,tb=0;PASSAGES.forEach(p=>{const e=earned(p.id);ts+=e.s;tb+=e.b});
+    h+=`<p class="note">Each passage uses a <b>problem and solution</b> structure. Standard questions (DOK 2) pay up to ${money(MAX_STD)} and unlock building solutions. Bonus questions (DOK 3) pay up to ${money(MAX_BONUS)} more. You have earned <b>${money(ts+tb)}</b> from reading.</p>`;
+    for(const p of PASSAGES){const e=earned(p.id);const hz=HAZ[p.id];const r=state.read[p.id];
+      const st=dok2Done(p.id),b3=dok3Done(p.id);
+      h+=`<div class="pcard" style="--c:var(${hz.color})"><div class="eyebrow">${hz.name}${p.id===nextHazard()?' · forecast':''}</div><h3>${esc(p.title)}</h3><p>${esc(p.teaser)}</p>
+      <div class="meters"><span class="pill ${st?'ok':''}">Standard ${money(e.s)} / ${money(MAX_STD)}</span><span class="pill ${b3?'bonus':''}">Bonus ${money(e.b)} / ${money(MAX_BONUS)}</span>${st?'<span class="pill ok">Solutions unlocked</span>':''}</div>
+      <div class="row"><span class="note">${r&&r.roles.submitted?`Structure map: ${r.roles.correct}/5`:'Not started'}</span><button class="btn small ${st?'':'primary'}" data-open="${p.id}">${b3?'Review':r?'Continue':'Read & earn'}</button></div></div>`}
+  }else{
+    h+=`<div class="group"><div class="ghead">Planning journal</div><p class="note">Your permits, bonus answers, disaster reports, and rebuilding plans. Progress saves in this browser only, so copy your report to turn it in.</p><div><button class="btn primary" id="copyreport">Copy report for my teacher</button></div></div>`;
+    if(state.history.length){h+=`<div class="group"><div class="ghead">Disaster record</div><div class="meters">${state.history.map(r=>`<span class="pill" style="border-color:var(${HAZ[r.h].color})">Day ${r.year} ${HAZ[r.h].name}: ${r.grade}</span>`).join('')}</div></div>`}
+    const J=state.journal.slice().reverse();
+    h+=`<div class="group">${J.length?J.map(j=>`<div class="jentry"><span class="jt">Day ${j.year} · ${({permit:'Permit',dok3:'Bonus answer',disaster:'Disaster report',plan:'Rebuilding plan',unlock:'Unlocked'})[j.type]||j.type}</span><b>${esc(j.title)}</b>${j.text?`<p>${esc(j.text)}</p>`:''}</div>`).join(''):'<p class="note">Nothing yet. Read a passage or build your first solution.</p>'}</div>`;
+    h+=`<details class="teacher"><summary>Teacher tools</summary>
+      <div class="trow"><span>Day timer (6 min/day)</span><button class="btn small" id="t-timer">${state.timerPaused?'Resume timer':'Pause timer'}</button></div>
+      <div class="trow"><label for="t-haz">Practice disaster</label><select id="t-haz">${HKEYS.map(k=>`<option value="${k}">${HAZ[k].name}</option>`).join('')}</select><button class="btn small" id="t-run">Strike now</button></div>
+      <p class="note">A practice disaster does not change the forecast schedule.</p>
+      <div class="trow"><button class="btn small danger" id="t-reset">Start a new city…</button><span id="t-confirm"></span></div></details>`;
+  }
+  $('#lib-body').innerHTML=h;renderDrawers();
+}
+const toolName=k=>k==='bulldoze'?'Bulldoze':k==='inspect'?'Inspect':DEF(k).name;
+function renderDrawers(){
+  const d=ui.drawers;$('#build-drawer').hidden=!d.build;$('#lib-drawer').hidden=!d.lib;
+  $('#toggle-build').setAttribute('aria-expanded',String(!!d.build));$('#toggle-lib').setAttribute('aria-expanded',String(!!d.lib));
+  $('#toolchip').innerHTML=ui.tool&&ui.tool!=='inspect'?`<span class="pill">Placing: <b>${esc(toolName(ui.tool))}</b></span><button class="btn small" id="clear-tool">Done</button>`:'';
+}
+function setDrawer(which,open){
+  ui.drawers[which]=open;
+  if(open&&(overlayMode()||window.innerWidth<1500))ui.drawers[which==='build'?'lib':'build']=false;
+  saveDrawers();renderDrawers();
+}
+function renderAll(){sim=analyze();renderHeader();renderDash();renderPanel();draw();renderInfo()}
+
+// ---------- Modals ----------
+const modal=$('#modal');
+function openModal(html){modal.innerHTML=html;modal.hidden=false;document.body.style.overflow='hidden';const f=modal.querySelector('[autofocus],textarea,input,button');f&&f.focus({preventScroll:true})}
+function closeModal(){modal.hidden=true;modal.innerHTML='';document.body.style.overflow='';ui.reader=null;ui.modal=null;renderAll();if(state.disasterDue&&state.pending==null)runDisaster(nextHazard(),true)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden&&ui.modal!=='report')closeModal()});
+
+function openIntro(){
+  ui.modal='intro';
+  openModal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ih"><div class="eyebrow">Welcome, city planner</div><h2 id="ih">Build a city that can survive what nature sends.</h2>
+  <p>Every few days a natural disaster strikes. The yellow forecast sign tells you what is coming. Your job is to solve the problem before it arrives.</p>
+  <p>Use the <b>Build</b> and <b>Library</b> buttons above the map to open and collapse each menu. Tap the forecast sign to jump straight to the passage you need.</p>
+  <ol class="steps">
+  <li><b>Read to earn.</b> Open the Library. Each passage explains a disaster <i>problem</i> and its <i>solutions</i>. Standard questions (DOK 2) earn building money. Bonus questions (DOK 3) earn extra.</li>
+  <li><b>Unlock solutions.</b> Finishing a passage’s standard questions unlocks the solutions it describes, like levees or firebreaks.</li>
+  <li><b>Get a permit.</b> The first time you build a solution, tell the planning board which problem it solves and how, using the passage.</li>
+  <li><b>Zone and grow.</b> Zone land for homes (R), shops (C), and jobs (I). Zones grow bigger when they touch a road with a Power Plant and Water Treatment plant, when people want them (see the Demand meters), and when land value is high. Keep smoky factories away from homes, and add parks.</li>
+  <li><b>Watch the clock.</b> Each day lasts 6 minutes. When the timer runs out, the city collects taxes, zones grow, and a new day begins. The City advisor lists today\u2019s problems and solutions.</li>
+  <li><b>Face the disaster.</b> Your solutions decide what survives. Write a rebuilding plan to earn a grant.</li></ol>
+  <div class="actions"><button class="btn primary" id="intro-go">Start planning</button></div></div>`);
+}
+
+function openPermit(tool,i){
+  const s=STRATS[tool];ui.modal='permit';ui.permit={tool,i};
+  openModal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ph" style="--c:var(${s.color})"><div class="eyebrow">Building permit application</div><h2 id="ph">${esc(s.name)}</h2>
+  <p>Before you build a new kind of solution, show the planning board you understand the problem and how this solution fixes it.</p>
+  <div><b>1. What problem will a ${esc(s.name)} solve?</b></div>
+  <div class="choices">${HKEYS.map(k=>`<label class="choice"><input type="radio" name="permit-h" value="${k}"> <span>${HAZ[k].name}</span></label>`).join('')}</div>
+  <label for="permit-text"><b>2. How will it solve that problem?</b> Use details from the passage. (At least 12 words.)</label>
+  <textarea id="permit-text" placeholder="A ${esc(s.name.toLowerCase())} helps because…">${esc(ui.drafts['permit-'+tool]||'')}</textarea>
+  <div class="wc" id="permit-wc">${words(ui.drafts['permit-'+tool])} words</div>
+  <div class="feedback" id="permit-fb" hidden></div>
+  <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="permit-ok">Approve and build (${money(s.cost)})</button></div></div>`);
+}
+function submitPermit(){
+  const {tool,i}=ui.permit;const s=STRATS[tool];const fb=$('#permit-fb');
+  const pick=(modal.querySelector('input[name="permit-h"]:checked')||{}).value;const text=$('#permit-text').value;
+  const show=(m)=>{fb.hidden=false;fb.className='feedback bad';fb.textContent=m};
+  if(!pick)return show('Choose the problem this solution solves.');
+  if(!s.from.includes(pick))return show(`A ${s.name} does not mainly solve ${HAZ[pick].name.toLowerCase()} problems. Reread “${PBY[s.from[0]].title}” and try again.`);
+  if(words(text)<12)return show(`Explain a little more. You have ${words(text)} words; the board needs at least 12.`);
+  const err=validate(i,tool);if(err){show(err);return}
+  state.permits[tool]={hazard:pick,text,year:state.year};journal('permit',`${s.name} solves ${HAZ[pick].name.toLowerCase()}`,text);delete ui.drafts['permit-'+tool];
+  modal.hidden=true;modal.innerHTML='';document.body.style.overflow='';ui.modal=null;place(i,tool);
+}
+
+function openReport(idx){
+  const r=state.history[idx];ui.modal='report';const hz=HAZ[r.h];
+  openModal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="rh" style="--c:var(${hz.color})"><div class="eyebrow">After-action report · Day ${r.year}</div><h2 id="rh">${hz.name} strikes ${esc(state.city||'your city')}</h2>
+  <dl class="ps"><dt>Problem</dt><dd>${hz.problem} ${r.atRisk} buildings stood in the danger zone.</dd>
+  <dt>Solutions</dt><dd>${r.solutions.length?esc(r.solutions.join(', '))+'.':`None. No ${hz.name.toLowerCase()} solutions were built.`} ${r.saved?`They helped ${r.saved} at-risk buildings survive.`:''}</dd>
+  <dt>Results</dt><dd>${r.lost} buildings lost${r.h==='drought'?' (dried out and abandoned)':''}. ${r.h==='drought'?'':`${r.hurt} residents hurt, costing ${money(r.cost)} in emergency care.`}</dd></dl>
+  <div class="reportgrid"><div class="rstat"><b>${r.grade}</b><small>Resilience grade</small></div><div class="rstat"><b>${r.pct}%</b><small>At-risk saved</small></div><div class="rstat"><b>${r.lost}</b><small>Buildings lost</small></div><div class="rstat"><b>${r.hurt}</b><small>Residents hurt</small></div></div>
+  <label for="plan-text"><b>Rebuilding plan.</b> Write a problem-and-solution plan for the next ${hz.name.toLowerCase()}: what went wrong, and what will you build? A plan of 15+ words earns a ${money(75)} rebuilding grant.</label>
+  <textarea id="plan-text" placeholder="The problem was… To solve it, I will…"></textarea>
+  <div class="wc" id="plan-wc">0 words</div>
+  <div class="feedback" id="plan-fb" hidden></div>
+  <div class="actions"><button class="btn" id="plan-skip">Skip grant</button><button class="btn primary" id="plan-ok">Submit plan (+${money(75)})</button></div></div>`);
+}
+function finishReport(withPlan){
+  const r=state.history[state.pending];
+  if(withPlan){const t=$('#plan-text').value;if(words(t)<15){const fb=$('#plan-fb');fb.hidden=false;fb.className='feedback bad';fb.textContent=`Your plan has ${words(t)} words. Write at least 15: name the problem and the solution you will build.`;return}
+    state.money+=75;journal('plan',`After the ${HAZ[r.h].name.toLowerCase()} on Day ${r.year}`,t);say('Plan approved. +$75 rebuilding grant.','good')}
+  state.pending=null;save();closeModal();
+}
+
+// ---------- Reader ----------
+function openReader(pid,step){rs(pid);ui.reader={pid,step:step||(dok2Done(pid)?3:state.read[pid].roles.submitted?2:1)};ui.modal='reader';renderReader(true)}
+function qState(pid,key){const r=rs(pid);if(!r.q[key])r.q[key]={tries:0,done:false,correct:false,earned:0,choice:null,just:''};return r.q[key]}
+function renderQ(p,kind,k){
+  const key=kind+'-'+k;const Q=(kind==='d2'?p.dok2:p.dok3)[k];const s=qState(p.id,key);const full=kind==='d2'?PAY.d2:PAY.d3;
+  const ch=s.done?s.choice:(ui.choices[p.id+key]??null);
+  let h=`<div class="q"><div class="qh"><span>${kind==='d2'?'DOK 2 · Question '+(k+1):'DOK 3 · Bonus '+(k+1)}</span><span>${s.done?(s.earned?'+'+money(s.earned):'$0'):money(s.tries?full/2:full)}</span></div><div class="qt">${esc(Q.q)}</div><div class="choices">`;
+  Q.o.forEach((o,j)=>{let cls='choice';if(s.done){cls+=' disabled';if(j===Q.a)cls+=' right';else if(j===s.choice)cls+=' wrong'}
+    h+=`<label class="${cls}"><input type="radio" name="${key}" value="${j}" ${ch===j?'checked':''} ${s.done?'disabled':''} data-q="${key}"> <span>${esc(o)}</span></label>`});
+  h+='</div>';
+  if(kind==='d3'){const dv=s.done?s.just:(ui.drafts[p.id+key]||'');
+    h+=`<label for="j-${key}"><b>Explain your thinking.</b> Use at least 15 words and a detail or quote from the passage.</label><textarea id="j-${key}" data-just="${key}" ${s.done?'readonly':''}>${esc(dv)}</textarea><div class="wc" data-wc="${key}">${words(dv)} words</div>`}
+  if(s.done)h+=s.correct?`<div class="feedback good">Correct! +${money(s.earned)}. <span>${esc(Q.ex)}</span></div>`:`<div class="feedback bad">The best answer is: ${esc(Q.o[Q.a])} <span>${esc(Q.ex)}</span></div>`;
+  else{if(s.tries===1)h+=`<div class="feedback bad">Not quite. Look back at the passage and try once more for half credit.</div>`;
+    if(ui.qerr&&ui.qerr.key===key)h+=`<div class="feedback bad">${esc(ui.qerr.msg)}</div>`;
+    h+=`<div><button class="btn primary" data-check="${key}">Check answer</button></div>`}
+  return h+'</div>';
+}
+function renderReader(first){
+  const {pid,step}=ui.reader;const p=PBY[pid];const r=rs(pid);const hz=HAZ[pid];const e=earned(pid);
+  const qp=modal.querySelector('.qpane');const keep={o:modal.scrollTop,q:qp?qp.scrollTop:0};
+  let paras=p.paras.map(([role,text],k)=>{
+    let ctl='';
+    if(!r.roles.submitted){ctl=`<label class="sr" for="role-${k}">Role of paragraph ${k+1}</label><select id="role-${k}" data-role="${k}"><option value="">Tag this paragraph…</option>${Object.entries(ROLES).map(([v,l])=>`<option value="${v}" ${r.roles.picks[k]===v?'selected':''}>${l}</option>`).join('')}</select>`}
+    else{const pk=r.roles.picks[k];ctl=pk===role?`<span class="tag ok">✓ ${ROLES[role]}</span>`:`<span class="tag no">You chose ${ROLES[pk]||'nothing'}</span><span class="tag ok">Answer: ${ROLES[role]}</span>`}
+    return `<div class="para"><span class="pn">¶${k+1}</span><p>${esc(text)}</p><div class="role">${ctl}</div></div>`}).join('');
+  const d2=dok2Done(pid);
+  let q=`<div class="steptabs" role="tablist">
+    <button data-step="1" aria-selected="${step===1}">1 · Map the structure</button>
+    <button data-step="2" aria-selected="${step===2}">2 · Standard (DOK 2)</button>
+    <button data-step="3" aria-selected="${step===3}">3 · Bonus (DOK 3)</button></div>`;
+  if(step===1){
+    const n=r.roles.picks.filter(Boolean).length;
+    q+=`<p>Problem and solution texts follow a pattern. Tag each paragraph in the passage with its job. Each correct tag earns ${money(PAY.role)}.</p>
+    <dl class="bank"><dt>Problem</dt><dd>problem, danger, threat, risk, challenge</dd><dt>Cause</dt><dd>because, why, one reason, causes, makes it worse</dd><dt>Solution</dt><dd>one solution, another, to solve, can help, method</dd><dt>Result</dt><dd>as a result, made a difference, shows, studies found</dd></dl>`;
+    if(r.roles.submitted)q+=`<div class="feedback good">You tagged ${r.roles.correct} of 5 correctly and earned ${money(r.roles.earned)}. <span>Check the tags beside each paragraph, then move to Step 2.</span></div><div><button class="btn primary" data-step="2">Go to standard questions</button></div>`;
+    else q+=`<div class="wc">${n} of 5 tagged</div><div><button class="btn primary" id="roles-submit" ${n<5?'disabled':''}>Check my structure map</button></div>`;
+  }else if(step===2){
+    if(!r.roles.submitted)q+=`<div class="lockbox">Map the structure in Step 1 first.</div>`;
+    else{q+=`<p>Each correct answer earns ${money(PAY.d2)} (${money(PAY.d2/2)} on a second try). Finishing all three unlocks: <b>${p.unlocks.map(k=>esc(STRATS[k].name)).join(', ')}</b>.</p>`;q+=p.dok2.map((_,k)=>renderQ(p,'d2',k)).join('');
+      if(d2)q+=`<div class="feedback good">Solutions unlocked! <span>Find them in the Build tab, or try the bonus questions.</span></div><div><button class="btn primary" data-step="3">Try the bonus challenge</button></div>`}
+  }else{
+    if(!d2)q+=`<div class="lockbox">Finish the standard questions in Step 2 to open the bonus challenge.</div>`;
+    else{q+=`<p>Bonus questions ask you to <b>evaluate</b> solutions and <b>apply</b> them to new situations. A correct answer with a strong explanation earns ${money(PAY.d3)}. Your explanations go in your journal for your teacher.</p>`;q+=p.dok3.map((_,k)=>renderQ(p,'d3',k)).join('')}
+  }
+  const html=`<div class="reader" role="dialog" aria-modal="true" aria-labelledby="rt" style="--c:var(${hz.color})">
+    <div class="rhead"><div><div class="eyebrow">${hz.name} · Problem &amp; solution passage</div><h2 id="rt">${esc(p.title)}</h2></div>
+    <div class="meters"><span class="pill ${d2?'ok':''}">Standard ${money(e.s)} / ${money(MAX_STD)}</span><span class="pill ${dok3Done(pid)?'bonus':''}">Bonus ${money(e.b)} / ${money(MAX_BONUS)}</span><span class="pill">Budget ${money(state.money)}</span><button class="btn small" data-close>Close</button></div></div>
+    <div class="rbody"><article class="passage">${paras}</article><section class="qpane">${q}</section></div></div>`;
+  modal.innerHTML=html;if(first){modal.hidden=false;document.body.style.overflow='hidden';modal.scrollTop=0}else{modal.scrollTop=keep.o;const np=modal.querySelector('.qpane');if(np)np.scrollTop=keep.q}
+  ui.qerr=null;
+}
+function checkQ(key){
+  const {pid}=ui.reader;const p=PBY[pid];const kind=key.slice(0,2),k=+key.slice(3);const Q=(kind==='d2'?p.dok2:p.dok3)[k];const s=qState(pid,key);
+  const ch=ui.choices[pid+key];if(ch==null){ui.qerr={key,msg:'Choose an answer first.'};return renderReader()}
+  if(kind==='d3'){const t=ui.drafts[pid+key]||'';if(words(t)<15){ui.qerr={key,msg:`Your explanation has ${words(t)} words. Write at least 15.`};return renderReader()}
+    if(!hasEvidence(t,pid)){ui.qerr={key,msg:'Add evidence: use a fact, a key term, or a quote from the passage.'};return renderReader()}s.just=t}
+  s.tries++;s.choice=ch;const full=kind==='d2'?PAY.d2:PAY.d3;
+  if(ch===Q.a){s.done=true;s.correct=true;s.earned=s.tries===1?full:full/2;state.money+=s.earned;say(`Correct! +${money(s.earned)}`,'good')}
+  else if(s.tries>=2){s.done=true;s.earned=0}
+  if(kind==='d3'&&s.done)journal('dok3',`${p.title}: ${Q.q}`,`Answer: ${Q.o[ch]} (${s.correct?'correct':'incorrect'}). Explanation: ${s.just}`);
+  const r=rs(pid);if(dok2Done(pid)&&!r.announced){r.announced=true;journal('unlock',`Unlocked ${p.unlocks.map(x=>STRATS[x].name).join(', ')}`,`Finished the standard questions for “${p.title}.”`)}
+  save();renderReader();renderHeader();
+}
+function submitRoles(){const {pid}=ui.reader;const p=PBY[pid];const r=rs(pid);let c=0;p.paras.forEach(([role],k)=>{if(r.roles.picks[k]===role)c++});r.roles.submitted=true;r.roles.correct=c;r.roles.earned=c*PAY.role;state.money+=r.roles.earned;save();renderReader();renderHeader()}
+
+// ---------- Report for teacher ----------
+function buildReport(){
+  const ec=economy();const L=[];
+  L.push('RESILIENT CITY — PLANNER REPORT');
+  L.push(`Planner: ${state.student||'(no name)'}   City: ${state.city||'(unnamed)'}   Day: ${state.year}`);
+  L.push(`Residents: ${ec.pop}   Budget: ${money(state.money)}`);
+  L.push('');L.push('DISASTERS');
+  if(!state.history.length)L.push('  None yet.');
+  state.history.forEach(r=>L.push(`  Day ${r.year} ${HAZ[r.h].name}: grade ${r.grade} (${r.pct}% of at-risk buildings saved, ${r.lost} lost, ${r.hurt} hurt). Solutions: ${r.solutions.join(', ')||'none'}`));
+  L.push('');L.push('READING (problem & solution passages)');
+  PASSAGES.forEach(p=>{const r=state.read[p.id];if(!r){L.push(`  ${p.title}: not started`);return}const e=earned(p.id);
+    const d2=p.dok2.map((_,k)=>{const s=r.q['d2-'+k];return s&&s.done?(s.correct?(s.tries===1?'✓':'✓(2nd)'):'✗'):'-'}).join(' ');
+    const d3=p.dok3.map((_,k)=>{const s=r.q['d3-'+k];return s&&s.done?(s.correct?(s.tries===1?'✓':'✓(2nd)'):'✗'):'-'}).join(' ');
+    L.push(`  ${p.title}: structure ${r.roles.submitted?r.roles.correct+'/5':'-'} | DOK 2 ${d2} | DOK 3 ${d3} | earned ${money(e.s)} standard + ${money(e.b)} bonus`)});
+  const sect=(type,title)=>{const js=state.journal.filter(j=>j.type===type);if(!js.length)return;L.push('');L.push(title);js.forEach(j=>{L.push(`  [Day ${j.year}] ${j.title}`);if(j.text)L.push(`    ${j.text}`)})};
+  sect('dok3','DOK 3 EXPLANATIONS');sect('permit','BUILDING PERMITS (problem → solution)');sect('plan','REBUILDING PLANS');
+  return L.join('\n');
+}
+function copyReport(){
+  const text=buildReport();
+  const fallback=()=>{ui.modal='copy';openModal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ch"><h2 id="ch">Your report</h2><p>Copy this text and paste it into your class assignment.</p><textarea id="copytext" style="min-height:300px;font-family:var(--f-mono);font-size:13px">${esc(text)}</textarea><div class="actions"><button class="btn primary" data-close>Done</button></div></div>`);const t=$('#copytext');t.focus();t.select()};
+  try{navigator.clipboard.writeText(text).then(()=>say('Report copied. Paste it into your class assignment.','good'),fallback)}catch(e){fallback()}
+}
+
+// ---------- Events ----------
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;ui.tab=b.dataset.tab;renderPanel()});
+const drawerClick=e=>{
+  const t=e.target.closest('[data-tool]');if(t){ui.tool=ui.tool===t.dataset.tool?null:t.dataset.tool;
+    if(ui.tool&&overlayMode()){ui.drawers.build=false;saveDrawers();say(ui.tool==='inspect'?'Tap any tile to inspect it.':`Tap the map to place: ${toolName(ui.tool)}.`,'')}
+    renderPanel();renderInfo();draw();return}
+  const o=e.target.closest('[data-open]');if(o){openReader(o.dataset.open);return}
+  if(e.target.id==='copyreport')return copyReport();
+  if(e.target.id==='t-timer'){state.timerPaused=!state.timerPaused;save();renderPanel();renderClock();return}
+  if(e.target.id==='t-run'){const h=$('#t-haz').value;runDisaster(h,false);return}
+  if(e.target.id==='t-reset'){$('#t-confirm').innerHTML='Erase this city and every answer? <button class="btn small danger" id="t-reset-yes">Erase</button> <button class="btn small" id="t-reset-no">Keep</button>';return}
+  if(e.target.id==='t-reset-yes'){state=fresh();state.seenIntro=true;save();ui.tool=null;ui.overlay='';$('#overlay').value='';say('New city started.','good');renderAll();return}
+  if(e.target.id==='t-reset-no'){$('#t-confirm').innerHTML='';return}
+};
+$('#build-body').addEventListener('click',drawerClick);$('#lib-body').addEventListener('click',drawerClick);
+$('#toggle-build').addEventListener('click',()=>setDrawer('build',!ui.drawers.build));
+$('#toggle-lib').addEventListener('click',()=>setDrawer('lib',!ui.drawers.lib));
+document.querySelectorAll('[data-collapse]').forEach(b=>b.addEventListener('click',()=>setDrawer(b.dataset.collapse,false)));
+$('#toolchip').addEventListener('click',e=>{if(e.target.id==='clear-tool'){ui.tool=null;say('','');renderPanel();renderInfo();draw()}});
+$('#forecast').addEventListener('click',()=>openReader(nextHazard()));
+window.addEventListener('resize',resize);
+$('#overlay').addEventListener('change',e=>{ui.overlay=e.target.value;if(ui.overlay==='last'&&!state.last)say('No disaster has struck yet.','');draw()});
+$('#endyear').addEventListener('click',()=>endDay(false));
+$('#howto').addEventListener('click',openIntro);
+$('#restart').addEventListener('click',()=>{ui.modal='restart';openModal(`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sh"><div class="eyebrow">Start over</div><h2 id="sh">Erase this city and begin again?</h2><p>Your buildings, money, reading answers, and journal will all be erased. This can’t be undone. If you need to turn in your work, open the Journal and copy your report first.</p><div class="actions"><button class="btn" data-close>Keep playing</button><button class="btn danger" id="restart-yes">Erase and start over</button></div></div>`)});
+$('#student').addEventListener('input',e=>{state.student=e.target.value;save()});
+$('#cityname').addEventListener('input',e=>{state.city=e.target.value;save()});
+modal.addEventListener('click',e=>{
+  if(e.target===modal&&ui.modal!=='report'&&ui.modal!=='reader'){closeModal();return}
+  if(e.target.closest('[data-close]')){closeModal();return}
+  if(e.target.id==='intro-go'){state.seenIntro=true;save();closeModal();return}
+  if(e.target.id==='restart-yes'){const name=state.student;state=fresh();state.student=name;save();ui.tool=null;ui.inspect=null;ui.overlay='';ui.drafts={};ui.choices={};$('#overlay').value='';closeModal();say('New city started. Good luck, planner!','good');openIntro();return}
+  if(e.target.id==='permit-ok')return submitPermit();
+  if(e.target.id==='plan-ok')return finishReport(true);
+  if(e.target.id==='plan-skip')return finishReport(false);
+  if(e.target.id==='roles-submit')return submitRoles();
+  const st=e.target.closest('[data-step]');if(st&&ui.reader){ui.reader.step=+st.dataset.step;renderReader();modal.querySelector('.qpane')?.scrollIntoView({block:'start'});return}
+  const ck=e.target.closest('[data-check]');if(ck)return checkQ(ck.dataset.check);
+});
+modal.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.role!=null&&ui.reader){const r=rs(ui.reader.pid);r.roles.picks[+t.dataset.role]=t.value||undefined;save();const n=r.roles.picks.filter(Boolean).length;const wc=modal.querySelector('.qpane .wc');if(wc)wc.textContent=`${n} of 5 tagged`;const b=$('#roles-submit');if(b)b.disabled=n<5;return}
+  if(t.dataset.q&&ui.reader){ui.choices[ui.reader.pid+t.dataset.q]=+t.value}
+});
+modal.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.just&&ui.reader){ui.drafts[ui.reader.pid+t.dataset.just]=t.value;const wc=modal.querySelector(`[data-wc="${t.dataset.just}"]`);if(wc)wc.textContent=words(t.value)+' words'}
+  if(t.id==='permit-text'){ui.drafts['permit-'+ui.permit.tool]=t.value;$('#permit-wc').textContent=words(t.value)+' words'}
+  if(t.id==='plan-text'){$('#plan-wc').textContent=words(t.value)+' words'}
+});
+
+// ---------- Theme + resize ----------
+new ResizeObserver(resize).observe($('#mapwrap'));
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw)}catch(e){}
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
+
+// ---------- Day timer ----------
+let lastTick=performance.now(),tickN=0;
+function tick(){
+  const now=performance.now(),dt=Math.min(2000,now-lastTick);lastTick=now;
+  if(!state)return;
+  if(clockRunning()){state.dayMs-=dt;if(state.dayMs<=0){endDay(true);return}}
+  renderClock();if(++tickN%5===0)save();
+}
+setInterval(tick,1000);
+document.addEventListener('visibilitychange',()=>{lastTick=performance.now();if(state){renderClock();save()}});
+
+// ---------- Boot ----------
+function boot(data){
+  state=(data&&data.state)||load()||fresh();
+  if(!Array.isArray(state.lv))state.lv=state.b.map(t=>zoneOf(t)?1:0);
+  if(typeof state.dayMs!=='number')state.dayMs=DAY_MS;
+  if(!Array.isArray(state.pl)||state.pl.length!==N)state.pl=Array(N).fill(false);
+  if(data&&data.ui)Object.assign(ui,data.ui,{reader:null,modal:null});
+  if(ui.tab==='build')ui.tab='library';
+  if(!ui.drawers)ui.drawers=loadDrawers();
+  const notes=[];
+  if(state.migrated!=null){notes.push(`The map got bigger! Your reading progress and money are saved${state.migrated?`, and ${money(state.migrated)} was refunded for buildings on the old map`:''}.`);delete state.migrated}
+  if(state.utilGrant){notes.push('New: buildings now need power and water. You received a $250 grant to build a Power Plant and Water Treatment plant on your roads.');delete state.utilGrant}
+  if(notes.length){save();setTimeout(()=>say(notes.join(' '),'good'),0)}
+  $('#overlay').value=ui.overlay||'';
+  renderAll();resize();lastTick=performance.now();
+  if(state.pending!=null&&state.history[state.pending])openReport(state.pending);
+  else if(!state.seenIntro)openIntro();
+}
+window.claude?.hot?.snapshot?.(()=>({state,ui:{tab:ui.tab,tool:ui.tool,overlay:ui.overlay,drawers:ui.drawers,drafts:ui.drafts,choices:ui.choices}}));
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
+})();
+</script>
+
+</body></html>
