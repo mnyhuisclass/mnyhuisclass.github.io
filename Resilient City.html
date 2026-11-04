@@ -136,7 +136,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .dbar{position:relative;height:10px;background:var(--panel2);border-radius:5px;overflow:hidden}
 .dbar i{position:absolute;top:0;bottom:0;background:var(--c)}
 .dbar.center::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--ink);opacity:.5}
-.stat.clock b{min-width:3.2em}
+.stat.clock b{min-width:5.6em}
 .stat.clock b.low{color:var(--warnsign)}
 .checklist{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
 .checklist ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 16px}
@@ -251,7 +251,7 @@ details.teacher summary{cursor:pointer;font-weight:800;font-size:13px;letter-spa
         <div class="stat"><b id="s-money">$0</b><small>Budget</small></div>
         <div class="stat"><b id="s-pop">0</b><small>Residents</small></div>
         <div class="stat"><b id="s-year">1</b><small>Day</small></div>
-        <div class="stat clock"><b id="s-clock">6:00</b><small id="s-clock-l">Left today</small></div>
+        <div class="stat clock"><b id="s-clock">12:00 AM</b><small id="s-clock-l">Day 1</small></div>
         <button class="forecast" id="forecast" title="Open the passage for this disaster"></button>
       </div>
     </div>
@@ -875,7 +875,7 @@ function act(i){
 function endDay(auto){
   const s=analyze();state.money=Math.max(0,state.money+s.income);state.lastIncome=s.income;
   const g=growCity();state.year++;state.dayMs=DAY_MS;
-  say(`${auto?'Time’s up! ':''}Day ${state.year} begins. The city earned ${money(s.income)}. ${g.grew} zone${g.grew===1?'':'s'} grew${g.shrank?`, ${g.shrank} shrank`:''}.`,s.income>=0?'good':'bad');
+  say(`${auto?'Midnight! ':''}Day ${state.year} begins. The city earned ${money(s.income)}. ${g.grew} zone${g.grew===1?'':'s'} grew${g.shrank?`, ${g.shrank} shrank`:''}.`,s.income>=0?'good':'bad');
   if(state.year>=state.nextYear){if(ui.modal)state.disasterDue=true;else runDisaster(nextHazard(),true)}
   save();renderAll();
 }
@@ -909,9 +909,10 @@ function runDisaster(h,scheduled){
 // ---------- Rendering: header, panel ----------
 const mmss=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 function clockRunning(){return !!state&&!state.timerPaused&&document.visibilityState==='visible'&&ui.modal!=='report'&&ui.modal!=='intro'}
+const clock12=ms=>{const m=Math.min(1439,Math.max(0,Math.floor((DAY_MS-ms)/DAY_MS*1440)));const h=Math.floor(m/60);return `${h%12||12}:${String(m%60).padStart(2,'0')} ${h<12?'AM':'PM'}`};
 function renderClock(){
-  const c=$('#s-clock');c.textContent=mmss(state.dayMs);c.classList.toggle('low',state.dayMs<60000&&clockRunning());
-  $('#s-clock-l').textContent=state.timerPaused?'Paused by teacher':clockRunning()?`Left in day ${state.year}`:'Paused';
+  const c=$('#s-clock');c.textContent=clock12(state.dayMs);c.classList.toggle('low',state.dayMs<60000&&clockRunning());
+  $('#s-clock-l').textContent=state.timerPaused?'Paused by teacher':clockRunning()?`Day ${state.year} \u00b7 ends at midnight`:'Paused';
 }
 function renderHeader(){
   const s=sim;
@@ -998,7 +999,7 @@ function openIntro(){
   <li><b>Unlock solutions.</b> Finishing a passage’s standard questions unlocks the solutions it describes, like levees or firebreaks.</li>
   <li><b>Get a permit.</b> The first time you build a solution, tell the planning board which problem it solves and how, using the passage.</li>
   <li><b>Zone and grow.</b> Zone land for homes (R), shops (C), and jobs (I). Zones grow bigger when they touch a road with a Power Plant and Water Treatment plant, when people want them (see the Demand meters), and when land value is high. Keep smoky factories away from homes, and add parks.</li>
-  <li><b>Watch the clock.</b> Each day lasts 6 minutes. When the timer runs out, the city collects taxes, zones grow, and a new day begins. The City advisor lists today\u2019s problems and solutions.</li>
+  <li><b>Watch the clock.</b> Each day lasts 6 real minutes. The clock starts at 12:00 AM and runs forward to midnight. At midnight, the city collects taxes, zones grow, and a new day begins. The City advisor lists today\u2019s problems and solutions.</li>
   <li><b>Face the disaster.</b> Your solutions decide what survives. Write a rebuilding plan to earn a grant.</li></ol>
   <div class="actions"><button class="btn primary" id="intro-go">Start planning</button></div></div>`);
 }
