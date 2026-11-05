@@ -72,7 +72,7 @@
     .btn.primary:hover { background: var(--teal-900); }
     .btn.key[aria-pressed="true"] { background: var(--gold-500); border-color: var(--gold-500); color: var(--teal-900); }
     .version { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 13px; color: var(--muted); }
-    .version input { color: var(--ink); width: 78px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+    .version input { color: var(--ink); width: 230px; max-width: 60vw; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
     #notices { padding: 0 24px; }
     #notices:not(:empty) { padding: 12px 24px 16px; border-top: 1px solid var(--line); background: #fffaf0; }
     #notices p { margin: 4px 0; font-size: 13px; color: var(--warn); }
@@ -263,7 +263,7 @@
         <button type="button" class="btn" id="btn-print">Print</button>
         <div class="version">
             <label for="f-code">Version code</label>
-            <input type="text" id="f-code" maxlength="6" spellcheck="false">
+            <input type="text" id="f-code" maxlength="40" placeholder="Paste a code" spellcheck="false">
             <button type="button" class="btn" id="btn-load">Load</button>
         </div>
     </div>
@@ -1479,6 +1479,114 @@
             return out;
         }
 
+        // ---------- Full version codes ----------
+        // A code holds the random seed AND every setting that shapes the test (mode, standards, counts,
+        // level, and so on). Loading a code restores those settings, so anyone who loads it gets the
+        // exact same test. Changing a setting changes the code to match. Title and subtitle are not stored.
+        const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        const CODE_MODES = ['cfa', 'eou', 'exit', 'morning'];
+        const MODE_NAMES = { cfa: 'Quick CFA', eou: 'End of Unit', exit: 'Exit Ticket', morning: 'Morning Work' };
+        function encoderIO() {
+            const digits = [];
+            return { digits, num(radix, v) { v = Math.max(0, Math.min(radix - 1, v | 0)); digits.push([v, radix]); return v; } };
+        }
+        function decoderIO(big) {
+            let v = big;
+            return { num(radix) { const r = BigInt(radix); const x = Number(v % r); v = v / r; return x; }, rest: () => v };
+        }
+        const optCodec = (io, list, val) => list[io.num(list.length, Math.max(0, list.indexOf(String(val))))];
+        const boolCodec = (io, val) => !!io.num(2, val ? 1 : 0);
+        // Which standards are picked: a short list when only a few are picked, a full on/off mask otherwise.
+        function standardsCodec(io, sel) {
+            const ids = STANDARDS.map(x => x.id), N = ids.length;
+            let picked = ids.map((id, i) => sel && sel[id] !== undefined ? i : -1).filter(i => i >= 0);
+            const listCost = Math.log2(N + 1) + picked.length * Math.log2(N);
+            const useMask = io.num(2, listCost > N ? 1 : 0);
+            if (useMask) picked = ids.map((id, i) => io.num(2, picked.includes(i) ? 1 : 0) ? i : -1).filter(i => i >= 0);
+            else {
+                const k = io.num(N + 1, picked.length);
+                const out = [];
+                for (let j = 0; j < k; j++) out.push(io.num(N, picked[j]));
+                picked = [...new Set(out)].sort((a, b) => a - b);
+            }
+            return picked.map(i => ids[i]);
+        }
+        function packBody(mode, s) {
+            const io = encoderIO();
+            io.num(CODE_MODES.length, CODE_MODES.indexOf(mode));
+            settingsCodec(io, JSON.parse(JSON.stringify(s)), mode);
+            let big = 0n;
+            for (let i = io.digits.length - 1; i >= 0; i--) big = big * BigInt(io.digits[i][1]) + BigInt(io.digits[i][0]);
+            let out = '';
+            do { out += CODE_CHARS[Number(big % 32n)]; big /= 32n; } while (big > 0n);
+            return out;
+        }
+        function codeCheck(tag, text) {
+            let h = 2166136261;
+            for (const ch of tag + '|' + text) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+            return CODE_CHARS[h % 32] + CODE_CHARS[(h >>> 5) % 32];
+        }
+        function fullCode() {
+            const body = packBody(state.mode, S());
+            const tail = (body + codeCheck(CODE_TAG, state.code + body)).match(/.{1,4}/g).join('-');
+            return state.code + '-' + tail;
+        }
+        function showCode() { $('f-code').value = fullCode(); }
+        function loadFullCode(raw) {
+            const c = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (!c) return;
+            if ([...c].some(ch => !CODE_CHARS.includes(ch))) {
+                flash('That code has a character these codes never use (they skip 0, 1, I, and O). Check it and try again.'); return;
+            }
+            if (c.length === 4) {
+                // Older short code: seed only, so it keeps whatever settings are on screen
+                state.code = c; build();
+                flash('This is an older 4-letter code that does not include settings. It keeps the standards and question level on screen, so set those to match the printed test.');
+                return;
+            }
+            const seed = c.slice(0, 4), body = c.slice(4, -2), chk = c.slice(-2);
+            if (c.length < 7 || codeCheck(CODE_TAG, seed + body) !== chk) {
+                flash(codeCheck(OTHER_TAG, seed + body) === chk && c.length >= 7
+                    ? `That code is from the ${OTHER_NAME}. Open that generator to load it.`
+                    : 'That code does not check out. A character is probably mistyped.');
+                return;
+            }
+            let big = 0n;
+            for (let i = body.length - 1; i >= 0; i--) big = big * 32n + BigInt(CODE_CHARS.indexOf(body[i]));
+            const io = decoderIO(big);
+            const mode = CODE_MODES[io.num(CODE_MODES.length)];
+            if (!mode) { flash('That code does not check out. A character is probably mistyped.'); return; }
+            const fresh = JSON.parse(JSON.stringify(MODE_DEFAULTS[mode]));
+            fresh.title = state.settings[mode].title;
+            fresh.sub = state.settings[mode].sub;
+            settingsCodec(io, fresh, mode);
+            if (io.rest() !== 0n) { flash('That code does not check out. A character is probably mistyped.'); return; }
+            state.settings[mode] = fresh;
+            state.mode = mode;
+            state.code = seed;
+            renderControls(); build();
+            flash(`Loaded ${MODE_NAMES[mode]} version ${seed}. The standards and settings now match the code.`);
+        }
+
+        const CODE_TAG = 'MATH', OTHER_TAG = 'ELA', OTHER_NAME = 'ELA generator';
+        function settingsCodec(io, s, mode) {
+            s.rigor = optCodec(io, ['mix', 'all', '1', '2', '3'], s.rigor);
+            if (mode === 'cfa' || mode === 'eou') {
+                s.layout = optCodec(io, ['4', '5', '6', 'compact'], s.layout);
+                s.newPage = boolCodec(io, s.newPage); s.score = boolCodec(io, s.score);
+            }
+            if (mode === 'exit') s.copies = optCodec(io, ['1', '2'], s.copies || '2');
+            if (mode === 'morning') {
+                s.days = optCodec(io, ['1', '2', '3', '4', '5'], s.days || '5');
+                s.perDay = optCodec(io, ['3', '4', '5', '6'], s.perDay || '5');
+            }
+            const ids = standardsCodec(io, s.sel);
+            const sel = {};
+            ids.forEach(id => { sel[id] = Math.max(1, io.num(MAX_PER_STANDARD + 1, s.sel && s.sel[id])); });
+            s.sel = sel;
+        }
+
+
         function build() {
             const s = S();
             const notices = [];
@@ -1518,7 +1626,7 @@
             $('f-rigor').value = s.rigor;
             $('f-newpage').checked = s.newPage;
                         $('f-score').checked = s.score;
-            $('f-code').value = state.code;
+            showCode();
             $('btn-key').setAttribute('aria-pressed', String(state.showKey));
 
             const list = $('std-list');
@@ -1614,7 +1722,7 @@
                 const head = el('div', 'x-head'), left = el('div');
                 left.appendChild(el('h1', 'x-title', `${s.title || 'Morning Work'}: Day ${day.day + 1}` + (state.showKey ? ' (Teacher Key)' : '')));
                 const ids = STANDARDS.map(x => x.id).filter(id => day.questions.some(q => q.std === id));
-                left.appendChild(el('p', 'x-std', 'Review: ' + ids.join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + state.code));
+                left.appendChild(el('p', 'x-std', 'Review: ' + ids.join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + fullCode()));
                 const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
                 head.append(left, nm);
                 page.appendChild(head);
@@ -1628,7 +1736,7 @@
             });
             if (state.showKey) {
                 const k = el('div', 'end-block newpage');
-                k.appendChild(el('h3', '', `Morning work answers, version ${state.code}`));
+                k.appendChild(el('h3', '', `Morning work answers, version ${fullCode()}`));
                 const t = el('table', 'grid');
                 t.innerHTML = '<tr><th>Day</th><th>Answers</th></tr>' + days.map(d => `<tr><td>Day ${d.day + 1}</td><td>${d.questions.map((q, i) => `${i + 1}. <b>${q.correctLetter}</b> <span style="color:#666">(${q.std}, DOK ${q.dok})</span>`).join('&nbsp;&nbsp; ')}</td></tr>`).join('');
                 k.appendChild(t);
@@ -1644,7 +1752,7 @@
             const head = el('div', 'x-head'), left = el('div');
             left.appendChild(el('h1', 'x-title', (s.title || 'Exit Ticket') + (state.showKey ? ' (Teacher Key)' : '')));
             const std = sections[0] && STANDARDS.find(x => x.id === sections[0].stdId);
-            left.appendChild(el('p', 'x-std', (std ? std.label : 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + state.code));
+            left.appendChild(el('p', 'x-std', (std ? std.label : 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + fullCode()));
             const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
             head.append(left, nm);
             t.appendChild(head);
@@ -1663,6 +1771,7 @@
         }
 
         function renderSheet() {
+            showCode();
             const s = S();
             const sheet = $('sheet');
             sheet.innerHTML = '';
@@ -1681,7 +1790,7 @@
             head.append(left, right);
             top.appendChild(head);
             const meta = el('div', 't-meta');
-            meta.appendChild(el('span', '', 'Version ' + state.code));
+            meta.appendChild(el('span', '', 'Version ' + fullCode()));
             if (state.showKey) meta.appendChild(el('span', 't-badge', 'TEACHER KEY'));
             top.appendChild(meta);
 
@@ -1738,7 +1847,7 @@
 
             if (state.showKey) {
                 const k = el('div', 'end-block newpage');
-                k.appendChild(el('h3', '', `Answer key, version ${state.code}`));
+                k.appendChild(el('h3', '', `Answer key, version ${fullCode()}`));
                 const t = el('table', 'grid');
                 t.innerHTML = '<tr><th>#</th><th>Answer</th><th>Correct choice</th><th>Standard</th><th>DOK</th></tr>' +
                     keyRows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td></td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
@@ -1767,14 +1876,15 @@
             $('f-days').addEventListener('change', e => { S().days = e.target.value; build(); });
             $('f-perday').addEventListener('change', e => { S().perDay = e.target.value; build(); });
             $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
-            $('btn-new').addEventListener('click', () => { state.code = newCode(); $('f-code').value = state.code; build(); });
+            $('btn-new').addEventListener('click', () => { state.code = newCode(); build(); });
             $('btn-key').addEventListener('click', () => { state.showKey = !state.showKey; $('btn-key').setAttribute('aria-pressed', String(state.showKey)); renderSheet(); });
             $('btn-print').addEventListener('click', () => window.print());
-            const loadCode = () => { const c = $('f-code').value.trim().toUpperCase(); if (!c) return; state.code = c; $('f-code').value = c; build(); };
+            const loadCode = () => loadFullCode($('f-code').value);
             $('btn-load').addEventListener('click', loadCode);
             $('f-code').addEventListener('keydown', e => { if (e.key === 'Enter') loadCode(); });
             renderControls();
             build();
+            if (location.hash.length > 1) loadFullCode(decodeURIComponent(location.hash.slice(1)));
         }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
     </script>
