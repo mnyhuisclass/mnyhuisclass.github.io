@@ -140,6 +140,11 @@ h1.hd,h2.hd{font-family:var(--px);font-size:18px;color:var(--gold);margin:0;text
 .foot{padding:14px 18px 16px;background:var(--panel2);border-top:4px solid #000;display:flex;flex-direction:column;gap:8px}
 .vh{font-family:var(--px);font-size:11px;color:var(--ink);background:#000;display:inline-block;padding:6px 8px;margin:6px 0 10px}
 .cctag{font-family:var(--px);font-size:10px;color:#16120a;background:var(--sky);padding:5px 7px;white-space:nowrap;letter-spacing:.06em}
+.dcard{border-color:var(--dc)}
+.dtag{font-family:var(--px);font-size:10px;color:#16120a;background:var(--dc);padding:5px 7px;letter-spacing:.06em;white-space:nowrap}
+.drisk{font-size:9px!important;color:var(--dc)}
+.foot-note{font-size:14px;color:var(--muted);text-align:center}
+.kw{color:var(--gold);letter-spacing:.04em}
 .foot .hint{font-size:14px;color:var(--muted);text-align:center}
 
 /* plays */
@@ -496,6 +501,68 @@ const MORE_CC={
 "The Frozen Accident":[[`Read this sentence: "In 1923 he applied for a patent to protect his idea." What is a patent?`,`An official right that protects an inventor's idea`,`A kind of frozen treat`,`A sign at an amusement park`,`A cooking contest`]]
 };
 PASSAGES.forEach(P=>{if(!P.cc&&MORE_CC[P.t])P.cc=MORE_CC[P.t]});
+/* ---------------------------------------------------------------------
+   DEFENSE WORD CARDS: [question, CORRECT, wrong, wrong, wrong]
+   --------------------------------------------------------------------- */
+const WORDS={
+SYN:[
+[`Which word means almost the same as RAPID?`,`fast`,`slow`,`quiet`,`heavy`],
+[`Which word means almost the same as ENORMOUS?`,`huge`,`tiny`,`noisy`,`gentle`],
+[`Which word means almost the same as BEGIN?`,`start`,`finish`,`wait`,`forget`],
+[`Which word means almost the same as GLOOMY?`,`dreary`,`sunny`,`joyful`,`busy`],
+[`Which word means almost the same as SHOUT?`,`yell`,`whisper`,`sing`,`listen`],
+[`Which word means almost the same as BRAVE?`,`courageous`,`afraid`,`lazy`,`careful`],
+[`Which word means almost the same as TIRED?`,`exhausted`,`energetic`,`hungry`,`curious`],
+[`Which word means almost the same as CLEVER?`,`smart`,`foolish`,`tall`,`angry`],
+[`Which word means almost the same as DIFFICULT?`,`hard`,`easy`,`soft`,`early`],
+[`Which word means almost the same as GRIN?`,`smile`,`frown`,`yawn`,`cry`],
+[`Which word means almost the same as GATHER?`,`collect`,`scatter`,`throw`,`hide`],
+[`Which word means almost the same as DAMP?`,`moist`,`dry`,`hot`,`dusty`],
+[`Which word means almost the same as MEND?`,`repair`,`break`,`lose`,`sell`],
+[`Which word means almost the same as CHILLY?`,`cold`,`warm`,`windy`,`sticky`],
+[`Which word means almost the same as SILENT?`,`quiet`,`loud`,`empty`,`dark`],
+[`Which word means almost the same as ERROR?`,`mistake`,`answer`,`reward`,`lesson`]],
+ANT:[
+[`Which word means the opposite of ANCIENT?`,`modern`,`old`,`broken`,`famous`],
+[`Which word means the opposite of GENEROUS?`,`selfish`,`kind`,`rich`,`tired`],
+[`Which word means the opposite of VICTORY?`,`defeat`,`game`,`prize`,`trophy`],
+[`Which word means the opposite of EXPAND?`,`shrink`,`grow`,`stretch`,`open`],
+[`Which word means the opposite of FREQUENT?`,`rare`,`often`,`quick`,`late`],
+[`Which word means the opposite of ARRIVE?`,`depart`,`come`,`land`,`reach`],
+[`Which word means the opposite of ASCEND?`,`descend`,`climb`,`rise`,`jump`],
+[`Which word means the opposite of TIMID?`,`bold`,`shy`,`quiet`,`nervous`],
+[`Which word means the opposite of SMOOTH?`,`rough`,`soft`,`flat`,`shiny`],
+[`Which word means the opposite of ACCEPT?`,`refuse`,`take`,`allow`,`agree`],
+[`Which word means the opposite of FLOAT?`,`sink`,`drift`,`swim`,`glide`],
+[`Which word means the opposite of INCLUDE?`,`exclude`,`contain`,`add`,`invite`],
+[`Which word means the opposite of EXPENSIVE?`,`cheap`,`costly`,`fancy`,`large`],
+[`Which word means the opposite of ASLEEP?`,`awake`,`resting`,`tired`,`dreaming`],
+[`Which word means the opposite of WHISPER?`,`shout`,`murmur`,`hum`,`sigh`],
+[`Which word means the opposite of DANGEROUS?`,`safe`,`risky`,`scary`,`wild`]],
+HOM:[
+[`Which word sounds like FLOUR but names something that grows in a garden?`,`flower`,`floor`,`flow`,`flour`],
+[`Choose the word that completes the sentence: "We ate ___ many cookies."`,`too`,`to`,`two`,`toe`],
+[`Choose the word that completes the sentence: "Our team won ___ games in a row."`,`two`,`too`,`to`,`toe`],
+[`Choose the word that completes the sentence: "I can't wait to ___ the new movie."`,`see`,`sea`,`seat`,`seed`],
+[`Choose the word that completes the sentence: "The players put on ___ helmets."`,`their`,`there`,`they're`,`them`],
+[`Choose the word that completes the sentence: "The wind ___ the leaves off the tree."`,`blew`,`blue`,`bled`,`blow`],
+[`Choose the word that completes the sentence: "I ___ the answer!"`,`know`,`no`,`now`,`known`],
+[`Which word sounds like KNIGHT but names the time when it is dark?`,`night`,`knight`,`light`,`nine`],
+[`Choose the word that completes the sentence: "We ___ the game by three points!"`,`won`,`one`,`own`,`win`],
+[`Choose the word that completes the sentence: "Turn ___ at the stop sign."`,`right`,`write`,`ripe`,`rite`],
+[`Which word sounds like HAIR but names an animal that hops?`,`hare`,`here`,`horse`,`hair`],
+[`In "The bat flew out of the cave," what does BAT mean?`,`a flying animal`,`a stick used to hit a ball`,`to hit something`,`to blink your eyes`],
+[`In "Please wave to Grandma," what does WAVE mean?`,`move your hand back and forth`,`a ridge of moving water`,`a curl in your hair`,`a sudden feeling`],
+[`In "The bark on the oak tree was rough," what does BARK mean?`,`the outer covering of a tree`,`the sound a dog makes`,`a small boat`,`to shout an order`],
+[`In "The quarterback will pitch the ball," what does PITCH mean?`,`toss`,`a black, sticky tar`,`how high or low a sound is`,`a playing field`],
+[`In "Our fans cheered for the team," what does FANS mean?`,`people who support a team`,`machines that move air`,`folded paper for cooling off`,`spreads out wide`]]
+};
+const DEF_CARDS={
+  SYN:{name:"SYNONYM",play:"ZONE D",desc:"Safe call. A right answer holds them to a short gain.",risk:"LOW RISK",col:"#3ddc6e"},
+  ANT:{name:"ANTONYM",play:"BLITZ",desc:"Send the house! Right: sack for a loss. Wrong: big play.",risk:"HIGH RISK",col:"#ff5050"},
+  HOM:{name:"HOMONYM",play:"BALL HAWK",desc:"Jump the pass. Right: a shot at an interception.",risk:"BIG REWARD",col:"#c48cff"}
+};
+Object.assign(STD_NAMES,{SYN:"Synonyms (defense)",ANT:"Antonyms (defense)",HOM:"Homonyms (defense)"});
 const QSETS={focus:{label:"4.RC.1 + 4.RC.4",test:P=>P.s==="4.RC.1"||P.s==="4.RC.4"},rc1:{label:"4.RC.1 ONLY",test:P=>P.s==="4.RC.1"},rc4:{label:"4.RC.4 ONLY",test:P=>P.s==="4.RC.4"},all:{label:"ALL PASSAGES",test:()=>true}};
 
 const PLAY_NAMES=["HB DIVE","PA BOOT","SLANT 88","TOSS SWEEP","SHOTGUN DRAW","FLEA FLICKER","QB SNEAK","SCREEN RIGHT","POWER LEFT","COUNTER TREY","OPTION PITCH","WILDCAT","STRETCH 22","BUBBLE SCREEN","TRIPS Y-CROSS","I-FORM ISO"];
@@ -527,7 +594,7 @@ const G={
 function newGame(){
   G.gen++; G.started=true; G.score=[0,0]; G.q=1; G.clock=G.qLen; G.clockRun=false; G.qOver=false; G.timerOn=false;
   G.ball=25; G.down=1; G.toGo=10; G.mode="menu"; G.K=null;
-  G.stats={asked:[0,0,0,0],right:[0,0,0,0],timeouts:0,yards:0,tds:0,fgs:0,ints:0,plays:0,cpuTDs:0,std:{},cc:[0,0],pat:0,two:0,passes:0,catches:0};G.pat=false;
+  G.stats={asked:[0,0,0,0],right:[0,0,0,0],timeouts:0,yards:0,tds:0,fgs:0,ints:0,plays:0,cpuTDs:0,std:{},cc:[0,0],pat:0,two:0,passes:0,catches:0,sacks:0,takeaways:0};G.def=null;G.pat=false;
   G.lastP=-1; buildPools(); spriteCache.clear(); applyColors(); refreshBg();
   $("#hud").hidden=false;
 }
@@ -693,6 +760,7 @@ ACT.how=()=>setUI(`<div class="card">
     <div><h3>THE STARS</h3><p><span class="stars">★</span> on 1st down, <span class="stars">★★</span> on 2nd down, <span class="stars">★★★</span> on 3rd down. More stars means a deeper-thinking question.</p></div>
     <div><h3>4TH DOWN</h3><p>Pick your play: <b>Go for it</b> (<span class="stars">★★★</span>), <b>Field goal</b> (<span class="stars">★</span> up to 30 yards, <span class="stars">★★</span> from 31–50), or <b>Punt</b> (<span class="stars">★</span>). Choose wisely: nobody makes a kick from 51+ yards.</p></div>
     <div><h3>AFTER A TOUCHDOWN</h3><p>Touchdowns are worth 6. Kick the extra point by answering a <b>context clue</b> question, or go for 2 with a <span class="stars">★★</span> or <span class="stars">★★★</span> question.</p></div>
+    <div><h3>DEFENSE</h3><p>When the other team has the ball, pick a card: <b>Synonym</b> (safe zone defense), <b>Antonym</b> (risky blitz), or <b>Homonym</b> (go for the interception). Answer the word question in 10 seconds.</p></div>
     <div><h3>WRONG ANSWERS</h3><p>A wrong or late answer means a false start, a sack, an incomplete pass, or an interception.</p></div>
   </div>
   <button class="btn" data-act="title">BACK</button></div>`);
@@ -776,7 +844,7 @@ function askQuestion(level,ctxo){
   </div>`);
 }
 ACT.ready=()=>{
-  const c=G.cur;c.left=15;c.lastSec=16;c.locked=false;G.timerOn=true;
+  const c=G.cur;c.left=15;c.max=15;c.lastSec=16;c.locked=false;G.timerOn=true;
   setUI(`<div class="card playscard">
     <div class="ctxbar" style="margin:-20px -20px 0"><span>${ctxLabel(c)}</span>${lvlTag(c.level)}</div>
     <div class="timer"><div class="tbar" id="tbar" style="width:100%"></div><div class="tnum" id="tnum">15</div></div>
@@ -790,19 +858,20 @@ ACT.ready=()=>{
 ACT.peek=b=>{const p=$("#peekbox");p.hidden=!p.hidden;b.textContent=p.hidden?"PEEK AT THE PASSAGE":"HIDE THE PASSAGE"};
 ACT.ans=b=>choose(+b.dataset.i,false);
 function tickTimer(dt){const c=G.cur;if(!c||c.locked)return;c.left-=dt;const s=Math.ceil(Math.max(0,c.left));
-  const bar=$("#tbar"),num=$("#tnum");if(bar){bar.style.width=(Math.max(0,c.left)/15*100)+"%";bar.className="tbar"+(c.left<=5?" hot":c.left<=9?" warn":"")}
-  if(num)num.textContent=s;if(s<c.lastSec){c.lastSec=s;if(s<=5&&s>0)SFX.tick()}
+  const bar=$("#tbar"),num=$("#tnum");if(bar){bar.style.width=(Math.max(0,c.left)/(c.max||15)*100)+"%";bar.className="tbar"+(c.left<=3?" hot":c.left<=(c.max||15)*.6?" warn":"")}
+  if(num)num.textContent=s;if(s<c.lastSec){c.lastSec=s;if(s<=(c.max===10?3:5)&&s>0)SFX.tick()}
   if(c.left<=0){const wrong=[0,1,2,3].filter(i=>i!==c.correct);choose(pick(wrong),true)}}
 function choose(i,timedOut){
   const c=G.cur;if(!c||c.locked)return;c.locked=true;G.timerOn=false;G.clockRun=false;
-  const right=!timedOut&&i===c.correct;if(right){if(c.level==="cc")G.stats.cc[1]++;else G.stats.right[c.level]++;G.stats.std[c.std][1]++}if(timedOut)G.stats.timeouts++;
+  const right=!timedOut&&i===c.correct;if(right){if(c.level==="cc")G.stats.cc[1]++;else if(c.level!=="def")G.stats.right[c.level]++;G.stats.std[c.std][1]++}if(timedOut)G.stats.timeouts++;
   document.querySelectorAll(".pcard").forEach((el,k)=>{el.disabled=true;el.classList.add(k===c.correct?"right":k===i?"wrong":"fade")});
-  const v=$("#verdict");if(v){v.className="verdict px "+(right?"good":"bad");v.textContent=right?"GOOD READ! PLAY CALLED.":timedOut?`TIME! THE CLOCK PICKED PLAY ${"ABCD"[i]}…`:"NOT THE RIGHT READ…"}
+  const v=$("#verdict");if(v){v.className="verdict px "+(right?"good":"bad");v.textContent=right?(c.ctx.kind==="def"?"DEFENSE IS READY!":"GOOD READ! PLAY CALLED."):timedOut?`TIME! THE CLOCK PICKED PLAY ${"ABCD"[i]}…`:"NOT THE RIGHT READ…"}
   right?SFX.good():(timedOut?SFX.buzzer():SFX.bad());
   const gen=G.gen;setTimeout(()=>{if(gen===G.gen)resolveAnswer(right)},right?1300:2300);
 }
 function resolveAnswer(right){
   const c=G.cur,learn=right?"":`The correct answer was: <b>${esc(c.ans[c.correct])}</b>`;
+  if(c.ctx.kind==="def")return defResolve(right,learn);
   G.stats.plays++;
   switch(c.ctx.kind){
     case"down":case"go":right?startLive(c.ctx):badPlay(c.ctx,learn);break;
@@ -867,38 +936,73 @@ function punt(right,learn){
 function updateKick(dt){const K=G.K;K.t+=dt;if(K.t>=K.dur&&!K.done){K.done=true;K.onLand&&K.onLand()}
   if(K.done){K.hold-=dt;if(K.hold<=0){const f=K.after;G.K=null;G.mode="menu";f()}}}
 
-/* ===================== CPU drive (simulated) ===================== */
+/* ===================== CPU drive (student plays defense) ===================== */
+let WPOOL={};
+function defBg(x,toGo){const sb=G.ball,st=G.toGo;G.ball=x;G.toGo=toGo;const p=buildPlay();G.ball=sb;G.toGo=st;
+  [...p.off,...p.wr,...p.def,p.car].forEach(o=>{o.x=2*x-o.x;o.team=o.team==="o"?"d":"o";o.face*=-1});
+  p.fd=x-toGo;p.thrown=true;p.isDef=true;return p}
+const defDown=d=>`${ORD[d.down]} &amp; ${d.x-d.toGo<=0?"GOAL":d.toGo}`;
 function cpuDrive(x){
-  G.pat=false;G.mode="menu";G.clockRun=false;document.body.classList.remove("live");
-  x=clamp(Math.round(x),1,99);const gen=G.gen,short=1-x/100,r=Math.random();
-  const pTD=.14+.38*short+.02*(G.q-1),pFG=.2,pTO=.14;
-  const out=r<pTD?"td":r<pTD+pFG?"fg":r<pTD+pFG+pTO?"to":"punt";
-  let endX=out==="td"?0:out==="fg"?Math.min(x,ri(10,30)):clamp(x-ri(0,28),out==="to"?3:28,97);
-  const lines=[];let cur=x,n=0;const kinds=["Run","Pass complete","Screen pass","Sweep","QB scramble","Draw play"];
-  while(cur>endX&&n<8){let g=n===7?cur-endX:Math.min(cur-endX,ri(2,15));cur-=g;lines.push({x:cur,t:`${pick(kinds)} for ${g}`});n++}
-  if(out==="punt"){lines.push({x:cur,t:"Incomplete pass"});lines.push({x:cur,t:"Run for no gain"})}
-  if(!lines.length)lines.push({x:cur,t:"Run for no gain"});
-  let fin,newBall=25;
-  if(out==="td"){fin=`TOUCHDOWN ${G.cpu.name} (+7)`;}
-  else if(out==="fg"){fin=`${cur+17}-YARD FIELD GOAL (+3)`;}
-  else if(out==="to"){fin=`FUMBLE! YOUR DEFENSE RECOVERS!`;newBall=clamp(cur,2,98);}
-  else{let land=cur-ri(36,48);newBall=land<=0?20:clamp(land+ri(0,8),1,60);fin=`PUNT. YOU TAKE OVER AT ${spotTxt(newBall)}`;}
-  const used=Math.min(G.clock,lines.length*ri(6,9));
-  setUI(`<div class="card narrow">
-    <div class="res" style="--rc:var(--k1)"><div class="px big">${G.cpu.name} BALL</div><div class="px sub">STARTING AT ${cpuSpot(x)}</div></div>
-    ${miniField(`<div class="mk" id="cmk" style="left:${mfPct(x)}"></div>`)}
-    <ul class="log" id="clog"></ul><div id="cbtn"></div></div>`);
-  let i=0;const log=$("#clog"),mk=$("#cmk");
-  const step=()=>{if(gen!==G.gen||!log.isConnected)return;
-    if(i<lines.length){const L=lines[i++];const li=document.createElement("li");li.textContent=L.t;log.appendChild(li);mk.style.left=mfPct(L.x);SFX.click();
-      if(log.children.length>5)log.removeChild(log.firstChild);setTimeout(step,480)}
-    else{const li=document.createElement("li");li.className="fin";li.textContent=fin;log.appendChild(li);
-      if(out==="td"){G.score[1]+=7;G.stats.cpuTDs++;SFX.bad()}else if(out==="fg"){G.score[1]+=3;SFX.bad()}else SFX.good();
-      G.clock=Math.max(0,G.clock-used);if(G.clock<=0)G.qOver=true;
-      G.ball=newBall;G.down=1;G.toGo=Math.min(10,100-G.ball);
-      G.next=()=>situation({title:"YOUR BALL!",sub:out==="to"?"TAKEAWAY!":"",color:"var(--good)"});
-      $("#cbtn").innerHTML=`<button class="btn wide" data-act="next">YOUR BALL ▶</button>`}};
-  setTimeout(step,600);
+  G.pat=false;G.mode="menu";G.clockRun=false;G.timerOn=false;document.body.classList.remove("live");
+  x=clamp(Math.round(x),1,99);G.def={x,down:1,toGo:Math.min(10,x)};
+  defScreen({title:"DEFENSE!",sub:`${G.cpu.name} START AT ${cpuSpot(x)}`,color:"var(--k1)"});
+}
+function endDrive(ball,h){G.def=null;G.ball=clamp(Math.round(ball),1,99);G.down=1;G.toGo=Math.min(10,100-G.ball);situation(h)}
+function defScreen(h){
+  const d=G.def;G.mode="menu";G.clockRun=false;G.timerOn=false;document.body.classList.remove("live");
+  G.bg=defBg(d.x,d.toGo);
+  let s=head(h);
+  if(G.qOver){s+=`<div class="px sit">${G.q===4?"THAT'S THE GAME!":"END OF QUARTER "+G.q}</div><button class="btn wide" data-act="endq">CONTINUE ▶</button>`;
+    return setUI(`<div class="card narrow">${s}</div>`)}
+  if(d.down===4&&!d.going){
+    const fg=d.x+17;
+    if(fg<=50){const made=Math.random()<(fg<=35?.9:.65);G.def=null;
+      if(made){G.score[1]+=3;SFX.bad();return interstitial({title:`${G.cpu.name} KICK IT`,sub:`${fg}-YARD FIELD GOAL · +3`,detail:"You held them to a field goal instead of a touchdown.",color:"var(--bad)"},()=>endDrive(25,{title:"YOUR BALL!",color:"var(--good)"}))}
+      SFX.good();return interstitial({title:"NO GOOD!",sub:`THEY MISS FROM ${fg} YARDS`,color:"var(--good)"},()=>endDrive(Math.max(d.x,20),{title:"YOUR BALL!",color:"var(--good)"}))}
+    if(d.toGo<=2&&d.x<=55){d.going=true;h={title:"THEY'RE GOING FOR IT!",sub:`4TH &amp; ${d.toGo} · STOP THEM AND TAKE OVER`,color:"var(--gold)"};s=head(h)}
+    else{const land=d.x-ri(36,48),nb=land<=0?20:clamp(land+ri(0,8),1,60);G.def=null;
+      return interstitial({title:"YOU FORCED A PUNT!",sub:`YOU TAKE OVER AT ${spotTxt(nb)}`,color:"var(--good)"},()=>endDrive(nb,{title:"YOUR BALL!",color:"var(--good)"}))}
+  }
+  s+=`<div class="px sit">${G.cpu.name}: ${defDown(d)}<span class="dim">BALL ON ${cpuSpot(d.x)}</span></div>`+
+    miniField(`<div class="los" style="left:${mfPct(d.x)}"></div>${d.x-d.toGo>0?`<div class="fd" style="left:${mfPct(d.x-d.toGo)}"></div>`:""}<div class="mk" style="left:${mfPct(d.x)}"></div>`);
+  s+=`<div class="px f4h">CALL YOUR DEFENSE</div><div class="f4grid">${Object.entries(DEF_CARDS).map(([k,c])=>
+    `<button class="f4card dcard" data-act="defpick" data-t="${k}" style="--dc:${c.col}"><span class="dtag">${c.name}</span><span class="px">${c.play}</span><p>${c.desc}</p><span class="px drisk">${c.risk}</span></button>`).join("")}</div>
+    <div class="foot-note">You'll get 10 seconds to answer a quick word question.</div>`;
+  setUI(`<div class="card narrow">${s}</div>`);
+}
+ACT.defpick=b=>defAsk(b.dataset.t);
+function defAsk(type){
+  if(!WPOOL[type]||!WPOOL[type].length)WPOOL[type]=shuffle(WORDS[type]);
+  const q=WPOOL[type].pop(),order=shuffle([0,1,2,3]),C=DEF_CARDS[type];
+  G.cur={level:"def",type,std:type,ctx:{kind:"def"},q:q[0],ans:order.map(i=>q[i+1]),correct:order.indexOf(0),max:10,left:10,lastSec:11,locked:false};
+  const sd=G.stats.std[type]||(G.stats.std[type]=[0,0]);sd[0]++;
+  G.clockRun=true;G.timerOn=true;
+  setUI(`<div class="card playscard">
+    <div class="ctxbar" style="margin:-20px -20px 0"><span>DEFENSE · ${defDown(G.def)} · ${cpuSpot(G.def.x)}</span><span class="dtag" style="--dc:${C.col}">${C.name} · ${C.play}</span></div>
+    <div class="timer"><div class="tbar" id="tbar" style="width:100%"></div><div class="tnum" id="tnum">10</div></div>
+    <div class="qtext">${esc(G.cur.q).replace(/\b([A-Z]{2,})\b/g,'<span class="kw">$1</span>')}</div>
+    <div class="pgrid">${G.cur.ans.map((a,i)=>`<button class="pcard" data-act="ans" data-i="${i}"><span class="px pname">${"ABCD"[i]}</span><span class="ptxt">${esc(a)}</span></button>`).join("")}</div>
+    <div class="verdict px" id="verdict"></div></div>`);
+}
+function defResolve(right,learn){
+  const d=G.def,t=G.cur.type;let g=0,title,turn=false,detail=learn;
+  if(right){
+    if(t==="SYN"){if(Math.random()<.3){title="INCOMPLETE!"}else{g=ri(0,3);title=g?`HELD TO ${g} YARD${g>1?"S":""}`:"NO GAIN!"}}
+    else if(t==="ANT"){g=-ri(4,8);title=`SACK! LOSS OF ${-g}`;G.stats.sacks++}
+    else if(Math.random()<.5){turn=true;title="INTERCEPTION!"}else title="PASS BROKEN UP!";
+  }else{g=t==="SYN"?ri(6,12):t==="ANT"?ri(12,25):ri(15,30);title=`${pick(["RUN","PASS","SCREEN","SWEEP"])} FOR ${g}`}
+  if(turn){G.stats.takeaways++;SFX.td();const nb=clamp(d.x+ri(0,12),1,99);G.def=null;
+    return interstitial({title:"INTERCEPTION!",sub:`YOU TAKE OVER AT ${spotTxt(nb)}`,detail:"Great read on that homonym!",color:"var(--good)"},()=>endDrive(nb,{title:"YOUR BALL!",color:"var(--good)"}))}
+  d.x-=g;
+  if(d.x<=0){G.score[1]+=7;G.stats.cpuTDs++;SFX.bad();G.def=null;
+    return interstitial({title:`TOUCHDOWN ${G.cpu.name}`,sub:"+7",detail,color:"var(--bad)"},()=>endDrive(25,{title:"YOUR BALL!",sub:"AFTER THE KICKOFF"}))}
+  if(d.x>=100){G.score[0]+=2;SFX.td();G.def=null;
+    return interstitial({title:"SAFETY!",sub:`${esc(G.team.name)} +2`,detail:"You sacked them in their own end zone!",color:"var(--good)"},()=>endDrive(35,{title:"YOUR BALL!",color:"var(--good)"}))}
+  if(g>=d.toGo){d.down=1;d.toGo=Math.min(10,d.x);d.going=false;return defScreen({title,sub:`${G.cpu.name} FIRST DOWN`,detail,color:"var(--bad)"})}
+  d.toGo-=g;d.down++;
+  if(d.down>4){G.stats.takeaways++;SFX.good();G.def=null;
+    return interstitial({title:"STOPPED ON 4TH DOWN!",sub:"TURNOVER ON DOWNS",detail,color:"var(--good)"},()=>endDrive(d.x,{title:"YOUR BALL!",color:"var(--good)"}))}
+  defScreen({title,sub:"",detail,color:right?"var(--good)":"var(--bad)"});
 }
 
 /* ===================== quarters / final ===================== */
@@ -906,10 +1010,10 @@ ACT.endq=()=>{
   G.qOver=false;SFX.buzzer();
   if(G.q>=4)return finalScreen();
   G.q++;G.clock=G.qLen;
-  if(G.q===3){G.ball=25;G.down=1;G.toGo=10;
+  if(G.q===3){G.def=null;G.ball=25;G.down=1;G.toGo=10;
     interstitial({title:"HALFTIME",sub:`${esc(G.team.name)} ${G.score[0]} · ${G.cpu.name} ${G.score[1]}`,detail:`First-half reading: ${totalRight()} of ${totalAsked()} questions correct.`},
       ()=>situation({title:"3RD QUARTER",sub:"YOU RECEIVE THE KICKOFF"}),"START 2ND HALF ▶")}
-  else situation({title:`QUARTER ${G.q}`,sub:"TEAMS SWITCH ENDS"});
+  else (G.def?defScreen:situation)({title:`QUARTER ${G.q}`,sub:"TEAMS SWITCH ENDS"});
 };
 const totalRight=()=>G.stats.right.reduce((a,b)=>a+b,0)+G.stats.cc[1],totalAsked=()=>G.stats.asked.reduce((a,b)=>a+b,0)+G.stats.cc[0];
 function finalScreen(){
@@ -917,8 +1021,8 @@ function finalScreen(){
   const title=a>b?"YOU WIN!":a<b?"GAME OVER":"TIE GAME!";
   const rows=[1,2,3].map(l=>{const n=S.asked[l],k=S.right[l],p=n?Math.round(k/n*100):0;
     return`<div class="rrow"><span class="stars">${stars(l)}</span><div class="rl">${LEVEL_NAME[l]}<small>DOK ${l}</small><div class="meter"><i style="width:${p}%"></i></div></div><span class="rv">${k}/${n}</span></div>`}).join("");
-  const stdRows=["4.RC.1","4.RC.4","CC","GEN"].filter(k=>S.std[k]).map(k=>{const [n,r]=S.std[k],p=Math.round(r/n*100);
-    return`<div class="rrow"><span class="px stdc">${k==="CC"||k==="GEN"?"":k}</span><div class="rl">${STD_NAMES[k]}<div class="meter"><i style="width:${p}%"></i></div></div><span class="rv">${r}/${n}</span></div>`}).join("")||`<p class="tagline">No questions answered yet.</p>`;
+  const stdRows=["4.RC.1","4.RC.4","CC","GEN","SYN","ANT","HOM"].filter(k=>S.std[k]).map(k=>{const [n,r]=S.std[k],p=Math.round(r/n*100);
+    return`<div class="rrow"><span class="px stdc">${k.includes(".")?k:""}</span><div class="rl">${STD_NAMES[k]}<div class="meter"><i style="width:${p}%"></i></div></div><span class="rv">${r}/${n}</span></div>`}).join("")||`<p class="tagline">No questions answered yet.</p>`;
   const tp=totalAsked()?Math.round(totalRight()/totalAsked()*100):0;
   setUI(`<div class="card narrow">
     <div class="res" style="--rc:${a>=b?"var(--gold)":"var(--bad)"}"><div class="px big">${title}</div><div class="px sub">${esc(G.team.name)} ${a} · ${G.cpu.name} ${b}</div></div>
@@ -926,7 +1030,7 @@ function finalScreen(){
     <div class="rep">${rows}</div>
     <h2 class="hd" style="font-size:13px">BY STANDARD</h2>
     <div class="rep">${stdRows}</div>
-    <div class="kv"><div><b>${tp}%</b><span>Correct overall</span></div><div><b>${S.timeouts}</b><span>Ran out of time</span></div><div><b>${S.yards}</b><span>Total yards</span></div><div><b>${S.catches}/${S.passes}</b><span>Passes caught</span></div><div><b>${S.tds}</b><span>Touchdowns</span></div><div><b>${S.fgs}</b><span>Field goals</span></div></div>
+    <div class="kv"><div><b>${tp}%</b><span>Correct overall</span></div><div><b>${S.timeouts}</b><span>Ran out of time</span></div><div><b>${S.yards}</b><span>Total yards</span></div><div><b>${S.catches}/${S.passes}</b><span>Passes caught</span></div><div><b>${S.tds}</b><span>Touchdowns</span></div><div><b>${S.fgs}</b><span>Field goals</span></div><div><b>${S.sacks}</b><span>Sacks</span></div><div><b>${S.takeaways}</b><span>Defensive stops</span></div></div>
     <div class="row"><button class="btn" style="flex:1" data-act="setup">PLAY AGAIN ▶</button><button class="btn alt" data-act="title">TITLE</button></div>
   </div>`);
 }
@@ -1054,7 +1158,7 @@ function camTarget(){
   const VW=IW/PPY,VH=IH/PPY;let fx,fy;
   if(G.mode==="live"&&P){if(P.car){fx=P.car.x;fy=P.car.y}else if(P.ball){const u=Math.min(1,P.ball.t/P.ball.T);fx=P.ball.x0+(P.ball.x1-P.ball.x0)*u;fy=P.ball.y0+(P.ball.y1-P.ball.y0)*u}else{fx=P.passer.x;fy=P.passer.y}}
   else if(G.mode==="kick"&&G.K){const u=Math.min(1,G.K.t/G.K.dur);fx=G.K.x0+(G.K.x1-G.K.x0)*u;fy=CY}
-  else{fx=G.ball+2;fy=CY}
+  else if(G.bg){fx=G.bg.los+(G.bg.isDef?-2:2);fy=CY}else{fx=G.ball+2;fy=CY}
   let tx=fx-VW*.4,ty=fy-VH*.55;ty=VH>FW+8?CY-VH/2:clamp(ty,-4,FW+4-VH);return{tx,ty};
 }
 function updateCam(dt,snap){const{tx,ty}=camTarget();const k=snap?1:Math.min(1,dt*6);cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k}
@@ -1083,7 +1187,7 @@ function render(){
     lx.fillRect(X(gx)+s*3-1,Y(CY-3.1)-1,4,3);lx.fillRect(X(gx)+s*3-1,Y(CY+3.1)-1,4,3)});
   const play=G.mode==="live"&&P?P:G.bg;
   if(play&&G.started){if(play.phase!=="end"&&play.phase!=="done"){lx.fillStyle="#3cbcfc";lx.fillRect(X(play.los),Y(0),1,Y(FW)-Y(0));
-      if(play.fd<100){lx.fillStyle="#ffd21a";lx.fillRect(X(play.fd),Y(0),2,Y(FW)-Y(0))}}}
+      if(play.fd<100&&play.fd>0){lx.fillStyle="#ffd21a";lx.fillRect(X(play.fd),Y(0),2,Y(FW)-Y(0))}}}
   if(play){
     const all=[...new Set([...play.off,...play.wr,...play.def,play.passer,play.car].filter(Boolean))].sort((a,b)=>a.y-b.y);
     lx.fillStyle="rgba(0,0,0,.35)";all.forEach(o=>lx.fillRect(X(o.x)-4,Y(o.y),8,2));
@@ -1113,7 +1217,7 @@ function updateHUD(){if(!G.started)return;
   const m=Math.floor(G.clock/60),s=Math.floor(G.clock%60),c=$("#hclk");
   c.textContent=`Q${G.q} ${m}:${String(s).padStart(2,"0")}`;c.classList.toggle("zero",G.clock<=0);
   $("#hs1").textContent=G.score[0];$("#hs2").textContent=G.score[1];
-  $("#hdd").innerHTML=G.pat?"TRY FOR POINTS":`${downTxt()} · ${spotTxt(G.ball)}`}
+  $("#hdd").innerHTML=G.def?`DEFENSE · ${defDown(G.def)} · ${cpuSpot(G.def.x)}`:G.pat?"TRY FOR POINTS":`${downTxt()} · ${spotTxt(G.ball)}`}
 $("#bMute").addEventListener("click",()=>{G.muted=!G.muted;$("#bMute").style.opacity=G.muted?.4:1;if(!G.muted){ac();SFX.click()}});
 $("#bPause").addEventListener("click",()=>{ac();setPause(true)});
 function setPause(on){if(!G.started)return;G.paused=on;const pz=$("#pause");pz.hidden=!on;
