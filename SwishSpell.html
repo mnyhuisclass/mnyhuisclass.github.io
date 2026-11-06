@@ -104,6 +104,12 @@ details.teach dd{margin:0;color:var(--muted);max-width:62ch}
 @keyframes pop{0%{transform:translateY(-10px)}50%{transform:translateY(3px)}100%{transform:none}}
 .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:2px 4px;text-align:center}
 .round{font-family:var(--pixel);font-size:11px;color:var(--muted)}
+.clock{font-family:var(--pixel);font-size:22px;line-height:1;color:var(--chalk);text-shadow:3px 3px 0 #000;font-variant-numeric:tabular-nums}
+.clock.low{color:var(--bad);animation:blink 1s steps(1) infinite}
+.clock.ot{font-size:12px;color:var(--amber)}
+.tile.make{background:var(--good);color:#000;box-shadow:none;font-family:var(--ui);font-weight:700}
+.tile.miss{background:var(--bad);color:#fff;box-shadow:none;font-family:var(--ui);font-weight:700}
+.so-wait{font-family:var(--pixel);font-size:10px;color:var(--muted);padding-block:8px}
 .dokchip{font-family:var(--pixel);font-size:9px;line-height:1.4;padding:6px 8px;background:var(--orange);color:#fff;white-space:nowrap}
 .mid-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .ghost{background:var(--navy);border:0;box-shadow:inset 0 0 0 2px var(--line);padding:6px 11px;font-size:15px;font-weight:700;color:var(--chalk);min-height:36px}
@@ -228,6 +234,13 @@ details.teach dd{margin:0;color:var(--muted);max-width:62ch}
         <div class="seg small" role="group" aria-label="Points to win">
           <button type="button" data-goal="5" aria-pressed="false">5 points</button>
           <button type="button" data-goal="10" aria-pressed="true">10 points</button>
+        </div>
+      </section>
+      <section class="group" id="timeGroup">
+        <h2>TIME LIMIT</h2>
+        <div class="seg small" role="group" aria-label="Time limit">
+          <button type="button" data-clock="on" aria-pressed="true">5 minutes</button>
+          <button type="button" data-clock="off" aria-pressed="false">No limit</button>
         </div>
       </section>
     </div>
@@ -545,6 +558,7 @@ function sfx(n,v){
     case 'word': [659,784,988,1319].forEach((f,i)=>tone(f,.1,'square',.07,i*.07)); break;
     case 'good': [523,659,784,1047].forEach((f,i)=>tone(f,.14,'square',.08,i*.08)); break;
     case 'bad': tone(330,.14,'square',.06); tone(220,.3,'square',.06,.14); break;
+    case 'buzzer': tone(98,.9,'sawtooth',.12); tone(104,.9,'square',.06); break;
     case 'win': [523,523,523,698,880,784,1047].forEach((f,i)=>tone(f,.16,'square',.07,i*.13)); break;
   }
 }
@@ -610,11 +624,11 @@ function drawPlayer(c,x,y,o){
 }
 
 /* ================= SETUP ================= */
-const setup={mode:1,goal:10,speed:'rookie',players:[{name:'',gender:'girl',skin:1},{name:'',gender:'boy',skin:2}]};
+const setup={mode:1,goal:10,speed:'rookie',clock:true,players:[{name:'',gender:'girl',skin:1},{name:'',gender:'boy',skin:2}]};
 try{
   const s=JSON.parse(localStorage.getItem(KEY)||'null');
   if(s&&Array.isArray(s.players)){
-    if(s.mode===1||s.mode===2)setup.mode=s.mode; if(s.goal===5||s.goal===10)setup.goal=s.goal; if(s.speed==='rookie'||s.speed==='allstar')setup.speed=s.speed;
+    if(s.mode===1||s.mode===2)setup.mode=s.mode; if(s.goal===5||s.goal===10)setup.goal=s.goal; if(s.speed==='rookie'||s.speed==='allstar')setup.speed=s.speed; if(typeof s.clock==='boolean')setup.clock=s.clock;
     s.players.slice(0,2).forEach((p,i)=>Object.assign(setup.players[i],{name:String(p.name||'').slice(0,12),gender:p.gender==='boy'?'boy':'girl',skin:clamp(p.skin|0,0,3)}));
   }
 }catch(e){}
@@ -624,12 +638,14 @@ function renderSetup(){
   document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.mode===setup.mode)));
   document.querySelectorAll('[data-speed]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.speed===setup.speed)));
   document.querySelectorAll('[data-goal]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.goal===setup.goal)));
+  document.querySelectorAll('[data-clock]').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.clock==='on')===setup.clock)));
+  $('#timeGroup').hidden=setup.mode!==2;
   $('#rule4').textContent=setup.mode===1
     ? 'Read the passage and choose the meaning. A correct meaning scores 1 point.'
     : 'Finish the word for 1 point. Choose the right meaning for 1 more point.';
   $('#modeHint').textContent=setup.mode===1
     ? 'Spell each word, then answer its meaning question. Reach the goal to win.'
-    : 'Both players race to spell the same word, taking turns one shot at a time. Each word is worth up to 2 points: 1 for spelling it and 1 for the meaning. A wrong meaning gives the other player a chance to steal that point.';
+    : 'Both players race to spell the same word, taking turns one shot at a time. Each word is worth up to 2 points: 1 for spelling it and 1 for the meaning. A wrong meaning gives the other player a chance to steal that point. With the 5-minute clock on, whoever has the most points when time runs out wins. If it’s a tie, players take turns shooting until one makes it and the other misses. The clock stops while students read.';
   let h='';
   for(let i=0;i<setup.mode;i++){
     const p=setup.players[i];
@@ -675,6 +691,7 @@ $('#cards').addEventListener('click',e=>{
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setup.mode=+b.dataset.mode;saveSetup();renderSetup();}));
 document.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{setup.speed=b.dataset.speed;saveSetup();renderSetup();}));
 document.querySelectorAll('[data-goal]').forEach(b=>b.addEventListener('click',()=>{setup.goal=+b.dataset.goal;saveSetup();renderSetup();}));
+document.querySelectorAll('[data-clock]').forEach(b=>b.addEventListener('click',()=>{setup.clock=b.dataset.clock==='on';saveSetup();renderSetup();}));
 $('#startBtn').addEventListener('click',()=>{ensureAudio();saveSetup();newGame();});
 
 /* ================= GAME STATE ================= */
@@ -692,7 +709,8 @@ function newGame(){
     players:setup.players.slice(0,setup.mode).map((p,i)=>({name:(p.name.trim()||('Player '+(i+1))),gender:p.gender,skin:p.skin,color:PCOL[i],
       points:0,words:0,shots:0,makes:0,qRight:0,qTotal:0,prog:0})),
     round:0,cur:0,phase:'idle',word:null,used:{1:[],2:[],3:[]},
-    m:{p:0,pd:1,h:0,hd:1,pz:.5,hz:.5},ball:null,fx:[],jumpT:-1,net:0,lastMade:false,time:0,finisher:0};
+    m:{p:0,pd:1,h:0,hd:1,pz:.5,hz:.5},ball:null,fx:[],jumpT:-1,net:0,lastMade:false,time:0,finisher:0,
+    clock:(setup.mode===2&&setup.clock)?300:null,timeUp:false,lastSec:-1,winReason:'goal',shootout:false,so:null,soWinner:null};
   $('#setup').hidden=true; $('#game').hidden=false; $('#winWrap').hidden=true;
   fit(); startRound();
 }
@@ -718,7 +736,7 @@ function newShot(){
 }
 function curP(){return G.players[G.cur];}
 // sliders speed up 10% for every letter the shooter has already lit
-function speedMult(){return 1+0.1*curP().prog;}
+function speedMult(){return G.shootout?1+0.1*(G.so.round-1):1+0.1*curP().prog;}
 function anyOverlay(){return !$('#qWrap').hidden||!$('#winWrap').hidden||!$('#quitWrap').hidden;}
 
 function tap(){
@@ -764,7 +782,7 @@ function shoot(){
   G.phase='flight'; G.jumpT=0; sfx('shoot'); updateFooter();
 }
 function fireEv(sg){
-  if(sg.ev==='net'){G.net=1;sfx('swish');revealLetter();}
+  if(sg.ev==='net'){G.net=1;sfx('swish');if(G.shootout)curP().makes++;else revealLetter();}
   else if(sg.ev==='rim')sfx('rim');
   else if(sg.ev==='board')sfx('board');
   else if(sg.ev==='bounce')sfx('bounce',1);
@@ -779,6 +797,7 @@ function revealLetter(){
   sfx('letter',i); renderBoard(i);
 }
 function afterShot(){
+  if(G.shootout){shootoutShot();return;}
   const p=curP();
   if(G.lastMade){
     if(p.prog>=G.word.w.length){
@@ -787,13 +806,52 @@ function afterShot(){
       sfx('word'); G.phase='question'; renderBoard(); updateFooter(); setTimeout(openQuestion,900); return;
     }
   }
+  if(G.timeUp){timeUp();return;}
   if(G.mode===2){G.cur=1-G.cur;renderBoard();showBanner(`${G.players[G.cur].name.toUpperCase()}’S TURN`,'',1000);}
+  newShot();
+}
+/* ---- 5-minute clock (2 players) ---- */
+function fmtClock(t){const s=Math.ceil(t);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function tickClock(){
+  const s=Math.ceil(G.clock); if(s===G.lastSec)return; G.lastSec=s;
+  const el=$('#clock'); if(el){el.textContent=fmtClock(G.clock); el.classList.toggle('low',s<=30);}
+  if(s<=10&&s>0)sfx('tick');
+}
+// time ran out: the highest score wins; a tie goes to a shootout
+function timeUp(){
+  const wn=winner();
+  if(wn&&wn!=='tie'){G.winReason='time';showWin();}
+  else startShootout();
+}
+/* ---- tie-breaker shootout: players alternate; a round ends the game when one makes and the other misses ---- */
+function startShootout(){
+  G.shootout=true; G.so={round:1,first:G.cur,taken:0,hist:[[],[]]};
+  G.players.forEach(p=>p.prog=0);
+  renderBoard();
+  showBanner('TIE! SHOOTOUT',`${G.players[G.cur].name} shoots first. If one player makes it and the other misses, the game is over.`,3000);
+  newShot();
+}
+function shootoutShot(){
+  const so=G.so, me=curP(), made=G.lastMade; so.hist[G.cur].push(made); so.taken++;
+  if(so.taken%2===1){
+    G.cur=1-G.cur; renderBoard();
+    showBanner(`${curP().name.toUpperCase()}’S SHOT`,made?`${me.name} made it. Make yours to keep going!`:`${me.name} missed. Make it to win!`,1800);
+    newShot(); return;
+  }
+  const a=so.hist[0][so.hist[0].length-1], b=so.hist[1][so.hist[1].length-1];
+  if(a!==b){G.soWinner=a?G.players[0]:G.players[1]; G.winReason='shootout'; renderBoard(); showWin(); return;}
+  so.round++; G.cur=so.first; renderBoard();
+  showBanner(`SHOOTOUT ROUND ${so.round}`,a?'Both made it! Shoot again.':'Both missed! Shoot again.',1800);
   newShot();
 }
 
 /* ---- update ---- */
 function update(dt){
   G.time+=dt;
+  if(G.clock!=null&&!G.timeUp&&(G.phase==='power'||G.phase==='height'||G.phase==='flight')&&!anyOverlay()){
+    G.clock=Math.max(0,G.clock-dt); tickClock();
+    if(G.clock<=0){G.timeUp=true; sfx('buzzer'); if(G.phase!=='flight')timeUp();}
+  }
   const m=G.m, sp=G.rate*speedMult();
   if(G.phase==='power'){m.p+=m.pd*sp*dt;if(m.p>1){m.p=2-m.p;m.pd=-1;}if(m.p<0){m.p=-m.p;m.pd=1;}}
   if(G.phase==='height'){m.h+=m.hd*sp*dt;if(m.h>1){m.h=2-m.h;m.hd=-1;}if(m.h<0){m.h=-m.h;m.hd=1;}}
@@ -958,13 +1016,14 @@ window.addEventListener('resize',fit);
 function renderBoard(pop){
   const b=$('#board'); b.classList.toggle('solo',G.mode===1);
   const team=i=>{const p=G.players[i], act=G.phase!=='question'&&i===G.cur&&G.mode===2;
-    const tiles=G.word.w.split('').map((ch,k)=>`<span class="tile${k<p.prog?' lit':''}${k===pop&&i===G.cur?' pop':''}">${ch}</span>`).join('');
+    const tiles=G.shootout?(G.so.hist[i].map(m=>`<span class="tile ${m?'make':'miss'}">${m?'✓':'✗'}</span>`).join('')||'<span class="so-wait">SHOOTOUT</span>'):G.word.w.split('').map((ch,k)=>`<span class="tile${k<p.prog?' lit':''}${k===pop&&i===G.cur?' pop':''}">${ch}</span>`).join('');
     return `<section class="team px${act||G.mode===1?' active':''}" style="--pc:${p.color}" aria-label="${esc(p.name)}: ${p.points} points, ${p.prog} of ${G.word.w.length} letters">
       <div class="team-top"><span class="dot"></span><span class="tname">${esc(p.name)}</span>${act?'<span class="turn">UP</span>':''}
       <span class="pts"><b>${p.points}</b><small>/ ${G.goal}</small></span></div>
       <div class="tiles" aria-hidden="true">${tiles}</div></section>`;};
-  const mid=`<div class="mid"><div class="round">ROUND ${G.round}</div><span class="dokchip">LEVEL ${G.word.dok} · ${DOK_NAME[G.word.dok].toUpperCase()}</span>
-    <div class="mid-btns">${canSpeak?'<button type="button" class="ghost" id="hearBtn">Hear word</button>':''}
+  const clk=G.clock==null?'':(G.shootout?'<div class="clock ot">SHOOTOUT</div>':`<div class="clock${Math.ceil(G.clock)<=30?' low':''}" id="clock" role="timer" aria-label="Time left">${fmtClock(G.clock)}</div>`);
+  const mid=`<div class="mid">${clk}${G.shootout?'':`<div class="round">ROUND ${G.round}</div>`}<span class="dokchip">${G.shootout?`TIE-BREAKER · ROUND ${G.so.round}`:`LEVEL ${G.word.dok} · ${DOK_NAME[G.word.dok].toUpperCase()}`}</span>
+    <div class="mid-btns">${canSpeak&&!G.shootout?'<button type="button" class="ghost" id="hearBtn">Hear word</button>':''}
     <button type="button" class="ghost" id="muteBtn" aria-pressed="${muted}">${muted?'Sound off':'Sound on'}</button>
     <button type="button" class="ghost" id="menuBtn">Menu</button></div></div>`;
   b.innerHTML=G.mode===2?team(0)+mid+team(1):team(0)+mid;
@@ -1004,8 +1063,9 @@ function openQuestion(){
   $('#qWrap').hidden=false; $('#qWrap').scrollTop=0; $('#qTitle').focus({preventScroll:true});
 }
 function winner(){
-  const max=Math.max(...G.players.map(p=>p.points)); if(max<G.goal)return null;
-  const top=G.players.filter(p=>p.points===max); return top.length===1?top[0]:'tie';
+  const max=Math.max(...G.players.map(p=>p.points)), top=G.players.filter(p=>p.points===max);
+  if(!G.timeUp&&max<G.goal)return null;
+  return top.length===1?top[0]:'tie';
 }
 $('#qOpts').addEventListener('click',e=>{
   const btn=e.target.closest('.opt'); if(!btn||!Q||Q.done||btn.disabled)return;
@@ -1039,7 +1099,7 @@ $('#qOpts').addEventListener('click',e=>{
   [...$('#qOpts').children].forEach(b=>b.disabled=true);
   fb.hidden=false;
   const wn=winner();
-  $('#nextBtn').textContent=wn&&wn!=='tie'?'SEE THE WINNER':'NEXT ROUND';
+  $('#nextBtn').textContent=wn&&wn!=='tie'?'SEE THE WINNER':(G.timeUp?'SHOOTOUT!':'NEXT ROUND');
   $('#nextBtn').hidden=false; $('#nextBtn').focus({preventScroll:false});
   renderBoard();
 });
@@ -1047,7 +1107,9 @@ $('#nextBtn').addEventListener('click',()=>{
   if(canSpeak)try{speechSynthesis.cancel();}catch(e){}
   $('#qWrap').hidden=true; Q=null;
   const wn=winner();
-  if(wn&&wn!=='tie')showWin(); else startRound(wn==='tie'?'TIE GAME! NEXT WORD WINS':null);
+  if(wn&&wn!=='tie'){if(G.timeUp&&G.winReason==='goal')G.winReason='time';showWin();}
+  else if(G.timeUp)startShootout();
+  else startRound(wn==='tie'?'TIE GAME! NEXT WORD WINS':null);
 });
 $('#readBtn').addEventListener('click',()=>speak(G.word.p.replace(/\*/g,'')));
 if(!canSpeak)$('#readBtn').hidden=true;
@@ -1055,10 +1117,10 @@ if(!canSpeak)$('#readBtn').hidden=true;
 /* ================= WIN / QUIT ================= */
 function showWin(){
   G.phase='over'; sfx('win');
-  const win=winner(), wi=G.players.indexOf(win);
+  const win=G.soWinner||winner(), wi=G.players.indexOf(win);
   const rds=`${G.round} round${G.round===1?'':'s'}`;
   $('#winTitle').textContent=G.mode===2?`${win.name.toUpperCase()} WINS!`:`${win.name.toUpperCase()} REACHED ${G.goal}!`;
-  $('#winSub').textContent=G.mode===2?`First to ${G.goal} points in ${rds}.`:`${G.goal} points in ${rds}. Great reading!`;
+  $('#winSub').textContent=G.mode===2?(G.winReason==='time'?`Time’s up! Most points after 5 minutes (${rds}).`:G.winReason==='shootout'?`Tied when time ran out, then won the shootout in round ${G.so.round}!`:`First to ${G.goal} points in ${rds}.`):`${G.goal} points in ${rds}. Great reading!`;
   const pct=(a,b)=>b?Math.round(100*a/b)+'%':'–';
   const head=`<thead><tr><th scope="col">STAT</th>${G.players.map(p=>`<th scope="col">${esc(p.name.toUpperCase())}</th>`).join('')}</tr></thead>`;
   const row=(lab,f)=>`<tr><th scope="row">${lab}</th>${G.players.map(p=>`<td>${f(p)}</td>`).join('')}</tr>`;
