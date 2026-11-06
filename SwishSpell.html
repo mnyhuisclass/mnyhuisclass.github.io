@@ -1,0 +1,1098 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Swish &amp; Spell</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Press+Start+2P&display=swap">
+<style>
+/* Layout: one-screen 8-bit gym. Scoreboard band on top, pixel court in the middle, shot controls along the bottom. Single dark arcade look on purpose. */
+:root{
+  --ink:#0b0c24;       /* page */
+  --navy:#1a1f5c;      /* panels */
+  --well:#07081a;      /* unlit tiles */
+  --line:#3c4bc8;      /* idle frames */
+  --frame:#fcfcfc;     /* pixel frame */
+  --chalk:#fcfcfc;
+  --muted:#a8b0f0;
+  --amber:#f8b800;
+  --orange:#e45c10;
+  --orange-deep:#882800;
+  --good:#58d854;
+  --bad:#f85848;
+  --p1:#d82800;
+  --p2:#0070ec;
+  --paper:#fcf8ec;
+  --paper-ink:#14142b;
+  --paper-soft:#efe8d4;
+  --mark:#f8d878;
+  --right-bg:#d8f8d0; --right-ink:#086a1c;
+  --wrong-bg:#fcd8d0; --wrong-ink:#a81000;
+  --steal-bg:#fcecc0; --steal-ink:#6a4000;
+  --pixel:'Press Start 2P','Courier New',monospace;
+  --ui:'Atkinson Hyperlegible',Verdana,Tahoma,system-ui,sans-serif;
+  --read:'Atkinson Hyperlegible',Verdana,Tahoma,system-ui,sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--ink);color:var(--chalk);font-family:var(--ui);font-size:17px;line-height:1.45;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border-radius:0}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:4px solid var(--amber);outline-offset:4px}
+.screen{height:100%;box-sizing:border-box;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+/* notched pixel frame: border drawn with box-shadows so the corners stay square-cut */
+.px{--f:var(--frame);box-shadow:0 -4px 0 0 var(--f),0 4px 0 0 var(--f),-4px 0 0 0 var(--f),4px 0 0 0 var(--f),8px 8px 0 0 #000;margin:4px}
+
+/* ---------- Setup ---------- */
+#setup{overflow-y:auto;padding-block:28px 56px;background:var(--ink);background-image:linear-gradient(rgba(60,75,200,.12) 2px,transparent 2px),linear-gradient(90deg,rgba(60,75,200,.12) 2px,transparent 2px);background-size:32px 32px}
+.wrap{max-width:1000px;margin:0 auto;display:grid;gap:28px}
+.hero{display:grid;gap:14px}
+.eyebrow{font-family:var(--pixel);font-size:11px;letter-spacing:.06em;color:var(--good)}
+.hero h1{margin:0;font-family:var(--pixel);font-weight:400;font-size:clamp(30px,6.4vw,64px);line-height:1.2;text-wrap:balance;text-shadow:5px 5px 0 #000}
+.hero h1 .hl{color:var(--orange)}
+.hero h1 .amp{color:var(--amber)}
+.lead{margin:0;max-width:62ch;font-size:19px;color:var(--muted)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:0;padding:0;list-style:none;counter-reset:r}
+.rules li{counter-increment:r;background:var(--navy);--f:var(--line);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;font-size:16px}
+.rules li::before{content:counter(r);font-family:var(--pixel);font-size:12px;color:var(--ink);background:var(--amber);min-width:26px;height:26px;display:grid;place-items:center;flex:none}
+.group{display:grid;gap:12px}
+.group > h2{margin:0;font-family:var(--pixel);font-weight:400;font-size:14px;color:var(--amber)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:8px;width:max-content;max-width:100%}
+.seg button{background:var(--navy);border:0;--f:var(--line);box-shadow:0 -3px 0 0 var(--f),0 3px 0 0 var(--f),-3px 0 0 0 var(--f),3px 0 0 0 var(--f);margin:3px;padding:12px 18px;font-weight:700;font-size:18px;color:var(--muted);min-height:48px}
+.seg button[aria-pressed="true"]{background:var(--chalk);color:var(--ink);--f:var(--chalk)}
+.seg.small button{padding:9px 14px;font-size:17px;min-height:44px}
+.pcard .seg button[aria-pressed="true"]{background:var(--pc);color:#fff;--f:var(--chalk)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.pcard{--pc:var(--p1);background:var(--navy);padding:18px;display:flex;gap:16px;align-items:center;min-width:0;border-top:10px solid var(--pc)}
+.pcard-main{flex:1;min-width:0;display:grid;gap:9px}
+.pcard h3{margin:0;font-family:var(--pixel);font-weight:400;font-size:14px;color:var(--chalk)}
+.field-label,.pcard label{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pcard input{font-family:var(--pixel);font-size:15px;padding:13px 12px;border:0;border-radius:0;background:var(--well);color:var(--amber);width:100%;box-sizing:border-box;min-width:0;box-shadow:inset 0 0 0 3px var(--line)}
+.pcard input::placeholder{color:#4b5296;font-family:var(--ui);font-size:17px}
+.swatches{display:flex;gap:12px;flex-wrap:wrap}
+.sw{width:38px;height:38px;border:0;background:var(--sw);box-shadow:0 0 0 3px var(--line);margin:3px}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--navy),0 0 0 7px var(--chalk)}
+.preview{width:100px;height:200px;flex:none;image-rendering:pixelated;background:linear-gradient(transparent 70%,rgba(0,0,0,.35) 70%)}
+.opts-row{display:flex;flex-wrap:wrap;gap:28px}
+.hint{font-size:16px;color:var(--muted);margin:0;max-width:70ch}
+.start{justify-self:start;font-family:var(--pixel);font-size:20px;background:var(--orange);color:#fff;border:0;padding:20px 30px;--f:var(--chalk);text-shadow:3px 3px 0 var(--orange-deep);margin:4px 4px 12px}
+.start:active{transform:translate(4px,4px)}
+.start .blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+details.teach{background:var(--navy);--f:var(--line);padding:14px 18px}
+details.teach summary{cursor:pointer;font-weight:700}
+details.teach dl{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;margin:14px 0 0}
+details.teach dt{font-family:var(--pixel);font-size:12px;color:var(--amber);padding-top:3px}
+details.teach dd{margin:0;color:var(--muted);max-width:62ch}
+
+/* ---------- Game ---------- */
+#game{display:flex;flex-direction:column;gap:10px;padding-block:12px}
+.board{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;flex:none}
+.board.solo{grid-template-columns:1fr auto}
+.team{--pc:var(--p1);--f:var(--line);background:var(--navy);padding:8px 12px 10px;display:grid;gap:7px;min-width:0}
+.team.active{--f:var(--pc)}
+.team-top{display:flex;align-items:center;gap:8px;min-width:0}
+.dot{width:12px;height:12px;background:var(--pc);flex:none;box-shadow:0 0 0 2px var(--chalk)}
+.tname{font-weight:700;font-size:19px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.turn{font-family:var(--pixel);font-size:8px;background:var(--pc);color:#fff;padding:4px 6px;flex:none;animation:blink 1.2s steps(1) infinite}
+.pts{margin-left:auto;display:flex;align-items:baseline;gap:5px;flex:none;font-variant-numeric:tabular-nums}
+.pts b{font-family:var(--pixel);font-weight:400;font-size:22px;line-height:1;color:var(--amber);text-shadow:3px 3px 0 #000}
+.pts small{color:var(--muted);font-size:14px}
+.tiles{display:flex;gap:4px;flex-wrap:wrap}
+.tile{width:clamp(22px,3vw,32px);height:clamp(24px,3.3vw,34px);display:grid;place-items:center;font-family:var(--pixel);font-size:clamp(10px,1.4vw,14px);background:var(--well);color:#353b80;box-shadow:inset 0 0 0 2px #1f2566}
+.tile.lit{background:var(--amber);color:#000;box-shadow:inset -3px -3px 0 #a86c00,inset 3px 3px 0 #fce898}
+.tile.pop{animation:pop .45s steps(4)}
+@keyframes pop{0%{transform:translateY(-10px)}50%{transform:translateY(3px)}100%{transform:none}}
+.mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:2px 4px;text-align:center}
+.round{font-family:var(--pixel);font-size:11px;color:var(--muted)}
+.dokchip{font-family:var(--pixel);font-size:9px;line-height:1.4;padding:6px 8px;background:var(--orange);color:#fff;white-space:nowrap}
+.mid-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.ghost{background:var(--navy);border:0;box-shadow:inset 0 0 0 2px var(--line);padding:6px 11px;font-size:15px;font-weight:700;color:var(--chalk);min-height:36px}
+.ghost:hover{box-shadow:inset 0 0 0 2px var(--chalk)}
+.stage{flex:1;min-height:0;position:relative;display:grid;place-items:center}
+#cv{display:block;touch-action:none;cursor:pointer;image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:0 0 0 4px var(--frame),10px 10px 0 4px #000}
+.scan{position:absolute;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.14) 0 2px,transparent 2px 4px)}
+.banner{position:absolute;left:50%;top:22%;transform:translateX(-50%);background:var(--well);--f:var(--amber);padding:16px 22px;text-align:center;pointer-events:none;max-width:calc(100% - 40px);box-sizing:border-box;animation:bannerIn .3s steps(3)}
+.banner b{display:block;font-family:var(--pixel);font-weight:400;font-size:clamp(15px,2.8vw,26px);color:var(--amber);line-height:1.3}
+.banner span{display:block;margin-top:8px;font-size:clamp(15px,2vw,19px);color:var(--chalk)}
+@keyframes bannerIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
+.bar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-top:6px}
+.status{display:grid;gap:5px;min-width:0;flex:1}
+.who{font-size:19px;font-weight:700;min-width:0}
+.who .nm{color:var(--pcol,var(--amber))}
+.steps{display:flex;gap:8px;flex-wrap:wrap}
+.step{font-family:var(--pixel);font-size:9px;padding:5px 8px;box-shadow:inset 0 0 0 2px var(--line);color:var(--muted)}
+.step.on{background:var(--amber);box-shadow:none;color:#000}
+.step.done{box-shadow:inset 0 0 0 2px var(--good);color:var(--good)}
+.shoot{font-family:var(--pixel);font-size:17px;background:var(--orange);color:#fff;border:0;padding:16px 22px;min-width:220px;min-height:62px;--f:var(--chalk);text-shadow:2px 2px 0 var(--orange-deep);touch-action:none;user-select:none;-webkit-user-select:none}
+.shoot:active{transform:translate(4px,4px)}
+.shoot[disabled]{opacity:.45;cursor:default}
+
+/* ---------- Overlays ---------- */
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(4,4,16,.82);display:grid;place-items:center;overflow-y:auto;box-sizing:border-box;padding:max(20px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+.paper{--ac:var(--p1);--f:var(--ac);background:var(--paper);color:var(--paper-ink);width:100%;max-width:760px;padding:22px clamp(18px,4vw,36px) 26px;box-sizing:border-box;display:grid;gap:14px;border-top:12px solid var(--ac)}
+.paper-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.paper .dokchip{background:var(--paper-ink);color:var(--paper)}
+.paper .ghost{background:var(--paper-soft);color:var(--paper-ink);box-shadow:inset 0 0 0 2px var(--paper-ink)}
+.paper h2{margin:0;font-family:var(--pixel);font-weight:400;font-size:clamp(15px,2.6vw,22px);line-height:1.45;text-wrap:balance}
+.paper h2 .nm{color:var(--ac)}
+.paper h2 .plus{display:inline-block;font-size:.7em;background:var(--good);color:#000;padding:4px 6px;vertical-align:middle}
+.instr{margin:0;font-size:17px;color:#3f4466}
+.passage{margin:0;background:var(--paper-soft);border-left:6px solid var(--paper-ink);padding:16px 20px;font-family:var(--read);font-size:clamp(18px,2.4vw,21px);line-height:1.65;max-width:65ch}
+.passage mark,.question mark{background:var(--mark);color:inherit;font-weight:700;padding:0 4px}
+.question{margin:0;font-family:var(--read);font-size:clamp(18px,2.4vw,21px);font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:#fff;color:var(--paper-ink);border:0;box-shadow:inset 0 0 0 3px var(--paper-soft),4px 4px 0 var(--paper-ink);padding:12px 14px;font-family:var(--read);font-size:18px;min-height:64px}
+.opt:hover:not([disabled]){box-shadow:inset 0 0 0 3px var(--paper-ink),4px 4px 0 var(--paper-ink)}
+.opt .key{flex:none;width:32px;height:32px;display:grid;place-items:center;font-family:var(--pixel);font-size:12px;background:var(--paper-soft)}
+.opt.right{background:var(--right-bg);box-shadow:inset 0 0 0 3px var(--right-ink),4px 4px 0 var(--right-ink)}
+.opt.right .key{background:var(--right-ink);color:#fff}
+.opt.wrong{background:var(--wrong-bg);box-shadow:inset 0 0 0 3px var(--wrong-ink),4px 4px 0 var(--wrong-ink);text-decoration:line-through;text-decoration-thickness:2px}
+.opt.wrong .key{background:var(--wrong-ink);color:#fff}
+.opt[disabled]{cursor:default}
+.opt[disabled]:not(.right):not(.wrong){opacity:.5}
+.feedback{padding:12px 16px;font-size:18px;display:grid;gap:6px}
+.feedback.good{background:var(--right-bg);color:var(--right-ink)}
+.feedback.bad{background:var(--wrong-bg);color:var(--wrong-ink)}
+.feedback.steal{background:var(--steal-bg);color:var(--steal-ink)}
+.feedback p{margin:0}
+.feedback .clue{color:var(--paper-ink);font-family:var(--read);font-size:17px}
+.next{justify-self:end;font-family:var(--pixel);font-size:15px;background:var(--orange);color:#fff;border:0;padding:16px 22px;--f:var(--paper-ink);text-shadow:2px 2px 0 var(--orange-deep)}
+.next:active{transform:translate(4px,4px)}
+.card{background:var(--navy);padding:24px clamp(18px,4vw,36px);width:100%;max-width:640px;box-sizing:border-box;display:grid;gap:16px;text-align:center;position:relative;z-index:1}
+.card h2{margin:0;font-family:var(--pixel);font-weight:400;font-size:clamp(20px,4.4vw,34px);line-height:1.35;color:var(--amber);text-shadow:4px 4px 0 #000;text-wrap:balance}
+.card p{margin:0;color:var(--muted)}
+#winCv{width:100px;height:200px;justify-self:center;image-rendering:pixelated}
+.stats{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;text-align:left;font-size:17px}
+.stats th,.stats td{padding:8px 10px;border-bottom:2px dashed var(--line)}
+.stats thead th{font-family:var(--pixel);font-size:9px;color:var(--muted);font-weight:400}
+.stats td:not(:first-child),.stats th:not(:first-child){text-align:right}
+.table-scroll{overflow-x:auto}
+.card-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn2{font-weight:700;font-size:18px;padding:12px 20px;border:0;background:var(--navy);color:var(--chalk);min-height:50px;box-shadow:inset 0 0 0 3px var(--line)}
+.btn2.primary{background:var(--orange);color:#fff;box-shadow:inset 0 0 0 3px var(--chalk),5px 5px 0 #000}
+.confetti{position:fixed;top:-20px;width:10px;height:10px;z-index:0;pointer-events:none;animation:fall steps(24) forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+
+@media (max-width:720px){
+  .board{grid-template-columns:1fr 1fr}
+  .board.solo{grid-template-columns:1fr}
+  .mid{grid-column:1/-1;order:-1;flex-direction:row;flex-wrap:wrap;padding:0}
+  .opts{grid-template-columns:1fr}
+  .pcard{flex-direction:column-reverse;align-items:stretch}
+  .preview{align-self:center}
+  .shoot{min-width:0;flex:1}
+}
+@media (prefers-reduced-motion:reduce){
+  .tile.pop,.banner,.confetti,.turn,.start .blink{animation:none}
+}
+</style>
+
+<!-- ================= SETUP ================= -->
+<div id="setup" class="screen">
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">4TH GRADE VOCAB &middot; CONTEXT CLUES</div>
+      <h1><span class="hl">SWISH</span> <span class="amp">&amp;</span> SPELL</h1>
+      <p class="lead">Every basket lights up the next letter of a vocabulary word. Spell the whole word, then read a short passage and use context clues to choose what the word means.</p>
+    </header>
+
+    <ol class="rules">
+      <li class="px">The STRENGTH slider moves on its own. Tap to stop it in the green zone.</li>
+      <li class="px">Then the HEIGHT slider moves. Tap again to stop it and shoot.</li>
+      <li class="px">Each basket lights up a letter. Spell the whole word.</li>
+      <li class="px" id="rule4"></li>
+    </ol>
+
+    <section class="group">
+      <h2>PLAYERS</h2>
+      <div class="seg" role="group" aria-label="Number of players">
+        <button type="button" id="mode1" data-mode="1" aria-pressed="true">1 Player</button>
+        <button type="button" id="mode2" data-mode="2" aria-pressed="false">2 Players</button>
+      </div>
+      <p class="hint" id="modeHint"></p>
+    </section>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="opts-row">
+      <section class="group">
+        <h2>SLIDER SPEED</h2>
+        <div class="seg small" role="group" aria-label="Slider speed">
+          <button type="button" data-speed="rookie" aria-pressed="true">Rookie</button>
+          <button type="button" data-speed="allstar" aria-pressed="false">All-Star</button>
+        </div>
+        <p class="hint">Sliders get 10% faster for every letter a player lights up.</p>
+      </section>
+      <section class="group">
+        <h2>PLAY TO</h2>
+        <div class="seg small" role="group" aria-label="Points to win">
+          <button type="button" data-goal="5" aria-pressed="false">5 points</button>
+          <button type="button" data-goal="10" aria-pressed="true">10 points</button>
+        </div>
+      </section>
+    </div>
+
+    <button type="button" class="start px" id="startBtn"><span class="blink">&#9654;</span> START GAME</button>
+
+    <details class="teach px">
+      <summary>For teachers: how the DOK levels and scoring work</summary>
+      <dl>
+        <dt>DOK 1</dt><dd>Shown to students as <b>Level 1 &middot; Find It</b>. Recall. The passage states the meaning directly with a definition or synonym clue (&ldquo;or very large,&rdquo; &ldquo;which means,&rdquo; &ldquo;in other words&rdquo;).</dd>
+        <dt>DOK 2</dt><dd>Shown to students as <b>Level 2 &middot; Figure It Out</b>. Skill &amp; Concept. Students infer the meaning from examples, an antonym, or cause and effect in the passage.</dd>
+        <dt>DOK 3</dt><dd>Shown to students as <b>Level 3 &middot; Clue Detective</b>. Strategic Thinking. Students combine clues across several sentences, often to pick the right meaning of a multiple-meaning word.</dd>
+      </dl>
+      <p class="hint" style="margin-top:12px">Each round picks DOK 1, 2, or 3 at random from 60 words (20 per level). Words don&rsquo;t repeat until a level runs out.</p>
+      <p class="hint" style="margin-top:8px"><b>2 Players:</b> finishing the word earns 1 point, and choosing the right meaning earns 1 more, so a word is worth up to 2 points. If the speller misses the meaning, they keep their spelling point and the other player gets one chance to steal the meaning point. If both players pass the goal with the same score, the next word breaks the tie. <b>1 Player:</b> a correct meaning earns the point.</p>
+    </details>
+  </div>
+</div>
+
+<!-- ================= GAME ================= -->
+<div id="game" class="screen" hidden>
+  <header class="board" id="board"></header>
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="Pixel basketball court. Tap to stop the sliders and shoot."></canvas>
+    <div class="scan" id="scan" aria-hidden="true"></div>
+    <div class="banner px" id="banner" hidden></div>
+  </div>
+  <footer class="bar">
+    <div class="status">
+      <div class="who" id="who"></div>
+      <div class="steps"><span class="step" id="st1">1 STRENGTH</span><span class="step" id="st2">2 HEIGHT</span></div>
+    </div>
+    <button type="button" class="shoot px" id="shootBtn">LOCK STRENGTH</button>
+  </footer>
+</div>
+
+<!-- Question -->
+<div class="overlay" id="qWrap" hidden>
+  <div class="paper px" id="paper" role="dialog" aria-modal="true" aria-labelledby="qTitle">
+    <div class="paper-head">
+      <span class="dokchip" id="qDok"></span>
+      <button type="button" class="ghost" id="readBtn">Read aloud</button>
+    </div>
+    <h2 id="qTitle" tabindex="-1"></h2>
+    <p class="instr" id="qInstr"></p>
+    <blockquote class="passage" id="qPassage"></blockquote>
+    <p class="question" id="qText"></p>
+    <div class="opts" id="qOpts"></div>
+    <div class="feedback" id="qFb" hidden></div>
+    <button type="button" class="next px" id="nextBtn" hidden>NEXT ROUND</button>
+  </div>
+</div>
+
+<!-- Win -->
+<div class="overlay" id="winWrap" hidden>
+  <div class="card px" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+    <canvas id="winCv" width="160" height="320" aria-hidden="true"></canvas>
+    <h2 id="winTitle"></h2>
+    <p id="winSub"></p>
+    <div class="table-scroll"><table class="stats" id="winStats"></table></div>
+    <div class="card-btns">
+      <button type="button" class="btn2 primary" id="againBtn">Play again</button>
+      <button type="button" class="btn2" id="newBtn">Change players</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quit confirm -->
+<div class="overlay" id="quitWrap" hidden>
+  <div class="card px" role="dialog" aria-modal="true" aria-labelledby="quitTitle">
+    <h2 id="quitTitle">LEAVE GAME?</h2>
+    <p>The score will be lost.</p>
+    <div class="card-btns">
+      <button type="button" class="btn2 primary" id="stayBtn">Keep playing</button>
+      <button type="button" class="btn2" id="leaveBtn">Leave game</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ================= WORD BANK =================
+   *word* marks the target word in each passage. d = correct meaning, o = wrong choices. */
+const WORDS = [
+ // ---------- DOK 1: definition / synonym / restatement clues ----------
+ {w:'ENORMOUS',dok:1,p:"At the aquarium, Mia stood next to a model of a blue whale. The whale was *enormous*, or very large. It was longer than three school buses parked in a row! Mia had to walk all the way across the room just to see its tail.",
+  d:"very large",o:["very fast","very noisy","very old"],
+  clue:"The words “or very large” right after the word tell you its meaning. The school bus comparison backs it up."},
+ {w:'FRAGILE',dok:1,p:"Grandma keeps her teacups on the highest shelf. They are *fragile*, which means they can break easily. When she washes them, she holds each cup gently with both hands.",
+  d:"easy to break",o:["very heavy","full of bright colors","hard to find"],
+  clue:"“Which means they can break easily” is a definition clue. Holding the cups gently fits that meaning."},
+ {w:'CAUTIOUS',dok:1,p:"The crossing guard reminded the students to be *cautious*, or careful, when crossing the busy street. Everyone looked left, then right, then left again before stepping off the curb.",
+  d:"careful to stay safe",o:["in a big hurry","loud and silly","tired and sleepy"],
+  clue:"“Or careful” is a synonym clue. Looking both ways shows what being careful looks like."},
+ {w:'ANCIENT',dok:1,p:"In the museum, Leo saw an *ancient* clay pot. The sign said the pot was very old, more than three thousand years old! People made it long before cars, phones, or even paper books existed.",
+  d:"very, very old",o:["brand new","broken into pieces","very expensive"],
+  clue:"The sign says the pot is “very old, more than three thousand years old.”"},
+ {w:'DRENCHED',dok:1,p:"Sam forgot his umbrella on the walk home in the rain. By the time he reached his front door, he was *drenched*. He was completely wet from his hair down to his socks.",
+  d:"completely soaked",o:["shivering from cold","covered in mud","late for dinner"],
+  clue:"The next sentence restates it: “completely wet from his hair down to his socks.”"},
+ {w:'RELUCTANT',dok:1,p:"Ava was *reluctant* to jump into the cold lake. In other words, she did not want to do it. She dipped one toe in the water and quickly pulled it back out.",
+  d:"not wanting to do something",o:["excited and ready","unable to swim","proud of herself"],
+  clue:"“In other words” signals a restatement: “she did not want to do it.”"},
+ {w:'TIMID',dok:1,p:"The new puppy was *timid*, or shy. It hid behind the couch whenever a visitor came into the room and only peeked out when everything was quiet.",
+  d:"shy and easily scared",o:["playful and loud","very hungry","very tiny"],
+  clue:"“Or shy” is a synonym clue. Hiding behind the couch fits that meaning."},
+ {w:'VANISH',dok:1,p:"The magician waved a black cloth over the rabbit. Then he made it *vanish*, or disappear! The crowd gasped when they saw the empty hat.",
+  d:"to disappear",o:["to grow bigger","to jump high","to change color"],
+  clue:"“Or disappear” gives the meaning. The empty hat shows the rabbit is gone."},
+ {w:'GLEAMING',dok:1,p:"Dad washed and waxed the old truck all afternoon. When he finished, the paint was *gleaming*, shining so brightly in the sun that Rosa had to squint.",
+  d:"shining brightly",o:["covered in dust","making a loud noise","painted a new color"],
+  clue:"The words right after it, “shining so brightly,” explain the word."},
+ {w:'MURKY',dok:1,p:"The pond water was *murky*, which means it was dark and cloudy. Kai leaned over the edge, but he could not see the bottom or the fish swimming below.",
+  d:"dark and cloudy",o:["clear and clean","freezing cold","very deep"],
+  clue:"“Which means it was dark and cloudy” is a definition clue."},
+ {w:'CONSTRUCT',dok:1,p:"This spring, our class will *construct*, or build, a birdhouse for the school garden. We will measure the wood, hammer the pieces together, and add a little roof on top.",
+  d:"to build",o:["to paint","to take apart","to sell"],
+  clue:"“Or build” is a synonym clue. Measuring, hammering, and adding a roof are all steps of building."},
+ {w:'DAMP',dok:1,p:"Eli grabbed his swim towel from the hook. It was still *damp*, which means it was a little bit wet. It had not dried all the way since yesterday’s trip to the pool.",
+  d:"a little bit wet",o:["very dry","nice and warm","very dirty"],
+  clue:"“Which means it was a little bit wet” is a definition clue."},
+ {w:'HILARIOUS',dok:1,p:"The puppet show was *hilarious*, or very funny. The puppets kept bumping into each other and falling off the stage. Everyone in the audience laughed so hard their bellies hurt.",
+  d:"very funny",o:["very scary","very boring","very sad"],
+  clue:"“Or very funny” tells the meaning, and the audience laughing proves it."},
+ {w:'SOAR',dok:1,p:"Bald eagles can *soar*, or fly high in the sky, for a long time without flapping their wings. They ride the warm air and glide in big, slow circles above the treetops.",
+  d:"to fly high",o:["to swim deep","to build a nest","to sleep in a tree"],
+  clue:"“Or fly high in the sky” is a definition clue right after the word."},
+ {w:'GLOOMY',dok:1,p:"Saturday morning was *gloomy*. In other words, the sky was dark, gray, and dreary. Thick clouds covered the sun, and nobody felt like playing outside.",
+  d:"dark and dreary",o:["bright and sunny","windy and cold","snowy"],
+  clue:"“In other words” signals a restatement: “dark, gray, and dreary.”"},
+ {w:'VACANT',dok:1,p:"The house next door was *vacant*, or empty. No one had lived there for months, and the windows had no curtains. Then one day a moving truck pulled into the driveway.",
+  d:"empty",o:["crowded","brand new","freshly painted"],
+  clue:"“Or empty” is a synonym clue. “No one had lived there” supports it."},
+ {w:'DASH',dok:1,p:"When the bell rang, the students had to *dash*, or run quickly, to the bus before it pulled away. Mateo grabbed his backpack and sprinted across the parking lot.",
+  d:"to run quickly",o:["to walk slowly","to wave goodbye","to hide"],
+  clue:"“Or run quickly” gives the meaning. Mateo sprinting shows it."},
+ {w:'GRASP',dok:1,p:"At the climbing wall, the coach said, “Keep a strong *grasp*, or tight grip, on each rock before you move your feet.” Nora squeezed the handholds and slowly pulled herself up.",
+  d:"a tight hold",o:["a loud shout","a long jump","a quick look"],
+  clue:"“Or tight grip” is a synonym clue. Nora squeezing the handholds fits."},
+ {w:'PREDICT',dok:1,p:"Before reading the next chapter, Ms. Lee asked the class to *predict*, which means to make a smart guess about what will happen next. Jayden guessed the lost dog would find its way home.",
+  d:"to make a smart guess about what will happen",o:["to read out loud","to forget the story","to draw a picture"],
+  clue:"“Which means to make a smart guess about what will happen next” is a definition clue."},
+ {w:'COURTEOUS',dok:1,p:"Jada is always *courteous*, or polite. She says please and thank you, holds the door for others, and waits her turn to talk.",
+  d:"polite",o:["rude","very quiet","very funny"],
+  clue:"“Or polite” is a synonym clue, and the examples show good manners."},
+
+ // ---------- DOK 2: example, antonym, cause and effect ----------
+ {w:'PERSUADE',dok:2,p:"Maya really wanted a puppy. She made a poster listing five reasons a dog would be good for the family. She promised to walk it every day and showed her parents the money she had saved for dog food. Her plan worked! She was able to *persuade* her parents, and they said yes.",
+  d:"to get someone to agree by giving good reasons",o:["to make a poster","to save money","to take care of a pet"],
+  clue:"Example clue: Maya gave reasons and made promises, and then her parents changed their minds and said yes."},
+ {w:'SCARCE',dok:2,p:"In the spring, the creek behind the farm was full, and water was easy to find. By the end of the hot, dry summer, water was *scarce*. The cows had to walk a long way to find even a small puddle.",
+  d:"hard to find; not enough",o:["cold and fresh","easy to find","dirty and muddy"],
+  clue:"Antonym clue: in spring water was “easy to find,” but summer was the opposite. The cows walking far shows there wasn’t much."},
+ {w:'EXHAUSTED',dok:2,p:"Lena ran in the five-mile race in the morning, then helped her team carry heavy boxes all afternoon. That night she was so *exhausted* that she fell asleep on the couch before dinner was even ready.",
+  d:"extremely tired",o:["very hungry","very excited","bored"],
+  clue:"Cause and effect: a long race plus heavy work caused her to fall asleep before dinner."},
+ {w:'GENEROUS',dok:2,p:"When Omar saw that his friend forgot her lunch, he gave her half of his sandwich and both of his cookies. Later, he let a younger student borrow his favorite book. Omar is a *generous* person.",
+  d:"happy to share and give to others",o:["very smart","good at sports","careful with money"],
+  clue:"Example clues: sharing his lunch and lending his favorite book are both ways of giving."},
+ {w:'FURIOUS',dok:2,p:"When Jada saw that someone had stomped on her sand castle, her face turned red. She clenched her fists and stamped her feet. She was *furious*! It took a long walk down the beach for her to calm down.",
+  d:"very angry",o:["very sad","confused","a little surprised"],
+  clue:"Example clues: a red face, clenched fists, stamping feet, and needing to calm down all show anger."},
+ {w:'NIMBLE',dok:2,p:"The mountain goat was *nimble*. It leaped from one narrow rock to the next without slipping, then spun around and hopped back down the steep cliff in just a few seconds.",
+  d:"able to move quickly and lightly",o:["heavy and slow","afraid of heights","hungry for grass"],
+  clue:"Example clues: leaping without slipping, spinning, and hopping down fast."},
+ {w:'DECLINE',dok:2,p:"Ben was invited to Theo’s birthday party on Saturday, but he already had a soccer game that day. Ben felt bad, but he had to *decline* the invitation. He wrote Theo a card that said, “Sorry I can’t come. Have a great birthday!”",
+  d:"to politely say no",o:["to happily say yes","to forget about","to mail a letter"],
+  clue:"Cause and effect: Ben had a game, so he couldn’t go. His card says “Sorry I can’t come.”"},
+ {w:'ABUNDANT',dok:2,p:"The apple trees in the orchard were *abundant* this fall. Every branch was heavy with fruit, and the workers filled basket after basket. There were so many apples that the farm gave extra ones away for free.",
+  d:"more than enough; plentiful",o:["rotten","only a few","very expensive"],
+  clue:"Example clues: heavy branches, basket after basket, and extra apples given away."},
+ {w:'HESITATE',dok:2,p:"Nico climbed to the top of the high dive and looked down at the water. He *hesitated* at the edge, took a deep breath, and stepped back. After a few seconds of thinking it over, he finally walked forward and jumped.",
+  d:"to pause because you are unsure",o:["to jump very high","to swim fast","to cheer loudly"],
+  clue:"Example clues: he stepped back and took a few seconds to think before he jumped."},
+ {w:'CONCEAL',dok:2,p:"Priya wanted her mom’s birthday present to be a surprise. She wrapped it in a blanket and pushed it far under her bed to *conceal* it, so no one would spot it before the party.",
+  d:"to hide",o:["to wrap in paper","to break","to show off"],
+  clue:"Cause and effect: she wanted a surprise, so she put it where “no one would spot it.”"},
+ {w:'BOAST',dok:2,p:"Every day at recess, Kyle said, “I’m the fastest runner in the whole school!” and “My drawings are the best!” His friends got tired of hearing him *boast* all the time.",
+  d:"to brag about yourself",o:["to run a race","to share with friends","to complain about being tired"],
+  clue:"Example clues: Kyle keeps saying he is the fastest and the best, which is bragging."},
+ {w:'FLEXIBLE',dok:2,p:"The gymnast was very *flexible*. She bent backward until her hands touched the mat, then did the splits and touched her toes without bending her knees.",
+  d:"able to bend easily",o:["very strong","very tall","nervous"],
+  clue:"Example clues: bending backward, doing the splits, and touching her toes all show easy bending."},
+ {w:'DROWSY',dok:2,p:"After a big lunch, the classroom was warm and quiet. Ms. Park’s voice was soft as she read the story. Soon Luis was yawning, and his eyes kept slowly closing. He felt *drowsy*.",
+  d:"sleepy",o:["hungry","grumpy","sick"],
+  clue:"Cause and effect: a big lunch and a warm, quiet room led to yawning and closing eyes."},
+ {w:'RECKLESS',dok:2,p:"Mia is careful on her bike. She wears a helmet and stops at every corner. Her cousin is *reckless*. He rides with no helmet, zooms down steep hills, and doesn’t look for cars.",
+  d:"not careful about danger",o:["very careful","very slow","polite"],
+  clue:"Antonym clue: Mia is careful, and her cousin is the opposite. The examples show he ignores danger."},
+ {w:'ASSIST',dok:2,p:"Every Friday, Sam and Ana *assist* the school librarian. Sam carries stacks of books back to the shelves, and Ana puts the new books in order. The librarian says she couldn’t do it without them.",
+  d:"to help",o:["to read quietly","to borrow books","to watch"],
+  clue:"Example clues: carrying books and putting them in order are jobs that help the librarian."},
+ {w:'FEEBLE',dok:2,p:"When Tara found the baby bird, it was *feeble*. It could barely lift its head or open its beak. After a week of care at the animal shelter, it was strong enough to flap its wings and hop around.",
+  d:"weak",o:["noisy","hungry","colorful"],
+  clue:"Antonym clue: later the bird was “strong enough,” so before it was the opposite of strong."},
+ {w:'GRATEFUL',dok:2,p:"After the firefighters visited our school, we wrote them thank-you cards. Zoe drew a picture of their truck, and Max wrote, “Thank you for keeping us safe!” We were all so *grateful*.",
+  d:"thankful",o:["jealous","surprised","bored"],
+  clue:"Example clues: thank-you cards and “Thank you for keeping us safe!” show thankfulness."},
+ {w:'STURDY',dok:2,p:"Grandpa built a *sturdy* treehouse. It didn’t wobble or creak, even in strong winds, and it held all six cousins at once without a problem.",
+  d:"strong and solid",o:["very tall","brightly painted","shaky"],
+  clue:"Example clues: it didn’t wobble in strong winds and held six cousins."},
+ {w:'DISCARD',dok:2,p:"On cleanup day, Ms. Grant told us to sort our supply boxes. We kept the sharp pencils and good markers, but we had to *discard* the broken crayons and dried-out glue sticks in the trash can.",
+  d:"to throw away",o:["to keep","to color with","to fix"],
+  clue:"Antonym and example clues: the good supplies were kept, but the broken ones went in the trash."},
+ {w:'TIDY',dok:2,p:"Ben’s side of the bedroom was messy. Clothes were on the floor and toys were everywhere. Lily’s side was *tidy*. Her bed was made, her books were lined up on the shelf, and her shoes were in a neat row.",
+  d:"neat and clean",o:["messy","small","dark"],
+  clue:"Antonym clue: Ben’s side was messy, and Lily’s side was the opposite, with everything in its place."},
+
+ // ---------- DOK 3: combine clues, multiple-meaning words ----------
+ {w:'BRIGHT',dok:3,p:"Everyone in Ms. Hall’s class was stuck on the riddle. Then Jamal raised his hand and explained the answer step by step. “What a *bright* idea!” said Ms. Hall. “You figured out what none of us could.”",
+  d:"smart or clever",o:["giving off a lot of light","a bold, strong color","sunny and warm"],
+  clue:"Bright has several meanings. Here it describes an idea, and Ms. Hall says Jamal figured out what no one else could, so it means clever."},
+ {w:'PITCHER',dok:3,p:"It was the hottest day of the summer. Grandpa squeezed ten lemons, added water and sugar, and stirred it all together in a tall glass *pitcher*. Then he carried it to the porch and poured a cup for everyone.",
+  d:"a container with a handle and spout for pouring",o:["a baseball player who throws to the batter","a person who sells lemonade","a small paper cup"],
+  clue:"Put the clues together: it is glass, it holds the lemonade, and Grandpa pours from it. The baseball meaning doesn’t fit."},
+ {w:'STERN',dok:3,p:"Captain Rosa stood at the front of the boat and pointed toward the dock. “Ezra, take the rope to the *stern*,” she said. Ezra walked past the cabin, all the way to the very back of the boat, and tied the rope to a post there.",
+  d:"the back part of a boat",o:["strict and serious","the front part of a boat","a large wave"],
+  clue:"Stern can also mean strict, but here the captain is at the front and Ezra follows her order by walking to the very back."},
+ {w:'DRAFT',dok:3,p:"Before turning in her story, Lena wrote a *draft*. She read it out loud, crossed out sentences that didn’t make sense, and added more details to the ending. Then she copied her neat final version onto clean paper.",
+  d:"an early version of a piece of writing",o:["a cool breeze coming into a room","picking players for a team","a quick drawing"],
+  clue:"Compare the clues: she fixed and changed it, then made a “final version.” So the first one was an early version."},
+ {w:'OBSTACLE',dok:3,p:"The hikers had to cross a fast river, climb over a fallen tree, and squeeze between two giant boulders. Each *obstacle* slowed them down, but they helped each other and reached the top of the trail before sunset.",
+  d:"something that blocks your way or makes things harder",o:["a fun game for hikers","a place to rest","a trail map"],
+  clue:"Think about what the river, the fallen tree, and the boulders have in common: each one slowed them down."},
+ {w:'RESILIENT',dok:3,p:"A big storm flattened the tomato plants in Ms. Ortiz’s class garden. The next morning, the students tied the stems to sticks and gave them water. Within a week, the plants were standing tall again and growing new tomatoes. “These plants are *resilient*,” Ms. Ortiz said proudly.",
+  d:"able to bounce back after something hard",o:["easily damaged","very tall","needing lots of water"],
+  clue:"Follow the events: the plants were knocked down, then recovered and grew again. Ms. Ortiz is proud of how they came back."},
+ {w:'CONTENT',dok:3,p:"After a long day of chasing butterflies, the kitten ate a full bowl of food. Then she curled up in a warm patch of sunlight and purred softly. She looked completely *content*.",
+  d:"happy and satisfied",o:["what is inside something","the topic of a book","ready to play again"],
+  clue:"Content has more than one meaning. A full belly, a warm nap spot, and soft purring show a happy, satisfied kitten."},
+ {w:'FEAT',dok:3,p:"No one in the town had ever climbed Eagle Peak in the winter. It took Dana three days of hiking through deep snow and freezing wind to reach the top. Everyone agreed it was an amazing *feat*.",
+  d:"an impressive act that takes skill or courage",o:["the body parts you stand on","a big holiday meal","a snowy mountain"],
+  clue:"Feat sounds like feet but means something else. No one had done it before, it was hard, and everyone called it amazing."},
+ {w:'THRIVE',dok:3,p:"Ty planted two sunflower seeds. He put one pot in a dark closet and the other on a sunny windowsill. The closet plant stayed small and pale. The windowsill plant grew taller than Ty and bloomed with huge yellow flowers. Sunflowers *thrive* in sunlight.",
+  d:"to grow strong and healthy",o:["to dry out and die","to need very little care","to grow only at night"],
+  clue:"Compare the two plants: the one in the sun grew tall and bloomed, and the one in the dark stayed small."},
+ {w:'SPARE',dok:3,p:"On the way to the beach, the car got a flat tire. “Good thing we packed a *spare*,” Dad said. He opened the trunk, pulled out the extra tire, and had the car fixed in twenty minutes.",
+  d:"an extra one kept in case it is needed",o:["to save someone from harm","free time with nothing to do","a broken car part"],
+  clue:"Spare has several meanings. Here Dad pulls out “the extra tire” to replace the flat one."},
+ {w:'BAT',dok:3,p:"As the sun set behind the hills, the campers sat quietly near the mouth of the cave. Suddenly a *bat* flapped its leathery wings and swooped out into the night sky to hunt for insects.",
+  d:"a small flying animal that comes out at night",o:["a wooden stick used to hit a ball","to blink your eyes quickly","to hit something"],
+  clue:"Combine the clues: leathery wings, flying out of a cave at night, and hunting insects. The baseball meaning doesn’t fit."},
+ {w:'FAIR',dok:3,p:"Before the relay race, Coach Kim gave every team the same rules and the same amount of practice time. She watched each race carefully and did not pick favorites. “That was a *fair* contest,” said the winning team’s captain.",
+  d:"treating everyone the same way",o:["a festival with rides and games","light in color","sunny and clear"],
+  clue:"Fair has several meanings. Same rules, same practice time, and no favorites all point to treating everyone equally."},
+ {w:'RING',dok:3,p:"When the campfire was ready, the scouts pulled their logs close and sat in a *ring* around the flames. Everyone could see each other’s faces as they took turns telling stories.",
+  d:"a circle",o:["the sound a bell makes","jewelry worn on a finger","to call someone on the phone"],
+  clue:"Picture it: the scouts sat around the fire and could all see each other’s faces. That shape is a circle."},
+ {w:'SCALE',dok:3,p:"Before mailing the package to Aunt Rita, Mom set it on the *scale* in the kitchen. The numbers on the screen showed it weighed three pounds, so she knew how many stamps to buy.",
+  d:"a tool for measuring weight",o:["a thin plate on a fish’s skin","to climb up something","a set of musical notes"],
+  clue:"Put the clues together: she set the package on it and it showed how much the package weighed."},
+ {w:'PRESENT',dok:3,p:"Next Tuesday, our class will *present* our science projects to the parents. Each group will stand at the front of the gym, show their poster, and explain what they discovered.",
+  d:"to show or explain something to an audience",o:["a gift","happening right now","here, not absent"],
+  clue:"Present has several meanings. Standing in front of parents, showing a poster, and explaining are all parts of giving a presentation."},
+ {w:'FIRM',dok:3,p:"“Homework first, then video games,” Dad said in a *firm* voice. We begged and begged, and we even promised to do extra chores. But no matter what we said, Dad did not change his mind.",
+  d:"strong and not willing to change",o:["a business or company","soft and gentle","very loud and angry"],
+  clue:"Combine the clues: they begged and made promises, but Dad “did not change his mind.”"},
+ {w:'INSPECT',dok:3,p:"Strange footprints appeared in the snow outside. Kim grabbed a magnifying glass, and Leo grabbed the animal guidebook. They knelt down to *inspect* the tracks, counting the toes and measuring each print with a ruler.",
+  d:"to look at something very closely",o:["to run away from something","to step on something","to draw a map"],
+  clue:"Put the actions together: a magnifying glass, a guidebook, counting toes, and measuring all mean looking closely."},
+ {w:'LIGHT',dok:3,p:"On the first day of school, Maya’s backpack was so *light* that her little brother carried it with one hand. It only had a folder, a pencil box, and a snack inside.",
+  d:"not heavy",o:["brightness from the sun","pale in color","to start a fire"],
+  clue:"Light has several meanings. Her little brother carried it with one hand, and it held only a few small things."},
+ {w:'PATIENT',dok:3,p:"Grandpa and I sat by the lake for two hours without a single fish nibbling our hooks. I wanted to give up and go home, but Grandpa just smiled and kept waiting calmly. “Fishing teaches you to be *patient*,” he said.",
+  d:"able to wait calmly without getting upset",o:["a person getting care from a doctor","very fast","very lucky"],
+  clue:"Patient can mean a person seeing a doctor, but here Grandpa waits calmly for two hours while the narrator wants to quit."},
+ {w:'WAVE',dok:3,p:"As the school bus pulled away from the curb, Lily pressed her face to the window. She saw her grandma on the sidewalk and gave her a big *wave* until the bus turned the corner.",
+  d:"moving your hand to say hello or goodbye",o:["a moving ridge of water in the ocean","a curl in someone’s hair","a sudden rush of feeling"],
+  clue:"Combine the clues: the bus is leaving and Lily sees her grandma. She is saying goodbye with her hand."}
+];
+const DOK_NAME={1:'Find It',2:'Figure It Out',3:'Clue Detective'};
+const STAR=["..X..",".XXX.","XXXXX",".XXX.","X...X"];
+const DOK_TIP={1:'The passage tells you what the word means. Look for “or,” “which means,” and “in other words.”',2:'Look for examples, opposites, or cause and effect.',3:'Put clues from several sentences together. Watch for words with more than one meaning.'};
+const SKINS=['#fcd8a8','#e4a672','#b06830','#6c3c18'];
+const PCOL=['#d82800','#0070ec'];
+const HAIR='#2c1408';
+const KEY='swish-spell-setup-v1';
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rand=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ================= AUDIO (chiptune) ================= */
+let AC=null, muted=false;
+function ensureAudio(){
+  if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null;}}
+  if(AC&&AC.state==='suspended'){AC.resume().catch(()=>{});}
+}
+function tone(f,dur,type,vol,delay,f2){
+  if(!AC||muted)return;
+  const t=AC.currentTime+(delay||0), o=AC.createOscillator(), g=AC.createGain();
+  o.type=type||'square'; o.frequency.setValueAtTime(f,t); if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(vol||.1,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(AC.destination); o.start(t); o.stop(t+dur+.02);
+}
+function noise(dur,vol,freq){
+  if(!AC||muted)return;
+  const len=Math.floor(AC.sampleRate*dur), b=AC.createBuffer(1,len,AC.sampleRate), d=b.getChannelData(0);
+  let v=0; for(let i=0;i<len;i++){if(i%6===0)v=Math.random()*2-1; d[i]=v*(1-i/len);}
+  const s=AC.createBufferSource(); s.buffer=b; const f=AC.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq||3000; f.Q.value=.7;
+  const g=AC.createGain(); g.gain.value=vol||.3; s.connect(f).connect(g).connect(AC.destination); s.start();
+}
+function sfx(n,v){
+  switch(n){
+    case 'tick': tone(1200,.05,'square',.05); break;
+    case 'shoot': tone(220,.14,'square',.07,0,660); break;
+    case 'swish': noise(.35,.35,3800); break;
+    case 'rim': tone(440,.12,'square',.07); tone(660,.12,'square',.05,.04); break;
+    case 'board': tone(150,.12,'square',.09); noise(.08,.2,700); break;
+    case 'bounce': tone(130,.08,'triangle',.3*(v||1),0,80); break;
+    case 'letter': tone(523+(v||0)*60,.1,'square',.08); tone(784+(v||0)*60,.12,'square',.07,.08); break;
+    case 'word': [659,784,988,1319].forEach((f,i)=>tone(f,.1,'square',.07,i*.07)); break;
+    case 'good': [523,659,784,1047].forEach((f,i)=>tone(f,.14,'square',.08,i*.08)); break;
+    case 'bad': tone(330,.14,'square',.06); tone(220,.3,'square',.06,.14); break;
+    case 'win': [523,523,523,698,880,784,1047].forEach((f,i)=>tone(f,.16,'square',.07,i*.13)); break;
+  }
+}
+const canSpeak='speechSynthesis' in window;
+function speak(text){
+  if(!canSpeak)return;
+  try{speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.rate=.9; speechSynthesis.speak(u);}catch(e){}
+}
+
+/* ================= PIXEL ART ================= */
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16); let r=n>>16,g=(n>>8)&255,b=n&255;
+  const f=v=>clamp(Math.round(amt<0?v*(1+amt):v+(255-v)*amt),0,255);
+  return '#'+((1<<24)+(f(r)<<16)+(f(g)<<8)+f(b)).toString(16).slice(1);
+}
+const HEADS={
+ boy:["....HHHHHH......","...HHHHHHHH.....","..HHHHHHHHHH....","..HHHHHSSSSH....","..HHHSSSSSSS....","..HHsSSSSESS....","..HHsSSSSSSSS...","...HSSSSSSSS....","....SSSSSMMS....",".....SSSSSS.....","......SSS......."],
+ girl:["....HHHHHH......","...HHHHHHHH.....",".JHHHHHHHHHH....","HHHHHHHSSSSH....","HH.HHSSSSSSS....","HH.HsSSSSESS....","H..HsSSSSSSSS...","H..HHSSSSSSS....","...HHSSSSMMS....","...H.SSSSSS.....","......SSS......."]
+};
+const BODY=["....JJJWWJJJ....","...JJJJWWJJJJ..."]
+ .concat(Array(10).fill("...JJJJJJJJJJ..."),["...jjjjjjjjjj..."],Array(5).fill("...DDDDDDDDDD..."),["...DDDD..DDDD..."],
+  Array(7).fill("....SSS..SSS...."),["....WWW..WWW....","....JJJ..JJJ....","....WWW..WWW....","....WWW..WWW....","...KKKK..KKKKK..","...KKKKK.KKKKKK."]);
+const DIGITS={1:["010","110","010","010","111"],2:["111","001","111","100","111"]};
+const BALL=[
+ ["..OOOO..",".OLOKOO.","OOOOKOOO","KKKKKKKK","OOOOKOOO","OOOOKOOO",".OOOKOO.","..OOOO.."],
+ ["..OOOO..",".KLOOOK.","OOKOOKOO","OOOKKOOO","OOOKKOOO","OOKOOKOO",".KOOOOK.","..OOOO.."]
+];
+const BALLPAL={O:'#f87818',K:'#5c1c00',L:'#fcbc7c'};
+const sprCache={};
+function makeSprite(rows,pal){
+  const cv=document.createElement('canvas'); cv.width=rows[0].length; cv.height=rows.length; const c=cv.getContext('2d');
+  rows.forEach((r,y)=>{for(let x=0;x<r.length;x++){const col=pal[r[x]];if(col){c.fillStyle=col;c.fillRect(x,y,1,1);}}});
+  return cv;
+}
+function bodySprite(g,skin,col){
+  const k=g+skin+col; if(sprCache[k])return sprCache[k];
+  const s=SKINS[skin];
+  return sprCache[k]=makeSprite(HEADS[g].concat(BODY),{H:HAIR,S:s,s:shade(s,-.2),E:'#140c0c',M:'#b83c28',J:col,j:shade(col,-.35),D:shade(col,-.5),W:'#fcfcfc',K:'#1c1c1c'});
+}
+const ballSpr=BALL.map(r=>makeSprite(r,BALLPAL));
+function drawBall(c,x,y,frame){c.drawImage(ballSpr[frame||0],Math.round(x)-4,Math.round(y)-4);}
+function pline(c,x0,y0,x1,y1,w){
+  const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0),1);
+  for(let i=0;i<=n;i++)c.fillRect(Math.round(x0+(x1-x0)*i/n),Math.round(y0+(y1-y0)*i/n),w,w);
+}
+// arms: [shoulder, elbow, hand] relative to feet
+const POSES={
+  ready:{b:[[-5,-31],[-5,-40],[0,-48]],f:[[3,-31],[7,-38],[5,-48]],ball:[3,-52]},
+  follow:{b:[[-5,-31],[-2,-41],[2,-51]],f:[[3,-31],[6,-41],[9,-51]]},
+  idle:{b:[[-5,-31],[-5,-21],[-5,-21]],f:[[3,-31],[4,-21],[4,-21]]}
+};
+function drawPlayer(c,x,y,o){
+  x=Math.round(x); y=Math.round(y-(o.jump||0)); const gy=Math.round(y+(o.jump||0));
+  const skin=SKINS[o.skin||0], P=POSES[o.pose||'idle'];
+  c.fillStyle='rgba(0,0,0,.35)'; c.fillRect(x-7,gy-1,15,2); c.fillRect(x-5,gy,11,1);
+  const arm=a=>{c.fillStyle=skin;pline(c,x+a[0][0],y+a[0][1],x+a[1][0],y+a[1][1],2);pline(c,x+a[1][0],y+a[1][1],x+a[2][0],y+a[2][1],2);
+    c.fillStyle=o.color;c.fillRect(x+a[0][0]-1,y+a[0][1]-1,3,3);};
+  arm(P.b);
+  c.drawImage(bodySprite(o.gender,o.skin||0,o.color),x-8,y-43);
+  c.fillStyle='#fcfcfc'; (DIGITS[o.num||1]).forEach((r,ry)=>{for(let rx=0;rx<3;rx++)if(r[rx]==='1')c.fillRect(x-2+rx,y-28+ry,1,1);});
+  arm(P.f);
+  if(o.ball&&P.ball)drawBall(c,x+P.ball[0],y+P.ball[1],0);
+}
+
+/* ================= SETUP ================= */
+const setup={mode:1,goal:10,speed:'rookie',players:[{name:'',gender:'girl',skin:1},{name:'',gender:'boy',skin:2}]};
+try{
+  const s=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(s&&Array.isArray(s.players)){
+    if(s.mode===1||s.mode===2)setup.mode=s.mode; if(s.goal===5||s.goal===10)setup.goal=s.goal; if(s.speed==='rookie'||s.speed==='allstar')setup.speed=s.speed;
+    s.players.slice(0,2).forEach((p,i)=>Object.assign(setup.players[i],{name:String(p.name||'').slice(0,12),gender:p.gender==='boy'?'boy':'girl',skin:clamp(p.skin|0,0,3)}));
+  }
+}catch(e){}
+function saveSetup(){try{localStorage.setItem(KEY,JSON.stringify(setup));}catch(e){}}
+
+function renderSetup(){
+  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.mode===setup.mode)));
+  document.querySelectorAll('[data-speed]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.speed===setup.speed)));
+  document.querySelectorAll('[data-goal]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.goal===setup.goal)));
+  $('#rule4').textContent=setup.mode===1
+    ? 'Read the passage and choose the meaning. A correct meaning scores 1 point.'
+    : 'Finish the word for 1 point. Choose the right meaning for 1 more point.';
+  $('#modeHint').textContent=setup.mode===1
+    ? 'Spell each word, then answer its meaning question. Reach the goal to win.'
+    : 'Both players race to spell the same word, taking turns one shot at a time. Each word is worth up to 2 points: 1 for spelling it and 1 for the meaning. A wrong meaning gives the other player a chance to steal that point.';
+  let h='';
+  for(let i=0;i<setup.mode;i++){
+    const p=setup.players[i];
+    h+=`<article class="pcard px" style="--pc:${PCOL[i]}">
+      <div class="pcard-main">
+        <h3>PLAYER ${i+1}</h3>
+        <label for="name${i}">Name</label>
+        <input id="name${i}" data-p="${i}" maxlength="12" autocomplete="off" spellcheck="false" placeholder="Type your name" value="${esc(p.name)}">
+        <div class="field-label" id="chl${i}">Character</div>
+        <div class="seg small" role="group" aria-labelledby="chl${i}">
+          <button type="button" data-p="${i}" data-g="girl" aria-pressed="${p.gender==='girl'}">Girl</button>
+          <button type="button" data-p="${i}" data-g="boy" aria-pressed="${p.gender==='boy'}">Boy</button>
+        </div>
+        <div class="field-label" id="skl${i}">Skin tone</div>
+        <div class="swatches" role="group" aria-labelledby="skl${i}">
+          ${SKINS.map((c,k)=>`<button type="button" class="sw" data-p="${i}" data-s="${k}" style="--sw:${c}" aria-label="Skin tone ${k+1}" aria-pressed="${p.skin===k}"></button>`).join('')}
+        </div>
+      </div>
+      <canvas class="preview" id="pv${i}" width="160" height="320" aria-hidden="true"></canvas>
+    </article>`;
+  }
+  $('#cards').innerHTML=h;
+  for(let i=0;i<setup.mode;i++)drawPreview(i);
+}
+const mini=document.createElement('canvas'); mini.width=32; mini.height=64;
+function portrait(target,o){
+  const m=mini.getContext('2d'); m.clearRect(0,0,32,64); drawPlayer(m,16,62,o);
+  const c=target.getContext('2d'); c.imageSmoothingEnabled=false; c.clearRect(0,0,target.width,target.height); c.drawImage(mini,0,0,target.width,target.height);
+}
+function drawPreview(i){
+  const cv=$('#pv'+i); if(!cv)return; const p=setup.players[i];
+  portrait(cv,{gender:p.gender,skin:p.skin,color:PCOL[i],num:i+1,pose:'ready',ball:true});
+}
+$('#cards').addEventListener('input',e=>{
+  if(e.target.matches('input[data-p]')){setup.players[+e.target.dataset.p].name=e.target.value.slice(0,12);saveSetup();}
+});
+$('#cards').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return; const i=+b.dataset.p;
+  if(b.dataset.g){setup.players[i].gender=b.dataset.g; b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}
+  if(b.dataset.s!=null){setup.players[i].skin=+b.dataset.s; b.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}
+  drawPreview(i); saveSetup();
+});
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{setup.mode=+b.dataset.mode;saveSetup();renderSetup();}));
+document.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{setup.speed=b.dataset.speed;saveSetup();renderSetup();}));
+document.querySelectorAll('[data-goal]').forEach(b=>b.addEventListener('click',()=>{setup.goal=+b.dataset.goal;saveSetup();renderSetup();}));
+$('#startBtn').addEventListener('click',()=>{ensureAudio();saveSetup();newGame();});
+
+/* ================= GAME STATE ================= */
+const BW=250,BH=150, FLOOR=132, GRAV=412;
+const SHOOTER={x:55,y:136}, WAITER={x:150,y:135};
+const S0={x:SHOOTER.x+3,y:SHOOTER.y-52};
+const RIM={x:201,y:67};
+const cv=$('#cv'), ctx=cv.getContext('2d');
+const buf=document.createElement('canvas'); buf.width=BW; buf.height=BH; const bctx=buf.getContext('2d');
+let N=4, G=null, Q=null, bannerTimer=0;
+
+function newGame(){
+  const half=setup.speed==='rookie'?.085:.062;
+  G={mode:setup.mode,goal:setup.goal,half,rate:setup.speed==='rookie'?.72:1.15,
+    players:setup.players.slice(0,setup.mode).map((p,i)=>({name:(p.name.trim()||('Player '+(i+1))),gender:p.gender,skin:p.skin,color:PCOL[i],
+      points:0,words:0,shots:0,makes:0,qRight:0,qTotal:0,prog:0})),
+    round:0,cur:0,phase:'idle',word:null,used:{1:[],2:[],3:[]},
+    m:{p:0,pd:1,h:0,hd:1,pz:.5,hz:.5},ball:null,fx:[],jumpT:-1,net:0,lastMade:false,time:0,finisher:0};
+  $('#setup').hidden=true; $('#game').hidden=false; $('#winWrap').hidden=true;
+  fit(); startRound();
+}
+function pickWord(){
+  const dok=1+rand(3);
+  let pool=WORDS.filter(w=>w.dok===dok&&!G.used[dok].includes(w.w));
+  if(!pool.length){G.used[dok]=[];pool=WORDS.filter(w=>w.dok===dok);}
+  const w=pool[rand(pool.length)]; G.used[dok].push(w.w); return w;
+}
+function startRound(sub){
+  G.round++; G.word=pickWord(); G.players.forEach(p=>p.prog=0);
+  G.cur=G.mode===2?(G.round-1)%2:0;
+  renderBoard();
+  const first=G.mode===2?`${G.players[G.cur].name} shoots first`:`Spell ${G.word.w}`;
+  showBanner(sub||`ROUND ${G.round}`,`LEVEL ${G.word.dok} · ${DOK_NAME[G.word.dok]} · ${first}`,2000);
+  newShot();
+}
+function newShot(){
+  const m=G.m; G.phase='power'; G.ball=null; G.jumpT=-1;
+  m.p=Math.random(); m.pd=Math.random()<.5?1:-1; m.h=0; m.hd=1;
+  m.pz=.28+Math.random()*.5; m.hz=.28+Math.random()*.5;
+  updateFooter();
+}
+function curP(){return G.players[G.cur];}
+// sliders speed up 10% for every letter the shooter has already lit
+function speedMult(){return 1+0.1*curP().prog;}
+function anyOverlay(){return !$('#qWrap').hidden||!$('#winWrap').hidden||!$('#quitWrap').hidden;}
+
+function tap(){
+  ensureAudio();
+  if(!G||$('#game').hidden||anyOverlay())return;
+  if(G.phase==='power'){G.phase='height';G.m.h=0;G.m.hd=1;sfx('tick');updateFooter();}
+  else if(G.phase==='height'){sfx('tick');shoot();}
+}
+
+/* ---- ball flight ---- */
+function seg(a,b,ya,ev,msg){
+  ya=Math.min(ya,a.y,b.y);
+  const t1=Math.sqrt(2*(a.y-ya)/GRAV), t2=Math.sqrt(2*(b.y-ya)/GRAV), T=Math.max(.06,t1+t2);
+  return {a,b,T,vx:(b.x-a.x)/T,vy:-GRAV*t1,ev,msg};
+}
+function bounces(x,dir,msg){
+  const F=FLOOR, p=k=>({x:x+dir*k,y:F});
+  return [seg(p(0),p(14),F-20,'bounce',msg),seg(p(14),p(23),F-8,'bounce2'),seg(p(23),p(27),F-3,'bounce3')];
+}
+function shoot(){
+  const m=G.m, pl=curP();
+  const pe=(m.p-m.pz)/G.half, he=(m.h-m.hz)/G.half, mx=Math.max(Math.abs(pe),Math.abs(he));
+  let o;
+  if(mx<=1)o=mx<=.55?'swish':'rollin';
+  else if(mx<=1.7)o=Math.random()<.35?'rollin':(pe>0?'backout':'frontout');
+  else if(Math.abs(pe)>=Math.abs(he))o=pe<0?'short':'board';
+  else o=he<0?'clank':'moon';
+  const ya=59-m.h*46, F=FLOOR, R=RIM;
+  let s;
+  switch(o){
+    case 'swish': s=[seg(S0,{x:R.x,y:66},ya),seg({x:R.x,y:66},{x:R.x,y:F},66,'net','SWISH!'),...bounces(R.x,-1)]; break;
+    case 'rollin': s=[seg(S0,{x:193,y:65},ya),seg({x:193,y:65},{x:200,y:66},57,'rim'),seg({x:200,y:66},{x:R.x,y:F},66,'net','IN!'),...bounces(R.x,-1)]; break;
+    case 'frontout': s=[seg(S0,{x:193,y:65},ya),seg({x:193,y:65},{x:172,y:F},55,'rim','RIMMED OUT!'),...bounces(172,-1)]; break;
+    case 'backout': s=[seg(S0,{x:208,y:65},ya),seg({x:208,y:65},{x:184,y:F},49,'rim','RIMMED OUT!'),...bounces(184,-1)]; break;
+    case 'board': s=[seg(S0,{x:210,y:50},Math.min(ya,41)),seg({x:210,y:50},{x:190,y:F},47,'board','TOO STRONG!'),...bounces(190,-1)]; break;
+    case 'short': {const x=Math.round(Math.max(118,175-22*(Math.abs(pe)-1.7))); s=[seg(S0,{x,y:F},ya),...bounces(x,1,'TOO SOFT!')]; break;}
+    case 'clank': s=[seg(S0,{x:192,y:66},Math.min(ya,62)),seg({x:192,y:66},{x:158,y:F},62,'rim','TOO FLAT!'),...bounces(158,-1)]; break;
+    case 'moon': s=[seg(S0,{x:182,y:F},Math.min(ya,18)),...bounces(182,1,'TOO HIGH!')]; break;
+  }
+  G.lastMade=(o==='swish'||o==='rollin');
+  pl.shots++;
+  G.ball={segs:s,i:0,t:0,x:S0.x,y:S0.y,rot:0,rest:0,done:false};
+  G.phase='flight'; G.jumpT=0; sfx('shoot'); updateFooter();
+}
+function fireEv(sg){
+  if(sg.ev==='net'){G.net=1;sfx('swish');revealLetter();}
+  else if(sg.ev==='rim')sfx('rim');
+  else if(sg.ev==='board')sfx('board');
+  else if(sg.ev==='bounce')sfx('bounce',1);
+  else if(sg.ev==='bounce2')sfx('bounce',.5);
+  else if(sg.ev==='bounce3')sfx('bounce',.25);
+  if(sg.msg){const good=sg.msg==='SWISH!'||sg.msg==='IN!';
+    G.fx.push({text:sg.msg,x:good?132:150,y:good?40:44,size:good?12:8,color:good?'#58d854':'#f85848',t:0});}
+}
+function revealLetter(){
+  const p=curP(); const i=p.prog; p.prog++; p.makes++;
+  G.fx.push({text:G.word.w[i],x:RIM.x,y:50,size:18,color:'#f8b800',t:0,letter:true});
+  sfx('letter',i); renderBoard(i);
+}
+function afterShot(){
+  const p=curP();
+  if(G.lastMade){
+    if(p.prog>=G.word.w.length){
+      p.words++; G.finisher=G.cur;
+      if(G.mode===2){p.points++; G.fx.push({text:'+1 POINT',x:125,y:28,size:10,color:'#f8b800',t:-.2});}
+      sfx('word'); G.phase='question'; renderBoard(); updateFooter(); setTimeout(openQuestion,900); return;
+    }
+  }
+  if(G.mode===2){G.cur=1-G.cur;renderBoard();showBanner(`${G.players[G.cur].name.toUpperCase()}’S TURN`,'',1000);}
+  newShot();
+}
+
+/* ---- update ---- */
+function update(dt){
+  G.time+=dt;
+  const m=G.m, sp=G.rate*speedMult();
+  if(G.phase==='power'){m.p+=m.pd*sp*dt;if(m.p>1){m.p=2-m.p;m.pd=-1;}if(m.p<0){m.p=-m.p;m.pd=1;}}
+  if(G.phase==='height'){m.h+=m.hd*sp*dt;if(m.h>1){m.h=2-m.h;m.hd=-1;}if(m.h<0){m.h=-m.h;m.hd=1;}}
+  if(G.jumpT>=0)G.jumpT+=dt;
+  G.net=Math.max(0,G.net-dt*2.2);
+  const b=G.ball;
+  if(b&&!b.done){
+    b.t+=dt; b.rot+=dt*(b.i<1?9:5);
+    while(b.i<b.segs.length&&b.t>=b.segs[b.i].T){
+      b.t-=b.segs[b.i].T; b.i++;
+      if(b.i<b.segs.length)fireEv(b.segs[b.i]);
+    }
+    if(b.i>=b.segs.length){const last=b.segs[b.segs.length-1];b.x=last.b.x;b.y=last.b.y;b.done=true;b.rest=0;}
+    else{const sg=b.segs[b.i];b.x=sg.a.x+sg.vx*b.t;b.y=sg.a.y+sg.vy*b.t+.5*GRAV*b.t*b.t;}
+  }else if(b&&b.done){
+    b.rest+=dt; if(b.rest>.45&&G.phase==='flight'){G.phase='result';afterShot();}
+  }
+  G.fx.forEach(f=>f.t+=dt); G.fx=G.fx.filter(f=>f.t<1.4);
+}
+
+/* ---- pixel scene (buffer, 1 unit = 1 pixel) ---- */
+const R=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h);};
+let bgCache=null;
+function buildBG(){
+  const cv=document.createElement('canvas'); cv.width=BW; cv.height=BH; const c=cv.getContext('2d');
+  // wall + bricks
+  R(c,0,0,BW,88,'#1b2266');
+  for(let y=0,row=0;y<86;y+=6,row++){R(c,0,y,BW,1,'#141a50');for(let x=(row%2)*6;x<BW;x+=12)R(c,x,y,1,6,'#141a50');}
+  // banner on wall
+  R(c,0,87,BW,2,'#e45c10'); R(c,0,89,BW,13,'#0c1040');
+  for(let x=4;x<BW;x+=16)R(c,x,94,8,2,'#1d2580');
+  // floor planks
+  R(c,0,102,BW,48,'#c8803c');
+  for(let y=102,row=0;y<BH;y+=4,row++){
+    if(row%2)R(c,0,y,BW,4,'#d08c48');
+    R(c,0,y,BW,1,'#b06c30');
+    for(let x=(row*37)%53;x<BW;x+=53)R(c,x,y,1,4,'#a46028');
+  }
+  // lane paint + line
+  for(let y=102;y<BH;y++){const xl=Math.round(175-(y-102)*.48); c.fillStyle='rgba(228,92,16,.42)'; c.fillRect(xl,y,BW-xl,1); R(c,xl,y,1,1,'#fcfcfc');}
+  // 3-point arc
+  for(let a=Math.PI*.5;a<=Math.PI*1.5;a+=.004){const x=Math.round(245+140*Math.cos(a)), y=Math.round(126+23*Math.sin(a)); if(y>=102&&y<BH)R(c,x,y,1,1,'#fcfcfc');}
+  // hoop structure (static parts)
+  R(c,226,116,12,20,'#0c1040'); R(c,227,117,10,1,'#3c4bc8');
+  R(c,230,44,4,72,'#6c7cc8'); R(c,230,44,1,72,'#9ca8e8');
+  R(c,215,47,16,3,'#6c7cc8');
+  R(c,212,32,4,42,'#fcfcfc'); R(c,215,32,1,42,'#b8c0e0');
+  R(c,212,54,4,12,'#e45c10');
+  R(c,209,66,4,2,'#8c94b8');
+  return cv;
+}
+function drawPennants(c,dok){
+  R(c,80,2,96,1,'#8890c0');
+  [1,2,3].forEach((d,i)=>{
+    const x=98+i*30, on=d===dok, col=on?'#e45c10':'#2a3380', edge=on?'#fca044':'#3c4bc8';
+    R(c,x-10,3,20,17,col); R(c,x-10,3,20,1,edge);
+    for(let k=0;k<7;k++)R(c,x-9+k,20+k,18-2*k,1,col);
+  });
+}
+function drawNet(c){
+  const st=G?G.net:0, sway=Math.round(Math.sin((G?G.time:0)*22)*st*2), rows=14+Math.round(st*5);
+  c.fillStyle='#fcfcfc';
+  for(let r=0;r<=rows;r++){
+    const k=r/rows, xl=Math.round(193+3*k+sway*k), xr=Math.round(209-3*k+sway*k), y=69+r;
+    c.fillRect(xl,y,1,1); c.fillRect(xr,y,1,1);
+    for(let x=xl+1;x<xr;x++)if((x+r)%4===0||(x-r+400)%4===0)c.fillRect(x,y,1,1);
+  }
+}
+function drawMeters(c){
+  const m=G.m, ph=G.phase, half=G.half, blink=Math.floor(G.time*4)%2===0;
+  // height (vertical)
+  R(c,2,22,28,98,'#07081a');
+  const hf=ph==='height'?(blink?'#f8b800':'#fcfcfc'):'#3c4bc8';
+  R(c,2,22,28,1,hf);R(c,2,119,28,1,hf);R(c,2,22,1,98,hf);R(c,29,22,1,98,hf);
+  const ty0=33, th=82; R(c,13,ty0,6,th,'#2a3380');
+  const zh=Math.round(2*half*th), zt=Math.round(ty0+th-(m.hz+half)*th); R(c,13,zt,6,zh,'#58d854'); R(c,13,zt,6,1,'#a8f0a0');
+  R(c,11,Math.round(ty0+th-m.hz*th),10,1,'#fcfcfc');
+  const ky=Math.round(ty0+th-m.h*th);
+  R(c,8,ky-2,16,4,ph==='power'?'#4a4f80':(ph==='height'?'#fcfcfc':'#f8b800')); R(c,8,ky-2,16,1,'#000'); R(c,8,ky+1,16,1,'#000');
+  // strength (horizontal)
+  R(c,70,137,110,12,'#07081a');
+  const sf=ph==='power'?(blink?'#f8b800':'#fcfcfc'):'#3c4bc8';
+  R(c,70,137,110,1,sf);R(c,70,148,110,1,sf);R(c,70,137,1,12,sf);R(c,179,137,1,12,sf);
+  const tx0=108, tw=66; R(c,tx0,140,tw,6,'#2a3380');
+  const zw=Math.round(2*half*tw), zl=Math.round(tx0+(m.pz-half)*tw); R(c,zl,140,zw,6,'#58d854'); R(c,zl,140,zw,1,'#a8f0a0');
+  R(c,Math.round(tx0+m.pz*tw),139,1,8,'#fcfcfc');
+  const kx=Math.round(tx0+m.p*tw); R(c,kx-1,138,4,10,ph==='power'?'#fcfcfc':'#f8b800'); R(c,kx-2,138,1,10,'#000'); R(c,kx+3,138,1,10,'#000');
+}
+function drawScene(){
+  const c=bctx;
+  if(!bgCache)bgCache=buildBG();
+  c.drawImage(bgCache,0,0);
+  drawPennants(c,G.word&&G.word.dok);
+  R(c,193,66,17,1,'#a83000'); // back of rim
+  if(G.mode===2){const o=G.players[1-G.cur]; drawPlayer(c,WAITER.x,WAITER.y,{gender:o.gender,skin:o.skin,color:o.color,num:2-G.cur,pose:'idle'});}
+  const p=curP(), holding=G.phase==='power'||G.phase==='height';
+  const jump=(G.jumpT>=0&&G.jumpT<.55)?Math.round(Math.sin(Math.PI*G.jumpT/.55)*8):0;
+  drawPlayer(c,SHOOTER.x,SHOOTER.y,{gender:p.gender,skin:p.skin,color:p.color,num:G.cur+1,pose:holding?'ready':'follow',jump,ball:holding});
+  const b=G.ball;
+  if(b){
+    const hgt=clamp((FLOOR-b.y)/100,0,1), w=Math.round(8-4*hgt);
+    c.fillStyle=`rgba(0,0,0,${.35-.2*hgt})`; c.fillRect(Math.round(b.x)-w/2|0,FLOOR+3,w,2);
+    drawBall(c,b.x,b.y,Math.floor(b.rot/.7)%2);
+  }
+  drawNet(c);
+  R(c,192,67,19,2,'#f83800'); R(c,192,67,19,1,'#fc7444'); // front rim
+  drawMeters(c);
+}
+/* ---- crisp text layer (display canvas, in buffer units) ---- */
+function ptext(c,t,x,y,size,color,align){
+  c.font=`${size}px "Press Start 2P", "Courier New", monospace`; c.textAlign=align||'center'; c.textBaseline='middle';
+  const o=Math.max(.5,size*.12); c.fillStyle='#000'; c.fillText(t,x+o,y+o); c.fillStyle=color; c.fillText(t,x,y);
+}
+function tag(c,x,y,name,color){
+  const t=name.toUpperCase().slice(0,12);
+  c.font='4px "Press Start 2P", "Courier New", monospace'; const w=Math.ceil(c.measureText(t).width)+6;
+  const lx=Math.round(x-w/2); c.fillStyle='#000'; c.fillRect(lx+1,y-3,w,8); c.fillStyle=color; c.fillRect(lx,y-4,w,8);
+  c.fillStyle='#fcfcfc'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(t,lx+w/2,y+.5);
+}
+function draw(){
+  drawScene();
+  const c=ctx; c.setTransform(1,0,0,1,0,0); c.imageSmoothingEnabled=false;
+  c.drawImage(buf,0,0,cv.width,cv.height);
+  c.setTransform(N,0,0,N,0,0);
+  [1,2,3].forEach((d,i)=>{const x=98+i*30,on=G.word&&d===G.word.dok; ptext(c,'LEVEL',x+.3,7.5,3,on?'#fcfcfc':'#7c84c8'); ptext(c,String(d),x+.5,16.5,8,on?'#fcfcfc':'#7c84c8');});
+  ptext(c,'HEIGHT',16,28,4,G.phase==='height'?'#f8b800':'#fcfcfc');
+  ptext(c,'STRENGTH',74,143.5,4,G.phase==='power'?'#f8b800':'#fcfcfc','left');
+  const mult=speedMult(); ptext(c,`SPEED ${mult.toFixed(1)}x`,184,143.5,4,mult>1?'#f8b800':'#a8b0f0','left');
+  const p=curP(), jump=(G.jumpT>=0&&G.jumpT<.55)?Math.round(Math.sin(Math.PI*G.jumpT/.55)*8):0;
+  tag(c,SHOOTER.x+1,SHOOTER.y-63-jump,p.name,p.color);
+  if(G.mode===2){const o=G.players[1-G.cur]; tag(c,WAITER.x+1,WAITER.y-50,o.name,o.color);}
+  if(G.phase==='power'||G.phase==='height'){
+    if(Math.floor(G.time*2.5)%2===0)ptext(c,'TAP!',G.phase==='power'?125:44,G.phase==='power'?131:70,6,'#f8b800',G.phase==='power'?'center':'left');
+  }
+  G.fx.forEach(f=>{
+    if(f.t<0)return; const k=f.t/1.4, y=Math.round(f.y-(f.letter?14:8)*k);
+    if(k>.75&&Math.floor(f.t*12)%2)return; // 8-bit flicker out
+    ptext(c,f.text,f.x,y,f.size,f.color);
+  });
+}
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  if(G&&!$('#game').hidden){update(dt);draw();}
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+function fit(){
+  if($('#game').hidden)return;
+  const st=$('#stage'), r=st.getBoundingClientRect(); if(r.width<20||r.height<20)return;
+  const cw=Math.floor(Math.max(200,Math.min(r.width-12,(r.height-12)*BW/BH))), ch=Math.round(cw*BH/BW), dpr=window.devicePixelRatio||1;
+  N=Math.max(1,Math.ceil(cw*dpr/BW));
+  cv.width=BW*N; cv.height=BH*N; cv.style.width=cw+'px'; cv.style.height=ch+'px';
+  const sc=$('#scan'); sc.style.width=cw+'px'; sc.style.height=ch+'px';
+  sc.style.left=((r.width-cw)/2)+'px'; sc.style.top=((r.height-ch)/2)+'px';
+}
+if('ResizeObserver' in window)new ResizeObserver(fit).observe($('#stage'));
+window.addEventListener('resize',fit);
+
+/* ================= HUD ================= */
+function renderBoard(pop){
+  const b=$('#board'); b.classList.toggle('solo',G.mode===1);
+  const team=i=>{const p=G.players[i], act=G.phase!=='question'&&i===G.cur&&G.mode===2;
+    const tiles=G.word.w.split('').map((ch,k)=>`<span class="tile${k<p.prog?' lit':''}${k===pop&&i===G.cur?' pop':''}">${ch}</span>`).join('');
+    return `<section class="team px${act||G.mode===1?' active':''}" style="--pc:${p.color}" aria-label="${esc(p.name)}: ${p.points} points, ${p.prog} of ${G.word.w.length} letters">
+      <div class="team-top"><span class="dot"></span><span class="tname">${esc(p.name)}</span>${act?'<span class="turn">UP</span>':''}
+      <span class="pts"><b>${p.points}</b><small>/ ${G.goal}</small></span></div>
+      <div class="tiles" aria-hidden="true">${tiles}</div></section>`;};
+  const mid=`<div class="mid"><div class="round">ROUND ${G.round}</div><span class="dokchip">LEVEL ${G.word.dok} · ${DOK_NAME[G.word.dok].toUpperCase()}</span>
+    <div class="mid-btns">${canSpeak?'<button type="button" class="ghost" id="hearBtn">Hear word</button>':''}
+    <button type="button" class="ghost" id="muteBtn" aria-pressed="${muted}">${muted?'Sound off':'Sound on'}</button>
+    <button type="button" class="ghost" id="menuBtn">Menu</button></div></div>`;
+  b.innerHTML=G.mode===2?team(0)+mid+team(1):team(0)+mid;
+  const hb=$('#hearBtn'); if(hb)hb.onclick=()=>speak(G.word.w.toLowerCase());
+  $('#muteBtn').onclick=()=>{muted=!muted;renderBoard();};
+  $('#menuBtn').onclick=()=>{$('#quitWrap').hidden=false;$('#stayBtn').focus();};
+}
+function setWho(html){const p=curP(); $('#who').style.setProperty('--pcol',p.color); $('#who').innerHTML=html;}
+function updateFooter(){
+  const p=curP(), ph=G.phase, nm=`<span class="nm">${esc(p.name)}</span>`, btn=$('#shootBtn');
+  $('#st1').className='step'+(ph==='power'?' on':(ph==='height'||ph==='flight'?' done':''));
+  $('#st2').className='step'+(ph==='height'?' on':(ph==='flight'?' done':''));
+  if(ph==='power'){setWho(`${nm}: tap to stop STRENGTH in the green.`);btn.textContent='LOCK STRENGTH';btn.disabled=false;}
+  else if(ph==='height'){setWho(`${nm}: tap to stop HEIGHT and shoot.`);btn.textContent='SHOOT!';btn.disabled=false;}
+  else if(ph==='flight'){btn.textContent='SHOOTING…';btn.disabled=true;}
+  else if(ph==='question'){setWho(`${nm} spelled ${G.word.w}! Time to read.`);btn.textContent='READ!';btn.disabled=true;}
+}
+function showBanner(title,sub,ms){
+  const el=$('#banner'); el.innerHTML=`<b>${esc(title)}</b>${sub?`<span>${esc(sub)}</span>`:''}`;
+  el.hidden=false; el.style.animation='none'; void el.offsetWidth; el.style.animation='';
+  clearTimeout(bannerTimer); bannerTimer=setTimeout(()=>{el.hidden=true;},ms||1500);
+}
+
+/* ================= QUESTION ================= */
+function openQuestion(){
+  const w=G.word, p=G.players[G.finisher], shown=(w.p.match(/\*(.+?)\*/)||[,w.w.toLowerCase()])[1];
+  Q={asker:G.finisher,steal:false,done:false,opts:shuffle([{t:w.d,ok:true},...w.o.map(t=>({t,ok:false}))])};
+  renderBoard();
+  $('#paper').style.setProperty('--ac',p.color);
+  $('#qDok').textContent=`LEVEL ${w.dok} · ${DOK_NAME[w.dok].toUpperCase()}`;
+  $('#qTitle').innerHTML=`<span class="nm">${esc(p.name)}</span> spelled ${w.w}!${G.mode===2?' <span class="plus">+1</span>':''}`;
+  $('#qInstr').textContent=(G.mode===2?'Choose the right meaning for 1 more point. ':'')+`Read the passage. ${DOK_TIP[w.dok]}`;
+  $('#qPassage').innerHTML=esc(w.p).replace(/\*(.+?)\*/g,'<mark>$1</mark>');
+  $('#qText').innerHTML=`What does <mark>${esc(shown)}</mark> mean in this passage?`;
+  $('#qOpts').innerHTML=Q.opts.map((o,i)=>`<button type="button" class="opt" data-i="${i}"><span class="key">${'ABCD'[i]}</span><span>${esc(o.t)}</span></button>`).join('');
+  $('#qFb').hidden=true; $('#nextBtn').hidden=true;
+  $('#qWrap').hidden=false; $('#qWrap').scrollTop=0; $('#qTitle').focus({preventScroll:true});
+}
+function winner(){
+  const max=Math.max(...G.players.map(p=>p.points)); if(max<G.goal)return null;
+  const top=G.players.filter(p=>p.points===max); return top.length===1?top[0]:'tie';
+}
+$('#qOpts').addEventListener('click',e=>{
+  const btn=e.target.closest('.opt'); if(!btn||!Q||Q.done||btn.disabled)return;
+  ensureAudio();
+  const o=Q.opts[+btn.dataset.i], w=G.word, pl=G.players[Q.asker], fin=G.players[G.finisher], fb=$('#qFb'), two=G.mode===2;
+  pl.qTotal++;
+  if(o.ok){
+    pl.qRight++; pl.points++; btn.classList.add('right'); Q.done=true; sfx('good');
+    let msg;
+    if(!two)msg='Correct! +1 point.';
+    else if(Q.steal)msg=`Correct! ${esc(pl.name)} steals the meaning point. ${esc(fin.name)} keeps 1 point for spelling the word.`;
+    else msg=`Correct! +1 more point. ${esc(pl.name)} earned 2 points this round.`;
+    fb.className='feedback good';
+    fb.innerHTML=`<p><b>${msg}</b></p><p class="clue"><b>Context clue:</b> ${esc(w.clue)}</p>`;
+  }else{
+    btn.classList.add('wrong'); btn.disabled=true; sfx('bad');
+    if(two&&!Q.steal){
+      Q.steal=true; Q.asker=1-Q.asker; const other=G.players[Q.asker];
+      $('#paper').style.setProperty('--ac',other.color);
+      $('#qTitle').innerHTML=`Steal chance for <span class="nm">${esc(other.name)}</span>!`;
+      fb.className='feedback steal';
+      fb.innerHTML=`<p><b>Not quite, ${esc(pl.name)}.</b> You keep your 1 point for spelling the word. ${esc(other.name)}, reread the passage and choose the meaning to steal the meaning point.</p>`;
+      fb.hidden=false; return;
+    }
+    Q.done=true;
+    const ri=Q.opts.findIndex(x=>x.ok); $('#qOpts').children[ri].classList.add('right');
+    fb.className='feedback bad';
+    const tail=two?`${esc(fin.name)} earns 1 point this round for spelling the word.`:'No point this round.';
+    fb.innerHTML=`<p><b>Not quite.</b> In this passage, the word means “${esc(w.d)}.” ${tail}</p><p class="clue"><b>Context clue:</b> ${esc(w.clue)}</p>`;
+  }
+  [...$('#qOpts').children].forEach(b=>b.disabled=true);
+  fb.hidden=false;
+  const wn=winner();
+  $('#nextBtn').textContent=wn&&wn!=='tie'?'SEE THE WINNER':'NEXT ROUND';
+  $('#nextBtn').hidden=false; $('#nextBtn').focus({preventScroll:false});
+  renderBoard();
+});
+$('#nextBtn').addEventListener('click',()=>{
+  if(canSpeak)try{speechSynthesis.cancel();}catch(e){}
+  $('#qWrap').hidden=true; Q=null;
+  const wn=winner();
+  if(wn&&wn!=='tie')showWin(); else startRound(wn==='tie'?'TIE GAME! NEXT WORD WINS':null);
+});
+$('#readBtn').addEventListener('click',()=>speak(G.word.p.replace(/\*/g,'')));
+if(!canSpeak)$('#readBtn').hidden=true;
+
+/* ================= WIN / QUIT ================= */
+function showWin(){
+  G.phase='over'; sfx('win');
+  const win=winner(), wi=G.players.indexOf(win);
+  const rds=`${G.round} round${G.round===1?'':'s'}`;
+  $('#winTitle').textContent=G.mode===2?`${win.name.toUpperCase()} WINS!`:`${win.name.toUpperCase()} REACHED ${G.goal}!`;
+  $('#winSub').textContent=G.mode===2?`First to ${G.goal} points in ${rds}.`:`${G.goal} points in ${rds}. Great reading!`;
+  const pct=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+  const head=`<thead><tr><th scope="col">STAT</th>${G.players.map(p=>`<th scope="col">${esc(p.name.toUpperCase())}</th>`).join('')}</tr></thead>`;
+  const row=(lab,f)=>`<tr><th scope="row">${lab}</th>${G.players.map(p=>`<td>${f(p)}</td>`).join('')}</tr>`;
+  $('#winStats').innerHTML=head+'<tbody>'+row('Points',p=>p.points)+row('Words spelled',p=>p.words)+row('Baskets made',p=>`${p.makes} of ${p.shots}`)+row('Shooting',p=>pct(p.makes,p.shots))+row('Meanings correct',p=>`${p.qRight} of ${p.qTotal}`)+'</tbody>';
+  portrait($('#winCv'),{gender:win.gender,skin:win.skin,color:win.color,num:wi+1,pose:'follow'});
+  $('#winWrap').hidden=false; $('#againBtn').focus();
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    const cols=['#f8b800','#e45c10','#58d854','#d82800','#0070ec','#fcfcfc'];
+    for(let i=0;i<60;i++){const d=document.createElement('div');d.className='confetti';
+      d.style.left=Math.random()*100+'vw';d.style.background=cols[i%cols.length];
+      d.style.animationDuration=(2.2+Math.random()*2.2)+'s';d.style.animationDelay=(Math.random()*.8)+'s';
+      $('#winWrap').appendChild(d); setTimeout(()=>d.remove(),5500);}
+  }
+}
+$('#againBtn').addEventListener('click',()=>{$('#winWrap').hidden=true;newGame();});
+$('#newBtn').addEventListener('click',()=>{$('#winWrap').hidden=true;toSetup();});
+$('#stayBtn').addEventListener('click',()=>{$('#quitWrap').hidden=true;});
+$('#leaveBtn').addEventListener('click',()=>{$('#quitWrap').hidden=true;$('#qWrap').hidden=true;toSetup();});
+function toSetup(){G=null;Q=null;$('#game').hidden=true;$('#setup').hidden=false;renderSetup();}
+
+/* ================= INPUT ================= */
+$('#stage').addEventListener('pointerdown',e=>{e.preventDefault();tap();});
+$('#shootBtn').addEventListener('pointerdown',e=>{e.preventDefault();tap();});
+document.addEventListener('keydown',e=>{
+  if(e.key===' '||e.key==='Enter'){
+    const t=e.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||(t.tagName==='BUTTON'&&t.id!=='shootBtn')||t.tagName==='SUMMARY'))return;
+    if(!G||$('#game').hidden)return;
+    e.preventDefault(); if(!e.repeat)tap();
+  }
+  if(e.key==='Escape'&&!$('#quitWrap').hidden)$('#quitWrap').hidden=true;
+});
+
+renderSetup();
+})();
+</script>
+
+</body></html>
