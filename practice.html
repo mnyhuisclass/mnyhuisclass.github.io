@@ -306,7 +306,7 @@ button { font: inherit; color: inherit; }
 
   <button class="primary" id="startBtn" type="button">Start reading</button>
   <div class="hint" id="signinHint" aria-live="polite"></div>
-  <p style="margin-top:40px;color:#8A96A6;font-size:.8rem">Page version 7 (link sending)</p>
+  <p style="margin-top:40px;color:#8A96A6;font-size:.8rem">Page version 8 (opens script to send)</p>
 </main>
 
 <!-- Screen 2: passage + item -->
@@ -548,11 +548,10 @@ button { font: inherit; color: inherit; }
       let data;
       const hasUrl = CONFIG.SCRIPT_URL && !CONFIG.SCRIPT_URL.startsWith("PASTE");
       if (hasUrl) {
-        // Answers ride along in the link itself. Google redirects can turn a POST
-        // into a GET and drop the answers, but a GET arrives intact.
-        const url = CONFIG.SCRIPT_URL + "?data=" + encodeURIComponent(JSON.stringify(payload));
-        await fetch(url, { method: "GET", mode: "no-cors" });
-        data = { ok: true };
+        // Open the script link directly, the same way your ?test=1 check did.
+        // The script saves the answers and shows the "Answers sent" screen itself.
+        window.location.href = CONFIG.SCRIPT_URL + "?data=" + encodeURIComponent(JSON.stringify(payload));
+        return;
       } else if (window.google && google.script && google.script.run) {
         data = await new Promise((resolve, reject) => {
           google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).saveResponses(payload);
