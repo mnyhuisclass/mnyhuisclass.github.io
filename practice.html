@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>4th Grade Reading Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* ======================================================
+   SETTINGS: paste your Apps Script web app URL below
+   ====================================================== */
+</style>
+<script>
+const CONFIG = {
+  SCRIPT_URL: "https://script.google.com/a/macros/plymouth.k12.in.us/s/AKfycbz-EvuyfgdXdkxUVDkmkd1QIKOTT_I0lMHBOcpQuG-Onti_9OIBmuDgFcFL-Q9_5t1vuA/exec",
+  TEACHERS: ["Nyhuis", "Gerhart", "Griffith"],
+  SHOW_SCORE_TO_STUDENT: false   // true = students see how many they got right after submitting
+};
+
+/* ======================================================
+   ASSIGNMENT CONTENT
+   Add more items to the items array to make a longer set.
+   ====================================================== */
+const ASSIGNMENT = {
+  id: "map-in-the-attic",
+  title: "The Map in the Attic",
+  paragraphs: [
+    "Rain drummed on the roof while Jada and her little brother Marcus explored Grandpa Walt’s attic. Marcus sneezed at the dust. “Why are we even up here?” he grumbled.",
+    "“Grandpa said we could look for treasure,” Jada reminded him. She lifted the lid of an old wooden trunk. Under a pile of scratchy wool blankets was a rolled-up paper tied with a red ribbon.",
+    "Jada untied the ribbon and spread the paper across the floor. It was a hand-drawn map of the backyard. A dotted line led from the back porch to the big willow tree, and an X was marked beside the tree’s roots. In the corner, someone had written in careful letters: “Property of Captain Walt, age 9.”",
+    "“Captain Walt?” Marcus laughed. “Grandpa was never a captain. He sold insurance for forty years!”",
+    "The two of them hurried downstairs. Grandpa Walt was in the kitchen, stirring a pot of vegetable soup. When he saw the map, his face broke into a wide smile. “Well, would you look at that! I buried something under that willow when I was about your age. I always meant to dig it back up.”",
+    "By then the rain had stopped. Grandpa handed Marcus a garden shovel, and all three of them marched out to the willow tree. After a few minutes of digging, Marcus’s shovel clanked against something hard. It was a rusty tin box. Inside were six marbles, a toy compass, and a faded photo of a boy standing on a dock at Lake Wawasee, proudly holding a small wooden sailboat he had built himself.",
+    "“That’s you!” Jada said.",
+    "Grandpa nodded slowly. He held the compass up to the light and grinned like he was nine years old again."
+  ],
+  items: [
+    {
+      id: "inference-1",
+      type: "choose-two",
+      prompt: "Drag to the box below <strong>two</strong> details from the passage that together support the inference.",
+      inference: "When he was a boy, Grandpa Walt dreamed of being a sailor.",
+      boxTitle: "Two details that support the inference",
+      need: 2,
+      options: [
+        { id: "a", text: "Jada found the map under a pile of wool blankets.", correct: false },
+        { id: "b", text: "The map was signed “Property of Captain Walt, age 9.”", correct: true },
+        { id: "c", text: "Grandpa Walt was making vegetable soup in the kitchen.", correct: false },
+        { id: "d", text: "The photo showed young Walt holding a sailboat he built.", correct: true },
+        { id: "e", text: "Marcus’s shovel hit a rusty tin box under the tree.", correct: false }
+      ]
+    }
+  ]
+};
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --deep: #263A5E;
+  --accent: #3B6BB0;
+  --wash: #EEF2F7;
+  --hi: #F2B84B;
+  --hi-soft: #FDF4E1;
+  --ink: #1E2A3A;
+  --muted: #5E6B7C;
+  --paper: #FFFFFF;
+  --line: #CCD5E2;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: inherit; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--wash);
+  font-size: 19px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--hi); outline-offset: 2px; }
+
+/* ---------- Top bar ---------- */
+.bar {
+  background: var(--deep);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 22px;
+}
+.bar h1 {
+  font-family: "Baloo 2", "Atkinson Hyperlegible", sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  margin: 0;
+  letter-spacing: .01em;
+}
+.bar .who { margin-left: auto; font-size: .95rem; opacity: .85; }
+
+/* ---------- Sign-in screen ---------- */
+.signin {
+  max-width: 560px;
+  margin: 6vh auto 0;
+  padding: 0 22px 40px;
+}
+.signin h2 {
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 800;
+  font-size: 2.4rem;
+  line-height: 1.1;
+  margin: 0 0 6px;
+  color: var(--deep);
+}
+.signin p.lead { margin: 0 0 28px; color: var(--muted); }
+.field-label { display: block; font-weight: 700; margin: 0 0 10px; }
+.teachers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 26px; }
+.teacher-btn {
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 8px;
+  font-weight: 700;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+.teacher-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.name-input {
+  width: 100%;
+  font: inherit;
+  font-size: 1.2rem;
+  padding: 14px 16px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  margin-bottom: 28px;
+}
+.name-input:focus { border-color: var(--accent); outline: none; }
+.primary {
+  background: var(--hi);
+  color: var(--ink);
+  border: none;
+  border-radius: 14px;
+  padding: 16px 28px;
+  font-weight: 700;
+  font-size: 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #C48E26;
+}
+.primary:active { transform: translateY(2px); box-shadow: 0 1px 0 #C48E26; }
+.primary:disabled { opacity: .45; cursor: default; }
+.hint { color: #9A3B1F; font-size: .95rem; min-height: 1.4em; margin-top: 10px; }
+
+/* ---------- Work screen ---------- */
+.work {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  height: calc(100% - 50px);
+}
+.passage {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--paper);
+  border-right: 4px solid var(--accent);
+  padding: 26px 30px 60px;
+}
+.passage h2 {
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 800;
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 0 0 18px;
+  color: var(--deep);
+}
+.passage ol { list-style: none; padding: 0; margin: 0; counter-reset: para; }
+.passage li {
+  counter-increment: para;
+  position: relative;
+  padding-left: 34px;
+  margin-bottom: 16px;
+  max-width: 68ch;
+}
+.passage li::before {
+  content: counter(para);
+  position: absolute;
+  left: 0; top: 0;
+  font-style: italic;
+  color: var(--muted);
+}
+.question {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 26px 28px 60px;
+}
+.prompt { margin: 0 0 18px; }
+.target {
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 34% 1fr;
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 22px;
+}
+.inference {
+  background: var(--hi-soft);
+  border-left: 6px solid var(--hi);
+  border-radius: 8px;
+  padding: 14px;
+  font-weight: 700;
+  align-self: start;
+}
+.inference span { display: block; font-size: .85rem; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+.box-title { font-weight: 700; margin: 0 0 8px; font-size: .95rem; color: var(--deep); }
+.dropzone {
+  min-height: 190px;
+  border: 3px dashed var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .15s, background-color .15s;
+}
+.dropzone.over { border-color: var(--accent); background: var(--wash); }
+.dropzone.full { border-style: solid; border-color: var(--hi); }
+.dropzone .empty-note { color: var(--muted); font-size: .95rem; margin: auto; text-align: center; padding: 0 10px; }
+.bank { display: flex; flex-direction: column; gap: 10px; min-height: 60px; padding: 4px; border-radius: 12px; }
+.bank.over { background: rgba(59,107,176,.08); }
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  text-align: left;
+  width: 100%;
+}
+.card .grip { flex: none; width: 14px; height: 22px; opacity: .45; }
+.dropzone .card { border-color: var(--accent); }
+.card.ghost-source { opacity: .3; }
+.drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 50;
+  box-shadow: 0 10px 24px rgba(38,58,94,.25);
+  transform: rotate(-1.5deg);
+}
+.actions { display: flex; align-items: center; gap: 16px; margin-top: 26px; flex-wrap: wrap; }
+.count { color: var(--muted); }
+.reset-link { background: none; border: none; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 8px; }
+
+/* ---------- Done screen ---------- */
+.done { max-width: 560px; margin: 10vh auto 0; padding: 0 22px; text-align: center; }
+.done h2 { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 2.4rem; margin: 10px 0; color: var(--deep); }
+.done .burst { width: 110px; height: 110px; }
+
+[hidden] { display: none !important; }
+
+/* iPad portrait and phones: stack passage above question */
+@media (max-width: 900px) {
+  .work { display: block; height: auto; }
+  .passage { border-right: none; border-bottom: 4px solid var(--accent); overflow: visible; }
+  .question { overflow: visible; }
+  .target { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <h1>4th Grade Reading Practice</h1>
+  <div class="who" id="who"></div>
+</header>
+
+<!-- Screen 1: sign in -->
+<main class="signin" id="signin">
+  <h2>Ready to read?</h2>
+  <p class="lead" id="assignmentName"></p>
+
+  <span class="field-label" id="teacherLabel">Who is your teacher?</span>
+  <div class="teachers" role="group" aria-labelledby="teacherLabel" id="teachers"></div>
+
+  <label class="field-label" for="studentName">Type your first and last name</label>
+  <input class="name-input" id="studentName" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="40">
+
+  <button class="primary" id="startBtn" type="button">Start reading</button>
+  <div class="hint" id="signinHint" aria-live="polite"></div>
+</main>
+
+<!-- Screen 2: passage + item -->
+<div class="work" id="work" hidden>
+  <article class="passage" id="passage" aria-label="Reading passage"></article>
+  <section class="question" id="question" aria-label="Question"></section>
+</div>
+
+<!-- Screen 3: done -->
+<main class="done" id="done" hidden>
+  <svg class="burst" viewBox="0 0 40 40" aria-hidden="true">
+    <circle cx="20" cy="20" r="18" fill="#3B6BB0"/>
+    <path d="M12 20.5 L17.5 26 L28.5 14.5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <h2>Answers sent!</h2>
+  <p id="doneMsg"></p>
+</main>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const state = { teacher: null, student: "", itemIndex: 0, responses: [] };
+
+  /* ---------- Sign-in ---------- */
+  $("assignmentName").textContent = "Today’s passage: " + ASSIGNMENT.title;
+  CONFIG.TEACHERS.forEach((t) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "teacher-btn";
+    b.textContent = t;
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => {
+      state.teacher = t;
+      document.querySelectorAll(".teacher-btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      $("signinHint").textContent = "";
+    });
+    $("teachers").appendChild(b);
+  });
+
+  $("startBtn").addEventListener("click", () => {
+    const name = $("studentName").value.trim().replace(/\s+/g, " ");
+    if (!state.teacher) { $("signinHint").textContent = "Tap your teacher’s name first."; return; }
+    if (name.length < 2) { $("signinHint").textContent = "Type your name so your teacher knows these answers are yours."; return; }
+    state.student = name;
+    $("who").textContent = name + " · " + state.teacher;
+    $("signin").hidden = true;
+    $("work").hidden = false;
+    renderPassage();
+    renderItem();
+  });
+
+  /* ---------- Passage ---------- */
+  function renderPassage() {
+    const p = $("passage");
+    p.innerHTML = "";
+    const h = document.createElement("h2");
+    h.textContent = ASSIGNMENT.title;
+    const ol = document.createElement("ol");
+    ASSIGNMENT.paragraphs.forEach((txt) => {
+      const li = document.createElement("li");
+      li.textContent = txt;
+      ol.appendChild(li);
+    });
+    p.append(h, ol);
+  }
+
+  /* ---------- Item ---------- */
+  const gripSVG = '<svg class="grip" viewBox="0 0 14 22" aria-hidden="true"><g fill="currentColor"><circle cx="4" cy="4" r="2"/><circle cx="10" cy="4" r="2"/><circle cx="4" cy="11" r="2"/><circle cx="10" cy="11" r="2"/><circle cx="4" cy="18" r="2"/><circle cx="10" cy="18" r="2"/></g></svg>';
+
+  let item, zone, bank;
+
+  function renderItem() {
+    item = ASSIGNMENT.items[state.itemIndex];
+    const q = $("question");
+    const isLast = state.itemIndex === ASSIGNMENT.items.length - 1;
+    q.innerHTML = `
+      <p class="prompt">${item.prompt} Tap a detail or drag it. Tap it again to take it back out.</p>
+      <div class="target">
+        <div class="inference"><span>Inference</span>${escapeHTML(item.inference)}</div>
+        <div>
+          <p class="box-title">${escapeHTML(item.boxTitle)}</p>
+          <div class="dropzone" id="zone" aria-label="${escapeHTML(item.boxTitle)}"></div>
+        </div>
+      </div>
+      <div class="bank" id="bank" aria-label="Details to choose from"></div>
+      <div class="actions">
+        <button class="primary" id="nextBtn" type="button" disabled>${isLast ? "Send my answers" : "Next question"}</button>
+        <span class="count" id="count" aria-live="polite"></span>
+        <button class="reset-link" id="resetBtn" type="button">Start this one over</button>
+      </div>
+      <div class="hint" id="sendHint" aria-live="polite"></div>`;
+    zone = $("zone");
+    bank = $("bank");
+    shuffle(item.options.slice()).forEach((opt) => bank.appendChild(makeCard(opt)));
+    $("resetBtn").addEventListener("click", () => {
+      [...zone.querySelectorAll(".card")].forEach((c) => bank.appendChild(c));
+      update();
+    });
+    $("nextBtn").addEventListener("click", finishItem);
+    update();
+  }
+
+  function makeCard(opt) {
+    const c = document.createElement("button");
+    c.type = "button";
+    c.className = "card";
+    c.dataset.id = opt.id;
+    c.innerHTML = gripSVG + "<span>" + escapeHTML(opt.text) + "</span>";
+    attachDrag(c);
+    return c;
+  }
+
+  function placedCount() { return zone.querySelectorAll(".card").length; }
+
+  function moveCard(card, toZone) {
+    if (toZone) {
+      if (card.parentElement === zone) return;
+      if (placedCount() >= item.need) { flashFull(); return; }
+      zone.appendChild(card);
+    } else {
+      bank.appendChild(card);
+    }
+    update();
+  }
+
+  function flashFull() {
+    $("count").textContent = "The box already has " + item.need + ". Tap one to take it out first.";
+  }
+
+  function update() {
+    const n = placedCount();
+    zone.classList.toggle("full", n === item.need);
+    let note = zone.querySelector(".empty-note");
+    if (n === 0 && !note) {
+      note = document.createElement("p");
+      note.className = "empty-note";
+      note.textContent = "Put " + item.need + " details here";
+      zone.appendChild(note);
+    } else if (n > 0 && note) {
+      note.remove();
+    }
+    $("count").textContent = n + " of " + item.need + " chosen";
+    $("nextBtn").disabled = n !== item.need;
+  }
+
+  /* ---------- Touch-friendly drag (works on iPad Safari) ---------- */
+  function attachDrag(card) {
+    let startX, startY, ghost = null, dragging = false, offX = 0, offY = 0;
+
+    card.addEventListener("pointerdown", (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      startX = e.clientX; startY = e.clientY;
+      dragging = false;
+      card.setPointerCapture(e.pointerId);
+    });
+
+    card.addEventListener("pointermove", (e) => {
+      if (startX === undefined) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (!dragging && Math.hypot(dx, dy) > 8) {
+        dragging = true;
+        const r = card.getBoundingClientRect();
+        offX = startX - r.left; offY = startY - r.top;
+        ghost = card.cloneNode(true);
+        ghost.classList.add("drag-ghost");
+        ghost.style.width = r.width + "px";
+        document.body.appendChild(ghost);
+        card.classList.add("ghost-source");
+      }
+      if (dragging) {
+        ghost.style.left = (e.clientX - offX) + "px";
+        ghost.style.top = (e.clientY - offY) + "px";
+        zone.classList.toggle("over", hit(zone, e));
+        bank.classList.toggle("over", hit(bank, e));
+      }
+    });
+
+    const end = (e, cancelled) => {
+      if (startX === undefined) return;
+      if (dragging) {
+        if (!cancelled) {
+          if (hit(zone, e)) moveCard(card, true);
+          else if (hit(bank, e)) moveCard(card, false);
+        }
+        ghost.remove(); ghost = null;
+        card.classList.remove("ghost-source");
+        zone.classList.remove("over"); bank.classList.remove("over");
+      } else if (!cancelled) {
+        moveCard(card, card.parentElement !== zone);   // a tap toggles in/out
+      }
+      startX = undefined; dragging = false;
+    };
+    card.addEventListener("pointerup", (e) => end(e, false));
+    card.addEventListener("pointercancel", (e) => end(e, true));
+    // Keyboard users: Enter/Space fires click without pointer events
+    card.addEventListener("click", (e) => {
+      if (e.detail === 0) moveCard(card, card.parentElement !== zone);
+    });
+  }
+
+  function hit(el, e) {
+    const r = el.getBoundingClientRect();
+    return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  }
+
+  /* ---------- Scoring and sending ---------- */
+  function finishItem() {
+    const chosen = [...zone.querySelectorAll(".card")].map((c) => item.options.find((o) => o.id === c.dataset.id));
+    const correctCount = chosen.filter((o) => o.correct).length;
+    state.responses.push({
+      item: item.id,
+      inference: item.inference,
+      answers: chosen.map((o) => o.text),
+      correct: correctCount,
+      total: item.need,
+      point: correctCount === item.need ? 1 : 0
+    });
+    if (state.itemIndex < ASSIGNMENT.items.length - 1) {
+      state.itemIndex++;
+      renderItem();
+      $("question").scrollTop = 0;
+      return;
+    }
+    send();
+  }
+
+  async function send() {
+    const btn = $("nextBtn");
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+    $("sendHint").textContent = "";
+    const payload = {
+      teacher: state.teacher,
+      student: state.student,
+      assignment: ASSIGNMENT.title,
+      responses: state.responses
+    };
+    try {
+      if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL.startsWith("PASTE")) throw new Error("no-url");
+      // text/plain body avoids a CORS preflight, which Apps Script cannot answer
+      const res = await fetch(CONFIG.SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "save failed");
+      showDone();
+    } catch (err) {
+      state.responses.pop();   // let them try again without duplicating
+      btn.disabled = false;
+      btn.textContent = "Try sending again";
+      $("sendHint").textContent = err.message === "no-url"
+        ? "This page is not connected to a Google Sheet yet. Your teacher needs to add the web app link."
+        : "Your answers did not send. Check that the iPad has Wi-Fi, then tap Try sending again.";
+    }
+  }
+
+  function showDone() {
+    $("work").hidden = true;
+    $("done").hidden = false;
+    let msg = "Nice work, " + state.student.split(" ")[0] + ". Your answers went to " + state.teacher + "’s class list.";
+    if (CONFIG.SHOW_SCORE_TO_STUDENT) {
+      const pts = state.responses.reduce((s, r) => s + r.point, 0);
+      msg += " You earned " + pts + " of " + state.responses.length + (state.responses.length === 1 ? " point." : " points.");
+    }
+    $("doneMsg").textContent = msg;
+  }
+
+  /* ---------- Helpers ---------- */
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+})();
+</script>
+</body>
+</html>
