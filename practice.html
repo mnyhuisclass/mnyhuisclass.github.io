@@ -17,7 +17,7 @@
 const CONFIG = {
   SCRIPT_URL: "https://script.google.com/a/macros/plymouth.k12.in.us/s/AKfycbz-EvuyfgdXdkxUVDkmkd1QIKOTT_I0lMHBOcpQuG-Onti_9OIBmuDgFcFL-Q9_5t1vuA/exec",
   TEACHERS: ["Nyhuis", "Gerhart", "Griffith"],
-  SHOW_SCORE_TO_STUDENT: false   // true = students see how many they got right after submitting
+  SHOW_SCORE_TO_STUDENT: true   // true = students see how many they got right after submitting
 };
 
 /* ======================================================
@@ -544,11 +544,19 @@ button { font: inherit; color: inherit; }
       responses: state.responses
     };
     try {
-      if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL.startsWith("PASTE")) throw new Error("no-url");
-      // text/plain body avoids a CORS preflight, which Apps Script cannot answer
-      const res = await fetch(CONFIG.SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "save failed");
+      let data;
+      if (window.google && google.script && google.script.run) {
+        // Page is being served by the Apps Script itself: save straight to the Sheet
+        data = await new Promise((resolve, reject) => {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).saveResponses(payload);
+        });
+      } else {
+        // Page is hosted somewhere else: send to the web app URL
+        if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL.startsWith("PASTE")) throw new Error("no-url");
+        const res = await fetch(CONFIG.SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+        data = await res.json();
+      }
+      if (!data || !data.ok) throw new Error((data && data.error) || "save failed");
       showDone();
     } catch (err) {
       state.responses.pop();   // let them try again without duplicating
@@ -556,7 +564,7 @@ button { font: inherit; color: inherit; }
       btn.textContent = "Try sending again";
       $("sendHint").textContent = err.message === "no-url"
         ? "This page is not connected to a Google Sheet yet. Your teacher needs to add the web app link."
-        : "Your answers did not send. Check that the iPad has Wi-Fi, then tap Try sending again.";
+        : "Your answers did not send. Tell your teacher, then tap Try sending again. (Details: " + (err && err.message ? err.message : err) + ")";
     }
   }
 
