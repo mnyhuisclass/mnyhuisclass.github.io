@@ -15,9 +15,9 @@
 </style>
 <script>
 const CONFIG = {
-  SCRIPT_URL: "https://script.google.com/a/macros/plymouth.k12.in.us/s/AKfycbz-EvuyfgdXdkxUVDkmkd1QIKOTT_I0lMHBOcpQuG-Onti_9OIBmuDgFcFL-Q9_5t1vuA/exec",
+  SCRIPT_URL: "Phttps://script.google.com/a/macros/plymouth.k12.in.us/s/AKfycbz-EvuyfgdXdkxUVDkmkd1QIKOTT_I0lMHBOcpQuG-Onti_9OIBmuDgFcFL-Q9_5t1vuA/exec",
   TEACHERS: ["Nyhuis", "Gerhart", "Griffith"],
-  SHOW_SCORE_TO_STUDENT: true   // true = students see how many they got right after submitting
+  SHOW_SCORE_TO_STUDENT: false   // true = students see how many they got right after submitting
 };
 
 /* ======================================================
@@ -545,16 +545,23 @@ button { font: inherit; color: inherit; }
     };
     try {
       let data;
-      if (window.google && google.script && google.script.run) {
-        // Page is being served by the Apps Script itself: save straight to the Sheet
+      const hasUrl = CONFIG.SCRIPT_URL && !CONFIG.SCRIPT_URL.startsWith("PASTE");
+      if (hasUrl) {
+        // "no-cors" sends the answers without waiting for permission to read the reply.
+        // This avoids the iPad Safari security checks that block google.script.run and normal fetch.
+        await fetch(CONFIG.SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        data = { ok: true };
+      } else if (window.google && google.script && google.script.run) {
         data = await new Promise((resolve, reject) => {
           google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).saveResponses(payload);
         });
       } else {
-        // Page is hosted somewhere else: send to the web app URL
-        if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL.startsWith("PASTE")) throw new Error("no-url");
-        const res = await fetch(CONFIG.SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-        data = await res.json();
+        throw new Error("no-url");
       }
       if (!data || !data.ok) throw new Error((data && data.error) || "save failed");
       showDone();
