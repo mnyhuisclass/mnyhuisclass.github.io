@@ -15,7 +15,7 @@
 </style>
 <script>
 const CONFIG = {
-  SCRIPT_URL: "https://script.google.com/macros/library/d/12ek1KcDd67s5-m6e8qunQ2EZ5T_sWIkmK8XDU8sjzKpzzj6qFTFD0-0U/2",
+  SCRIPT_URL: "https://script.google.com/a/macros/plymouth.k12.in.us/s/AKfycbxUnw86mqnZFMSmUZGDUBLqBoe7KvcveFQuUc1wrnqHNaHwgQ42Lr_kuAybNS0ZXbxE/exec",
   TEACHERS: ["Nyhuis", "Gerhart", "Griffith"],
   SHOW_SCORE_TO_STUDENT: false   // true = students see how many they got right after submitting
 };
@@ -547,14 +547,10 @@ button { font: inherit; color: inherit; }
       let data;
       const hasUrl = CONFIG.SCRIPT_URL && !CONFIG.SCRIPT_URL.startsWith("PASTE");
       if (hasUrl) {
-        // "no-cors" sends the answers without waiting for permission to read the reply.
-        // This avoids the iPad Safari security checks that block google.script.run and normal fetch.
-        await fetch(CONFIG.SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
-        });
+        // Answers ride along in the link itself. Google redirects can turn a POST
+        // into a GET and drop the answers, but a GET arrives intact.
+        const url = CONFIG.SCRIPT_URL + "?data=" + encodeURIComponent(JSON.stringify(payload));
+        await fetch(url, { method: "GET", mode: "no-cors" });
         data = { ok: true };
       } else if (window.google && google.script && google.script.run) {
         data = await new Promise((resolve, reject) => {
