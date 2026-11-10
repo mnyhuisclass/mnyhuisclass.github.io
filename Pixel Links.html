@@ -1,0 +1,1016 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pixel Links</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: clubhouse arcade — course screen left, scorecard rail right, shot console under the screen. Deliberate single dark "pine" look, sequel to Pixel Putt. */
+:root{
+  --bg:#0f2219; --panel:#173a2b; --panel2:#21503b; --line:#07140e;
+  --ink:#f2fbef; --muted:#a9cdb5; --gold:#ffd23f; --good:#5ce07a; --bad:#ff6470;
+  --fair:#5cc443; --rough:#2f8a28; --sand:#ead18c; --water:#2f62e0;
+  --font-pixel:"Press Start 2P", "Courier New", monospace;
+  --font-display:"Lexend", "Trebuchet MS", system-ui, sans-serif;
+  --font-body:"Lexend", "Trebuchet MS", system-ui, sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.4;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 40px;
+  background-image:radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);background-size:6px 6px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;text-wrap:balance;line-height:1.3}
+button{font-family:var(--font-display);font-weight:700;font-size:16px;cursor:pointer;border:0;color:#1a1530;background:var(--gold);
+  padding:12px 16px;box-shadow:inset -4px -4px 0 rgba(0,0,0,.28), inset 4px 4px 0 rgba(255,255,255,.35), 0 0 0 3px var(--line);
+  line-height:1.3;touch-action:manipulation}
+button:active{transform:translateY(2px);box-shadow:inset 4px 4px 0 rgba(0,0,0,.28), 0 0 0 3px var(--line)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+button:focus-visible, input:focus-visible{outline:3px dashed var(--ink);outline-offset:4px}
+button.ghost{background:var(--panel2);color:var(--ink)}
+.panel{background:var(--panel);box-shadow:0 0 0 4px var(--line), inset 0 0 0 3px var(--panel2);padding:20px}
+.label{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.hint{color:var(--muted);font-size:16px;margin:0}
+
+/* Setup */
+.title{display:flex;flex-direction:column;gap:12px;align-items:flex-start;padding-top:8px}
+.title .kicker{font-family:var(--font-pixel);font-size:11px;color:var(--fair);letter-spacing:.05em}
+.title h1{font-family:var(--font-pixel);font-weight:400;font-size:clamp(28px,6vw,56px);color:var(--gold);text-shadow:4px 4px 0 #1f7a2c, 8px 8px 0 var(--line)}
+.title p{margin:0;color:var(--muted);font-size:20px;max-width:62ch}
+.setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.setup .panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.seg{display:flex;flex-wrap:wrap;gap:10px}
+.seg button{background:var(--panel2);color:var(--ink);min-width:52px}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#1a1530}
+.names{display:flex;flex-direction:column;gap:10px}
+.namerow{display:flex;gap:10px;align-items:center}
+.swatch{width:20px;height:20px;flex:none;box-shadow:0 0 0 3px var(--line)}
+.namerow input{flex:1;min-width:0;font-family:var(--font-body);font-size:18px;padding:8px 10px;background:var(--line);color:var(--ink);border:0;box-shadow:inset 0 0 0 2px var(--panel2)}
+.lies{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.lies li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:4px 12px;align-items:start;font-size:16px}
+.lies i{width:18px;height:18px;margin-top:3px;box-shadow:0 0 0 2px var(--line)}
+.lies b{font-weight:700}
+.startrow{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.startrow button{font-size:20px;padding:16px 24px}
+
+/* Game */
+.game{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:24px;align-items:start}
+.stage{display:flex;flex-direction:column;gap:20px;min-width:0}
+.screen{background:var(--line);padding:8px;box-shadow:0 0 0 4px #2b5e45}
+canvas{display:block;width:100%;max-width:100%;aspect-ratio:4/3;image-rendering:pixelated;image-rendering:crisp-edges;cursor:pointer;background:#07140e}
+.topbar{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.topbar .who{display:flex;gap:10px;align-items:center;font-size:19px;font-weight:700}
+.topbar .stat{font-size:16px;font-weight:600;color:var(--muted)}
+.topbar .stat b{color:var(--ink);font-weight:700}
+.console{min-height:150px}
+.qmeta{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:10px}
+.chip{font-size:14px;font-weight:700;padding:6px 9px;background:var(--panel2);color:var(--gold)}
+.chip.lie-fairway{background:var(--fair);color:#0d2a10}
+.chip.lie-rough{background:var(--rough);color:#eaffe4}
+.chip.lie-sand{background:var(--sand);color:#3b2b0b}
+.chip.lie-tee{background:#6fd14d;color:#0d2a10}
+.qtext{font-size:24px;font-weight:500;margin:0 0 14px;max-width:62ch}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;font-family:var(--font-body);font-size:19px;font-weight:600;background:var(--panel2);color:var(--ink);padding:12px 14px;min-width:0}
+.opt .k{font-weight:700;font-size:18px;color:#1a1530;background:var(--gold);padding:5px 9px;flex:none}
+.opt span:last-child{min-width:0;overflow-wrap:anywhere}
+.opt.right{background:#1f6b35;box-shadow:inset 0 0 0 3px var(--good),0 0 0 3px var(--line)}
+.opt.wrong{background:#7a2330;box-shadow:inset 0 0 0 3px var(--bad),0 0 0 3px var(--line)}
+.feedback{margin:16px 0 0;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.feedback .verdict{font-size:21px;font-weight:700}
+.feedback .verdict.ok{color:var(--good)} .feedback .verdict.no{color:var(--bad)}
+.feedback p{margin:0;max-width:64ch}
+.swing{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center}
+.swing .instr{flex:1 1 260px;margin:0;min-width:0}
+.swing .instr b{font-size:16px;color:var(--gold);font-weight:700;display:block;margin-bottom:6px}
+.meterwrap{flex:1 1 220px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.meter{height:26px;background:var(--line);box-shadow:inset 0 0 0 3px var(--panel2);padding:4px;position:relative}
+.meter .fill{height:100%;width:0;background:linear-gradient(90deg,#5ce07a 0%,#ffd23f 60%,#ff6470 100%);
+  -webkit-mask:repeating-linear-gradient(90deg,#000 0 10px,transparent 10px 13px);mask:repeating-linear-gradient(90deg,#000 0 10px,transparent 10px 13px)}
+.meter .tick{position:absolute;top:-4px;bottom:-4px;left:calc(4px + (100% - 8px) * .8);width:4px;margin-left:-2px;background:#fff;box-shadow:0 0 0 2px var(--line)}
+#swingBtn{font-size:24px;padding:18px 28px}
+.done{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.done p{margin:0;font-size:20px;min-width:0;flex:1 1 300px}
+.rail{display:flex;flex-direction:column;gap:20px}
+.board{display:flex;flex-direction:column;gap:10px}
+.prow{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px;background:var(--panel2)}
+.prow.now{box-shadow:inset 0 0 0 3px var(--gold)}
+.prow .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .tot{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.prow .sub{grid-column:2 / 4;font-size:15px;color:var(--muted)}
+.keys{font-size:15px;color:var(--muted);margin:0}
+
+/* End */
+.endhead{display:flex;flex-direction:column;gap:12px}
+.endhead h2{font-size:clamp(20px,3.5vw,30px);color:var(--gold)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:17px}
+th,td{padding:8px 9px;text-align:center;border-bottom:2px solid var(--panel2);white-space:nowrap}
+th{font-size:13px;color:var(--muted);font-weight:700}
+td:first-child,th:first-child{text-align:left}
+tr.win td{color:var(--gold)}
+td.under{color:var(--good)} td.over{color:#ffb4a8}
+.review{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.review li{background:var(--panel2);padding:10px 12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px}
+.review .tag{font-size:13px;font-weight:700;padding:5px 7px;align-self:start}
+.review .tag.ok{background:var(--good);color:#10301a} .review .tag.no{background:var(--bad);color:#3a0d13}
+.review .meta{font-size:14px;color:var(--muted)}
+.endbtns{display:flex;flex-wrap:wrap;gap:16px}
+@media (max-width:860px){ .game{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:520px){ .opts{grid-template-columns:minmax(0,1fr)} .qtext{font-size:20px} }
+</style>
+
+<div class="wrap">
+  <!-- SETUP -->
+  <section id="setupScreen">
+    <div class="wrap">
+      <header class="title">
+        <span class="kicker">PIXEL PUTT 2</span>
+        <h1>PIXEL LINKS</h1>
+        <p>Full-course division golf for 1 to 4 players. Where your ball lands decides how hard your next question is. Answer right to get the most direct shot at the pin.</p>
+      </header>
+      <div class="setup">
+        <div class="panel">
+          <span class="label">Players</span>
+          <div class="seg" id="countSeg" role="group" aria-label="Number of players"></div>
+          <div class="names" id="names"></div>
+        </div>
+        <div class="panel">
+          <span class="label">Where you land = your question</span>
+          <ul class="lies">
+            <li><i style="background:var(--fair)"></i><span><b>Fairway: DOK 3.</b> Reasoning and word problems, always with remainders.</span></li>
+            <li><i style="background:var(--rough)"></i><span><b>Rough and tee box: DOK 2.</b> Estimate, check, and solve. Remainders follow your setting.</span></li>
+            <li><i style="background:var(--sand)"></i><span><b>Sand: DOK 1.</b> Compute the quotient, no remainders.</span></li>
+            <li><i style="background:#80df5c"></i><span><b>Green: no questions.</b> Open putting, 7 putts max.</span></li>
+          </ul>
+          <p class="hint">All questions are 4-digit ÷ 1-digit division (4.CA.2).</p>
+        </div>
+        <div class="panel">
+          <span class="label">Remainders on tee and rough questions</span>
+          <div class="seg" id="remSeg" role="group" aria-label="Remainders"></div>
+          <span class="label">Divide by</span>
+          <div class="seg" id="divSeg" role="group" aria-label="Numbers to divide by"></div>
+          <p class="hint">Pick one or more divisors.</p>
+        </div>
+        <div class="panel">
+          <span class="label">Holes</span>
+          <div class="seg" id="holeSeg" role="group" aria-label="Number of holes"></div>
+          <span class="label">Arrow &amp; meter speed</span>
+          <div class="seg" id="speedSeg" role="group" aria-label="Arrow and meter speed"></div>
+          <p class="hint">A hole in one makes that player's arrow and meter 25% faster. No limit.</p>
+        </div>
+      </div>
+      <div class="startrow">
+        <button id="startBtn" type="button">TEE OFF ▶</button>
+        <p class="hint">Each player plays the whole hole, then passes to the next player.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" hidden>
+    <div class="game">
+      <div class="stage">
+        <div class="topbar">
+          <div class="who"><span class="swatch" id="whoSwatch"></span><span id="whoName">Player 1</span></div>
+          <div class="stat">HOLE <b id="holeNum">1</b>/<b id="holeTot">9</b> · PAR <b id="parNum">4</b> · STROKES <b id="strokeNum">0</b></div>
+        </div>
+        <div class="screen"><canvas id="cv" width="320" height="240" aria-label="Golf course"></canvas></div>
+        <div class="panel console">
+          <div id="qView">
+            <div class="qmeta"><span class="chip" id="qLie">Fairway</span><span class="chip" id="qDok">DOK 3</span><span class="label" id="qWho">Question</span></div>
+            <p class="qtext" id="qText"></p>
+            <div class="opts" id="opts"></div>
+            <div class="feedback" id="fb" hidden>
+              <span class="verdict" id="fbVerdict"></span>
+              <p id="fbText"></p>
+              <button id="shotBtn" type="button">TAKE YOUR SHOT ▶</button>
+            </div>
+          </div>
+          <div id="sView" class="swing" hidden>
+            <p class="instr" id="instr"></p>
+            <div class="meterwrap"><span class="label" id="meterLabel">Power</span><div class="meter"><div class="fill" id="meterFill"></div><div class="tick" id="tick"></div></div></div>
+            <button id="swingBtn" type="button">SWING</button>
+          </div>
+          <div id="dView" class="done" hidden>
+            <p id="dMsg"></p>
+            <button id="nextBtn" type="button">NEXT</button>
+          </div>
+        </div>
+      </div>
+      <aside class="rail">
+        <div class="panel board">
+          <span class="label">Scoreboard</span>
+          <div id="board" class="board"></div>
+        </div>
+        <div class="panel">
+          <ul class="lies">
+            <li><i style="background:var(--fair)"></i><span>Fairway: DOK 3</span></li>
+            <li><i style="background:var(--rough)"></i><span>Rough / tee: DOK 2</span></li>
+            <li><i style="background:var(--sand)"></i><span>Sand: DOK 1</span></li>
+            <li><i style="background:var(--water)"></i><span>Water or trees: +1 stroke</span></li>
+            <li><i style="background:#80df5c"></i><span>Green: putt, 7 max</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <p class="keys">Keys: 1–4 or A–D to answer. Space to swing. You can also tap the course to swing.</p>
+          <div class="seg" style="margin-top:12px"><button class="ghost" id="muteBtn" type="button">SOUND: ON</button></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="endScreen" hidden>
+    <div class="wrap">
+      <div class="panel endhead">
+        <span class="label">Final scorecard</span>
+        <h2 id="winner">Winner!</h2>
+        <div class="tablewrap"><table id="card"></table></div>
+      </div>
+      <div class="panel endhead">
+        <span class="label">Math by DOK level</span>
+        <div class="tablewrap"><table id="dokTable"></table></div>
+      </div>
+      <div class="panel endhead">
+        <span class="label">Question review (for the teacher)</span>
+        <ul class="review" id="review"></ul>
+      </div>
+      <div class="endbtns">
+        <button id="againBtn" type="button">PLAY AGAIN</button>
+        <button class="ghost" id="setupBtn" type="button">CHANGE SETUP</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const fmt=n=>n.toLocaleString('en-US');
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const COLORS=['#ff5050','#4fa8ff','#ffd23f','#c77dff'];
+const MAXPUTTS=7;
+
+/* ================= SOUND ================= */
+let actx=null, muted=false, lastBounce=0;
+function ensureAudio(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} }
+function tone(f,d,type='square',v=.05,delay=0,slide=0){
+  if(muted||!actx) return;
+  const t=actx.currentTime+delay, o=actx.createOscillator(), g=actx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.linearRampToValueAtTime(Math.max(40,f+slide),t+d);
+  g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+d+.02);
+}
+const sfx={
+  drive:p=>{tone(160+p*200,.12,'square',.06);tone(900,.05,'triangle',.03,.02);},
+  putt:p=>tone(220+p*300,.08,'square',.05),
+  land:()=>tone(140,.08,'triangle',.06),
+  sand:()=>tone(90,.15,'sawtooth',.04,0,-40),
+  bounce:()=>{const n=performance.now(); if(n-lastBounce<60) return; lastBounce=n; tone(420,.04,'square',.03);},
+  sink:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.12,'square',.05,i*.09)),
+  ace:()=>[523,659,784,1047,784,1047,1319,1568].forEach((f,i)=>tone(f,.12,'square',.06,i*.08)),
+  splash:()=>{tone(500,.35,'triangle',.08,0,-380);tone(180,.3,'sawtooth',.02,.05,-100);},
+  right:()=>{tone(660,.08,'square',.05);tone(990,.14,'square',.05,.08);},
+  wrong:()=>{tone(240,.14,'square',.05);tone(160,.22,'square',.05,.13);},
+  lock:()=>tone(880,.04,'square',.04)
+};
+
+/* ================= QUESTIONS (4-digit ÷ 1-digit) ================= */
+const divAns=(q,r)=>r?`${fmt(q)} R${r}`:fmt(q);
+const NAMES=['Jayden','Maya','Leo','Ava','Sam','Nora','Eli','Zoe'];
+function chooseDis(pri,rest,correct){
+  const out=[];
+  for(const x of [...pri,...shuffle(rest)]){ const s=String(x); if(s!==correct && !out.includes(s)) out.push(s); if(out.length===3) break; }
+  return out;
+}
+function mk(rem,zero=false){
+  for(let i=0;i<500;i++){
+    const d=pick(S.divisors);
+    let q=rand(Math.ceil(1000/d),Math.floor(9999/d));
+    if((zero||Math.random()<.3)&&q>=100) q=Math.floor(q/100)*100+q%10;
+    if(zero&&q>=1000&&Math.random()<.5) q=Math.floor(q/1000)*1000+q%100;
+    const r=rem?rand(1,d-1):0, n=q*d+r;
+    if(n<1000||n>9999||q<100) continue;
+    if(zero&&!/0/.test(String(q).slice(1))) continue;
+    if(rem&&q<2) continue;
+    return {d,q,r,n};
+  }
+  return {d:4,q:704,r:rem?3:0,n:2816+(rem?3:0)};
+}
+const dropZero=q=>{const s=String(q); return /0/.test(s.slice(1))?parseInt(s[0]+s.slice(1).replace(/0/g,''),10):null;};
+
+// DOK 1 — compute, no remainders
+function dok1(){
+  const {d,q,n}=mk(false), correct=fmt(q), dz=dropZero(q);
+  const kind=pick(['plain','box']);
+  const prompt=kind==='plain'?`What is ${fmt(n)} ÷ ${d}?`:`Find the missing number: ${d} × ? = ${fmt(n)}`;
+  let ex=`${fmt(n)} ÷ ${d} = ${fmt(q)}. Check it: ${fmt(q)} × ${d} = ${fmt(n)}.`;
+  if(dz) ex+=` Keep the 0 in ${fmt(q)} as a placeholder.`;
+  return {dok:1,rem:false,topic:'Compute the quotient',prompt,correct,
+    dis:chooseDis(dz?[fmt(dz)]:[],[q+1,q-1,q+10,q-10,q+100].filter(x=>x>0).map(fmt),correct),ex};
+}
+// DOK 2 — estimate, check, equal shares, missing dividend
+const SHARE=[
+  n=>`${fmt(n)} seeds are shared equally among`,
+  n=>`A school splits ${fmt(n)} pencils equally into`,
+  n=>`${fmt(n)} tickets are divided equally among`
+];
+const SHARE_UNIT=['gardens','bins','booths'];
+function dok2(rem){
+  const kind=pick(['estimate','check','share','missing']);
+  const {d,q,r,n}=mk(rem);
+  if(kind==='estimate'){
+    const c=Math.max(d*100,Math.round(n/(d*100))*d*100), est=c/d, correct=fmt(est);
+    return {dok:2,rem,topic:'Estimate',prompt:`Which is the best estimate for ${fmt(n)} ÷ ${d}?`,correct,
+      dis:chooseDis([fmt(est/10),fmt(est*10)],[fmt(est+100),est>100?fmt(est-100):fmt(est+200)],correct),
+      ex:`${fmt(n)} is close to ${fmt(c)}. Since ${d} × ${fmt(est)} = ${fmt(c)}, a good estimate is ${fmt(est)}. The exact answer is ${divAns(q,r)}.`};
+  }
+  if(kind==='check'){
+    let correct,dis,ex;
+    if(r){ correct=`${fmt(q)} × ${d} + ${r} = ${fmt(n)}`;
+      dis=chooseDis([`${fmt(q)} × ${r} + ${d} = ${fmt(n)}`,`${fmt(q)} + ${d} + ${r} = ${fmt(n)}`,`${fmt(n)} × ${d} + ${r} = ${fmt(q)}`],[],correct);
+      ex=`Multiply the quotient by the divisor, then add the remainder: ${fmt(q)} × ${d} = ${fmt(q*d)}, and ${fmt(q*d)} + ${r} = ${fmt(n)}.`; }
+    else { correct=`${fmt(q)} × ${d} = ${fmt(n)}`;
+      dis=chooseDis([`${fmt(n)} × ${d} = ${fmt(q)}`,`${fmt(q)} + ${d} = ${fmt(n)}`,`${fmt(n)} − ${d} = ${fmt(q)}`],[],correct);
+      ex=`Multiplication undoes division. Multiply the quotient by the divisor: ${fmt(q)} × ${d} = ${fmt(n)}.`; }
+    return {dok:2,rem,topic:'Check with multiplication',prompt:`Which equation can you use to check ${fmt(n)} ÷ ${d} = ${divAns(q,r)}?`,correct,dis,ex};
+  }
+  if(kind==='share'){
+    const k=rand(0,SHARE.length-1), unit=SHARE_UNIT[k];
+    const prompt=`${SHARE[k](n)} ${d} ${unit}. `+(r?`How many does each get, and how many are left over?`:`How many does each get?`);
+    let correct,dis;
+    if(r){ correct=`${fmt(q)} each, ${r} left over`;
+      dis=chooseDis([`${fmt(q+1)} each, ${r} left over`,`${fmt(q-1)} each, ${r+d} left over`],[`${fmt(q)} each, ${d} left over`,`${fmt(q+10)} each, ${r} left over`],correct); }
+    else { correct=fmt(q); const dz=dropZero(q); dis=chooseDis(dz?[fmt(dz)]:[],[q+1,q-10,q+10,q-1].map(fmt),correct); }
+    return {dok:2,rem,topic:'Equal shares',prompt,correct,dis,
+      ex:`${fmt(n)} ÷ ${d} = ${divAns(q,r)}, so each gets ${fmt(q)}${r?` and ${r} are left over`:''}. Check: ${fmt(q)} × ${d}${r?` + ${r}`:''} = ${fmt(n)}.`};
+  }
+  const correct=fmt(n);
+  const prompt=r?`? ÷ ${d} = ${fmt(q)} R${r}. What is the missing number?`:`? ÷ ${d} = ${fmt(q)}. What is the missing number?`;
+  const dis=r?chooseDis([fmt(q*d),fmt(q*d+d)],[fmt(q*d-r),fmt(q*d+r+10)],correct):chooseDis([fmt(n+d),fmt(n-d)],[fmt(n+10),fmt(n+q)],correct);
+  return {dok:2,rem,topic:'Missing dividend',prompt,correct,dis,
+    ex:`Work backward with multiplication: ${fmt(q)} × ${d} = ${fmt(q*d)}${r?`, then add the remainder: ${fmt(q*d)} + ${r} = ${fmt(n)}`:''}.`};
+}
+// DOK 3 — reasoning, always remainders
+const INTERP={
+  needed:[{t:(n,d)=>`The stadium has ${fmt(n)} fans who need a ride. Each van holds ${d} fans. How many vans are needed so every fan gets a ride?`,u:'van'},
+          {t:(n,d)=>`A library is packing ${fmt(n)} books. Each box holds ${d} books. How many boxes are needed to pack ALL the books?`,u:'box'}],
+  full:[{t:(n,d)=>`A bakery made ${fmt(n)} muffins. Each box holds ${d} muffins. How many FULL boxes can the bakery make?`,u:'box'},
+        {t:(n,d)=>`A farm collected ${fmt(n)} eggs. Each tray holds ${d} eggs. How many trays can be filled all the way?`,u:'tray'}],
+  left:[{t:(n,d)=>`${fmt(n)} stickers are shared equally among ${d} classes. How many stickers are LEFT OVER?`}]
+};
+function dok3(){
+  const kind=pick(['interp','interp','errBig','errZero','more','twoStep']);
+  const name=pick(NAMES);
+  if(kind==='interp'){
+    const {d,q,r,n}=mk(true), k=pick(['needed','full','left']), s=pick(INTERP[k]), base=`${fmt(n)} ÷ ${d} = ${fmt(q)} R${r}.`;
+    let correct,pri,rest,ex;
+    if(k==='needed'){ correct=fmt(q+1); pri=[fmt(q),`${fmt(q)} R${r}`]; rest=[String(r),fmt(q+2)]; ex=`${base} The ${r} left over still need a ${s.u}, so you need ${fmt(q)} + 1 = ${fmt(q+1)}.`; }
+    else if(k==='full'){ correct=fmt(q); pri=[fmt(q+1),`${fmt(q)} R${r}`]; rest=[String(r),fmt(q-1)]; ex=`${base} Only ${fmt(q)} are full. The ${r} extra do not fill a ${s.u}.`; }
+    else { correct=String(r); pri=[fmt(q),String(d)]; rest=[`${fmt(q)} R${r}`,String(d-r),String(r+d)]; ex=`${base} The remainder is the amount left over, so ${r} are left.`; }
+    return {dok:3,rem:true,topic:'What does the remainder mean?',prompt:s.t(n,d),correct,dis:chooseDis(pri,rest,correct),ex};
+  }
+  if(kind==='errBig'){
+    const {d,q,r,n}=mk(true), wrong=`${fmt(q-1)} R${r+d}`;
+    const correct=`No. The remainder ${r+d} is too big. The answer is ${fmt(q)} R${r}.`;
+    return {dok:3,rem:true,topic:'Find the mistake',prompt:`${name} says ${fmt(n)} ÷ ${d} = ${wrong}. Is ${name} correct?`,correct,
+      dis:[`Yes, because ${fmt(q-1)} × ${d} + ${r+d} = ${fmt(n)}.`,`No. The answer is ${fmt(q-1)} R${r}.`,`No. The answer is ${fmt(q+1)} R${r}.`],
+      ex:`A remainder must be less than the divisor (${d}). ${r+d} is not, so one more group of ${d} fits: ${fmt(q-1)} + 1 = ${fmt(q)}, and ${r+d} − ${d} = ${r}. So ${fmt(n)} ÷ ${d} = ${fmt(q)} R${r}.`};
+  }
+  if(kind==='errZero'){
+    const {d,q,r,n}=mk(true,true), wq=dropZero(q);
+    const correct=`${name} left out a 0 in the quotient. The answer is ${fmt(q)} R${r}.`;
+    return {dok:3,rem:true,topic:'Find the mistake',prompt:`${name} says ${fmt(n)} ÷ ${d} = ${fmt(wq)} R${r}. What mistake did ${name} make?`,correct,
+      dis:[`No mistake. ${fmt(wq)} R${r} is correct.`,`${name} forgot to add 1. The answer is ${fmt(wq+1)} R${r}.`,`The remainder should be 0. The answer is ${fmt(wq)}.`],
+      ex:`When a place has too few to make a group of ${d}, write 0 there as a placeholder. ${fmt(q)} × ${d} = ${fmt(q*d)}, and ${fmt(q*d)} + ${r} = ${fmt(n)}. ${fmt(wq)} × ${d} is only ${fmt(wq*d)}, which is much too small.`};
+  }
+  if(kind==='more'){
+    const {d,q,r,n}=mk(true), correct=String(d-r);
+    return {dok:3,rem:true,topic:'Multi-step remainder',prompt:`The library has ${fmt(n)} books. Each shelf holds ${d} books. After filling as many shelves as possible, how many MORE books are needed to fill one more shelf?`,correct,
+      dis:chooseDis([String(r),String(d)],[fmt(q+1),String(d+r),String(r+1)],correct),
+      ex:`${fmt(n)} ÷ ${d} = ${fmt(q)} R${r}. ${fmt(q)} shelves are full and ${r} books are left. To fill one more shelf you need ${d} − ${r} = ${d-r} more books.`};
+  }
+  const {d,q,r,n}=mk(true), a=rand(Math.floor(n*.3),Math.floor(n*.7)), b=n-a;
+  const correct=`${fmt(q)} bags, ${r} left over`;
+  return {dok:3,rem:true,topic:'Two-step problem',prompt:`A farm picked ${fmt(a)} apples on Monday and ${fmt(b)} apples on Tuesday. All the apples are packed into bags of ${d}. How many full bags are there, and how many apples are left over?`,correct,
+    dis:chooseDis([`${fmt(Math.floor(a/d))} bags, ${a%d} left over`,`${fmt(q-1)} bags, ${r+d} left over`],[`${fmt(q+1)} bags, ${r} left over`,`${fmt(q)} bags, ${d-r} left over`,`${fmt(q+1)} bags, 0 left over`],correct),
+    ex:`Step 1, add: ${fmt(a)} + ${fmt(b)} = ${fmt(n)}. Step 2, divide: ${fmt(n)} ÷ ${d} = ${fmt(q)} R${r}. That is ${fmt(q)} full bags with ${r} apples left over.`};
+}
+function genQ(dok,used){
+  for(let i=0;i<40;i++){
+    const raw=dok===1?dok1():dok===2?dok2(S.rems):dok3();
+    if(raw.dis.length<3||used.has(raw.prompt)) continue;
+    used.add(raw.prompt);
+    const options=shuffle([raw.correct,...raw.dis]);
+    return {...raw,options,answer:options.indexOf(raw.correct)};
+  }
+  used.clear(); return genQ(dok,used);
+}
+
+/* ================= HOLES ================= */
+const W=320,H=240,Z=5,YPX=1.5,R=2.5,VMAX=5.2;
+const T={ROUGH:0,FAIR:1,GREEN:2,SAND:3,WATER:4,OB:5,TEE:6,FRINGE:7};
+function pointAt(h,s){
+  s=clamp(s,0,h.L);
+  for(let i=0;i<h.pts.length-1;i++){
+    if(s<=h.cum[i+1]||i===h.pts.length-2){ const a=h.pts[i],b=h.pts[i+1],seg=h.cum[i+1]-h.cum[i],u=seg?clamp((s-h.cum[i])/seg,0,1):0; return {x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u}; }
+  }
+  return {...h.pts[h.pts.length-1]};
+}
+function project(h,p){
+  let best=1e9,bs=0;
+  for(let i=0;i<h.pts.length-1;i++){
+    const a=h.pts[i],b=h.pts[i+1],dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy;
+    const u=l2?clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/l2,0,1):0, x=a.x+dx*u, y=a.y+dy*u, d=Math.hypot(p.x-x,p.y-y);
+    if(d<best){best=d;bs=h.cum[i]+Math.sqrt(l2)*u;}
+  }
+  return bs;
+}
+function segDist(pts,x,y){
+  let best=1e9;
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i],b=pts[i+1],dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy;
+    const u=l2?clamp(((x-a.x)*dx+(y-a.y)*dy)/l2,0,1):0, d=Math.hypot(x-(a.x+dx*u),y-(a.y+dy*u));
+    if(d<best) best=d;
+  }
+  return best;
+}
+const inEll=(e,x,y)=>((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<=1;
+function genHole(par){
+  const side=Math.random()<.5?-1:1, tee={x:rand(135,185),y:221};
+  let pts;
+  if(par===3) pts=[tee,{x:rand(95,225),y:rand(72,88)}];
+  else if(par===4) pts=[tee,{x:clamp(160+side*rand(55,85),50,270),y:rand(118,138)},{x:clamp(160-side*rand(15,60),50,270),y:rand(40,48)}];
+  else pts=[tee,{x:clamp(160+side*rand(70,100),45,275),y:rand(158,170)},{x:clamp(160-side*rand(70,100),45,275),y:rand(98,110)},{x:clamp(160+side*rand(0,55),50,270),y:rand(38,44)}];
+  const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+dist(pts[i-1],pts[i]));
+  const h={par,pts,cum,L:cum[cum.length-1]};
+  const gc=pts[pts.length-1]; h.gc=gc; h.gRx=rand(18,23); h.gRy=rand(13,16);
+  h.pin={x:gc.x+rand(-Math.floor(h.gRx*.45),Math.floor(h.gRx*.45)),y:gc.y+rand(-Math.floor(h.gRy*.4),Math.floor(h.gRy*.4))};
+  h.half=12; h.fs=par===3?Math.max(10,h.L-55):38; h.fe=h.L;
+  h.tee={x:tee.x-10,y:tee.y-6,w:20,h:12};
+  // bunkers
+  h.bunkers=[]; h.ponds=[];
+  const prev=pts[pts.length-2], approach=Math.atan2(prev.y-gc.y,prev.x-gc.x);
+  const nGB=rand(1,2);
+  for(let k=0;k<nGB;k++){
+    let a; do{ a=Math.random()*Math.PI*2; }while(Math.abs(Math.atan2(Math.sin(a-approach),Math.cos(a-approach)))<0.8);
+    h.bunkers.push({x:gc.x+Math.cos(a)*(h.gRx*1.25+6),y:gc.y+Math.sin(a)*(h.gRy*1.25+5),rx:rand(8,11),ry:rand(5,7)});
+  }
+  if(par>=4){
+    for(let k=0;k<rand(1,2);k++){
+      const s=rand(Math.floor(h.fs+25),Math.floor(h.L-60)), p=pointAt(h,s), q=pointAt(h,s+2), nx=-(q.y-p.y)/2, ny=(q.x-p.x)/2, sg=Math.random()<.5?-1:1;
+      h.bunkers.push({x:p.x+nx*sg*(h.half+7),y:p.y+ny*sg*(h.half+7),rx:rand(9,12),ry:rand(6,8)});
+    }
+    if(Math.random()<.7){
+      const s=rand(55,Math.floor(h.L-70)), p=pointAt(h,s), q=pointAt(h,s+2), nx=-(q.y-p.y)/2, ny=(q.x-p.x)/2, sg=Math.random()<.5?-1:1;
+      const prx=rand(15,21), pry=rand(9,13), off=h.half+prx+6;
+      const pond={x:clamp(p.x+nx*sg*off,30,290),y:clamp(p.y+ny*sg*off,30,210),rx:prx,ry:pry};
+      if(dist(pond,gc)>h.gRx+pond.rx+12 && dist(pond,tee)>pond.rx+20) h.ponds.push(pond);
+    }
+  }else if(Math.random()<.6){
+    const s=h.L*.45, p=pointAt(h,s), sg=Math.random()<.5?-1:1;
+    h.ponds.push({x:clamp(p.x+sg*30,30,290),y:p.y,rx:rand(14,18),ry:rand(9,12)});
+  }
+  // fairway centerline
+  const fw=[pointAt(h,h.fs)]; for(let i=1;i<pts.length-1;i++) if(cum[i]>h.fs) fw.push(pts[i]); fw.push(pointAt(h,h.fe));
+  const map=new Uint8Array(W*H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    let t=T.ROUGH;
+    const px=x+.5, py=y+.5;
+    if(x<8||x>=312||y<8||y>=232) t=T.OB;
+    else{
+      const ge=((px-gc.x)/h.gRx)**2+((py-gc.y)/h.gRy)**2;
+      if(ge<=1) t=T.GREEN;
+      else if(h.ponds.some(e=>inEll(e,px,py))) t=T.WATER;
+      else if(h.bunkers.some(e=>inEll(e,px,py))) t=T.SAND;
+      else if(ge<=1.5625) t=T.FRINGE;
+      else if(px>=h.tee.x&&px<h.tee.x+h.tee.w&&py>=h.tee.y&&py<h.tee.y+h.tee.h) t=T.TEE;
+      else if(segDist(fw,px,py)<=h.half) t=T.FAIR;
+    }
+    map[y*W+x]=t;
+  }
+  h.map=map;
+  h.yards=Math.round(h.L*YPX/5)*5;
+  return h;
+}
+function typeAt(h,x,y){ const xi=Math.floor(x), yi=Math.floor(y); if(xi<0||yi<0||xi>=W||yi>=H) return T.OB; return h.map[yi*W+xi]; }
+const LIE_OF=t=>t===T.ROUGH?'rough':t===T.SAND?'sand':'fairway';
+const LIE_LABEL={tee:'Tee box',fairway:'Fairway',rough:'Rough',sand:'Sand'};
+const DOK_OF={tee:2,fairway:3,rough:2,sand:1};
+const CLUB={tee:150,fairway:110,rough:85,sand:60};
+
+function computeTargets(h,b,lie,answer){
+  const CL=CLUB[lie], pin=h.pin, pd=dist(b,pin);
+  let c, isPin=false;
+  if(pd<=CL*1.1){ c={x:pin.x,y:pin.y}; isPin=true; }
+  else{
+    let s=project(h,b)+CL;
+    if(s>=h.L-4){ c={x:pin.x,y:pin.y}; isPin=true; }
+    else{
+      c=pointAt(h,s);
+      const risky=p=>{ for(let a=0;a<8;a++){ for(const r of [0,4,7]){ const t=typeAt(h,p.x+Math.cos(a*Math.PI/4)*r,p.y+Math.sin(a*Math.PI/4)*r); if(t===T.SAND||t===T.WATER) return true; } } return false; };
+      const s0=s;
+      for(let k=0;k<16&&risky(c);k++){ s=s0+(k%2?-1:1)*(Math.floor(k/2)+1)*5; c=pointAt(h,s); }
+    }
+  }
+  const cd=dist(b,c), base=Math.atan2(c.y-b.y,c.x-b.x), cPin=dist(c,pin), sg0=Math.random()<.5?1:-1;
+  const wrongs=[];
+  const tryAdd=(p,strict)=>{
+    if(p.x<14||p.x>306||p.y<14||p.y>226) return false;
+    if(dist(p,pin)<cPin+22) return false;
+    if(strict&&isPin&&typeAt(h,p.x,p.y)===T.GREEN) return false;
+    if(wrongs.some(w=>dist(w,p)<14)||dist(p,c)<14) return false;
+    wrongs.push(p); return true;
+  };
+  outer: for(const a of [32,60,45,80]) for(const m of [1,.6,1.4,2]) for(const sg of [sg0,-sg0]){
+    if(wrongs.length>=3) break outer;
+    const ang=base+sg*a*Math.PI/180, d=Math.max(12,cd*m);
+    tryAdd({x:b.x+Math.cos(ang)*d,y:b.y+Math.sin(ang)*d},true);
+  }
+  let guard=0;
+  while(wrongs.length<3&&guard++<500) tryAdd({x:rand(20,300),y:rand(20,220)},guard<300);
+  while(wrongs.length<3) wrongs.push({x:20+wrongs.length*10,y:220});
+  const ws=shuffle(wrongs), pts=[];
+  for(let i=0;i<4;i++) pts.push(i===answer?c:ws.pop());
+  return {pts,isPin};
+}
+
+/* ================= RENDER ================= */
+const cv=$('#cv'), ctx=cv.getContext('2d'); ctx.imageSmoothingEnabled=false;
+const courseBg=document.createElement('canvas'); courseBg.width=W; courseBg.height=H;
+const greenBg=document.createElement('canvas'); greenBg.width=W; greenBg.height=H;
+const FONT=s=>`${s}px "Press Start 2P", monospace`;
+const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const C={r1:hx('#358f2b'),r2:hx('#318628'),r3:hx('#276f20'),f1:hx('#5cc443'),f2:hx('#52b83b'),fr:hx('#4aad37'),
+  g1:hx('#80df5c'),g2:hx('#76d453'),s1:hx('#ead18c'),s2:hx('#c9a75c'),w1:hx('#2f62e0'),w2:hx('#1f45b0'),t1:hx('#6fd14d'),t2:hx('#64c544'),ob:hx('#16411a')};
+function hash(x,y){ let h=(Math.imul(x,374761393)+Math.imul(y,668265263))|0; h=Math.imul(h^(h>>>13),1274126177); return (h^(h>>>16))>>>0; }
+function colorFor(t,x,y,edge){
+  switch(t){
+    case T.ROUGH: return hash(x,y)%9===0?C.r3:(((x>>2)+(y>>2))&1?C.r1:C.r2);
+    case T.FAIR: return ((x+y)>>3)&1?C.f1:C.f2;
+    case T.FRINGE: return C.fr;
+    case T.GREEN: return ((x-y)>>3)&1?C.g1:C.g2;
+    case T.SAND: return edge?C.s2:(hash(x,y)%5===0?C.s2:C.s1);
+    case T.WATER: return edge?C.w2:C.w1;
+    case T.TEE: return ((y>>2)&1)?C.t1:C.t2;
+    default: return C.ob;
+  }
+}
+function txt(c,s,x,y,size,col,align='center'){
+  c.font=FONT(size); c.textAlign=align; c.textBaseline='middle';
+  c.fillStyle='#07140e'; c.fillText(s,x+1,y+1); c.fillStyle=col; c.fillText(s,x,y);
+}
+function tree(c,x,y,r){
+  for(let dy=-r;dy<=r;dy++){ const w=Math.floor(Math.sqrt(r*r-dy*dy)); c.fillStyle=dy<-r/3?'#2b7d30':dy>r/3?'#0f3313':'#1a5e22'; c.fillRect(x-w,y+dy,w*2,1); }
+  c.fillStyle='#3d9a42'; c.fillRect(x-Math.floor(r/2),y-Math.floor(r/2),2,2);
+}
+function renderCourse(h){
+  const c=courseBg.getContext('2d'), img=c.createImageData(W,H), m=h.map;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const t=m[y*W+x];
+    let edge=false;
+    if(t===T.WATER||t===T.SAND){ edge=(x>0&&m[y*W+x-1]!==t)||(x<W-1&&m[y*W+x+1]!==t)||(y>0&&m[(y-1)*W+x]!==t)||(y<H-1&&m[(y+1)*W+x]!==t); }
+    const col=colorFor(t,x,y,edge), i=(y*W+x)*4;
+    img.data[i]=col[0]; img.data[i+1]=col[1]; img.data[i+2]=col[2]; img.data[i+3]=255;
+  }
+  c.putImageData(img,0,0);
+  for(let x=4;x<W;x+=9){ tree(c,x,4+(x%3),6); tree(c,x+4,236-(x%3),6); }
+  for(let y=10;y<H-8;y+=9){ tree(c,4+(y%3),y,6); tree(c,316-(y%3),y,6); }
+  // tee markers
+  c.fillStyle='#ffffff'; c.fillRect(h.tee.x+2,h.tee.y+5,2,2); c.fillRect(h.tee.x+h.tee.w-4,h.tee.y+5,2,2);
+}
+function renderGreen(h){
+  const c=greenBg.getContext('2d'), img=c.createImageData(W,H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const cx=h.gc.x+(x-160)/Z, cy=h.gc.y+(y-120)/Z;
+    const ge=((cx-h.gc.x)/h.gRx)**2+((cy-h.gc.y)/h.gRy)**2;
+    let t;
+    if(ge<=1) t=T.GREEN; else { t=typeAt(h,cx,cy); if(t===T.GREEN) t=T.FRINGE; if(t===T.FRINGE&&ge>1.5625) t=T.ROUGH; }
+    const col=t===T.GREEN?(((x-y)>>4)&1?C.g1:C.g2):colorFor(t,x>>1,y>>1,false), i=(y*W+x)*4;
+    img.data[i]=col[0]; img.data[i+1]=col[1]; img.data[i+2]=col[2]; img.data[i+3]=255;
+  }
+  c.putImageData(img,0,0);
+}
+const toZ=(h,p)=>({x:160+(p.x-h.gc.x)*Z,y:120+(p.y-h.gc.y)*Z});
+function drawCupFlag(x,y,t){
+  ctx.fillStyle='#2b7a1d'; for(let dy=-5;dy<=5;dy++){ const w=Math.floor(Math.sqrt(30-dy*dy)); ctx.fillRect(x-w,y+dy,w*2,1); }
+  ctx.fillStyle='#0b0b14'; for(let dy=-4;dy<=4;dy++){ const w=Math.floor(Math.sqrt(17-dy*dy)); ctx.fillRect(x-w,y+dy,w*2,1); }
+  ctx.fillStyle='#eeeeee'; ctx.fillRect(x,y-26,1,26);
+  const wave=Math.floor(t/12)%2; ctx.fillStyle='#ff3b3b';
+  for(let i=0;i<8;i++){ const len=12-i-(i%2?wave:0); ctx.fillRect(x+1,y-26+i,Math.max(1,len),1); }
+}
+function drawSmallFlag(p,t){
+  const x=Math.round(p.x), y=Math.round(p.y);
+  ctx.fillStyle='#0b0b14'; ctx.fillRect(x-1,y-1,3,2);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(x,y-10,1,9);
+  ctx.fillStyle='#ff3b3b'; const w=Math.floor(t/14)%2; ctx.fillRect(x+1,y-10,5-w,2); ctx.fillRect(x+1,y-8,3,1);
+}
+function drawBigBall(b,color){
+  const x=Math.round(b.x), y=Math.round(b.y), s=b.scale??1;
+  if(s<1){ ctx.fillStyle=color; const z=Math.max(1,Math.round(5*s)); ctx.fillRect(x-(z>>1),y-(z>>1),z,z); return; }
+  ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(x-1,y+2,4,2);
+  ctx.fillStyle='#07140e'; ctx.fillRect(x-2,y-3,5,7); ctx.fillRect(x-3,y-2,7,5);
+  ctx.fillStyle=color; ctx.fillRect(x-1,y-2,3,5); ctx.fillRect(x-2,y-1,5,3);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(x-1,y-1,1,1);
+}
+function drawSmallBall(x,y,hgt,color){
+  x=Math.round(x); y=Math.round(y);
+  ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(x-1,y,3,2);
+  const yy=Math.round(y-hgt), big=hgt>6;
+  ctx.fillStyle='#07140e'; big?ctx.fillRect(x-2,yy-2,5,5):ctx.fillRect(x-1,yy-1,4,4);
+  ctx.fillStyle=color; big?ctx.fillRect(x-1,yy-1,3,3):ctx.fillRect(x-1,yy-1,3,3);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(x-1,yy-1,1,1);
+}
+function drawTarget(p,col,letter){
+  const x=Math.round(p.x), y=Math.round(p.y);
+  ctx.fillStyle='#07140e';
+  for(let a=0;a<16;a++){ const r=a*Math.PI/8; ctx.fillRect(Math.round(x+Math.cos(r)*6),Math.round(y+Math.sin(r)*6)+1,1,1); }
+  ctx.fillStyle=col;
+  for(let a=0;a<16;a++){ const r=a*Math.PI/8; ctx.fillRect(Math.round(x+Math.cos(r)*6),Math.round(y+Math.sin(r)*6),1,1); }
+  ctx.fillRect(x-1,y,3,1); ctx.fillRect(x,y-1,1,3);
+  if(letter){ ctx.fillStyle='#07140e'; ctx.fillRect(x-5,y-18,11,10); txt(ctx,letter,x+1,y-13,8,col); }
+}
+function drawAim(o,base,len0){
+  ctx.fillStyle='rgba(255,255,255,.8)';
+  for(let a=-90;a<=90;a+=10){ const r=base+a*Math.PI/180, s=(a%90===0||a===0)?2:1; ctx.fillRect(Math.round(o.x+Math.cos(r)*20)-(s>>1),Math.round(o.y+Math.sin(r)*20)-(s>>1),s,s); }
+  const ang=G.phase==='aim'?base+G.aimOff*Math.PI/180:G.locked;
+  const len=G.phase==='power'?8+G.pow*26:len0;
+  const col=G.phase==='power'?(G.pow<.6?'#5ce07a':G.pow<.85?'#ffd23f':'#ff6470'):'#ffd23f';
+  for(let d=5;d<len;d+=2){ const px=Math.round(o.x+Math.cos(ang)*d), py=Math.round(o.y+Math.sin(ang)*d); ctx.fillStyle='#07140e'; ctx.fillRect(px,py+1,2,2); ctx.fillStyle=col; ctx.fillRect(px,py,2,2); }
+  const hx2=Math.round(o.x+Math.cos(ang)*len), hy=Math.round(o.y+Math.sin(ang)*len);
+  ctx.fillStyle='#07140e'; ctx.fillRect(hx2-2,hy-1,5,5); ctx.fillStyle=col; ctx.fillRect(hx2-2,hy-2,5,5); ctx.fillStyle='#fff'; ctx.fillRect(hx2-1,hy-1,1,1);
+}
+function hudBox(lines){
+  ctx.font=FONT(8); let w=0; lines.forEach(l=>w=Math.max(w,ctx.measureText(l[0]).width));
+  ctx.fillStyle='rgba(7,20,14,.85)'; ctx.fillRect(10,10,w+12,lines.length*12+6);
+  lines.forEach((l,i)=>txt(ctx,l[0],16,19+i*12,8,l[1],'left'));
+}
+function drawFlash(){
+  const f=G.flash; if(!f) return;
+  const size=f.text.length>12?10:f.text.length>9?12:16;
+  ctx.font=FONT(size); const w=Math.min(300,ctx.measureText(f.text).width+24);
+  ctx.fillStyle='#07140e'; ctx.fillRect(W/2-w/2,100,w,40);
+  ctx.fillStyle=f.color; ctx.fillRect(W/2-w/2,100,w,3); ctx.fillRect(W/2-w/2,137,w,3);
+  txt(ctx,f.text,W/2,121,size,f.color);
+  if(f.sub){ ctx.font=FONT(8); const w2=ctx.measureText(f.sub).width+12; ctx.fillStyle='#07140e'; ctx.fillRect(W/2-w2/2,144,w2,14); txt(ctx,f.sub,W/2,151,8,'#ffffff'); }
+}
+let frame=0;
+function draw(){
+  if(!G||!G.hole) return;
+  const h=G.hole, p=G.players[G.turn];
+  if(G.view==='course'){
+    ctx.drawImage(courseBg,0,0);
+    // water shimmer
+    ctx.fillStyle='#9cd0ff';
+    for(const e of h.ponds){ for(let y=Math.ceil(e.y-e.ry)+2;y<e.y+e.ry-1;y+=4){ const off=Math.floor(frame/8+y)%9; for(let x=Math.ceil(e.x-e.rx)+off;x<e.x+e.rx-2;x+=9){ if(typeAt(h,x,y)===T.WATER&&typeAt(h,x+2,y)===T.WATER) ctx.fillRect(x,y,3,1); } } }
+    drawSmallFlag(h.pin,frame);
+    if(G.tg&&G.choice!=null&&['feedback','aim','power'].includes(G.phase)){
+      const ok=G.choice===G.q.answer;
+      if(!ok) drawTarget(G.tg.pts[G.q.answer],'#5ce07a','ABCD'[G.q.answer]);
+      drawTarget(G.tg.pts[G.choice],ok?'#5ce07a':'#ffffff','ABCD'[G.choice]);
+    }
+    if(G.phase==='flight'){
+      const f=G.fl, u=f.t/f.F, x=f.sx+(f.ex-f.sx)*u, y=f.sy+(f.ey-f.sy)*u;
+      drawSmallBall(x,y,Math.sin(Math.PI*u)*f.H,p.color);
+    }else if(G.ball&&!G.ballHidden) drawSmallBall(G.ball.x,G.ball.y,0,p.color);
+    if((G.phase==='aim'||G.phase==='power')&&G.tg){ const t=G.tg.pts[G.choice]; drawAim(G.ball,Math.atan2(t.y-G.ball.y,t.x-G.ball.x),16); }
+    if(G.ball){ const yd=Math.round(dist(G.ball,h.pin)*YPX); hudBox([[G.lie==='tee'?'TEE BOX':LIE_LABEL[G.lie].toUpperCase(),'#ffd23f'],[`PIN ${yd} YDS`,'#ffffff']]); }
+  }else{
+    ctx.drawImage(greenBg,0,0);
+    const cz=toZ(h,h.pin); drawCupFlag(cz.x,cz.y,frame);
+    if(G.pb) drawBigBall(G.pb,p.color);
+    if((G.phase==='aim'||G.phase==='power')&&G.pb) drawAim(G.pb,Math.atan2(cz.y-G.pb.y,cz.x-G.pb.x),18);
+    if(G.pb){ const ft=Math.max(1,Math.round(dist(G.pb,cz)/Z*YPX*3)); hudBox([['ON THE GREEN','#ffd23f'],[`PUTTS ${G.putts}/${MAXPUTTS} · ${ft} FT`,'#ffffff']]); }
+  }
+  drawFlash();
+}
+
+/* ================= GAME STATE ================= */
+const S={count:2,names:['Player 1','Player 2','Player 3','Player 4'],divisors:[2,3,4,5,6,7,8,9],rems:true,holes:9,speed:'slow'};
+try{ const s=JSON.parse(localStorage.getItem('pixellinks')||'null'); if(s) Object.assign(S,s); }catch(e){}
+if(!Array.isArray(S.divisors)||!S.divisors.length) S.divisors=[2,3,4,5,6,7,8,9];
+const saveS=()=>{ try{ localStorage.setItem('pixellinks',JSON.stringify(S)); }catch(e){} };
+const SPEEDS={slow:{aim:.9,pow:.011},medium:{aim:1.5,pow:.017},fast:{aim:2.3,pow:.025}};
+const PARS={3:[4,3,5],6:[4,3,5,4,3,4],9:[4,3,5,4,4,3,4,5,4],18:[4,3,5,4,4,3,4,5,4,4,4,3,5,4,3,4,4,5]};
+let G=null;
+
+function startGame(){
+  G={players:S.names.slice(0,S.count).map((n,i)=>({name:(n||'').trim()||`Player ${i+1}`,color:COLORS[i],scores:[],boost:1,dok:{1:[0,0],2:[0,0],3:[0,0]}})),
+     pars:PARS[S.holes], holes:PARS[S.holes].map(genHole), h:0, turn:0, review:[], used:new Set(), phase:'idle', view:'course'};
+  show('game'); beginTurn();
+}
+function beginTurn(){
+  G.hole=G.holes[G.h]; renderCourse(G.hole); renderGreen(G.hole);
+  const t=G.hole.pts[0];
+  Object.assign(G,{view:'course',ball:{x:t.x,y:t.y},lie:'tee',strokes:0,putts:0,pb:null,flash:null,choice:null,tg:null,ballHidden:false,wait:null});
+  flash(`HOLE ${G.h+1} · PAR ${G.hole.par}`,'#ffd23f',`${G.hole.yards} YARDS`);
+  askQuestion();
+}
+function askQuestion(){
+  const dok=DOK_OF[G.lie];
+  G.q=genQ(dok,G.used);
+  G.tg=computeTargets(G.hole,G.ball,G.lie,G.q.answer);
+  G.choice=null; G.phase='question';
+  buildQuestion(); updateUI();
+}
+function choose(i){
+  if(G.phase!=='question') return;
+  ensureAudio();
+  const p=G.players[G.turn], ok=i===G.q.answer;
+  G.choice=i; p.dok[G.q.dok][1]++; if(ok) p.dok[G.q.dok][0]++;
+  G.review.push({hole:G.h+1,name:p.name,dok:G.q.dok,lie:G.lie,prompt:G.q.prompt,chose:G.q.options[i],answer:G.q.options[G.q.answer],ok});
+  G.phase='feedback';
+  [...$('#opts').children].forEach((b,k)=>{ b.disabled=true; if(k===G.q.answer) b.classList.add('right'); else if(k===i) b.classList.add('wrong'); });
+  const L='ABCD';
+  $('#fbVerdict').textContent=ok?`CORRECT! TARGET ${L[i]} IS THE DIRECT LINE`:'NOT QUITE';
+  $('#fbVerdict').className='verdict '+(ok?'ok':'no');
+  $('#fbText').textContent=(ok?'':`The answer is ${L[G.q.answer]}: ${G.q.correct}. Your shot aims at target ${L[i]}, off the best line. The green target shows where the right answer would have sent you. `)+G.q.ex;
+  $('#fb').hidden=false; $('#shotBtn').focus({preventScroll:true});
+  ok?sfx.right():sfx.wrong();
+  updateUI();
+}
+function startAim(){ G.phase='aim'; G.aimOff=-90; G.aimDir=1; $('#meterFill').style.width='0%'; updateUI(); }
+function swingPress(){
+  ensureAudio();
+  if(!G) return;
+  if(G.phase==='aim'){
+    let o,t;
+    if(G.view==='course'){ o=G.ball; t=G.tg.pts[G.choice]; } else { o=G.pb; t=toZ(G.hole,G.hole.pin); }
+    G.locked=Math.atan2(t.y-o.y,t.x-o.x)+G.aimOff*Math.PI/180;
+    G.phase='power'; G.pow=0; G.powDir=1; sfx.lock(); updateUI();
+  }else if(G.phase==='power'){
+    const p=Math.max(.04,G.pow);
+    G.strokes++;
+    if(G.view==='course'){
+      const t=G.tg.pts[G.choice], maxD=Math.max(16,dist(G.ball,t))*1.25, d=Math.max(4,p*maxD);
+      G.shotStart={x:G.ball.x,y:G.ball.y};
+      G.fl={sx:G.ball.x,sy:G.ball.y,ex:G.ball.x+Math.cos(G.locked)*d,ey:G.ball.y+Math.sin(G.locked)*d,t:0,F:Math.round(26+d*.22),H:Math.min(22,3+d*.11),ang:G.locked};
+      G.phase='flight'; sfx.drive(p);
+    }else{
+      G.putts++; const v=VMAX*Math.sqrt(p);
+      G.pb.vx=Math.cos(G.locked)*v; G.pb.vy=Math.sin(G.locked)*v; G.phase='putt'; sfx.putt(p);
+    }
+    updateUI();
+  }
+}
+function wait(t,fn){ G.phase='wait'; G.wait={t,fn}; updateUI(); }
+function penalty(text){
+  G.strokes++; G.ballHidden=true; flash(text,'#4fa8ff','+1 PENALTY STROKE');
+  wait(80,()=>{ G.ball={...G.shotStart}; G.ballHidden=false; askQuestion(); });
+}
+function landed(x,y,ang){
+  const h=G.hole, t=typeAt(h,x,y);
+  if(t===T.OB){ sfx.land(); penalty('IN THE TREES!'); return; }
+  if(t===T.WATER){ sfx.splash(); penalty('SPLASH!'); return; }
+  if(t===T.GREEN){ enterGreen({x,y},ang,2.0); return; }
+  sfx.land();
+  G.ball={x,y};
+  const roll={[T.FAIR]:7,[T.FRINGE]:5,[T.TEE]:5,[T.ROUGH]:2,[T.SAND]:0}[t]||0;
+  if(t===T.SAND) sfx.sand();
+  G.roll={ang,left:roll}; G.phase='roll'; updateUI();
+}
+function settle(){
+  const t=typeAt(G.hole,G.ball.x,G.ball.y);
+  G.lie=LIE_OF(t);
+  const dok=DOK_OF[G.lie];
+  flash(LIE_LABEL[G.lie].toUpperCase(),G.lie==='sand'?'#ead18c':G.lie==='fairway'?'#5cc443':'#9fe38a',`NEXT QUESTION: DOK ${dok}`);
+  wait(55,askQuestion);
+}
+function enterGreen(p,ang,speed){
+  G.view='green'; G.ball={x:p.x,y:p.y};
+  const z=toZ(G.hole,p); G.pb={x:z.x,y:z.y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,scale:1};
+  flash('ON THE GREEN!','#80df5c','PUTTING: NO QUESTIONS'); sfx.land();
+  G.phase='putt'; updateUI();
+}
+function edge(b){
+  const rx=G.hole.gRx*1.25*Z, ry=G.hole.gRy*1.25*Z, dx=b.x-160, dy=b.y-120, v=(dx/rx)**2+(dy/ry)**2;
+  if(v<=1) return;
+  const k=1/Math.sqrt(v)*.995; b.x=160+dx*k; b.y=120+dy*k;
+  let nx=dx/(rx*rx), ny=dy/(ry*ry); const nl=Math.hypot(nx,ny); nx/=nl; ny/=nl;
+  const vn=b.vx*nx+b.vy*ny; if(vn>0){ b.vx-=1.5*vn*nx; b.vy-=1.5*vn*ny; sfx.bounce(); }
+}
+function puttPhysics(){
+  const b=G.pb, cz=toZ(G.hole,G.hole.pin);
+  let sp=Math.hypot(b.vx,b.vy);
+  const steps=Math.max(1,Math.ceil(sp/.8));
+  for(let s=0;s<steps;s++){
+    b.x+=b.vx/steps; b.y+=b.vy/steps; edge(b);
+    sp=Math.hypot(b.vx,b.vy);
+    if(Math.hypot(cz.x-b.x,cz.y-b.y)<4.5&&sp<3.4){ G.phase='sinking'; b.vx=b.vy=0; b.x=cz.x; b.y=cz.y; return; }
+  }
+  const dx=cz.x-b.x, dy=cz.y-b.y, d=Math.hypot(dx,dy);
+  if(d<11&&d>.01){ b.vx+=dx/d*.07; b.vy+=dy/d*.07; }
+  sp=Math.hypot(b.vx,b.vy);
+  const ge=((b.x-160)/(G.hole.gRx*Z))**2+((b.y-120)/(G.hole.gRy*Z))**2, dec=ge>1?.09:.045;
+  if(sp<=dec){
+    if(d<11){ b.vx=dx/d*.4; b.vy=dy/d*.4; return; }
+    b.vx=b.vy=0;
+    if(G.putts>=MAXPUTTS) finishHole(false); else startAim();
+  }else{ b.vx*=(sp-dec)/sp; b.vy*=(sp-dec)/sp; }
+}
+function flash(text,color,sub){ G.flash={text,color,sub,t:120}; }
+function scoreName(n,par){
+  if(n===1) return 'HOLE IN ONE!';
+  const d=n-par; return d<=-3?'ALBATROSS!':d===-2?'EAGLE!':d===-1?'BIRDIE!':d===0?'PAR':d===1?'BOGEY':d===2?'DOUBLE BOGEY':`+${d}`;
+}
+const relText=(n,par)=>{const d=n-par; return d===0?'even par':d<0?`${-d} under par`:`${d} over par`;};
+function finishHole(sunk){
+  const p=G.players[G.turn], score=G.strokes, par=G.hole.par;
+  p.scores[G.h]=score; G.phase='done';
+  if(sunk&&score===1) p.boost+=.25;
+  if(sunk){ score===1?sfx.ace():sfx.sink(); flash(scoreName(score,par),score===1?'#ffd23f':score<par?'#5ce07a':'#ffffff',score===1?'METERS NOW FASTER!':p.name.toUpperCase()); }
+  else flash('MAX PUTTS','#ff6470',`PICKED UP AFTER ${MAXPUTTS} PUTTS`);
+  const last=G.turn===G.players.length-1, lastHole=G.h===G.pars.length-1;
+  $('#dMsg').textContent=`${p.name} scored ${score} on hole ${G.h+1} (${relText(score,par)})${sunk?'':`, picked up after ${MAXPUTTS} putts`}.`+
+    (sunk&&score===1?` Hole in one! ${p.name}'s arrow and meter are now ${Math.round(p.boost*100)}% speed.`:'');
+  $('#nextBtn').textContent=!last?`PASS TO ${G.players[G.turn+1].name.toUpperCase()} ▶`:lastHole?'SEE FINAL SCORES ▶':`GO TO HOLE ${G.h+2} ▶`;
+  updateUI(); $('#nextBtn').focus({preventScroll:true});
+}
+function nextTurn(){
+  if(G.phase!=='done') return;
+  G.turn++; if(G.turn>=G.players.length){ G.turn=0; G.h++; }
+  if(G.h>=G.pars.length){ endGame(); return; }
+  beginTurn();
+}
+function update(){
+  frame++;
+  if(!G||!G.hole) return;
+  const sp=SPEEDS[S.speed]||SPEEDS.slow, bo=G.players[G.turn].boost||1;
+  if(G.flash&&--G.flash.t<=0) G.flash=null;
+  switch(G.phase){
+    case 'aim': G.aimOff+=G.aimDir*sp.aim*bo; if(G.aimOff>=90){G.aimOff=90;G.aimDir=-1;} if(G.aimOff<=-90){G.aimOff=-90;G.aimDir=1;} break;
+    case 'power': G.pow+=G.powDir*sp.pow*bo; if(G.pow>=1){G.pow=1;G.powDir=-1;} if(G.pow<=0){G.pow=0;G.powDir=1;} $('#meterFill').style.width=(G.pow*100)+'%'; break;
+    case 'flight': { const f=G.fl; f.t++; if(f.t>=f.F) landed(f.ex,f.ey,f.ang); break; }
+    case 'roll': {
+      const r=G.roll;
+      if(r.left<=0){ settle(); break; }
+      const step=Math.min(r.left,.25+r.left*.12), nx=G.ball.x+Math.cos(r.ang)*step, ny=G.ball.y+Math.sin(r.ang)*step, t=typeAt(G.hole,nx,ny);
+      r.left-=step;
+      if(t===T.OB){ r.left=0; break; }
+      G.ball={x:nx,y:ny};
+      if(t===T.WATER){ sfx.splash(); penalty('SPLASH!'); break; }
+      if(t===T.GREEN){ enterGreen(G.ball,r.ang,1.3); break; }
+      if(t===T.SAND) r.left=Math.min(r.left,.3);
+      break;
+    }
+    case 'putt': puttPhysics(); break;
+    case 'sinking': G.pb.scale-=.08; if(G.pb.scale<=0){ G.pb.scale=0; finishHole(true); } break;
+    case 'wait': if(--G.wait.t<=0){ const fn=G.wait.fn; G.wait=null; fn(); } break;
+  }
+}
+let acc=0,last=performance.now();
+function loop(now){
+  acc+=Math.min(100,now-last); last=now;
+  while(acc>=1000/60){ update(); acc-=1000/60; }
+  draw(); requestAnimationFrame(loop);
+}
+
+/* ================= UI ================= */
+function show(which){
+  $('#setupScreen').hidden=which!=='setup'; $('#gameScreen').hidden=which!=='game'; $('#endScreen').hidden=which!=='end';
+  window.scrollTo({top:0});
+}
+function buildQuestion(){
+  const q=G.q, p=G.players[G.turn];
+  const lie=$('#qLie'); lie.textContent=LIE_LABEL[G.lie]; lie.className='chip lie-'+G.lie;
+  $('#qDok').textContent=`DOK ${q.dok} · ${q.topic}`;
+  $('#qWho').textContent=`${p.name}'s shot ${G.strokes+1}`;
+  $('#qText').textContent=q.prompt;
+  const box=$('#opts'); box.innerHTML='';
+  q.options.forEach((o,i)=>{
+    const b=document.createElement('button'); b.type='button'; b.className='opt'; b.id='opt'+i;
+    b.innerHTML=`<span class="k">${'ABCD'[i]}</span><span></span>`; b.lastChild.textContent=o;
+    b.addEventListener('click',()=>choose(i)); box.appendChild(b);
+  });
+  $('#fb').hidden=true;
+}
+function updateUI(){
+  if(!G) return;
+  const p=G.players[G.turn], ph=G.phase;
+  $('#whoSwatch').style.background=p.color; $('#whoName').textContent=p.name;
+  $('#holeNum').textContent=G.h+1; $('#holeTot').textContent=G.pars.length; $('#parNum').textContent=G.hole?G.hole.par:'-'; $('#strokeNum').textContent=G.strokes;
+  $('#qView').hidden=!(ph==='question'||ph==='feedback');
+  $('#sView').hidden=!['aim','power','flight','roll','putt','sinking','wait'].includes(ph);
+  $('#dView').hidden=ph!=='done';
+  const green=G.view==='green', instr=$('#instr');
+  $('#tick').hidden=green;
+  $('#meterLabel').textContent=green?'Putt power':'Power (white line = your target)';
+  if(ph==='aim') instr.innerHTML=green?`<b>PUTT · AIM</b>No question on the green. Lock the arrow toward the cup. Putt ${G.putts+1} of ${MAXPUTTS}.`:'<b>STEP 1 · AIM</b>The arrow sweeps the half circle. Press SWING when it points at your target.';
+  else if(ph==='power') instr.innerHTML=green?'<b>PUTT · POWER</b>Press SWING to putt. Softer putts are easier to sink.':'<b>STEP 2 · POWER</b>Stop the meter on the white line to land right on your target.';
+  else if(ph==='flight') instr.innerHTML='<b>IN THE AIR…</b>';
+  else if(ph==='roll'||ph==='putt'||ph==='sinking') instr.innerHTML='<b>ROLLING…</b>';
+  else if(ph==='wait') instr.innerHTML='<b>GET READY</b>Your next question is coming up.';
+  $('#swingBtn').disabled=!(ph==='aim'||ph==='power');
+  $('#swingBtn').textContent=ph==='power'?(green?'PUTT!':'HIT!'):'SWING';
+  if(ph==='aim') $('#meterFill').style.width='0%';
+  const board=$('#board'); board.innerHTML='';
+  G.players.forEach((pl,i)=>{
+    const tot=pl.scores.reduce((a,b)=>a+(b||0),0), parSum=pl.scores.reduce((a,b,k)=>a+(b?G.pars[k]:0),0), rel=tot-parSum;
+    const right=[1,2,3].reduce((a,k)=>a+pl.dok[k][0],0), asked=[1,2,3].reduce((a,k)=>a+pl.dok[k][1],0);
+    const d=document.createElement('div'); d.className='prow'+(i===G.turn?' now':'');
+    d.innerHTML=`<span class="swatch"></span><span class="nm"></span><span class="tot">${tot}</span><span class="sub">${pl.scores.length?(rel===0?'Even':rel>0?'+'+rel:rel)+' · ':''}Math ${right}/${asked}${pl.boost>1?` · Speed ${Math.round(pl.boost*100)}%`:''}</span>`;
+    d.querySelector('.swatch').style.background=pl.color; d.querySelector('.nm').textContent=pl.name;
+    board.appendChild(d);
+  });
+}
+function endGame(){
+  G.phase='over';
+  const N=G.pars.length, parTot=G.pars.reduce((a,b)=>a+b,0);
+  const ps=G.players.map(p=>({...p,tot:p.scores.reduce((a,b)=>a+b,0)}));
+  const best=Math.min(...ps.map(p=>p.tot)), winners=ps.filter(p=>p.tot===best);
+  const rel=t=>{const d=t-parTot; return d===0?'E':d>0?'+'+d:String(d);};
+  $('#winner').textContent=ps.length===1?`${ps[0].name}: ${best} strokes (${rel(best)})`:
+    winners.length>1?`Tie! ${winners.map(w=>w.name).join(' & ')} with ${best}`:`${winners[0].name} wins with ${best} (${rel(best)})!`;
+  let h='<thead><tr><th>Player</th>'; for(let i=0;i<N;i++) h+=`<th>${i+1}</th>`; h+='<th>Total</th><th>+/−</th></tr></thead><tbody>';
+  h+=`<tr><td style="color:var(--muted)">Par</td>${G.pars.map(p=>`<td style="color:var(--muted)">${p}</td>`).join('')}<td style="color:var(--muted)">${parTot}</td><td></td></tr>`;
+  ps.forEach((p,i)=>{ h+=`<tr class="${p.tot===best&&ps.length>1?'win':''}"><td><span class="swatch" style="display:inline-block;width:12px;height:12px;margin-right:8px;background:${p.color}"></span><span data-n="${i}"></span></td>${p.scores.map((s,k)=>`<td class="${s<G.pars[k]?'under':s>G.pars[k]?'over':''}">${s}</td>`).join('')}<td><b>${p.tot}</b></td><td>${rel(p.tot)}</td></tr>`; });
+  const card=$('#card'); card.innerHTML=h+'</tbody>';
+  card.querySelectorAll('[data-n]').forEach(el=>el.textContent=ps[+el.dataset.n].name);
+  const pct=(a)=>a[1]?`${a[0]}/${a[1]} (${Math.round(a[0]/a[1]*100)}%)`:'—';
+  let dt='<thead><tr><th>Player</th><th>DOK 1 · Sand</th><th>DOK 2 · Tee / Rough</th><th>DOK 3 · Fairway</th></tr></thead><tbody>';
+  ps.forEach((p,i)=>{ dt+=`<tr><td><span data-n="${i}"></span></td><td>${pct(p.dok[1])}</td><td>${pct(p.dok[2])}</td><td>${pct(p.dok[3])}</td></tr>`; });
+  const dk=$('#dokTable'); dk.innerHTML=dt+'</tbody>';
+  dk.querySelectorAll('[data-n]').forEach(el=>el.textContent=ps[+el.dataset.n].name);
+  const rv=$('#review'); rv.innerHTML='';
+  G.review.forEach(r=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<span class="tag ${r.ok?'ok':'no'}">${r.ok?'RIGHT':'MISSED'}</span><div><div class="meta"></div><div class="q"></div><div class="a"></div></div>`;
+    li.querySelector('.meta').textContent=`Hole ${r.hole} · ${r.name} · DOK ${r.dok} (${LIE_LABEL[r.lie]})`;
+    li.querySelector('.q').textContent=r.prompt;
+    li.querySelector('.a').textContent=r.ok?`Answered: ${r.answer}`:`Chose: ${r.chose} · Answer: ${r.answer}`;
+    rv.appendChild(li);
+  });
+  show('end');
+}
+
+/* ---------- Setup UI ---------- */
+function seg(el,vals,get,set,label=v=>v){
+  el.innerHTML='';
+  vals.forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.textContent=label(v); b.setAttribute('aria-pressed',String(get()===v));
+    b.addEventListener('click',()=>{ set(v); saveS(); seg(el,vals,get,set,label); renderNames(); }); el.appendChild(b); });
+}
+function renderNames(){
+  const box=$('#names'); const focused=document.activeElement&&document.activeElement.id;
+  box.innerHTML='';
+  for(let i=0;i<S.count;i++){
+    const row=document.createElement('label'); row.className='namerow';
+    row.innerHTML=`<span class="swatch" style="background:${COLORS[i]}"></span><input id="name${i}" maxlength="14" autocomplete="off" aria-label="Player ${i+1} name">`;
+    const inp=row.querySelector('input'); inp.value=S.names[i];
+    inp.addEventListener('input',()=>{ S.names[i]=inp.value; saveS(); });
+    box.appendChild(row);
+  }
+  if(focused&&$('#'+focused)) $('#'+focused).focus();
+}
+function renderDivs(){
+  const el=$('#divSeg'); el.innerHTML='';
+  for(let d=2;d<=9;d++){
+    const b=document.createElement('button'); b.type='button'; b.textContent='÷ '+d; b.setAttribute('aria-pressed',String(S.divisors.includes(d)));
+    b.addEventListener('click',()=>{
+      if(S.divisors.includes(d)){ if(S.divisors.length>1) S.divisors=S.divisors.filter(x=>x!==d); }
+      else S.divisors=[...S.divisors,d].sort((a,b)=>a-b);
+      saveS(); renderDivs();
+    });
+    el.appendChild(b);
+  }
+}
+seg($('#countSeg'),[1,2,3,4],()=>S.count,v=>S.count=v);
+seg($('#holeSeg'),[3,6,9,18],()=>S.holes,v=>S.holes=v);
+seg($('#speedSeg'),['slow','medium','fast'],()=>S.speed,v=>S.speed=v,v=>v.toUpperCase());
+seg($('#remSeg'),[false,true],()=>S.rems,v=>S.rems=v,v=>v?'INCLUDE REMAINDERS':'NO REMAINDERS');
+renderNames(); renderDivs();
+
+$('#startBtn').addEventListener('click',()=>{ ensureAudio(); startGame(); });
+$('#shotBtn').addEventListener('click',()=>{ if(G&&G.phase==='feedback') startAim(); });
+$('#swingBtn').addEventListener('click',swingPress);
+$('#nextBtn').addEventListener('click',nextTurn);
+cv.addEventListener('pointerdown',e=>{ if(G&&(G.phase==='aim'||G.phase==='power')){ e.preventDefault(); swingPress(); } });
+$('#againBtn').addEventListener('click',startGame);
+$('#setupBtn').addEventListener('click',()=>show('setup'));
+$('#muteBtn').addEventListener('click',()=>{ muted=!muted; $('#muteBtn').textContent=muted?'SOUND: OFF':'SOUND: ON'; });
+document.addEventListener('keydown',e=>{
+  if(!G||$('#gameScreen').hidden) return;
+  const tag=e.target&&e.target.tagName;
+  if(tag==='INPUT') return;
+  if(G.phase==='question'){
+    const k=e.key.toLowerCase(), idx='1234'.indexOf(k)>=0?'1234'.indexOf(k):'abcd'.indexOf(k);
+    if(idx>=0){ e.preventDefault(); choose(idx); }
+    return;
+  }
+  if(e.key===' '||e.key==='Enter'){
+    if(tag==='BUTTON') return;
+    if(G.phase==='aim'||G.phase==='power'){ e.preventDefault(); swingPress(); }
+  }
+});
+$('#swingBtn').addEventListener('keydown',e=>{ if(e.key===' '){ e.preventDefault(); swingPress(); } });
+if(document.fonts&&document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(()=>{});
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>
