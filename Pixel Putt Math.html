@@ -1,0 +1,859 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pixel Putt Math</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: arcade cabinet — course screen on the left, scoreboard rail on the right, control console under the screen. Single deliberate dark arcade look. */
+:root{
+  --bg:#15122e; --panel:#241f4d; --panel2:#2f2963; --line:#0b0920;
+  --ink:#f5f2ff; --muted:#b9b3e6; --gold:#ffd23f; --good:#5ce07a; --bad:#ff6470;
+  --font-pixel:"Press Start 2P", "Courier New", monospace;
+  --font-display:"Lexend", "Trebuchet MS", system-ui, sans-serif;
+  --font-body:"Lexend", "Trebuchet MS", system-ui, sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.4;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 40px;
+  background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);background-size:6px 6px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;text-wrap:balance;line-height:1.3}
+button{font-family:var(--font-display);font-weight:700;font-size:16px;cursor:pointer;border:0;color:#1a1530;background:var(--gold);
+  padding:12px 16px;box-shadow:inset -4px -4px 0 rgba(0,0,0,.28), inset 4px 4px 0 rgba(255,255,255,.35), 0 0 0 3px var(--line);
+  line-height:1.4;touch-action:manipulation}
+button:active{transform:translateY(2px);box-shadow:inset 4px 4px 0 rgba(0,0,0,.28), 0 0 0 3px var(--line)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+button:focus-visible, input:focus-visible{outline:3px dashed var(--ink);outline-offset:4px}
+button.ghost{background:var(--panel2);color:var(--ink)}
+.panel{background:var(--panel);box-shadow:0 0 0 4px var(--line), inset 0 0 0 3px var(--panel2);padding:20px}
+.label{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+
+/* ---------- Title / setup ---------- */
+.title{display:flex;flex-direction:column;gap:12px;align-items:flex-start;padding-top:8px}
+.title h1{font-family:var(--font-pixel);font-weight:400;font-size:clamp(28px,6vw,56px);color:var(--gold);text-shadow:4px 4px 0 #b8381f, 8px 8px 0 var(--line)}
+.title p{margin:0;color:var(--muted);font-size:20px}
+.setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.setup .panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.seg{display:flex;flex-wrap:wrap;gap:10px}
+.seg button{background:var(--panel2);color:var(--ink);min-width:52px}
+.seg button[aria-pressed="true"]{background:var(--gold);color:#1a1530}
+.names{display:flex;flex-direction:column;gap:10px}
+.namerow{display:flex;gap:10px;align-items:center}
+.swatch{width:20px;height:20px;flex:none;box-shadow:0 0 0 3px var(--line)}
+.namerow input{flex:1;min-width:0;font-family:var(--font-body);font-size:18px;padding:8px 10px;background:var(--line);color:var(--ink);border:0;box-shadow:inset 0 0 0 2px var(--panel2)}
+.std{display:flex;gap:12px;align-items:flex-start;text-align:left;font-family:var(--font-body);font-weight:400;font-size:16px;background:var(--panel2);color:var(--ink);padding:12px}
+.std[aria-pressed="true"]{background:#3d3580;box-shadow:inset 0 0 0 3px var(--gold), 0 0 0 3px var(--line)}
+.std .box{font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--gold);flex:none;width:22px}
+.std b{font-family:var(--font-display);font-size:17px;color:var(--gold);display:block;margin-bottom:4px;font-weight:700}
+.startrow{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.startrow button{font-size:20px;padding:16px 24px}
+.hint{color:var(--muted);font-size:16px;margin:0}
+
+/* ---------- Game ---------- */
+.game{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:start}
+.stage{display:flex;flex-direction:column;gap:20px;min-width:0}
+.screen{background:var(--line);padding:8px;box-shadow:0 0 0 4px #3a3470}
+canvas{display:block;width:100%;max-width:100%;aspect-ratio:4/3;image-rendering:pixelated;image-rendering:crisp-edges;cursor:pointer;background:#0b0920}
+.topbar{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.topbar .who{display:flex;gap:10px;align-items:center;font-family:var(--font-display);font-size:19px;font-weight:700}
+.topbar .stat{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--muted)}
+.topbar .stat b{color:var(--ink);font-weight:700}
+.console{min-height:150px}
+.qmeta{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:10px}
+.chip{font-family:var(--font-display);font-size:14px;font-weight:700;padding:6px 8px;background:var(--panel2);color:var(--gold)}
+.qtext{font-size:25px;font-weight:500;margin:0 0 14px;max-width:60ch}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;font-family:var(--font-body);font-size:20px;font-weight:600;background:var(--panel2);color:var(--ink);padding:12px 14px;min-width:0}
+.opt .k{font-family:var(--font-display);font-weight:700;font-size:18px;color:#1a1530;background:var(--gold);padding:6px 7px;flex:none}
+.opt span:last-child{min-width:0;overflow-wrap:anywhere}
+.opt.right{background:#1f6b35;box-shadow:inset 0 0 0 3px var(--good),0 0 0 3px var(--line)}
+.opt.wrong{background:#7a2330;box-shadow:inset 0 0 0 3px var(--bad),0 0 0 3px var(--line)}
+.feedback{margin:16px 0 0;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.feedback .verdict{font-family:var(--font-display);font-size:21px;font-weight:700}
+.feedback .verdict.ok{color:var(--good)} .feedback .verdict.no{color:var(--bad)}
+.feedback p{margin:0;max-width:62ch}
+.swing{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center}
+.swing .instr{flex:1 1 260px;margin:0;min-width:0}
+.swing .instr b{font-family:var(--font-display);font-size:16px;color:var(--gold);font-weight:700;display:block;margin-bottom:6px}
+.meterwrap{flex:1 1 220px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.meter{height:26px;background:var(--line);box-shadow:inset 0 0 0 3px var(--panel2);padding:4px;position:relative}
+.meter .fill{height:100%;width:0;background:linear-gradient(90deg,#5ce07a 0%,#ffd23f 60%,#ff6470 100%);
+  -webkit-mask:repeating-linear-gradient(90deg,#000 0 10px,transparent 10px 13px);mask:repeating-linear-gradient(90deg,#000 0 10px,transparent 10px 13px)}
+#swingBtn{font-size:24px;padding:18px 28px}
+.done{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.done p{margin:0;font-size:20px;min-width:0}
+.rail{display:flex;flex-direction:column;gap:20px}
+.board{display:flex;flex-direction:column;gap:10px}
+.prow{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px;background:var(--panel2)}
+.prow.now{box-shadow:inset 0 0 0 3px var(--gold)}
+.prow .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .tot{font-family:var(--font-display);font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.prow .sub{grid-column:2 / 4;font-size:15px;color:var(--muted)}
+.legend{display:flex;flex-direction:column;gap:8px;font-size:16px;margin:0;padding:0;list-style:none}
+.legend li{display:flex;gap:10px;align-items:center}
+.legend i{width:16px;height:16px;flex:none;box-shadow:0 0 0 2px var(--line)}
+.keys{font-size:15px;color:var(--muted);margin:0}
+
+/* ---------- End ---------- */
+.endhead{display:flex;flex-direction:column;gap:12px}
+.endhead h2{font-size:clamp(18px,3.5vw,30px);color:var(--gold)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:18px}
+th,td{padding:8px 10px;text-align:center;border-bottom:2px solid var(--panel2);white-space:nowrap}
+th{font-family:var(--font-display);font-size:14px;color:var(--muted);font-weight:700}
+td:first-child,th:first-child{text-align:left}
+tr.win td{color:var(--gold)}
+.review{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.review li{background:var(--panel2);padding:10px 12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px}
+.review .tag{font-family:var(--font-display);font-size:13px;font-weight:700;padding:5px 6px;align-self:start}
+.review .tag.ok{background:var(--good);color:#10301a} .review .tag.no{background:var(--bad);color:#3a0d13}
+.review .meta{font-size:14px;color:var(--muted)}
+.endbtns{display:flex;flex-wrap:wrap;gap:16px}
+@media (max-width:860px){ .game{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:520px){ .opts{grid-template-columns:minmax(0,1fr)} .qtext{font-size:20px} }
+</style>
+
+<div class="wrap">
+  <!-- SETUP -->
+  <section id="setupScreen">
+    <div class="wrap">
+      <header class="title">
+        <h1>PIXEL PUTT</h1>
+        <p>Math mini golf for 1 to 4 players. Answer right to get the straight shot at a hole in one.</p>
+      </header>
+      <div class="setup">
+        <div class="panel">
+          <span class="label">Players</span>
+          <div class="seg" id="countSeg" role="group" aria-label="Number of players"></div>
+          <div class="names" id="names"></div>
+        </div>
+        <div class="panel">
+          <span class="label">Math standards</span>
+          <button class="std" id="stdF" aria-pressed="true" type="button"><span class="box">[x]</span><span><b>Division Facts &amp; Fact Families</b>Basic division, fact families, and using multiplication to solve division. Builds toward 4.CA.2.</span></button>
+          <button class="std" id="std2" aria-pressed="true" type="button"><span class="box">[x]</span><span><b>4.CA.2 Division</b>Quotients and remainders, up to 4-digit by 1-digit, plus word problems about what the remainder means.</span></button>
+          <button class="std" id="std4" aria-pressed="true" type="button"><span class="box">[x]</span><span><b>4.CA.4 Factors &amp; Multiples</b>Find factors and multiples of whole numbers from 1 to 100.</span></button>
+        </div>
+        <div class="panel">
+          <span class="label">Holes</span>
+          <div class="seg" id="holeSeg" role="group" aria-label="Number of holes"></div>
+          <span class="label">Arrow &amp; meter speed</span>
+          <div class="seg" id="speedSeg" role="group" aria-label="Arrow and meter speed"></div>
+          <p class="hint">Slow is best for first-time players.</p>
+        </div>
+        <div class="panel" id="factOpts">
+          <span class="label">Division facts: divide by</span>
+          <div class="seg" id="divSeg" role="group" aria-label="Numbers to divide by"></div>
+          <p class="hint">Pick one or more. Example: choose only 4 to practice dividing by 4.</p>
+          <span class="label">Remainders</span>
+          <div class="seg" id="remSeg" role="group" aria-label="Remainders"></div>
+        </div>
+      </div>
+      <div class="startrow">
+        <button id="startBtn" type="button">START GAME ▶</button>
+        <p class="hint" id="startHint">Each player gets their own question on every hole.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="gameScreen" hidden>
+    <div class="game">
+      <div class="stage">
+        <div class="topbar">
+          <div class="who"><span class="swatch" id="whoSwatch"></span><span id="whoName">Player 1</span></div>
+          <div class="stat">HOLE <b id="holeNum">1</b>/<b id="holeTot">9</b> · PAR <b>3</b> · STROKES <b id="strokeNum">0</b></div>
+        </div>
+        <div class="screen"><canvas id="cv" width="320" height="240" aria-label="Mini golf course"></canvas></div>
+        <div class="panel console">
+          <div id="qView">
+            <div class="qmeta"><span class="chip" id="qStd">4.CA.2</span><span class="label" id="qWho">Question</span></div>
+            <p class="qtext" id="qText"></p>
+            <div class="opts" id="opts"></div>
+            <div class="feedback" id="fb" hidden>
+              <span class="verdict" id="fbVerdict"></span>
+              <p id="fbText"></p>
+              <button id="teeBtn" type="button">TEE OFF ▶</button>
+            </div>
+          </div>
+          <div id="sView" class="swing" hidden>
+            <p class="instr" id="instr"></p>
+            <div class="meterwrap"><span class="label">Power</span><div class="meter"><div class="fill" id="meterFill"></div></div></div>
+            <button id="swingBtn" type="button">SWING</button>
+          </div>
+          <div id="dView" class="done" hidden>
+            <p id="dMsg"></p>
+            <button id="nextBtn" type="button">NEXT</button>
+          </div>
+        </div>
+      </div>
+      <aside class="rail">
+        <div class="panel board">
+          <span class="label">Scoreboard</span>
+          <div id="board" class="board"></div>
+        </div>
+        <div class="panel">
+          <ul class="legend">
+            <li><i style="background:#5bc93f"></i>Right answer = straight lane</li>
+            <li><i style="background:#8a4422"></i>Walls bounce the ball</li>
+            <li><i style="background:#e9cf8a"></i>Sand slows the ball</li>
+            <li><i style="background:#2f62e0"></i>Water = +1 stroke</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <p class="keys">Keys: 1–4 or A–D to answer. Space to swing. You can also tap the course to swing.</p>
+          <div class="seg" style="margin-top:12px"><button class="ghost" id="muteBtn" type="button">SOUND: ON</button></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="endScreen" hidden>
+    <div class="wrap">
+      <div class="panel endhead">
+        <span class="label">Final scorecard</span>
+        <h2 id="winner">Winner!</h2>
+        <div class="tablewrap"><table id="card"></table></div>
+      </div>
+      <div class="panel endhead">
+        <span class="label">Question review (for the teacher)</span>
+        <ul class="review" id="review"></ul>
+      </div>
+      <div class="endbtns">
+        <button id="againBtn" type="button">PLAY AGAIN</button>
+        <button class="ghost" id="setupBtn" type="button">CHANGE SETUP</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const fmt=n=>n.toLocaleString('en-US');
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const COLORS=['#ff5050','#4fa8ff','#ffd23f','#c77dff'];
+const MAXS=7, PAR=3;
+
+/* ================= SOUND ================= */
+let actx=null, muted=false, lastBounce=0;
+function ensureAudio(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} }
+function tone(f,d,type='square',v=.05,delay=0,slide=0){
+  if(muted||!actx) return;
+  const t=actx.currentTime+delay, o=actx.createOscillator(), g=actx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.linearRampToValueAtTime(Math.max(40,f+slide),t+d);
+  g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+d+.02);
+}
+const sfx={
+  hit:p=>tone(200+p*320,.09,'square',.06),
+  bounce:()=>{const n=performance.now(); if(n-lastBounce<60) return; lastBounce=n; tone(520,.04,'square',.03);},
+  sink:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.12,'square',.05,i*.09)),
+  ace:()=>[523,659,784,1047,784,1047,1319,1568].forEach((f,i)=>tone(f,.12,'square',.06,i*.08)),
+  splash:()=>{tone(500,.35,'triangle',.08,0,-380);tone(180,.3,'sawtooth',.02,.05,-100);},
+  right:()=>{tone(660,.08,'square',.05);tone(990,.14,'square',.05,.08);},
+  wrong:()=>{tone(240,.14,'square',.05);tone(160,.22,'square',.05,.13);},
+  lock:()=>tone(880,.04,'square',.04)
+};
+
+/* ================= QUESTIONS ================= */
+const factorsOf=n=>{const f=[];for(let i=1;i<=n;i++) if(n%i===0) f.push(i);return f;};
+const divAns=(q,r)=>r?`${fmt(q)} R${r}`:fmt(q);
+function chooseDis(pri,rest,correct){
+  const out=[];
+  for(const x of [...pri,...shuffle(rest)]){ const s=String(x); if(s!==correct && !out.includes(s)) out.push(s); if(out.length===3) break; }
+  return out;
+}
+function divBare(){
+  let d,q,r,n;
+  do{
+    d=rand(3,9); q=rand(Math.ceil(1000/d),Math.floor(9999/d));
+    if(Math.random()<.35 && q>=100) q=Math.floor(q/100)*100+q%10;
+    r=Math.random()<.15?0:rand(1,d-1); n=q*d+r;
+  }while(n<1000||n>9999||q<100);
+  const correct=divAns(q,r), pri=[], qs=String(q);
+  const hasZero=/0/.test(qs.slice(1));
+  if(hasZero){ const q2=parseInt(qs.replace(/0/g,''),10); if(q2>0) pri.push(divAns(q2,r)); }
+  if(q>1) pri.push(`${fmt(q-1)} R${r+d}`);
+  const r2=r+1<d?r+1:r-1;
+  const rest=[divAns(q+1,r),divAns(q+10,r),divAns(q,r2)]; if(q>10) rest.push(divAns(q-10,r));
+  let ex = r
+    ? `${fmt(n)} ÷ ${d} = ${fmt(q)} R${r}. Check it: ${fmt(q)} × ${d} = ${fmt(q*d)}, and ${fmt(q*d)} + ${r} = ${fmt(n)}. A remainder must always be less than ${d}.`
+    : `${fmt(n)} ÷ ${d} = ${fmt(q)} with no remainder. Check it: ${fmt(q)} × ${d} = ${fmt(n)}.`;
+  if(hasZero) ex+=` Keep the 0 in ${fmt(q)} as a placeholder.`;
+  return {std:'4.CA.2',topic:'Division',prompt:`What is ${fmt(n)} ÷ ${d}?`,correct,dis:chooseDis(pri,rest,correct),ex};
+}
+const STORIES={
+  needed:[
+    (n,d)=>({t:`The library has ${fmt(n)} books to pack. Each box holds ${d} books. How many boxes are needed to pack ALL the books?`,u:'box'}),
+    (n,d)=>({t:`${fmt(n)} people are going to a concert. Each van holds ${d} people. How many vans are needed so everyone gets a ride?`,u:'van'})
+  ],
+  full:[
+    (n,d)=>({t:`A baker made ${fmt(n)} cookies. Each bag holds ${d} cookies. How many FULL bags can the baker make?`,u:'bag'}),
+    (n,d)=>({t:`A farm collected ${fmt(n)} eggs. Each tray holds ${d} eggs. How many trays can be filled all the way?`,u:'tray'})
+  ],
+  left:[
+    (n,d)=>({t:`Mr. Ortiz shares ${fmt(n)} stickers equally among ${d} tables. How many stickers are LEFT OVER?`}),
+    (n,d)=>({t:`${fmt(n)} marbles are split equally into ${d} jars. How many marbles are left over?`})
+  ]
+};
+function divStory(){
+  const d=rand(3,9), q=rand(Math.ceil(100/d),Math.floor(2500/d)), r=rand(1,d-1), n=q*d+r;
+  const kind=pick(['needed','full','left']), s=pick(STORIES[kind])(n,d);
+  const base=`${fmt(n)} ÷ ${d} = ${fmt(q)} R${r}.`;
+  let correct,pri,rest,ex;
+  if(kind==='needed'){ correct=fmt(q+1); pri=[fmt(q),`${fmt(q)} R${r}`]; rest=[fmt(q+2),String(r),fmt(q-1)];
+    ex=`${base} The ${r} left over still need a ${s.u}, so the answer is ${fmt(q)} + 1 = ${fmt(q+1)}.`; }
+  else if(kind==='full'){ correct=fmt(q); pri=[fmt(q+1),`${fmt(q)} R${r}`]; rest=[String(r),fmt(q-1),fmt(q+10)];
+    ex=`${base} Only ${fmt(q)} are full. The ${r} extra do not make a full ${s.u}.`; }
+  else { correct=String(r); pri=[fmt(q),String(d)]; rest=[String(r+1<d?r+1:r-1),`${fmt(q)} R${r}`,String(d-r)];
+    ex=`${base} The remainder is the amount left over, so ${r} are left.`; }
+  return {std:'4.CA.2',topic:'Division word problem',prompt:s.t,correct,dis:chooseDis(pri,rest,correct),ex};
+}
+const RICH=[12,18,20,24,28,30,32,36,40,42,44,45,48,50,52,54,56,60,63,64,66,70,72,75,78,80,84,88,90,96,98,100];
+function facOf(){
+  const N=pick(RICH), fs=factorsOf(N), mids=fs.filter(x=>x>1&&x<N), f=pick(mids);
+  const non=[]; for(let i=3;i<N;i++) if(N%i) non.push(i);
+  const near=[f+1,f-1,f+2].filter(x=>x>2&&N%x);
+  const correct=String(f), dis=chooseDis([2*N, near[0]].filter(Boolean),non.slice(0),correct);
+  let ex=`${f} × ${N/f} = ${N}, so ${f} is a factor of ${N}. A factor divides ${N} with no remainder.`;
+  if(dis.includes(String(2*N))) ex+=` ${2*N} is a multiple of ${N}, not a factor.`;
+  return {std:'4.CA.4',topic:'Factors',prompt:`Which number is a factor of ${N}?`,correct,dis,ex};
+}
+function notFac(){
+  const N=pick(RICH), fs=factorsOf(N), mids=fs.filter(x=>x>1&&x<N);
+  const non=[]; for(let i=3;i<Math.min(N,40);i++) if(N%i) non.push(i);
+  const x=pick(non), correct=String(x);
+  const dis=shuffle(mids).slice(0,3).map(String);
+  return {std:'4.CA.4',topic:'Factors',prompt:`Which number is NOT a factor of ${N}?`,correct,dis,
+    ex:`${N} ÷ ${x} = ${Math.floor(N/x)} R${N%x}. There is a remainder, so ${x} is not a factor of ${N}. The other numbers divide ${N} evenly.`};
+}
+function multOf(){
+  const k=rand(3,9), m=rand(2,Math.floor(100/k)), c=k*m, correct=String(c);
+  const kf=factorsOf(k).filter(x=>x>1&&x<k), pri=kf.length?[pick(kf)]:[];
+  const rest=[c+1,c-1,c+2,c-2,c+Math.max(1,Math.floor(k/2))].filter(v=>v>0&&v%k);
+  const dis=chooseDis(pri,rest,correct);
+  let ex=`${k} × ${m} = ${c}, so ${c} is a multiple of ${k}. Skip count by ${k}s: ${k}, ${2*k}, ${3*k}, and so on.`;
+  if(pri.length&&dis.includes(String(pri[0]))) ex+=` ${pri[0]} is a factor of ${k}, not a multiple.`;
+  return {std:'4.CA.4',topic:'Multiples',prompt:`Which number is a multiple of ${k}?`,correct,dis,ex};
+}
+function allFac(){
+  const N=pick([12,16,18,20,24,28,30,32,36,40,42,45,48,50,54,56,60]), fs=factorsOf(N), correct=fs.join(', ');
+  const mids=fs.filter(x=>x>1&&x<N), drop=pick(mids);
+  const missing=fs.filter(x=>x!==drop).join(', ');
+  const non=[]; for(let i=3;i<N;i++) if(N%i) non.push(i);
+  const extra=[...fs,pick(non)].sort((a,b)=>a-b).join(', ');
+  const mults=[N,2*N,3*N,4*N].join(', ');
+  const ends=fs.slice(1,-1).join(', ');
+  const pairs=fs.filter(a=>a*a<=N).map(a=>`${a} × ${N/a}`).join(', ');
+  return {std:'4.CA.4',topic:'Factors',prompt:`Which list shows ALL the factors of ${N}?`,correct,dis:chooseDis([missing,extra,mults],[ends],correct),
+    ex:`Find the factor pairs of ${N}: ${pairs}. So the factors are ${correct}.`};
+}
+function common(){
+  const [a,b]=pick([[2,3],[3,4],[2,5],[4,5],[3,5],[4,6],[2,7],[3,7],[6,8],[3,8],[2,9],[4,10]]);
+  const g=(x,y)=>y?g(y,x%y):x, l=a*b/g(a,b), c=l*rand(1,Math.floor(100/l)), correct=String(c);
+  const onlyA=[],onlyB=[]; for(let i=1;i<=100;i++){ if(i%a===0&&i%b) onlyA.push(i); if(i%b===0&&i%a) onlyB.push(i); }
+  const dis=chooseDis([pick(onlyA),pick(onlyB)],[...onlyA,...onlyB],correct);
+  return {std:'4.CA.4',topic:'Common multiples',prompt:`Which number is a multiple of BOTH ${a} and ${b}?`,correct,dis,
+    ex:`${c} ÷ ${a} = ${c/a} and ${c} ÷ ${b} = ${c/b}. Both divide evenly, so ${c} is a multiple of ${a} and of ${b}.`};
+}
+/* ---- Division facts & fact families (divisors chosen by teacher) ---- */
+const dv=()=>pick(S.divisors);
+const FT='Division facts';
+function factBasic(){
+  const d=dv(), q=rand(2,10), r=S.rems&&Math.random()<.6?rand(1,d-1):0, n=d*q+r;
+  if(!r){
+    const correct=String(q);
+    return {std:FT,topic:`Dividing by ${d}`,prompt:`What is ${n} ÷ ${d}?`,correct,
+      dis:chooseDis([n-d,q+1],[q-1,q+2,n+d].filter(x=>x>0),correct),
+      ex:`Think multiplication: ${d} × ? = ${n}. Since ${d} × ${q} = ${n}, we know ${n} ÷ ${d} = ${q}.`};
+  }
+  const correct=`${q} R${r}`;
+  return {std:FT,topic:`Dividing by ${d} with remainders`,prompt:`What is ${n} ÷ ${d}?`,correct,
+    dis:chooseDis([`${q-1} R${r+d}`,String(q)],[divAns(q+1,r),divAns(q,r+1<d?r+1:r-1)],correct),
+    ex:`Think multiplication: which ${d} fact gets closest to ${n} without going over? ${d} × ${q} = ${d*q}. Then ${n} − ${d*q} = ${r} left over, so ${n} ÷ ${d} = ${q} R${r}. The remainder must be less than ${d}.`};
+}
+function factMult(){
+  const d=dv(), q=rand(2,10), n=d*q, kind=pick(S.rems?['which','box','closest']:['which','box']);
+  if(kind==='which'){
+    const correct=`${d} × ${q} = ${n}`;
+    return {std:FT,topic:'Use multiplication to divide',prompt:`Which multiplication fact helps you solve ${n} ÷ ${d}?`,correct,
+      dis:chooseDis([`${d} × ${q+1} = ${d*(q+1)}`,`${n} − ${d} = ${n-d}`,`${d} × ${n} = ${d*n}`],[],correct),
+      ex:`Division asks: ${d} times what equals ${n}? ${d} × ${q} = ${n}, so ${n} ÷ ${d} = ${q}.`};
+  }
+  if(kind==='box'){
+    const correct=String(q);
+    return {std:FT,topic:'Use multiplication to divide',prompt:`To solve ${n} ÷ ${d}, think: ${d} × ? = ${n}. What is the missing number?`,correct,
+      dis:chooseDis([n-d,q+1],[q-1,n+d,q+2].filter(x=>x>0),correct),
+      ex:`${d} × ${q} = ${n}. The missing factor is the answer to the division: ${n} ÷ ${d} = ${q}.`};
+  }
+  const r=rand(1,d-1), m=n+r, correct=`${d} × ${q} = ${n}`;
+  return {std:FT,topic:'Use multiplication to divide',prompt:`To solve ${m} ÷ ${d}, which multiplication fact gets closest to ${m} without going over?`,correct,
+    dis:chooseDis([`${d} × ${q+1} = ${d*(q+1)}`,`${d} × ${q-1} = ${d*(q-1)}`,`${d} × ${m} = ${d*m}`],[],correct),
+    ex:`${d} × ${q} = ${n} is the closest without going over. ${d} × ${q+1} = ${d*(q+1)} is too big. So ${m} ÷ ${d} = ${q} R${r}.`};
+}
+function factFamily(){
+  const d=dv(); let q; do{ q=rand(2,10); }while(q===d);
+  const n=d*q, kind=pick(['same','missing','not']);
+  const fam=`${d} × ${q} = ${n}, ${q} × ${d} = ${n}, ${n} ÷ ${d} = ${q}, and ${n} ÷ ${q} = ${d}`;
+  if(kind==='same'){
+    const correct=pick([`${n} ÷ ${d} = ${q}`,`${n} ÷ ${q} = ${d}`,`${q} × ${d} = ${n}`]);
+    return {std:FT,topic:'Fact families',prompt:`Which fact is in the same fact family as ${d} × ${q} = ${n}?`,correct,
+      dis:chooseDis([`${d} ÷ ${n} = ${q}`,`${n} ÷ ${d} = ${q+1}`,`${n} − ${d} = ${q}`],[`${d} + ${q} = ${n}`],correct),
+      ex:`A fact family uses the same three numbers: ${d}, ${q}, and ${n}. The facts are ${fam}. In a division fact, the biggest number (${n}) comes first.`};
+  }
+  if(kind==='missing'){
+    const correct=String(n);
+    return {std:FT,topic:'Fact families',prompt:`The numbers ${d}, ${q}, and ? make a fact family. What is the missing number?`,correct,
+      dis:chooseDis([d+q,Math.abs(q-d)],[n+d,n-d,n+q].filter(x=>x>0),correct),
+      ex:`Multiply the two smaller numbers: ${d} × ${q} = ${n}. The fact family is ${fam}.`};
+  }
+  const correct=`${q} ÷ ${n} = ${d}`;
+  return {std:FT,topic:'Fact families',prompt:`Which fact is NOT in the fact family for ${d}, ${q}, and ${n}?`,correct,
+    dis:shuffle([`${d} × ${q} = ${n}`,`${q} × ${d} = ${n}`,`${n} ÷ ${d} = ${q}`,`${n} ÷ ${q} = ${d}`]).slice(0,3),
+    ex:`The fact family is ${fam}. ${q} ÷ ${n} = ${d} is wrong because in division the biggest number (${n}) goes first.`};
+}
+function factUnknown(){
+  const d=dv(), q=rand(2,10), n=d*q, correct=String(n);
+  return {std:FT,topic:'Use multiplication to divide',prompt:`? ÷ ${d} = ${q}. What is the missing number?`,correct,
+    dis:chooseDis([d+q,n+d],[n-d,Math.abs(q-d),n+q].filter(x=>x>0),correct),
+    ex:`Use multiplication: ${q} × ${d} = ${n}, so ${n} ÷ ${d} = ${q}.`};
+}
+function genQuestion(stds,used){
+  for(let tries=0;tries<30;tries++){
+    const pool=[]; if(stds.facts) pool.push(factBasic,factBasic,factMult,factMult,factFamily,factFamily,factUnknown);
+    if(stds.ca2) pool.push(divBare,divBare,divStory,divStory); if(stds.ca4) pool.push(facOf,notFac,multOf,allFac,common);
+    const raw=pick(pool)();
+    if(raw.dis.length<3 || used.has(raw.prompt)) continue;
+    used.add(raw.prompt);
+    const options=shuffle([raw.correct,...raw.dis]);
+    return {...raw,options,answer:options.indexOf(raw.correct)};
+  }
+  used.clear(); // small question pool (e.g. only dividing by 4): allow repeats
+  return genQuestion(stds,used);
+}
+
+/* ================= COURSE ================= */
+const W=320,H=240,GY=72,LW=76,R=2.5,VMAX=5.2;
+const laneX=i=>8+i*LW, laneC=i=>8+i*LW+LW/2;
+function makeCourse(correct){
+  const walls=[{x:0,y:0,w:W,h:8},{x:0,y:232,w:W,h:8},{x:0,y:0,w:8,h:H},{x:312,y:0,w:8,h:H}];
+  for(let i=1;i<4;i++) walls.push({x:laneX(i)-2,y:GY,w:4,h:232-GY});
+  const sand=[],water=[],tees=[];
+  const patterns=shuffle([0,1,2,0,1,2]);
+  let pi=0;
+  for(let i=0;i<4;i++){
+    const L=i===0?8:laneX(i)+2, Rr=i===3?312:laneX(i)+LW-2, w=Rr-L, cx=laneC(i);
+    tees.push({x:cx,y:214});
+    if(i===correct){
+      sand.push({x:L,y:112,w:8,h:48},{x:Rr-8,y:112,w:8,h:48});
+      continue;
+    }
+    const p=patterns[pi++], left=Math.random()<.5;
+    if(p===0){ // zigzag baffles
+      [184,144,104].forEach((y,k)=>{ const fromLeft=(k%2===0)===left; walls.push({x:fromLeft?L:L+24,y,w:w-24,h:5}); });
+      sand.push({x:left?L:Rr-20,y:120,w:20,h:18});
+    }else if(p===1){ // pond
+      walls.push({x:cx-10,y:178,w:20,h:12});
+      water.push({x:cx-18,y:118,w:36,h:36});
+      sand.push({x:L,y:84,w:w,h:14});
+    }else{ // sand pit
+      walls.push({x:cx-14,y:188,w:28,h:6});
+      sand.push({x:L,y:140,w:w,h:30});
+      walls.push({x:left?L:L+26,y:106,w:w-26,h:5});
+    }
+  }
+  return {walls,sand,water,tees,hole:{x:laneC(correct),y:34},correct};
+}
+
+/* ================= RENDER ================= */
+const cv=$('#cv'), ctx=cv.getContext('2d'); ctx.imageSmoothingEnabled=false;
+const bg=document.createElement('canvas'); bg.width=W; bg.height=H; const bx=bg.getContext('2d');
+const FONT=s=>`${s}px "Press Start 2P", monospace`;
+function txt(c,s,x,y,size,col,shadow='#0b0920'){
+  c.font=FONT(size); c.textAlign='center'; c.textBaseline='middle';
+  c.fillStyle=shadow; c.fillText(s,x+1,y+1); c.fillStyle=col; c.fillText(s,x,y);
+}
+function drawWall(c,r){
+  c.fillStyle='#8a4422'; c.fillRect(r.x,r.y,r.w,r.h);
+  if(r.w>=8&&r.h>=8){
+    c.fillStyle='#5e2a12';
+    for(let y=r.y+3;y<r.y+r.h;y+=4){ c.fillRect(r.x,y,r.w,1); const off=((y-r.y)/4|0)%2?4:0; for(let x=r.x+off;x<r.x+r.w;x+=8) c.fillRect(x,y-3,1,3); }
+  }
+  c.fillStyle='#c4733d'; c.fillRect(r.x,r.y,r.w,1); c.fillRect(r.x,r.y,1,r.h);
+  c.fillStyle='#3e1a09'; c.fillRect(r.x,r.y+r.h-1,r.w,1); c.fillRect(r.x+r.w-1,r.y,1,r.h);
+}
+function renderStatic(course){
+  for(let ty=0;ty<30;ty++) for(let tx=0;tx<40;tx++){
+    const green=ty*8<GY;
+    bx.fillStyle = green ? ((tx+ty)%2?'#5bc93f':'#52bd38') : ((tx+ty)%2?'#3fa82c':'#47b533');
+    bx.fillRect(tx*8,ty*8,8,8);
+  }
+  for(const s of course.sand){
+    bx.fillStyle='#e9cf8a'; bx.fillRect(s.x,s.y,s.w,s.h);
+    bx.fillStyle='#c9a75c';
+    for(let y=s.y+1;y<s.y+s.h;y+=3) for(let x=s.x+((y*7)%4);x<s.x+s.w;x+=5) bx.fillRect(x,y,1,1);
+  }
+  for(const w of course.water){ bx.fillStyle='#1d3fa8'; bx.fillRect(w.x-1,w.y-1,w.w+2,w.h+2); bx.fillStyle='#2f62e0'; bx.fillRect(w.x,w.y,w.w,w.h); }
+  course.tees.forEach((t,i)=>{
+    bx.fillStyle='#2a7d1c'; bx.fillRect(t.x-8,t.y-5,16,10);
+    bx.fillStyle='#1f5e14'; bx.fillRect(t.x-8,t.y+4,16,1);
+    bx.fillStyle='#1b1840'; bx.fillRect(t.x-6,220,12,11);
+    txt(bx,'ABCD'[i],t.x+.5,226,8,'#ffd23f');
+  });
+  for(const w of course.walls) drawWall(bx,w);
+}
+function drawBall(b,color){
+  const x=Math.round(b.x), y=Math.round(b.y), s=b.scale??1;
+  if(s<1){ ctx.fillStyle=color; const z=Math.max(1,Math.round(5*s)); ctx.fillRect(x-(z>>1),y-(z>>1),z,z); return; }
+  ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(x-1,y+2,4,2);
+  ctx.fillStyle='#0b0920'; ctx.fillRect(x-2,y-3,5,7); ctx.fillRect(x-3,y-2,7,5);
+  ctx.fillStyle=color; ctx.fillRect(x-1,y-2,3,5); ctx.fillRect(x-2,y-1,5,3);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(x-1,y-1,1,1);
+}
+function drawHole(h,t){
+  ctx.fillStyle='#2b7a1d'; for(let dy=-5;dy<=5;dy++){ const w=Math.floor(Math.sqrt(30-dy*dy)); ctx.fillRect(h.x-w,h.y+dy,w*2,1); }
+  ctx.fillStyle='#0b0b14'; for(let dy=-4;dy<=4;dy++){ const w=Math.floor(Math.sqrt(17-dy*dy)); ctx.fillRect(h.x-w,h.y+dy,w*2,1); }
+  ctx.fillStyle='#eeeeee'; ctx.fillRect(h.x,h.y-22,1,22);
+  const wave=Math.floor(t/12)%2;
+  ctx.fillStyle='#ff3b3b';
+  for(let i=0;i<7;i++){ const len=10-i-(i%2?wave:0); ctx.fillRect(h.x+1,h.y-22+i,Math.max(1,len),1); }
+}
+function drawWater(w,t){
+  ctx.fillStyle='#9cd0ff';
+  for(let y=w.y+3;y<w.y+w.h-1;y+=5){ const off=Math.floor((t/8+y))%10; for(let x=w.x+off;x<w.x+w.w-3;x+=10) ctx.fillRect(x,y,3,1); }
+}
+function drawAim(b,t){
+  const h=G.course.hole, base=Math.atan2(h.y-b.y,h.x-b.x);
+  ctx.fillStyle='rgba(255,255,255,.75)';
+  for(let a=-90;a<=90;a+=10){ const r=base+a*Math.PI/180, s=(a%90===0||a===0)?2:1; ctx.fillRect(Math.round(b.x+Math.cos(r)*20)-(s>>1),Math.round(b.y+Math.sin(r)*20)-(s>>1),s,s); }
+  const ang=G.phase==='aim'?base+G.aimOff*Math.PI/180:G.locked;
+  const len=G.phase==='power'?8+G.pow*26:18;
+  const col=G.phase==='power'?(G.pow<.6?'#5ce07a':G.pow<.85?'#ffd23f':'#ff6470'):'#ffd23f';
+  for(let d=5;d<len;d+=2){ ctx.fillStyle='#0b0920'; ctx.fillRect(Math.round(b.x+Math.cos(ang)*d),Math.round(b.y+Math.sin(ang)*d)+1,2,2); ctx.fillStyle=col; ctx.fillRect(Math.round(b.x+Math.cos(ang)*d),Math.round(b.y+Math.sin(ang)*d),2,2); }
+  const hx=Math.round(b.x+Math.cos(ang)*len), hy=Math.round(b.y+Math.sin(ang)*len);
+  ctx.fillStyle='#0b0920'; ctx.fillRect(hx-2,hy-1,5,5); ctx.fillStyle=col; ctx.fillRect(hx-2,hy-2,5,5); ctx.fillStyle='#fff'; ctx.fillRect(hx-1,hy-1,1,1);
+}
+function drawFog(t){
+  ctx.globalAlpha=G.fog;
+  ctx.fillStyle='#1c1946'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#29245e';
+  for(let y=0;y<H;y+=4) for(let x=(y/4)%2?2:0;x<W;x+=4) ctx.fillRect(x,y,2,2);
+  txt(ctx,'PICK AN ANSWER',W/2,30,8,'#ffffff');
+  txt(ctx,'TO CHOOSE YOUR LANE',W/2,44,8,'#b9b3e6');
+  for(let i=0;i<4;i++){
+    const x0=laneX(i)+4, chosen=G.choice===i, isAns=G.q&&G.q.answer===i&&G.phase==='feedback';
+    let col='#4a4290';
+    if(G.phase==='feedback'){ if(isAns) col='#5ce07a'; else if(chosen) col='#ff6470'; }
+    ctx.fillStyle=col; ctx.fillRect(x0,GY,LW-8,3); ctx.fillRect(x0,226,LW-8,3); ctx.fillRect(x0,GY,3,157); ctx.fillRect(x0+LW-11,GY,3,157);
+    const bob=G.phase==='question'?Math.round(Math.sin(t/20+i)*2):0;
+    txt(ctx,'ABCD'[i],laneC(i)+1,150+bob,16,G.phase==='feedback'&&(isAns||chosen)?col:'#ffd23f');
+  }
+  ctx.globalAlpha=1;
+}
+function drawFlash(){
+  const f=G.flash; if(!f) return;
+  const size=f.text.length>10?12:16;
+  ctx.font=FONT(size); const w=ctx.measureText(f.text).width+24;
+  ctx.fillStyle='#0b0920'; ctx.fillRect(W/2-w/2,100,w,40);
+  ctx.fillStyle=f.color; ctx.fillRect(W/2-w/2,100,w,3); ctx.fillRect(W/2-w/2,137,w,3);
+  txt(ctx,f.text,W/2,121,size,f.color);
+  if(f.sub) txt(ctx,f.sub,W/2,152,8,'#ffffff');
+}
+let frame=0;
+function draw(){
+  if(!G||!G.course) return;
+  ctx.drawImage(bg,0,0);
+  for(const w of G.course.water) drawWater(w,frame);
+  drawHole(G.course.hole,frame);
+  const p=G.players[G.turn];
+  if(G.ball) drawBall(G.ball,p.color);
+  if(G.ball&&(G.phase==='aim'||G.phase==='power')&&G.fog<.5) drawAim(G.ball,frame);
+  if(G.splash){ const s=G.splash; ctx.fillStyle='#d6ecff'; for(let i=0;i<6;i++){ const a=i*Math.PI/3, r=(30-s.t)/2; ctx.fillRect(Math.round(s.x+Math.cos(a)*r),Math.round(s.y+Math.sin(a)*r-(30-s.t)/4),2,2);} }
+  if(G.fog>0) drawFog(frame);
+  drawFlash();
+}
+
+/* ================= GAME ================= */
+const S={count:2,names:['Player 1','Player 2','Player 3','Player 4'],stds:{facts:true,ca2:false,ca4:false},divisors:[4],rems:false,holes:9,speed:'slow'};
+try{ const s=JSON.parse(localStorage.getItem('pixelputt')||'null'); if(s) Object.assign(S,s); }catch(e){}
+if(S.stds.facts===undefined) S.stds={facts:true,ca2:false,ca4:false};
+if(!Array.isArray(S.divisors)||!S.divisors.length) S.divisors=[4];
+if(typeof S.rems!=='boolean') S.rems=false;
+const saveS=()=>{ try{ localStorage.setItem('pixelputt',JSON.stringify(S)); }catch(e){} };
+const SPEEDS={slow:{aim:.9,pow:.011},medium:{aim:1.5,pow:.017},fast:{aim:2.3,pow:.025}};
+let G=null;
+
+function startGame(){
+  G={players:S.names.slice(0,S.count).map((n,i)=>({name:(n||'').trim()||`Player ${i+1}`,color:COLORS[i],scores:[],right:0,asked:0})),
+     hole:0,turn:0,review:[],used:new Set(),fog:1,phase:'idle'};
+  show('game'); beginTurn();
+}
+function beginTurn(){
+  G.q=genQuestion(S.stds,G.used);
+  G.course=makeCourse(G.q.answer); renderStatic(G.course);
+  Object.assign(G,{phase:'question',fog:1,ball:null,strokes:0,flash:null,choice:null,splash:null});
+  buildQuestion(); updateUI();
+}
+function choose(i){
+  if(G.phase!=='question') return;
+  ensureAudio();
+  const p=G.players[G.turn], ok=i===G.q.answer;
+  G.choice=i; p.asked++; if(ok) p.right++;
+  G.review.push({hole:G.hole+1,name:p.name,color:p.color,std:G.q.std,prompt:G.q.prompt,chose:G.q.options[i],answer:G.q.options[G.q.answer],ok});
+  G.phase='feedback';
+  [...$('#opts').children].forEach((b,k)=>{ b.disabled=true; if(k===G.q.answer) b.classList.add('right'); else if(k===i) b.classList.add('wrong'); });
+  const L='ABCD';
+  $('#fbVerdict').textContent=ok?'CORRECT! STRAIGHT SHOT AHEAD':'NOT QUITE';
+  $('#fbVerdict').className='verdict '+(ok?'ok':'no');
+  $('#fbText').textContent=(ok?'':`The answer is ${L[G.q.answer]}: ${G.q.correct}. Your ball goes to lane ${L[i]}, which takes a longer path. `)+G.q.ex;
+  $('#fb').hidden=false; $('#teeBtn').focus({preventScroll:true});
+  ok?sfx.right():sfx.wrong();
+  updateUI();
+}
+function teeOff(){
+  if(G.phase!=='feedback') return;
+  const t=G.course.tees[G.choice];
+  G.ball={x:t.x,y:t.y,vx:0,vy:0,scale:1};
+  startAim(); updateUI();
+}
+function startAim(){ G.phase='aim'; G.aimOff=-90; G.aimDir=1; updateUI(); }
+function swingPress(){
+  ensureAudio();
+  if(!G) return;
+  if(G.phase==='aim'){
+    const h=G.course.hole; G.locked=Math.atan2(h.y-G.ball.y,h.x-G.ball.x)+G.aimOff*Math.PI/180;
+    G.phase='power'; G.pow=0; G.powDir=1; sfx.lock(); updateUI();
+  }else if(G.phase==='power'){
+    const p=Math.max(.05,G.pow), v=VMAX*Math.sqrt(p);
+    G.ball.vx=Math.cos(G.locked)*v; G.ball.vy=Math.sin(G.locked)*v;
+    G.shotStart={x:G.ball.x,y:G.ball.y}; G.strokes++; G.phase='rolling'; sfx.hit(p); updateUI();
+  }
+}
+function inside(b,r){ return b.x>r.x&&b.x<r.x+r.w&&b.y>r.y&&b.y<r.y+r.h; }
+function collide(b,w){
+  const cx=clamp(b.x,w.x,w.x+w.w), cy=clamp(b.y,w.y,w.y+w.h), dx=b.x-cx, dy=b.y-cy, d2=dx*dx+dy*dy;
+  if(d2>=R*R) return;
+  let nx,ny;
+  if(d2<1e-6){
+    const l=b.x-w.x, r=w.x+w.w-b.x, t=b.y-w.y, bo=w.y+w.h-b.y, m=Math.min(l,r,t,bo);
+    if(m===l){nx=-1;ny=0;b.x=w.x-R;} else if(m===r){nx=1;ny=0;b.x=w.x+w.w+R;} else if(m===t){nx=0;ny=-1;b.y=w.y-R;} else {nx=0;ny=1;b.y=w.y+w.h+R;}
+  }else{ const d=Math.sqrt(d2); nx=dx/d; ny=dy/d; b.x=cx+nx*R; b.y=cy+ny*R; }
+  const vn=b.vx*nx+b.vy*ny;
+  if(vn<0){ b.vx-=1.8*vn*nx; b.vy-=1.8*vn*ny; if(-vn>.4) sfx.bounce(); }
+}
+function physics(){
+  const b=G.ball, c=G.course, h=c.hole;
+  let sp=Math.hypot(b.vx,b.vy);
+  const steps=Math.max(1,Math.ceil(sp/.8));
+  for(let s=0;s<steps;s++){
+    b.x+=b.vx/steps; b.y+=b.vy/steps;
+    for(const w of c.walls) collide(b,w);
+    for(const wa of c.water) if(inside(b,wa)){ G.phase='splash'; G.splash={x:b.x,y:b.y,t:30}; b.vx=b.vy=0; G.ball.scale=0; sfx.splash(); flash('SPLASH! +1','#4fa8ff'); return; }
+    sp=Math.hypot(b.vx,b.vy);
+    if(Math.hypot(h.x-b.x,h.y-b.y)<4.5&&sp<3.4){ G.phase='sinking'; b.vx=b.vy=0; b.x=h.x; b.y=h.y; return; }
+  }
+  const dx=h.x-b.x, dy=h.y-b.y, d=Math.hypot(dx,dy), inSand=c.sand.some(r=>inside(b,r));
+  if(d<11&&d>.01&&!inSand){ b.vx+=dx/d*.07; b.vy+=dy/d*.07; }
+  sp=Math.hypot(b.vx,b.vy);
+  const dec=inSand?.2:.045;
+  if(sp<=dec){
+    if(d<11&&!inSand){ b.vx=dx/d*.4; b.vy=dy/d*.4; return; }
+    b.vx=b.vy=0; ballStopped();
+  }else{ b.vx*=(sp-dec)/sp; b.vy*=(sp-dec)/sp; }
+}
+function ballStopped(){
+  if(G.strokes>=MAXS){ finishHole(false); return; }
+  startAim();
+}
+function flash(text,color,sub){ G.flash={text,color,sub,t:110}; }
+function scoreName(n){ return n===1?'HOLE IN ONE!':n===2?'BIRDIE!':n===3?'PAR':n===4?'BOGEY':n===5?'DOUBLE BOGEY':`${n} STROKES`; }
+function finishHole(sunk){
+  const p=G.players[G.turn], score=sunk?G.strokes:MAXS;
+  p.scores[G.hole]=score; G.phase='done';
+  if(sunk){ score===1?sfx.ace():sfx.sink(); flash(scoreName(score),score===1?'#ffd23f':score<=PAR?'#5ce07a':'#ffffff',p.name.toUpperCase()); }
+  else flash('MAX STROKES','#ff6470',`${MAXS} STROKES`);
+  const last=G.turn===G.players.length-1, lastHole=G.hole===S.holes-1;
+  $('#dMsg').textContent=`${p.name} finished hole ${G.hole+1} with ${score} stroke${score===1?'':'s'}${sunk?'':' (picked up at the max)'}.`;
+  $('#nextBtn').textContent=!last?`PASS TO ${G.players[G.turn+1].name.toUpperCase()} ▶`:lastHole?'SEE FINAL SCORES ▶':`GO TO HOLE ${G.hole+2} ▶`;
+  updateUI(); $('#nextBtn').focus({preventScroll:true});
+}
+function nextTurn(){
+  if(G.phase!=='done') return;
+  G.turn++; if(G.turn>=G.players.length){ G.turn=0; G.hole++; }
+  if(G.hole>=S.holes){ endGame(); return; }
+  beginTurn();
+}
+function update(){
+  frame++;
+  if(!G||!G.course) return;
+  const sp=SPEEDS[S.speed]||SPEEDS.slow;
+  if(G.phase!=='question'&&G.phase!=='feedback') G.fog=Math.max(0,G.fog-.04);
+  if(G.flash&&--G.flash.t<=0) G.flash=null;
+  if(G.phase==='aim'&&G.fog<.5){ G.aimOff+=G.aimDir*sp.aim; if(G.aimOff>=90){G.aimOff=90;G.aimDir=-1;} if(G.aimOff<=-90){G.aimOff=-90;G.aimDir=1;} }
+  else if(G.phase==='power'){ G.pow+=G.powDir*sp.pow; if(G.pow>=1){G.pow=1;G.powDir=-1;} if(G.pow<=0){G.pow=0;G.powDir=1;} meterFill.style.width=(G.pow*100)+'%'; }
+  else if(G.phase==='rolling') physics();
+  else if(G.phase==='sinking'){ G.ball.scale-=.08; if(G.ball.scale<=0){ G.ball.scale=0; finishHole(true); } }
+  else if(G.phase==='splash'){
+    if(--G.splash.t<=0){
+      G.splash=null; G.strokes++; G.ball={x:G.shotStart.x,y:G.shotStart.y,vx:0,vy:0,scale:1}; updateUI();
+      if(G.strokes>=MAXS) finishHole(false); else startAim();
+    }
+  }
+}
+let acc=0,last=performance.now();
+function loop(now){
+  acc+=Math.min(100,now-last); last=now;
+  while(acc>=1000/60){ update(); acc-=1000/60; }
+  draw(); requestAnimationFrame(loop);
+}
+
+/* ================= UI ================= */
+const meterFill=$('#meterFill');
+function show(which){
+  $('#setupScreen').hidden=which!=='setup'; $('#gameScreen').hidden=which!=='game'; $('#endScreen').hidden=which!=='end';
+  window.scrollTo({top:0});
+}
+function buildQuestion(){
+  const q=G.q, p=G.players[G.turn];
+  $('#qStd').textContent=`${q.std} · ${q.topic}`;
+  $('#qWho').textContent=`${p.name}'s question`;
+  $('#qText').textContent=q.prompt;
+  const box=$('#opts'); box.innerHTML='';
+  q.options.forEach((o,i)=>{
+    const b=document.createElement('button'); b.type='button'; b.className='opt'; b.id='opt'+i;
+    b.innerHTML=`<span class="k">${'ABCD'[i]}</span><span></span>`; b.lastChild.textContent=o;
+    b.addEventListener('click',()=>choose(i)); box.appendChild(b);
+  });
+  $('#fb').hidden=true;
+}
+function updateUI(){
+  if(!G) return;
+  const p=G.players[G.turn];
+  $('#whoSwatch').style.background=p.color; $('#whoName').textContent=p.name;
+  $('#holeNum').textContent=G.hole+1; $('#holeTot').textContent=S.holes; $('#strokeNum').textContent=G.strokes;
+  const ph=G.phase;
+  $('#qView').hidden=!(ph==='question'||ph==='feedback');
+  $('#sView').hidden=!(ph==='aim'||ph==='power'||ph==='rolling'||ph==='sinking'||ph==='splash');
+  $('#dView').hidden=ph!=='done';
+  const instr=$('#instr');
+  if(ph==='aim'){ instr.innerHTML='<b>STEP 1 · AIM</b>The arrow sweeps across the half circle. Press SWING to lock your direction.'; meterFill.style.width='0%'; }
+  else if(ph==='power') instr.innerHTML='<b>STEP 2 · POWER</b>Watch the power meter. Press SWING again to hit the ball.';
+  else if(ph==='rolling'||ph==='sinking') instr.innerHTML='<b>ROLLING…</b>';
+  else if(ph==='splash') instr.innerHTML='<b>SPLASH!</b>Penalty stroke. The ball goes back to where you hit it.';
+  $('#swingBtn').disabled=!(ph==='aim'||ph==='power');
+  $('#swingBtn').textContent=ph==='power'?'HIT!':'SWING';
+  const board=$('#board'); board.innerHTML='';
+  G.players.forEach((pl,i)=>{
+    const tot=pl.scores.reduce((a,b)=>a+(b||0),0);
+    const d=document.createElement('div'); d.className='prow'+(i===G.turn?' now':'');
+    d.innerHTML=`<span class="swatch"></span><span class="nm"></span><span class="tot">${tot}</span><span class="sub">Math: ${pl.right}/${pl.asked} correct</span>`;
+    d.querySelector('.swatch').style.background=pl.color; d.querySelector('.nm').textContent=pl.name;
+    board.appendChild(d);
+  });
+}
+function endGame(){
+  G.phase='over';
+  const ps=G.players.map(p=>({...p,tot:p.scores.reduce((a,b)=>a+b,0)}));
+  const best=Math.min(...ps.map(p=>p.tot)), winners=ps.filter(p=>p.tot===best);
+  $('#winner').textContent=ps.length===1?`${ps[0].name}: ${best} strokes on ${S.holes} holes`:
+    winners.length>1?`Tie! ${winners.map(w=>w.name).join(' & ')} with ${best}`:`${winners[0].name} wins with ${best} strokes!`;
+  const card=$('#card');
+  let h='<thead><tr><th>Player</th>'; for(let i=0;i<S.holes;i++) h+=`<th>${i+1}</th>`; h+='<th>Total</th><th>Math</th></tr></thead><tbody>';
+  h+=`<tr><td style="color:var(--muted)">Par</td>${'<td style="color:var(--muted)">3</td>'.repeat(S.holes)}<td style="color:var(--muted)">${PAR*S.holes}</td><td></td></tr>`;
+  ps.forEach((p,i)=>{ h+=`<tr class="${p.tot===best&&ps.length>1?'win':''}"><td><span class="swatch" style="display:inline-block;width:12px;height:12px;margin-right:8px;background:${p.color}"></span><span data-n="${i}"></span></td>${p.scores.map(s=>`<td>${s}</td>`).join('')}<td><b>${p.tot}</b></td><td>${p.right}/${p.asked}</td></tr>`; });
+  card.innerHTML=h+'</tbody>';
+  card.querySelectorAll('[data-n]').forEach(el=>el.textContent=ps[+el.dataset.n].name);
+  const rv=$('#review'); rv.innerHTML='';
+  G.review.forEach(r=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<span class="tag ${r.ok?'ok':'no'}">${r.ok?'RIGHT':'MISSED'}</span><div><div class="meta"></div><div class="q"></div><div class="a"></div></div>`;
+    li.querySelector('.meta').textContent=`Hole ${r.hole} · ${r.name} · ${r.std}`;
+    li.querySelector('.q').textContent=r.prompt;
+    li.querySelector('.a').textContent=r.ok?`Answered: ${r.answer}`:`Chose: ${r.chose} · Answer: ${r.answer}`;
+    rv.appendChild(li);
+  });
+  show('end');
+}
+
+/* ---------- Setup UI ---------- */
+function seg(el,vals,get,set,label=v=>v){
+  el.innerHTML='';
+  vals.forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.textContent=label(v); b.setAttribute('aria-pressed',String(get()===v));
+    b.addEventListener('click',()=>{ set(v); saveS(); seg(el,vals,get,set,label); renderNames(); }); el.appendChild(b); });
+}
+function renderNames(){
+  const box=$('#names'); const focused=document.activeElement&&document.activeElement.id;
+  box.innerHTML='';
+  for(let i=0;i<S.count;i++){
+    const row=document.createElement('label'); row.className='namerow';
+    row.innerHTML=`<span class="swatch" style="background:${COLORS[i]}"></span><input id="name${i}" maxlength="14" autocomplete="off" aria-label="Player ${i+1} name">`;
+    const inp=row.querySelector('input'); inp.value=S.names[i];
+    inp.addEventListener('input',()=>{ S.names[i]=inp.value; saveS(); });
+    box.appendChild(row);
+  }
+  if(focused&&$('#'+focused)) $('#'+focused).focus();
+}
+function renderStds(){
+  [['stdF','facts'],['std2','ca2'],['std4','ca4']].forEach(([id,k])=>{ const b=$('#'+id); b.setAttribute('aria-pressed',String(!!S.stds[k])); b.querySelector('.box').textContent=S.stds[k]?'[x]':'[ ]'; });
+  const ok=S.stds.facts||S.stds.ca2||S.stds.ca4; $('#startBtn').disabled=!ok;
+  $('#startHint').textContent=ok?'Each player gets their own question on every hole.':'Pick at least one standard to start.';
+  $('#factOpts').hidden=!S.stds.facts;
+}
+[['stdF','facts'],['std2','ca2'],['std4','ca4']].forEach(([id,k])=>$('#'+id).addEventListener('click',()=>{ S.stds[k]=!S.stds[k]; saveS(); renderStds(); }));
+function renderDivs(){
+  const el=$('#divSeg'); el.innerHTML='';
+  for(let d=2;d<=9;d++){
+    const b=document.createElement('button'); b.type='button'; b.textContent='÷ '+d; b.setAttribute('aria-pressed',String(S.divisors.includes(d)));
+    b.addEventListener('click',()=>{
+      if(S.divisors.includes(d)){ if(S.divisors.length>1) S.divisors=S.divisors.filter(x=>x!==d); }
+      else S.divisors=[...S.divisors,d].sort((a,b)=>a-b);
+      saveS(); renderDivs();
+    });
+    el.appendChild(b);
+  }
+}
+renderDivs();
+seg($('#remSeg'),[false,true],()=>S.rems,v=>S.rems=v,v=>v?'INCLUDE REMAINDERS':'NO REMAINDERS');
+seg($('#countSeg'),[1,2,3,4],()=>S.count,v=>S.count=v);
+seg($('#holeSeg'),[3,6,9],()=>S.holes,v=>S.holes=v);
+seg($('#speedSeg'),['slow','medium','fast'],()=>S.speed,v=>S.speed=v,v=>v.toUpperCase());
+renderNames(); renderStds();
+
+$('#startBtn').addEventListener('click',()=>{ ensureAudio(); startGame(); });
+$('#teeBtn').addEventListener('click',teeOff);
+$('#swingBtn').addEventListener('click',swingPress);
+$('#nextBtn').addEventListener('click',nextTurn);
+cv.addEventListener('pointerdown',e=>{ if(G&&(G.phase==='aim'||G.phase==='power')){ e.preventDefault(); swingPress(); } });
+$('#againBtn').addEventListener('click',startGame);
+$('#setupBtn').addEventListener('click',()=>show('setup'));
+$('#muteBtn').addEventListener('click',()=>{ muted=!muted; $('#muteBtn').textContent=muted?'SOUND: OFF':'SOUND: ON'; });
+document.addEventListener('keydown',e=>{
+  if(!G||$('#gameScreen').hidden) return;
+  const tag=e.target&&e.target.tagName;
+  if(tag==='INPUT') return;
+  if(G.phase==='question'){
+    const k=e.key.toLowerCase(), idx='1234'.indexOf(k)>=0?'1234'.indexOf(k):'abcd'.indexOf(k);
+    if(idx>=0){ e.preventDefault(); choose(idx); }
+    return;
+  }
+  if(e.key===' '||e.key==='Enter'){
+    if(tag==='BUTTON') return; // let the focused button handle it
+    if(G.phase==='aim'||G.phase==='power'){ e.preventDefault(); swingPress(); }
+  }
+});
+// Space on the focused SWING button should swing, not just click once on keyup
+$('#swingBtn').addEventListener('keydown',e=>{ if(e.key===' '){ e.preventDefault(); swingPress(); } });
+
+if(document.fonts&&document.fonts.load){ document.fonts.load('8px "Press Start 2P"').then(()=>{ if(G&&G.course) renderStatic(G.course); }).catch(()=>{}); }
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>
