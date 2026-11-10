@@ -43,8 +43,17 @@
     h2 { font-size: 16px; margin: 0 0 4px; color: var(--teal-900); }
     .hint { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
 
+    .ltabs { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+    .ltabs button { border: 0; background: #fff; padding: 7px 16px; font-weight: 700; color: var(--teal-900); cursor: pointer; }
+    .ltabs button[aria-pressed="true"] { background: var(--teal-700); color: #fff; }
+    #tgt-panel { border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px 10px; max-height: 460px; overflow-y: auto; }
+    .tgt-std { border-top: 1px solid var(--line); padding: 8px 0; }
+    .tgt-std:first-of-type { border-top: 0; }
+    .tgt-row { display: flex; align-items: center; gap: 8px; padding: 4px 0 4px 6px; font-size: 14px; cursor: pointer; }
+    .tgt-row input { width: 17px; height: 17px; accent-color: var(--teal-700); }
+    .tgt-dok { margin-left: auto; font-size: 11px; color: var(--muted); white-space: nowrap; }
     .std-list { border: 1px solid var(--line); border-radius: 10px; max-height: 460px; overflow-y: auto; }
-    .std-head, .std-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 84px; gap: 8px; align-items: center; padding: 8px 12px; }
+    .std-head, .std-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 74px 84px; gap: 8px; align-items: center; padding: 8px 12px; }
     .std-head { position: sticky; top: 0; background: var(--teal-50); font-size: 12px; font-weight: 600; color: var(--teal-700); z-index: 1; }
     .std-head span:nth-child(n+3) { text-align: center; }
     .std-row { border-top: 1px solid var(--line); }
@@ -72,7 +81,7 @@
     .btn.primary:hover { background: var(--teal-900); }
     .btn.key[aria-pressed="true"] { background: var(--gold-500); border-color: var(--gold-500); color: var(--teal-900); }
     .version { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 13px; color: var(--muted); }
-    .version input { color: var(--ink); width: 230px; max-width: 60vw; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+    .version input { color: var(--ink); width: 260px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
     #notices { padding: 0 24px; }
     #notices:not(:empty) { padding: 12px 24px 16px; border-top: 1px solid var(--line); background: #fffaf0; }
     #notices p { margin: 4px 0; font-size: 13px; color: var(--warn); }
@@ -117,8 +126,41 @@
     .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
     .newpage { break-before: page; }
     body:not([data-mode="exit"]) .exit-only, body:not([data-mode="morning"]) .morning-only { display: none; }
-    body[data-mode="exit"] .test-only, body[data-mode="morning"] .test-only { display: none; }
-    body[data-mode="morning"] .std-row input[type=number], body[data-mode="morning"] .std-head span:nth-child(n+3) { visibility: hidden; }
+    body[data-mode="exit"] .test-only, body[data-mode="morning"] .test-only, body[data-mode="lesson"] .test-only, body[data-mode="lesson"] .no-lesson { display: none; }
+    body[data-mode="morning"] .std-row input[type=number],
+    body[data-mode="lesson"] .std-row input[type=number] { visibility: hidden; }
+    .dokbox { display: flex; justify-content: center; gap: 6px; font-size: 12px; color: var(--teal-900); }
+    .dokbox label { display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; }
+    .dokbox input { width: 16px; height: 16px; accent-color: var(--teal-700); margin: 0; }
+    .std-row:not(.on) .dokbox { opacity: .35; }
+    body[data-mode="lesson"] .dokbox, body[data-mode="lesson"] .std-head .dokh { visibility: hidden; }
+    body[data-mode="morning"] .std-head .cnt, body[data-mode="lesson"] .std-head .cnt { visibility: hidden; }
+
+    .modes { flex-wrap: wrap; }
+    body:not([data-mode="lesson"]) .lesson-only { display: none; }
+    @media print {
+        body.print-worksheet .teacher-part { display: none; }
+        body.print-worksheet .teacher-part + .student-part { break-before: auto; }
+    }
+    .l-head { border-bottom: 3px solid var(--teal-700); padding-bottom: 6px; margin-bottom: 14px; }
+    .l-head h1 { font-size: 22px; margin: 0; }
+    .l-head p { margin: 2px 0 0; font-size: 12px; color: #444; }
+    .lbox { border: 1.5px solid #9bb; border-radius: 8px; padding: 8px 14px 10px; margin-bottom: 12px; break-inside: avoid; font-size: 14px; }
+    .lbox h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--teal-700); margin: 0 0 6px; }
+    .lbox ul, .lbox ol { margin: 0; padding-left: 20px; }
+    .lbox li { margin-bottom: 3px; }
+    .lbox.target { background: var(--gold-100); border-color: var(--gold-500); font-size: 16px; font-weight: 600; }
+    .lbox .mini-q { margin: 6px 0; }
+    .lbox .say { font-style: italic; margin-top: 6px; }
+    table.org { width: 100%; border-collapse: collapse; margin-top: 6px; table-layout: fixed; }
+    .lbox ul.plain { list-style: none; padding-left: 4px; }
+    table.org th, table.org td { border: 1.5px solid #555; padding: 6px; vertical-align: top; font-size: 13px; }
+    table.org th { background: #eef5f4; }
+    table.org td { height: 0.75in; }
+    .stu-h { break-after: avoid;  font-size: 14px; font-weight: 800; margin: 14px 0 8px; padding-bottom: 3px; border-bottom: 1.5px solid #888; }
+    .stu-q .q { padding-bottom: 44px; margin-bottom: 0; }
+    .stu-q .fig svg { max-height: 1.7in; width: auto; }
+    .stu-q .fig { margin: 0 0 4px; }
     .ticket { border: 2px solid #333; border-radius: 10px; padding: 10px 16px 4px; break-inside: avoid; }
     .ticket + .ticket { margin-top: 0.4in; position: relative; }
     .ticket + .ticket::before { content: "\2702  cut here"; position: absolute; left: 0; right: 0; top: -0.25in; border-top: 1.5px dashed #888; font-size: 10px; color: #666; padding-top: 2px; text-align: center; }
@@ -187,14 +229,19 @@
             <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
             <button type="button" data-mode="exit" aria-pressed="false">Exit Ticket</button>
             <button type="button" data-mode="morning" aria-pressed="false">Morning Work</button>
+            <button type="button" data-mode="lesson" aria-pressed="false">Lesson</button>
         </div>
     </div>
 
     <div class="panel">
         <div class="col">
-            <h2>Standards</h2>
+            <div class="ltabs" role="group" aria-label="Standards or targets">
+                <button type="button" data-ltab="std" aria-pressed="true">Standards</button>
+                <button type="button" data-ltab="tgt" aria-pressed="false">Targets</button>
+            </div>
             <p class="hint" id="std-hint"></p>
             <div class="std-list" id="std-list"></div>
+            <div id="tgt-panel" style="display:none"></div>
             <div class="list-tools">
                 <span id="totals"></span>
                 <button type="button" class="linkish" id="clear-all">Clear all</button>
@@ -223,6 +270,14 @@
                     <option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option>
                 </select>
             </div>
+            <div class="field lesson-only">
+                <label for="f-block">Math block length</label>
+                <select id="f-block">
+                    <option value="45">45 minutes</option><option value="50">50 minutes</option><option value="60">60 minutes</option><option value="65">65 minutes</option>
+                    <option value="70">70 minutes</option><option value="75">75 minutes</option><option value="80">80 minutes</option><option value="90">90 minutes</option>
+                </select>
+                <p class="hint">Times for each part scale to the block. Tier 2 small groups are about a quarter of the block.</p>
+            </div>
             <div class="field exit-only">
                 <label for="f-copies">Copies per page</label>
                 <select id="f-copies">
@@ -240,16 +295,6 @@
                 </select>
                 <p class="hint">Questions with a ruler, table, or line plot count as two.</p>
             </div>
-            <div class="field">
-                <label for="f-rigor">Question level (Depth of Knowledge)</label>
-                <select id="f-rigor">
-                    <option value="mix">Balanced mix of DOK 1, 2, and 3, easiest first</option>
-                    <option value="all">Any level, random</option>
-                    <option value="1">DOK 1: Recall and routine practice</option>
-                    <option value="2">DOK 2: Apply skills and concepts</option>
-                    <option value="3">DOK 3: Reasoning and explaining</option>
-                </select>
-            </div>
             <div class="checks test-only">
                 <label><input type="checkbox" id="f-newpage"> Start each standard on a new page</label>
                 <label><input type="checkbox" id="f-score"> Add a score-by-standard table at the end</label>
@@ -261,9 +306,10 @@
         <button type="button" class="btn primary" id="btn-new">New version</button>
         <button type="button" class="btn key" id="btn-key" aria-pressed="false">Teacher key</button>
         <button type="button" class="btn" id="btn-print">Print</button>
+        <button type="button" class="btn lesson-only" id="btn-print-ws">Print worksheet only</button>
         <div class="version">
             <label for="f-code">Version code</label>
-            <input type="text" id="f-code" maxlength="40" placeholder="Paste a code" spellcheck="false">
+            <input type="text" id="f-code" maxlength="60" spellcheck="false" aria-label="Version code">
             <button type="button" class="btn" id="btn-load">Load</button>
         </div>
     </div>
@@ -279,7 +325,7 @@
             { id: '4.NS.7', label: '4.NS.7: Round multi-digit numbers', desc: 'Use place value understanding to round multi-digit whole numbers.' },
             { id: '4.CA.1', label: '4.CA.1: Multiply whole numbers', desc: 'Multiply up to 4-digit by 1-digit, or two 2-digit numbers.' },
             { id: '4.CA.3', label: '4.CA.3: Properties of multiplication', desc: 'Commutative, associative, and distributive properties.' },
-            { id: '4.CA.4', label: '4.CA.4: Factors and multiples', desc: 'Find factors and multiples for numbers 1-100; prime and composite.' },
+            { id: '4.CA.4', label: '4.CA.4: Factors and multiples', desc: 'Find factors and multiples for numbers 1-100 using multiplication, division, and fact families; prime and composite.' },
             { id: '4.CA.5', label: '4.CA.5: Multiplicative comparison', desc: 'Solve real-world problems with multiplicative comparison.' },
             { id: '4.CA.2', label: '4.CA.2: Quotients and remainders', desc: 'Divide up to 4-digit dividends by 1-digit divisors.' },
             { id: '4.M.4', label: '4.M.4: Area and perimeter', desc: 'Apply area and perimeter formulas for rectangles.' },
@@ -571,14 +617,9 @@
                 // Which equation matches the bar model?
                 () => {
                     const c = comparisonContext(), [x, m] = xm(2, 12, 3, 8), t = x * m;
-                    if (R() < 0.5) {
-                        return { fig: barModel({ labels: c.rows, top: [String(x)], bottom: Array(m).fill(String(x)), brace: '?' }),
-                            q: 'Which equation matches the bar model?',
-                            c: `${m} × ${x} = ?`, d: [`${m} + ${x} = ?`, `${x} − ${m} = ?`, `${m} × ? = ${x}`] };
-                    }
-                    return { fig: barModel({ labels: c.rows, top: ['?'], bottom: Array(m).fill(''), brace: String(t) }),
+                    return { fig: barModel({ labels: c.rows, top: [String(x)], bottom: Array(m).fill(String(x)), brace: '?' }),
                         q: 'Which equation matches the bar model?',
-                        c: `${t} ÷ ${m} = ?`, d: [`${t} × ${m} = ?`, `${t} − ${m} = ?`, `${m} + ? = ${t}`] };
+                        c: `${m} × ${x} = ?`, d: [`${m} + ${x} = ?`, `${x} − ${m} = ?`, `${m} × ? = ${x}`] };
                 },
                 // Which bar model shows the problem?
                 () => {
@@ -615,11 +656,11 @@
                     return { q: `${a} has $${base} saved. ${b} has ${m} times as much money saved. How much money does ${b} have?`, c: `$${ans}`, d: [`$${base + m}`, `$${ans + 10}`, `$${ans - base}`] };
                 },
                 () => {
-                    const [a, b] = pickN(NAMES, 2), small = randInt(3, 9), m = randInt(3, 8), big = small * m;
+                    const [a, b] = pickN(NAMES, 2), [small, m] = xm(3, 9, 3, 8), big = small * m;
                     return { q: `${a} has ${big} stickers. That is ${m} times as many stickers as ${b} has. How many stickers does ${b} have?`, c: `${small} stickers`, d: [`${big - m} stickers`, `${big * m} stickers`, `${big + m} stickers`] };
                 },
                 () => {
-                    const small = randInt(3, 9), m = randInt(3, 8), big = small * m;
+                    const [small, m] = xm(3, 9, 3, 8), big = small * m;
                     return { q: `Which equation shows "${big} is ${m} times as many as ${small}"?`, c: `${big} = ${m} × ${small}`, d: [`${big} = ${m} + ${small}`, `${m} = ${big} × ${small}`, `${small} = ${m} × ${big}`] };
                 }
             ]),
@@ -890,6 +931,10 @@
             if (levels.length !== GEN[id].length) console.error(`DOK list for ${id} has ${levels.length} entries but there are ${GEN[id].length} generators`);
             GEN[id].forEach((fn, i) => { fn.dok = levels[i] || 2; });
         });
+        // 4.CA.5 division questions (find the smaller amount), switched off by the division toggle.
+        // In the 4.CA.5 list above, these are the bar model "smaller amount" problem (3rd) and the stickers problem (9th).
+        GEN['4.CA.5'][2].div = true;
+        GEN['4.CA.5'][8].div = true;
 
         // Clock time from minutes after midnight, PM afternoon times: 1,005 -> "4:45 PM"
         function clock(min) {
@@ -997,6 +1042,74 @@
                 }]
             ],
             '4.CA.4': [
+                // Division and fact families (connecting multiplication facts to factors and multiples)
+                [1, () => {
+                    const [a, b] = xm(3, 9, 3, 9), p = a * b;
+                    return { q: `Which division fact is in the same fact family as ${a} × ${b} = ${p}?`,
+                        c: `${p} ÷ ${b} = ${a}`, d: [`${p} ÷ ${a} = ${b + 1}`, `${b} ÷ ${p} = ${a}`, `${p} − ${b} = ${a}`, `${a} ÷ ${b} = ${p}`] };
+                }],
+                [1, () => {
+                    const [a, b] = xm(3, 9, 4, 9), p = a * b;
+                    return { q: `What is ${p} ÷ ${a}?`, c: String(b), d: [b + 1, b - 1, p - a, a].map(String) };
+                }],
+                [1, () => {
+                    const [a, b] = xm(3, 9, 3, 9), p = a * b;
+                    return { q: `The numbers ${a}, ${b}, and ___ make a fact family. What is the missing number?`,
+                        c: String(p), d: [a + b, Math.abs(a - b) || a + 1, p + a, a * a].map(String) };
+                }],
+                [2, () => {
+                    const [a, b] = xm(3, 9, 3, 9), p = a * b;
+                    const fam = [`${a} × ${b} = ${p}`, `${b} × ${a} = ${p}`, `${p} ÷ ${a} = ${b}`, `${p} ÷ ${b} = ${a}`];
+                    return { q: `Which list shows the complete fact family for ${a}, ${b}, and ${p}?`,
+                        c: fam.join(',  '),
+                        d: [[fam[0], fam[1], fam[2], `${a} ÷ ${p} = ${b}`].join(',  '),
+                            [fam[0], fam[1], `${p} ÷ ${a} = ${b}`, `${p} ÷ ${b} = ${b}`].join(',  '),
+                            [`${a} + ${b} = ${a + b}`, fam[1], fam[2], fam[3]].join(',  ')] };
+                }],
+                [2, () => {
+                    let a, b; do { [a, b] = xm(3, 9, 4, 12); } while (a * b > 100);
+                    const p = a * b;
+                    return { q: `${p} ÷ ${a} = ${b}. Which factor pair of ${p} does this division fact show?`,
+                        c: `${a} and ${b}`, d: [`${a} and ${p}`, `${b} and ${p}`, `${a - 1} and ${b + 1}`] };
+                }],
+                [2, () => {
+                    const k = randInt(3, 9), m = randInt(4, Math.floor((100 - k) / k)), n = k * m;   // keeps numbers within 1 to 100
+                    if (R() < 0.5) return { q: `Use division to decide: Is ${k} a factor of ${n}?`,
+                        c: `Yes, because ${n} ÷ ${k} = ${m} with no remainder.`,
+                        d: [`No, because ${n} ÷ ${k} has a remainder.`, `Yes, because ${n} − ${k} = ${n - k}.`, `No, because ${k} is an odd number.`] };
+                    const n2 = n + randInt(1, k - 1), r = n2 % k;
+                    return { q: `Use division to decide: Is ${k} a factor of ${n2}?`,
+                        c: `No, because ${n2} ÷ ${k} = ${Math.floor(n2 / k)} R${r}.`,
+                        d: [`Yes, because ${n2} ÷ ${k} = ${Math.floor(n2 / k)} with no remainder.`, `Yes, because ${n2} is greater than ${k}.`, `No, because ${n2} is an even number.`] };
+                }],
+                [2, () => {
+                    let a, b; do { [a, b] = xm(4, 9, 4, 12); } while (a * b > 100);
+                    const p = a * b;
+                    return { q: `Which division equation shows that ${p} is a multiple of ${a}?`,
+                        c: `${p} ÷ ${a} = ${b}`, d: [`${a} ÷ ${p} = ${b}`, `${p} − ${a} = ${p - a}`, `${p} ÷ ${a + 1} = ${Math.floor(p / (a + 1))} R${p % (a + 1) || 1}`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES); let k, n;
+                    do { k = randInt(3, 9); n = randInt(20, 80); } while (n % k === 0);
+                    const q0 = Math.floor(n / k), r = n % k;
+                    return { q: `${name} says ${k} is a factor of ${n} because ${n} ÷ ${k} = ${q0}. Which explains ${name}'s mistake?`,
+                        c: `${n} ÷ ${k} = ${q0} R${r}. There is a remainder, so ${k} is not a factor of ${n}.`,
+                        d: [`${name} is correct, because ${k} × ${q0} is close to ${n}.`, `${k} is not a factor because ${k} is greater than ${q0}.`, `${name} should have added ${n} + ${k}.`] };
+                }],
+                [3, () => {
+                    const name = pick(NAMES), [a, b] = xm(3, 9, 3, 9), p = a * b;
+                    return { q: `${name} says ${b} ÷ ${p} = ${a} belongs in the fact family for ${a}, ${b}, and ${p}. Which explains the mistake?`,
+                        c: `In a division fact, the product comes first: ${p} ÷ ${b} = ${a}.`,
+                        d: [`The fact should be ${b} × ${p} = ${a}.`, `Fact families do not have division facts.`, `${name} made no mistake.`] };
+                }],
+                [3, () => {
+                    const n = pick([24, 36, 48, 60, 72]), f = factorsOf(n);
+                    const pairs = f.filter(x => x * x <= n).map(x => [x, n / x]);
+                    const [x, y] = pick(pairs.filter(([u, v]) => u > 1 && u !== v));
+                    return { q: `How can knowing the fact family ${x} × ${y} = ${n} help you find factors of ${n}?`,
+                        c: `It shows ${x} and ${y} are a factor pair, because ${n} ÷ ${x} = ${y} and ${n} ÷ ${y} = ${x}.`,
+                        d: [`It shows ${n} is a prime number.`, `It shows ${x + y} is a factor of ${n}.`, `It shows ${n} is a factor of ${x}.`] };
+                }],
                 [2, () => {
                     const n = pick([24, 30, 36, 40, 48, 60]), f = factorsOf(n).filter(x => x >= 2 && x <= 12), non = [5, 7, 8, 9, 11].filter(x => n % x);
                     return { q: `A teacher wants to arrange ${n} desks in equal rows with no desks left over. Which number of rows would NOT work?`,
@@ -1020,6 +1133,44 @@
                 ])]
             ],
             '4.CA.5': [
+                // Division with bar models (switched off by the 4.CA.5 division toggle)
+                [1, () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 12, 2, 8), t = x * m;
+                    return { fig: barModel({ labels: c.rows, top: ['?'], bottom: Array(m).fill(''), brace: c.f(t) }),
+                        q: `The bar model shows that ${c.f(t)} is ${m} times as much as the unknown amount. What is the value of one box?`,
+                        c: c.f(x), d: [c.f(t * m), c.f(t - m), c.f(t + m), c.f(m)] };
+                }, 'div'],
+                [1, () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 9, 2, 8), t = x * m;
+                    return { fig: barModel({ labels: c.rows, top: [c.f(x)], bottom: Array(m).fill(c.f(x)), brace: c.f(t) }),
+                        q: `Use the bar model. The bottom bar (${c.rows[1]}) is how many times as much as the top bar (${c.rows[0]})?`,
+                        c: `${m} times as much`, d: [`${t} times as much`, `${x} times as much`, `${m + 1} times as much`, `${t - x} times as much`] };
+                }, 'div'],
+                [2, () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 12, 3, 8), t = x * m;
+                    return { fig: barModel({ labels: c.rows, top: ['?'], bottom: Array(m).fill(''), brace: String(t) }),
+                        q: 'Which equation matches the bar model?',
+                        c: `${t} ÷ ${m} = ?`, d: [`${t} × ${m} = ?`, `${t} − ${m} = ?`, `${m} + ? = ${t}`] };
+                }, 'div'],
+                [2, () => {
+                    const [a, b] = pickN(NAMES, 2), [x, m] = xm(2, 9, 3, 8), t = x * m;
+                    return { fig: barModel({ labels: [a, b], top: [String(x)], bottom: Array(m).fill(String(x)), brace: String(t) }),
+                        q: `${a} has ${x} trading cards. ${b} has ${t} trading cards. ${b} has how many times as many cards as ${a}? Use the bar model to help you.`,
+                        c: `${m} times as many`, d: [`${t - x} times as many`, `${t + x} times as many`, `${m + 2} times as many`, `${x} times as many`] };
+                }, 'div'],
+                [2, () => {
+                    const c = comparisonContext(), [x, m] = xm(2, 9, 3, 6), t = x * m, T = c.f(t);
+                    const models = shuffle([
+                        { right: true, spec: { top: ['?'], bottom: Array(m).fill(''), brace: T } },
+                        { spec: { top: ['?'], bottom: Array(m + 1).fill(''), brace: T } },
+                        { spec: { top: [T], bottom: Array(m).fill(''), brace: '?' } },
+                        { spec: { top: Array(m).fill(''), bottom: ['?'], brace: T } }
+                    ], R);
+                    const letters = ['A', 'B', 'C', 'D'], k = models.findIndex(z => z.right);
+                    return { fig: modelChoices(models.map(z => ({ labels: c.rows, ...z.spec }))), weight: 3,
+                        q: `${c.backward(t, m)} Which bar model shows this problem?`,
+                        c: `Model ${letters[k]}`, fixed: letters.map(L => ({ label: L, text: `Model ${L}` })), correctLetter: letters[k] };
+                }, 'div'],
                 [3, () => {
                     const [a, b, c] = pickN(NAMES, 3), x = randInt(4, 9), m = randInt(3, 6), k = randInt(2, 9);
                     const big = x * m, more = x + k;
@@ -1331,7 +1482,184 @@
                 }]
             ]
         };
-        Object.entries(MORE_QUESTIONS).forEach(([id, list]) => list.forEach(([dok, fn]) => { fn.dok = dok; GEN[id].push(fn); }));
+        Object.entries(MORE_QUESTIONS).forEach(([id, list]) => list.forEach(([dok, fn, tag]) => { fn.dok = dok; if (tag === 'div') fn.div = true; GEN[id].push(fn); }));
+
+        // ---------- Learning targets within each standard ----------
+        // TARGETS lists the targets; TARGET_MAP gives each generator's target(s), in the same order as GEN[id].
+        const TARGETS = {
+            '4.NS.1': [['forms', 'Standard, word, and expanded form'], ['value', 'Place value of digits']],
+            '4.NS.7': [['round', 'Rounding to a given place'], ['reason', 'Reasoning about rounding']],
+            '4.CA.1': [['one', '4-digit by 1-digit'], ['two', '2-digit by 2-digit'], ['multi', 'Multi-step word problems']],
+            '4.CA.3': [['commassoc', 'Commutative and associative properties'], ['dist', 'Distributive property']],
+            '4.CA.4': [['factors', 'Factors and factor pairs'], ['multiples', 'Multiples'], ['prime', 'Prime and composite'], ['facts', 'Division and fact families']],
+            '4.CA.5': [['mult', 'Multiplication comparisons (find the larger amount)'], ['div', 'Division comparisons (find the smaller amount or the multiplier)']],
+            '4.CA.2': [['compute', 'Dividing, with and without remainders'], ['interpret', 'Interpreting remainders in word problems']],
+            '4.M.4': [['area', 'Area'], ['perimeter', 'Perimeter'], ['compare', 'Comparing area and perimeter']],
+            '4.M.1': [['measure', 'Measuring with a ruler'], ['problems', 'Solving problems with measurements']],
+            '4.M.2': [['metric', 'Metric units'], ['customary', 'Customary units (feet, inches, yards, pounds, ounces)'], ['time', 'Time (hours, minutes, seconds)']],
+            '4.NS.3': [['generate', 'Finding equivalent fractions'], ['explain', 'Explaining why fractions are equivalent']],
+            '4.NS.4': [['like', 'Same numerator or same denominator'], ['bench', 'Benchmarks and ordering']],
+            '4.CA.6': [['addsub', 'Adding and subtracting fractions'], ['mixed', 'Mixed numbers'], ['decompose', 'Decomposing fractions']],
+            '4.CA.8': [['join', 'Joining (how much in all)'], ['separate', 'Separating and comparing (how much is left or more)']],
+            '4.NS.2': [['toMixed', 'Improper fraction to mixed number'], ['toImproper', 'Mixed number to improper fraction']],
+            '4.NS.5': [['write', 'Writing tenths and hundredths as decimals and fractions'], ['equiv', 'Tenths and hundredths equivalence and money']],
+            '4.NS.6': [['compare', 'Comparing two decimals'], ['order', 'Ordering decimals']],
+            '4.DA.1': [['read', 'Reading a frequency table'], ['solve', 'Solving problems with data']],
+            '4.DA.2': [['read', 'Reading a line plot'], ['compute', 'Adding and subtracting with line plot data']],
+            '4.M.3': [['time', 'Elapsed time'], ['money', 'Money'], ['volume', 'Liquid volume and distance']]
+        };
+        const TARGET_MAP = {
+            '4.NS.1': ['forms', 'value', 'forms', 'forms', 'value', 'value', 'forms', 'value'],
+            '4.NS.7': ['round', 'round', 'round', 'round', 'round', 'reason', 'reason', 'round'],
+            '4.CA.1': ['one', 'two', 'one', 'two', 'multi', 'two', 'multi'],
+            '4.CA.3': ['commassoc', 'dist', 'commassoc', 'dist', 'dist', 'dist'],
+            '4.CA.4': ['factors', 'multiples', 'prime', 'prime', 'multiples', 'factors', 'facts', 'facts', 'facts', 'facts', 'facts', 'facts', 'facts', 'facts', 'facts', 'facts', 'factors', 'multiples', 'prime', ['prime', 'multiples', 'factors']],
+            '4.CA.5': ['mult', 'mult', 'div', 'mult', 'mult', 'mult', 'mult', 'mult', 'div', 'mult', 'div', 'div', 'div', 'div', 'div', 'mult', 'mult'],
+            '4.CA.2': ['compute', 'interpret', 'compute', 'interpret', 'compute', 'interpret'],
+            '4.M.4': ['area', 'perimeter', 'area', 'perimeter', 'compare', 'compare', 'perimeter'],
+            '4.M.1': ['measure', 'measure', 'problems', 'measure', 'problems'],
+            '4.M.2': ['metric', 'metric', 'metric', 'metric', 'time', 'time', 'customary', 'customary', 'customary', ['metric', 'customary', 'time'], 'metric', 'customary', 'metric'],
+            '4.NS.3': ['generate', 'generate', 'explain', 'explain', 'explain'],
+            '4.NS.4': ['bench', 'bench', 'like', 'like', 'like', 'bench', 'bench'],
+            '4.CA.6': ['addsub', 'addsub', 'mixed', 'decompose', 'decompose', 'addsub', 'addsub'],
+            '4.CA.8': ['join', 'separate', 'join', 'join', 'join', 'separate', 'separate'],
+            '4.NS.2': ['toMixed', 'toImproper', ['toMixed', 'toImproper'], 'toImproper', 'toMixed'],
+            '4.NS.5': ['write', 'write', 'equiv', 'write', 'equiv', 'write', 'equiv', 'write'],
+            '4.NS.6': ['compare', 'compare', 'order', 'compare', 'compare', 'order'],
+            '4.DA.1': ['solve', 'read', 'solve', 'solve', 'read', 'solve'],
+            '4.DA.2': ['compute', 'compute', 'read', 'read', 'read', 'compute'],
+            '4.M.3': ['time', 'money', 'volume', 'volume', 'time', 'time', 'money']
+        };
+        Object.entries(TARGET_MAP).forEach(([id, list]) => {
+            if (list.length !== GEN[id].length) console.error(`Target list for ${id} has ${list.length} entries but there are ${GEN[id].length} generators`);
+            GEN[id].forEach((fn, i) => { fn.targets = [].concat(list[i] || TARGETS[id].map(t => t[0])); });
+        });
+
+        // ---------- Mini-lesson guides (Lesson tab) ----------
+        // target: student-friendly learning target. teach: teaching points. steps: the strategy to model with the worked example.
+        // watch: common misconceptions and what to do about them.
+        const LESSONS = {
+            '4.NS.1': { target: 'I can read and write numbers up to 1,000,000 in standard form, word form, and expanded form.',
+                vocab: [['standard form', 'a number written with digits, like 482,105'], ['word form', 'a number written in words'], ['expanded form', 'the value of each digit added together'], ['place value', 'the value of a digit based on its place'], ['period', 'a group of three places, like the thousands period']],
+                teach: ['Each place is worth 10 times the place to its right.', 'Commas separate periods. Read each period, then say its name (thousand). The ones period has no name.', 'In expanded form, write the value of each digit and skip the zeros.', 'A zero holds a place even though it adds no value.'],
+                steps: ['Write the number in a place value chart.', 'Name the value of each digit.', 'Write it in the form the question asks for.', 'Check by putting the parts back together.'],
+                watch: ['Students drop zeros when going from expanded form to standard form (400,000 + 5,000 + 30 written as 4,530). Use a place value chart.', 'Students give the digit instead of its value. Ask, "What is the 6 worth here?"'],
+                support: 'Give a place value chart with the periods labeled.', extend: 'Give six digit cards. Students build the greatest and least numbers and write each in all three forms.' },
+            '4.NS.7': { target: 'I can round multi-digit whole numbers to any place.',
+                vocab: [['round', 'to change a number to a nearby, friendlier number'], ['estimate', 'a close answer, not an exact one'], ['rounding place', 'the place you are rounding to'], ['halfway point', 'the middle number between two tens, hundreds, or thousands']],
+                teach: ['Underline the digit in the rounding place, then look at the digit just to its right.', '5 or more: round up. 4 or less: the rounding digit stays the same.', 'Every digit to the right of the rounding place becomes zero.', 'A number line shows which ten, hundred, or thousand a number is closer to.'],
+                steps: ['Underline the digit in the rounding place.', 'Circle the digit to its right.', 'Decide: round up or stay the same?', 'Change the digits to the right into zeros.'],
+                watch: ['Students look at the wrong digit (often the ones digit). Have them underline and circle every time.', 'Students forget to regroup when a 9 rounds up (39,600 to the nearest thousand is 40,000).'],
+                support: 'Give number lines with the two endpoints and the halfway point labeled.', extend: 'Find all the whole numbers that round to 3,500 when rounded to the nearest hundred.' },
+            '4.CA.1': { target: 'I can multiply a number up to 4 digits by a 1-digit number, and multiply two 2-digit numbers.',
+                vocab: [['product', 'the answer to a multiplication problem'], ['factor', 'a number being multiplied'], ['partial products', 'the smaller products you add together'], ['area model', 'a rectangle split into parts to show multiplication']],
+                teach: ['Break factors apart by place value: 34 = 30 + 4.', 'In an area model, each box is one partial product.', 'Add the partial products to find the total.', 'Estimate first, then check that the answer is reasonable.'],
+                steps: ['Estimate the product.', 'Break apart the factors by place value.', 'Multiply each part to find the partial products.', 'Add them, then compare with the estimate.'],
+                watch: ['Students forget the zero when multiplying tens (30 × 4 written as 12). Say the value: "3 tens times 4 is 12 tens."', 'Students leave out a partial product in 2-digit by 2-digit problems. There should be four.'],
+                support: 'Give area model templates with the boxes already drawn.', extend: 'Use the digits 2, 4, 6, and 8 once each to make two 2-digit numbers with the greatest product.' },
+            '4.CA.3': { target: 'I can use the commutative, associative, and distributive properties to multiply.',
+                vocab: [['commutative property', 'changing the order of factors does not change the product'], ['associative property', 'changing the grouping of factors does not change the product'], ['distributive property', 'break a factor apart, multiply each part, then add'], ['expression', 'numbers and symbols that show a value']],
+                teach: ['Commutative: 6 × 8 = 8 × 6.', 'Associative: (2 × 5) × 7 = 2 × (5 × 7). Group friendly numbers first.', 'Distributive: 7 × 14 = (7 × 10) + (7 × 4).', 'Properties make mental math easier.'],
+                steps: ['Look for friendly numbers (tens, fives).', 'Decide which property helps.', 'Rewrite the expression.', 'Solve and check.'],
+                watch: ['With the distributive property, students multiply only one part: 6 × 14 = (6 × 10) + 4. Draw the array to show both parts.', 'Students mix up the associative property of multiplication with addition.'],
+                support: 'Cut an array into two parts to show the distributive property.', extend: 'Find three different ways to solve 8 × 25 using properties.' },
+            '4.CA.4': { target: 'I can use multiplication, division, and fact families to find factors and multiples for numbers up to 100, and tell if a number is prime or composite.',
+                vocab: [['factor', 'a number that divides evenly into another number'], ['multiple', 'the product of a number and a counting number'], ['fact family', 'related multiplication and division facts that use the same three numbers'], ['quotient', 'the answer to a division problem'], ['prime', 'a number with exactly two factors, 1 and itself'], ['composite', 'a number with more than two factors']],
+                teach: ['A fact family uses three numbers: 6 × 7 = 42, 7 × 6 = 42, 42 ÷ 6 = 7, and 42 ÷ 7 = 6. Division undoes multiplication.', 'Every fact family shows a factor pair: 6 and 7 are factors of 42, and 42 is a multiple of both.', 'To test a factor, divide. No remainder means it is a factor; a remainder means it is not.', 'Find factor pairs in order starting with 1, and stop when they repeat. Prime numbers have exactly two factors; 1 is neither prime nor composite.'],
+                steps: ['Write a multiplication fact for the number (start with 1 × the number).', 'Use division to test the next number: does it divide with no remainder?', 'Record each factor pair and its fact family. Stop when a pair repeats.', 'Count the factors to decide: prime or composite?'],
+                watch: ['Students write division facts backward (7 ÷ 42 = 6). The product always comes first in a division fact.', 'Students say a number is a factor even when division leaves a remainder (30 ÷ 4 = 7 R2). No remainder, no factor.', 'Students mix up factors and multiples, or think all odd numbers are prime (9, 15, 21).'],
+                support: 'Use fact triangles and square-tile arrays, then write all four facts for each array.', extend: 'Find a number less than 50 with exactly 6 factors, and write a fact family for each factor pair.' },
+            '4.CA.5': { target: 'I can solve comparison problems using multiplication or division and show them with a bar model.',
+                vocab: [['times as many', 'a comparison that uses multiplication'], ['bar model', 'a drawing of boxes that shows how amounts compare'], ['equation', 'a number sentence with an equal sign'], ['unknown', 'the number you are trying to find']],
+                teach: ['"Times as many" means multiply. It compares two amounts.', 'In a bar model, the smaller amount gets one box. The larger amount gets that same box repeated.', 'If the larger amount is unknown, multiply. If one box is unknown, divide.', '"More than" means add. "Times as many" means multiply.'],
+                steps: ['Find the smaller amount and the multiplier.', 'Draw the bar model.', 'Write an equation with a symbol for the unknown.', 'Solve and label the answer with units.'],
+                watch: ['Students add instead of multiply ("4 times as many as 6" becomes 10).', 'Students put the larger amount in the single box. Ask, "Who has more? That person gets more boxes."'],
+                support: 'Give bar model templates with the boxes drawn.', extend: 'Write your own "times as many" story for 7 × 6 and draw its bar model.' },
+            '4.CA.2': { target: 'I can divide numbers up to 4 digits by a 1-digit number and explain what the remainder means.',
+                vocab: [['dividend', 'the number being divided'], ['divisor', 'the number you divide by'], ['quotient', 'the answer to a division problem'], ['remainder', 'the amount left over'], ['partial quotients', 'dividing in friendly chunks and adding the chunks']],
+                teach: ['Division can mean making equal groups or sharing equally.', 'Partial quotients: subtract friendly multiples of the divisor, like 10 or 100 groups.', 'The remainder must be less than the divisor.', 'In a story, decide what the remainder means: round up, ignore it, or report it.'],
+                steps: ['Estimate the quotient.', 'Divide using partial quotients or the standard method.', 'Check: quotient × divisor + remainder = dividend.', 'Explain what the remainder means in the story.'],
+                watch: ['Students leave a remainder that is larger than the divisor. Ask, "Can you make one more group?"', 'Students do not round up when everyone needs a seat or a box.'],
+                support: 'Model sharing with base-ten blocks.', extend: 'Write one word problem where the remainder is ignored and one where you round up.' },
+            '4.M.4': { target: 'I can use formulas to find the area and perimeter of rectangles, including a missing side.',
+                vocab: [['area', 'the space inside a shape, in square units'], ['perimeter', 'the distance around a shape'], ['length', 'how long a rectangle is'], ['width', 'how wide a rectangle is'], ['formula', 'a rule written with symbols']],
+                teach: ['Area = length × width, measured in square units.', 'Perimeter = 2 × (length + width), measured in units.', 'Missing side: area ÷ known side, or (perimeter ÷ 2) − known side.', 'Always label the units.'],
+                steps: ['Decide: inside (area) or around (perimeter)?', 'Write the formula.', 'Put in the numbers and solve.', 'Label the answer with the correct units.'],
+                watch: ['Students mix up area and perimeter. Trace the outside with a finger for perimeter; shade the inside for area.', 'Students add only two sides for perimeter.'],
+                support: 'Give grid paper to draw and count.', extend: 'Find every rectangle with whole-number sides and a perimeter of 24. Which has the greatest area?' },
+            '4.M.1': { target: 'I can measure lengths to the nearest quarter inch and eighth inch.',
+                vocab: [['inch', 'a unit for measuring length'], ['half inch', 'one of two equal parts of an inch'], ['quarter inch', 'one of four equal parts of an inch'], ['eighth inch', 'one of eight equal parts of an inch']],
+                teach: ['Line the object up at 0, not at the end of the ruler.', 'The longest marks are inches, then halves, quarters, and eighths.', 'Count the spaces after the last whole inch.', 'Simplify when you can: 4/8 inch = 1/2 inch.'],
+                steps: ['Check that the object starts at 0.', 'Find the last whole inch it passes.', 'Count the eighth-inch spaces past that inch.', 'Write a mixed number with units.'],
+                watch: ['Students start measuring at 1 or at the edge of the ruler. If the object starts at 1, subtract 1 inch.', 'Students count tick marks instead of spaces.'],
+                support: 'Use an enlarged ruler with the quarter and eighth marks colored.', extend: 'Measure five classroom objects and put them in order.' },
+            '4.M.2': { target: 'I can change a larger unit of measurement into a smaller unit.',
+                vocab: [['convert', 'to change from one unit to another'], ['kilometer and meter', '1 km = 1,000 m'], ['kilogram and gram', '1 kg = 1,000 g'], ['liter and milliliter', '1 L = 1,000 mL'], ['hour and minute', '1 hr = 60 min']],
+                teach: ['Larger unit to smaller unit: multiply, because it takes more of the smaller units.', 'Know the key facts: 1 m = 100 cm, 1 ft = 12 in, 1 yd = 3 ft, 1 lb = 16 oz, 1 min = 60 sec.', 'A two-column table shows the pattern.', 'Compare two measurements only after they are in the same unit.'],
+                steps: ['Find the conversion fact.', 'Larger to smaller means multiply.', 'Multiply.', 'Label the answer with the smaller unit.'],
+                watch: ['Students divide instead of multiply. Ask, "Will there be more or fewer of the smaller unit?"', 'Students use 100 for every conversion, even minutes.'],
+                support: 'Keep a conversion chart on every desk.', extend: 'A 3 km relay has 4 equal legs. How many meters long is each leg?' },
+            '4.NS.3': { target: 'I can explain and make equivalent fractions.',
+                vocab: [['equivalent fractions', 'fractions that name the same amount'], ['numerator', 'the top number; how many parts'], ['denominator', 'the bottom number; how many equal parts in the whole']],
+                teach: ['Multiply or divide the numerator and denominator by the same number.', 'In a model, cutting every piece into smaller equal pieces makes more pieces but the same amount.', 'Equivalent fractions land on the same point on a number line.', 'Adding the same number to the top and bottom does NOT make an equivalent fraction.'],
+                steps: ['Draw or picture a model.', 'Choose a number to multiply by.', 'Multiply the numerator and the denominator.', 'Check with the model.'],
+                watch: ['Students add instead of multiply (1/2 = 3/4).', 'Students multiply only the denominator.'],
+                support: 'Use fraction strips to line up equivalent fractions.', extend: 'Find three fractions equal to 3/4 and show them on one number line.' },
+            '4.NS.4': { target: 'I can compare two fractions using benchmarks, common numerators, or common denominators.',
+                vocab: [['benchmark fraction', 'a familiar fraction, like 1/2, used to compare'], ['common denominator', 'the same denominator'], ['common numerator', 'the same numerator']],
+                teach: ['Same denominator: compare the numerators.', 'Same numerator: the smaller denominator means bigger pieces.', 'Compare each fraction to 1/2.', 'Both fractions must refer to the same size whole.'],
+                steps: ['Look for the same numerator or denominator.', 'If there is none, compare to 1/2 or make common denominators.', 'Write the symbol.', 'Explain your reasoning.'],
+                watch: ['Students think a bigger denominator means a bigger fraction.', 'Students compare parts of different-size wholes.'],
+                support: 'Line up fraction strips side by side.', extend: 'Find a fraction between 2/3 and 3/4.' },
+            '4.CA.6': { target: 'I can add and subtract fractions and mixed numbers with like denominators.',
+                vocab: [['like denominators', 'denominators that are the same'], ['unit fraction', 'a fraction with a numerator of 1'], ['mixed number', 'a whole number and a fraction'], ['decompose', 'to break a number into parts']],
+                teach: ['Add or subtract the numerators. The denominator stays the same, because the size of the pieces does not change.', 'Any fraction can be broken into unit fractions: 3/8 = 1/8 + 1/8 + 1/8.', 'For mixed numbers, add the whole numbers and add the fractions.', 'Check with a model.'],
+                steps: ['Check that the denominators match.', 'Add or subtract the numerators.', 'Keep the denominator.', 'Rename as a mixed number if needed.'],
+                watch: ['Students add the denominators (1/4 + 2/4 = 3/8). Use fraction tiles to show the pieces stay fourths.', 'Students forget to rename improper fractions.'],
+                support: 'Use fraction tiles.', extend: 'Write three different addition sentences that equal 7/8.' },
+            '4.CA.8': { target: 'I can solve word problems by adding and subtracting fractions with like denominators.',
+                vocab: [['like denominators', 'denominators that are the same'], ['whole', 'all of the parts together, like 8/8'], ['remaining', 'what is left']],
+                teach: ['Decide whether the story joins (add) or separates or compares (subtract).', 'Draw a model of the whole.', 'The whole is d/d: 8/8 is one whole pizza.', 'Answer the question with units.'],
+                steps: ['Read and draw the whole.', 'Write an equation.', 'Solve with like denominators.', 'Check that the answer makes sense in the story.'],
+                watch: ['Students add the denominators.', 'Students forget that the whole is d/d when finding what is left.'],
+                support: 'Use fraction circles.', extend: 'Write a two-step fraction story problem for a partner.' },
+            '4.NS.2': { target: 'I can change mixed numbers to improper fractions and improper fractions to mixed numbers.',
+                vocab: [['improper fraction', 'a fraction with a numerator equal to or greater than the denominator'], ['mixed number', 'a whole number and a fraction'], ['whole', 'one complete thing; d/d']],
+                teach: ['An improper fraction is equal to or greater than 1.', 'Mixed to improper: whole × denominator + numerator, over the same denominator.', 'Improper to mixed: count how many wholes fit; the leftover parts are the fraction.', 'The denominator stays the same.'],
+                steps: ['Draw wholes split into equal parts.', 'Count the wholes.', 'Count the leftover parts.', 'Write the number both ways.'],
+                watch: ['Students change the denominator.', 'Students mix up the whole number and the numerator.'],
+                support: 'Build wholes with fraction circles.', extend: 'Put a set of mixed numbers and improper fractions in order.' },
+            '4.NS.5': { target: 'I can write tenths and hundredths as fractions and as decimals.',
+                vocab: [['decimal', 'a number with a decimal point'], ['tenths', 'one of ten equal parts; the first place after the decimal point'], ['hundredths', 'one of one hundred equal parts; the second place after the decimal point']],
+                teach: ['Tenths use one place after the decimal point. Hundredths use two.', '3/10 = 30/100 = 0.3 = 0.30.', 'Money helps: 45 cents = 45/100 of a dollar = $0.45.', 'Shade hundred grids to see the amounts.'],
+                steps: ['Read the denominator: tenths or hundredths?', 'Place the digits in the right places.', 'Check with a model or with money.', 'Read the decimal aloud correctly ("forty-five hundredths").'],
+                watch: ['Students write 4/10 as 0.04.', 'Students think 0.5 and 0.50 are different amounts.'],
+                support: 'Use hundred grids and coins.', extend: 'Write the same amount four ways: two fractions and two decimals.' },
+            '4.NS.6': { target: 'I can compare two decimals to the hundredths.',
+                vocab: [['decimal', 'a number with a decimal point'], ['tenths', 'the first place after the decimal point'], ['hundredths', 'the second place after the decimal point']],
+                teach: ['Line up the decimal points.', 'Add a zero so both have the same number of places: 0.4 = 0.40.', 'Compare tenths first, then hundredths.', 'Both decimals must refer to the same whole.'],
+                steps: ['Line up the decimal points.', 'Fill in zeros.', 'Compare from left to right.', 'Write the symbol.'],
+                watch: ['Students think the longer decimal is larger (0.25 > 0.4). Shade both on hundred grids.', 'Students ignore place value and compare the digits as whole numbers.'],
+                support: 'Shade decimals on hundred grids.', extend: 'Put five decimals in order and explain your thinking.' },
+            '4.DA.1': { target: 'I can solve problems using data in frequency tables and graphs.',
+                vocab: [['data', 'information that is collected'], ['frequency table', 'a table that shows how many times something happens'], ['survey', 'questions asked to collect data'], ['scale', 'the numbers on a graph\'s axis']],
+                teach: ['Read the title and labels first.', 'Frequency means how many times.', 'Questions may ask how many more, how many in all, or about two categories together.', 'Check the scale on a graph before reading the bars.'],
+                steps: ['Read the title and labels.', 'Find the numbers you need.', 'Decide which operation to use.', 'Answer in a complete sentence.'],
+                watch: ['Students add when the question asks "how many more." Underline the question words.', 'Students misread the scale on a graph.'],
+                support: 'Have students highlight the rows they need.', extend: 'Write three questions about the table for a partner to answer.' },
+            '4.DA.2': { target: 'I can solve problems using line plots with fractions of a unit.',
+                vocab: [['line plot', 'a number line with X marks that show data'], ['data', 'information that is collected'], ['fraction of a unit', 'part of an inch, foot, or other unit']],
+                teach: ['Each X is one piece of data.', 'Count the X marks above a number to see how many.', 'The most common value has the tallest stack of X marks.', 'For totals, add the values, not the number of X marks.'],
+                steps: ['Read the title and the labels on the number line.', 'Count the X marks at the values you need.', 'Add or subtract the fractions.', 'Answer with units.'],
+                watch: ['Students count X marks when the question asks for a total length.', 'Students think the greatest value is the most common.'],
+                support: 'Have students write the value next to each X.', extend: 'Measure classroom objects and make your own line plot.' },
+            '4.M.3': { target: 'I can solve word problems about time, money, distance, liquid volume, and mass.',
+                vocab: [['elapsed time', 'the amount of time that passes'], ['convert', 'to change from one unit to another'], ['change', 'money you get back after paying']],
+                teach: ['Convert to the same unit before you compute.', 'For elapsed time, count up the hours, then the minutes, on a number line.', 'For money, line up the decimal points.', 'For multi-step problems, plan each step before solving.'],
+                steps: ['Underline what the question asks.', 'Convert units if needed.', 'Solve one step at a time.', 'Check that the answer is reasonable.'],
+                watch: ['Students go past 60 minutes without regrouping into an hour.', 'Students mix units in one problem.'],
+                support: 'Use an open number line for elapsed time.', extend: 'Plan a field trip schedule with start times, travel times, and costs.' }
+        };
 
         // =====================================================================
         // App
@@ -1341,6 +1669,7 @@
             cfa: { title: 'Math Common Formative Assessment', sub: '', layout: '5', rigor: 'mix', newPage: false, score: false, sel: { '4.CA.4': 10 }, defaultCount: 10 },
             eou: { title: 'Math End of Unit Assessment', sub: '', layout: '5', rigor: 'mix', newPage: true, score: true, sel: { '4.NS.1': 5, '4.NS.7': 5 }, defaultCount: 5 },
             morning: { title: 'Morning Work', sub: '', layout: '5', rigor: 'mix', newPage: false, score: false, days: '5', perDay: '5', sel: { '4.NS.1': 1, '4.NS.7': 1, '4.CA.1': 1, '4.CA.3': 1, '4.CA.4': 1 }, defaultCount: 1 },
+            lesson: { title: 'Lesson', sub: '', block: '75', layout: '5', rigor: 'mix', newPage: false, score: false, sel: { '4.CA.4': 1 }, defaultCount: 1 },
             exit: { title: 'Exit Ticket', sub: '', layout: 'compact', rigor: 'mix', newPage: false, score: false, copies: '2', sel: { '4.CA.4': 3 }, defaultCount: 3 }
         };
         const state = { mode: 'cfa', settings: JSON.parse(JSON.stringify(MODE_DEFAULTS)), showKey: false, code: newCode(), built: null };
@@ -1428,13 +1757,159 @@
             return out;
         }
 
+        // Generators for a standard, minus 4.CA.5 division questions when the division toggle is off
+        // Generators for a standard, limited to the learning targets that are turned on
+        function targetsOff(id) { return (S().off && S().off[id]) || []; }
+        function gensFor(id) {
+            const off = targetsOff(id);
+            const list = GEN[id].filter(f => f.targets.some(t => !off.includes(t)));
+            return list.length ? list : GEN[id];
+        }
+        function targetNote(id) {
+            const off = targetsOff(id);
+            if (!off.length || !TARGETS[id]) return '';
+            return ' (' + TARGETS[id].filter(t => !off.includes(t[0])).map(t => t[1]).join('; ') + ')';
+        }
+
+
+        const VERSION_FLAGS = [
+            ['rigor', { mix: 'M', all: 'X', '1': '1', '2': '2', '3': '3' }, 'mix'],
+            ['layout', { '4': '4', '5': '5', '6': '6', compact: 'C' }, '5'],
+            ['newPage', null, false], ['score', null, false], ['copies', null, '2'],
+            ['days', null, '5'], ['perDay', null, '5'], ['division', null, true],
+            ['block', Object.fromEntries(Array.from({ length: 30 }, (_, i) => [String((i + 6) * 5), ((i + 6)).toString(36).toUpperCase()])), '75']
+        ];
+        const SEL_SIZE = 1;   // question count, base 36
+        const SEL_CODE = v => b36(v);
+        const SEL_READ = t => { const n = parseInt(t, 36); return isNaN(n) || n < 1 ? null : n; };
+
+
+        // ---------- Per-standard DOK checkboxes ----------
+        function dokFor(id) {
+            const d = S().dok && S().dok[id];
+            return d && d.length ? d.slice().sort() : [1, 2, 3];
+        }
+        function addDokBoxes(row, std, on) {
+            const wrap = el('div', 'dokbox');
+            [1, 2, 3].forEach(d => {
+                const lab = el('label'), cb = el('input');
+                cb.type = 'checkbox'; cb.dataset.d = d; cb.checked = dokFor(std.id).includes(d); cb.disabled = !on;
+                cb.setAttribute('aria-label', `${std.id} DOK ${d}`);
+                cb.addEventListener('change', () => {
+                    const s = S(), set = new Set(dokFor(std.id));
+                    if (cb.checked) set.add(d); else set.delete(d);
+                    if (!set.size) { cb.checked = true; flash('Keep at least one DOK level checked for each standard.'); return; }
+                    s.dok = s.dok || {};
+                    if (set.size === 3) delete s.dok[std.id]; else s.dok[std.id] = [...set].sort();
+                    build();
+                });
+                lab.append(cb, document.createTextNode(String(d)));
+                wrap.appendChild(lab);
+            });
+            row.appendChild(wrap);
+        }
+        // Version code piece for DOK choices: ".<standard index><mask>" for any standard not using all three
+        function dokCode() {
+            const s = S();
+            return STANDARDS.map((x, i) => {
+                const d = s.dok && s.dok[x.id];
+                if (!d || d.length === 3 || s.sel[x.id] === undefined) return '';
+                return b36(i) + b36(d.reduce((m, k) => m | (1 << (k - 1)), 0));
+            }).join('');
+        }
+        function readDokCode(part) {
+            const dok = {};
+            if (!part) return dok;
+            if (part.length % 2) return null;
+            for (let i = 0; i < part.length; i += 2) {
+                const std = STANDARDS[parseInt(part[i], 36)], mask = parseInt(part[i + 1], 36);
+                if (!std || isNaN(mask) || mask < 1 || mask > 7) return null;
+                dok[std.id] = [1, 2, 3].filter(k => mask & (1 << (k - 1)));
+            }
+            return dok;
+        }
+
+        // ---------- Version codes ----------
+        // A version code holds the random seed AND the settings, so typing it back in (even on another
+        // computer, or after closing the page) rebuilds the exact same test:  SEED-MODE+SETTINGS-STANDARDS
+        const MODE_CHARS = { cfa: 'C', eou: 'E', exit: 'X', morning: 'W', lesson: 'L' };
+        const b36 = n => Number(n).toString(36).toUpperCase();
+        function versionCode() {
+            const s = S();
+            const flags = VERSION_FLAGS.map(([key, map, dflt]) => {
+                const v = s[key] === undefined ? dflt : s[key];
+                return map ? (map[v] || '?') : (typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
+            }).join('');
+            const sel = STANDARDS.map((x, i) => s.sel[x.id] === undefined ? '' : b36(i) + SEL_CODE(s.sel[x.id])).join('');
+            const tg = STANDARDS.map((x, i) => {
+                const off = (s.off && s.off[x.id]) || [];
+                if (!off.length || !TARGETS[x.id] || s.sel[x.id] === undefined) return '';
+                const mask = TARGETS[x.id].reduce((m, t, k) => off.includes(t[0]) ? m : m | (1 << k), 0);
+                return b36(i) + b36(mask);
+            }).join('');
+            const dk = dokCode();
+            return `${state.code}-${MODE_CHARS[state.mode]}${flags}-${sel}` + (tg ? '-' + tg : '') + (dk ? '.' + dk : '');
+        }
+        function applyVersion(raw) {
+            const [text, dokPart] = raw.toUpperCase().replace(/VERSION/g, '').replace(/\s+/g, '').split('.');
+            const dokRead = readDokCode(dokPart);
+            if (dokRead === null) return false;
+            if (/^[A-Z0-9]{4}$/.test(text)) { state.code = text; return true; }      // old four-letter codes: seed only
+            const parts = text.split('-');
+            if ((parts.length !== 3 && parts.length !== 4) || !/^[A-Z0-9]{4}$/.test(parts[0])) return false;
+            const mode = Object.keys(MODE_CHARS).find(m => MODE_CHARS[m] === parts[1][0]);
+            const flags = parts[1].slice(1);
+            if (!mode) return false;
+            let flags2 = flags;
+            if (flags2.length === VERSION_FLAGS.length - 1) flags2 += VERSION_FLAGS[VERSION_FLAGS.length - 1][1][VERSION_FLAGS[VERSION_FLAGS.length - 1][2]];   // codes made before the block setting
+            if (flags2.length !== VERSION_FLAGS.length) return false;
+            const s = state.settings[mode];
+            const next = {};
+            for (let i = 0; i < VERSION_FLAGS.length; i++) {
+                const [key, map, dflt] = VERSION_FLAGS[i], ch = flags2[i];
+                if (map) {
+                    const v = Object.keys(map).find(k => map[k] === ch);
+                    if (v === undefined) return false;
+                    next[key] = v;
+                } else next[key] = typeof dflt === 'boolean' ? ch === '1' : ch;
+            }
+            const sel = {}, size = SEL_SIZE + 1;
+            if (parts[2].length % size) return false;
+            for (let i = 0; i < parts[2].length; i += size) {
+                const std = STANDARDS[parseInt(parts[2][i], 36)];
+                const val = SEL_READ(parts[2].slice(i + 1, i + size));
+                if (!std || val === null) return false;
+                sel[std.id] = val;
+            }
+            const off = {};
+            if (next.division === false) off['4.CA.5'] = ['div'];          // codes made before targets existed
+            if (parts[3]) {
+                if (parts[3].length % 2) return false;
+                for (let i = 0; i < parts[3].length; i += 2) {
+                    const std = STANDARDS[parseInt(parts[3][i], 36)], mask = parseInt(parts[3][i + 1], 36);
+                    if (!std || !TARGETS[std.id] || isNaN(mask) || !mask) return false;
+                    off[std.id] = TARGETS[std.id].filter((t, k) => !(mask & (1 << k))).map(t => t[0]);
+                    if (!off[std.id].length) delete off[std.id];
+                }
+            }
+            // Older codes had one level for the whole test; turn it into per-standard DOK choices
+            const oldLevel = { basic: [1], 'on-grade': [2], advanced: [3], '1': [1], '2': [2], '3': [3] }[next.rigor];
+            const dok = Object.keys(dokRead).length ? dokRead : (oldLevel ? Object.fromEntries(Object.keys(sel).map(id => [id, oldLevel])) : {});
+            next.rigor = 'mix';
+            Object.assign(s, next, { sel, off , dok });
+            state.mode = mode;
+            state.code = parts[0];
+            return true;
+        }
+
         // ---------- Building ----------
         function buildSection(stdId, count, level, notices) {
-            const gens = GEN[stdId];
+            const gens = gensFor(stdId);
             const byDok = [1, 2, 3].map(k => shuffle(gens.filter(g => g.dok === k), R));
             const next = [0, 0, 0];
             // Which DOK level the i-th question should come from
-            const want = i => level === 'mix' ? i % 3 : level === 'all' ? Math.floor(R() * 3) : Number(level) - 1;
+            const levels = Array.isArray(level) ? level : [1, 2, 3];      // the checked DOK levels for this standard
+            const want = i => levels[i % levels.length] - 1;
             const seen = new Set();
             const questions = [];
             let borrowed = 0;
@@ -1447,7 +1922,7 @@
                 seen.add(g.q + '|' + g.c);
                 questions.push({ ...g, dok: fn.dok, ...(g.fixed ? { options: g.fixed, correctLetter: g.correctLetter } : makeChoices(g.c, g.d, g.three, g.exact)) });
             }
-            if (level === 'mix') questions.sort((x, y) => x.dok - y.dok);
+            if (levels.length > 1) questions.sort((x, y) => x.dok - y.dok);
             if (questions.length < count) notices.push(`${stdId}: ${questions.length} of ${count} questions added. The generator ran out of different questions.`);
             if (borrowed) notices.push(`${stdId}: some questions came from another DOK level.`);
             return { stdId, questions };
@@ -1465,132 +1940,31 @@
                 const qs = [];
                 for (let k = 0; k < perDay && ids.length; k++, slot++) {
                     const id = ids[slot % ids.length];
-                    const want = s.rigor === 'mix' ? ((k + d) % 3) + 1 : s.rigor === 'all' ? null : Number(s.rigor);
-                    let pool = GEN[id].filter(f => want === null || f.dok === want);
-                    if (!pool.length) pool = GEN[id];
+                    const lv = dokFor(id), want = lv[(k + d) % lv.length];   // rotate through this standard's checked DOK levels
+                    let pool = gensFor(id).filter(f => want === null || f.dok === want);
+                    if (!pool.length) pool = gensFor(id);
                     let g, fn, tries = 0;
                     do { fn = pick(pool); g = fn(); tries++; } while (seen.has(g.q + '|' + g.c) && tries < 12);
                     seen.add(g.q + '|' + g.c);
                     qs.push({ ...g, std: id, dok: fn.dok, ...(g.fixed ? { options: g.fixed, correctLetter: g.correctLetter } : makeChoices(g.c, g.d, g.three, g.exact)) });
                 }
-                if (s.rigor === 'mix') qs.sort((x, y) => x.dok - y.dok);
+                qs.sort((x, y) => x.dok - y.dok);
                 out.push({ day: d, questions: qs });
             }
             return out;
         }
 
-        // ---------- Full version codes ----------
-        // A code holds the random seed AND every setting that shapes the test (mode, standards, counts,
-        // level, and so on). Loading a code restores those settings, so anyone who loads it gets the
-        // exact same test. Changing a setting changes the code to match. Title and subtitle are not stored.
-        const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        const CODE_MODES = ['cfa', 'eou', 'exit', 'morning'];
-        const MODE_NAMES = { cfa: 'Quick CFA', eou: 'End of Unit', exit: 'Exit Ticket', morning: 'Morning Work' };
-        function encoderIO() {
-            const digits = [];
-            return { digits, num(radix, v) { v = Math.max(0, Math.min(radix - 1, v | 0)); digits.push([v, radix]); return v; } };
-        }
-        function decoderIO(big) {
-            let v = big;
-            return { num(radix) { const r = BigInt(radix); const x = Number(v % r); v = v / r; return x; }, rest: () => v };
-        }
-        const optCodec = (io, list, val) => list[io.num(list.length, Math.max(0, list.indexOf(String(val))))];
-        const boolCodec = (io, val) => !!io.num(2, val ? 1 : 0);
-        // Which standards are picked: a short list when only a few are picked, a full on/off mask otherwise.
-        function standardsCodec(io, sel) {
-            const ids = STANDARDS.map(x => x.id), N = ids.length;
-            let picked = ids.map((id, i) => sel && sel[id] !== undefined ? i : -1).filter(i => i >= 0);
-            const listCost = Math.log2(N + 1) + picked.length * Math.log2(N);
-            const useMask = io.num(2, listCost > N ? 1 : 0);
-            if (useMask) picked = ids.map((id, i) => io.num(2, picked.includes(i) ? 1 : 0) ? i : -1).filter(i => i >= 0);
-            else {
-                const k = io.num(N + 1, picked.length);
-                const out = [];
-                for (let j = 0; j < k; j++) out.push(io.num(N, picked[j]));
-                picked = [...new Set(out)].sort((a, b) => a - b);
-            }
-            return picked.map(i => ids[i]);
-        }
-        function packBody(mode, s) {
-            const io = encoderIO();
-            io.num(CODE_MODES.length, CODE_MODES.indexOf(mode));
-            settingsCodec(io, JSON.parse(JSON.stringify(s)), mode);
-            let big = 0n;
-            for (let i = io.digits.length - 1; i >= 0; i--) big = big * BigInt(io.digits[i][1]) + BigInt(io.digits[i][0]);
-            let out = '';
-            do { out += CODE_CHARS[Number(big % 32n)]; big /= 32n; } while (big > 0n);
-            return out;
-        }
-        function codeCheck(tag, text) {
-            let h = 2166136261;
-            for (const ch of tag + '|' + text) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
-            return CODE_CHARS[h % 32] + CODE_CHARS[(h >>> 5) % 32];
-        }
-        function fullCode() {
-            const body = packBody(state.mode, S());
-            const tail = (body + codeCheck(CODE_TAG, state.code + body)).match(/.{1,4}/g).join('-');
-            return state.code + '-' + tail;
-        }
-        function showCode() { $('f-code').value = fullCode(); }
-        function loadFullCode(raw) {
-            const c = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (!c) return;
-            if ([...c].some(ch => !CODE_CHARS.includes(ch))) {
-                flash('That code has a character these codes never use (they skip 0, 1, I, and O). Check it and try again.'); return;
-            }
-            if (c.length === 4) {
-                // Older short code: seed only, so it keeps whatever settings are on screen
-                state.code = c; build();
-                flash('This is an older 4-letter code that does not include settings. It keeps the standards and question level on screen, so set those to match the printed test.');
-                return;
-            }
-            const seed = c.slice(0, 4), body = c.slice(4, -2), chk = c.slice(-2);
-            if (c.length < 7 || codeCheck(CODE_TAG, seed + body) !== chk) {
-                flash(codeCheck(OTHER_TAG, seed + body) === chk && c.length >= 7
-                    ? `That code is from the ${OTHER_NAME}. Open that generator to load it.`
-                    : 'That code does not check out. A character is probably mistyped.');
-                return;
-            }
-            let big = 0n;
-            for (let i = body.length - 1; i >= 0; i--) big = big * 32n + BigInt(CODE_CHARS.indexOf(body[i]));
-            const io = decoderIO(big);
-            const mode = CODE_MODES[io.num(CODE_MODES.length)];
-            if (!mode) { flash('That code does not check out. A character is probably mistyped.'); return; }
-            const fresh = JSON.parse(JSON.stringify(MODE_DEFAULTS[mode]));
-            fresh.title = state.settings[mode].title;
-            fresh.sub = state.settings[mode].sub;
-            settingsCodec(io, fresh, mode);
-            if (io.rest() !== 0n) { flash('That code does not check out. A character is probably mistyped.'); return; }
-            state.settings[mode] = fresh;
-            state.mode = mode;
-            state.code = seed;
-            renderControls(); build();
-            flash(`Loaded ${MODE_NAMES[mode]} version ${seed}. The standards and settings now match the code.`);
-        }
-
-        const CODE_TAG = 'MATH', OTHER_TAG = 'ELA', OTHER_NAME = 'ELA generator';
-        function settingsCodec(io, s, mode) {
-            s.rigor = optCodec(io, ['mix', 'all', '1', '2', '3'], s.rigor);
-            if (mode === 'cfa' || mode === 'eou') {
-                s.layout = optCodec(io, ['4', '5', '6', 'compact'], s.layout);
-                s.newPage = boolCodec(io, s.newPage); s.score = boolCodec(io, s.score);
-            }
-            if (mode === 'exit') s.copies = optCodec(io, ['1', '2'], s.copies || '2');
-            if (mode === 'morning') {
-                s.days = optCodec(io, ['1', '2', '3', '4', '5'], s.days || '5');
-                s.perDay = optCodec(io, ['3', '4', '5', '6'], s.perDay || '5');
-            }
-            const ids = standardsCodec(io, s.sel);
-            const sel = {};
-            ids.forEach(id => { sel[id] = Math.max(1, io.num(MAX_PER_STANDARD + 1, s.sel && s.sel[id])); });
-            s.sel = sel;
-        }
-
-
         function build() {
+            $('f-code').value = versionCode();
             const s = S();
             const notices = [];
             R = makeRng(state.code + '|' + state.mode);
+            if (state.mode === 'lesson') {
+                state.built = { lesson: buildLesson(s), sections: [], notices };
+                R = Math.random;
+                renderNotices(); renderSheet();
+                return;
+            }
             if (state.mode === 'morning') {
                 state.built = { days: buildMorning(s, notices), sections: [], notices };
                 R = Math.random;
@@ -1598,7 +1972,7 @@
                 return;
             }
             const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id]);
-            const sections = ids.map(id => buildSection(id, s.sel[id], s.rigor, notices));
+            const sections = ids.map(id => buildSection(id, s.sel[id], dokFor(id), notices));
             R = Math.random;
             state.built = { sections, notices };
             renderNotices();
@@ -1610,10 +1984,14 @@
             const s = S();
             document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
             document.body.dataset.mode = state.mode;
+            $('btn-print').textContent = state.mode === 'lesson' ? 'Print lesson and worksheet' : 'Print';
             $('f-copies').value = s.copies || '2';
+            $('f-block').value = s.block || '75';
             $('f-days').value = s.days || '5';
             $('f-perday').value = s.perDay || '5';
-            $('std-hint').textContent = state.mode === 'morning'
+            $('std-hint').textContent = state.mode === 'lesson'
+                ? 'Pick one standard. You get a full timed lesson for the math block (teacher guide), a lesson practice page, and a small group practice page. New version makes fresh problems. The lesson builds its own DOK 1 to 3 progression, so the DOK boxes are hidden here.'
+                : state.mode === 'morning'
                 ? 'Pick the standards to spiral. Each day mixes questions from different standards, and every standard comes back during the week.'
                 : state.mode === 'exit'
                 ? 'Pick one standard. Three questions (one at each DOK level) fits nicely on a half sheet.'
@@ -1623,25 +2001,26 @@
             $('f-title').value = s.title;
             $('f-sub').value = s.sub;
             $('f-layout').value = s.layout;
-            $('f-rigor').value = s.rigor;
+            renderTargets();
             $('f-newpage').checked = s.newPage;
                         $('f-score').checked = s.score;
-            showCode();
+            $('f-code').value = versionCode();
             $('btn-key').setAttribute('aria-pressed', String(state.showKey));
 
             const list = $('std-list');
-            list.innerHTML = '<div class="std-head"><span></span><span>Standard</span><span>Questions</span></div>';
+            list.innerHTML = '<div class="std-head"><span></span><span>Standard</span><span class="cnt">Questions</span><span class="dokh">DOK</span></div>';
             STANDARDS.forEach(std => {
                 const on = s.sel[std.id] !== undefined;
                 const row = el('div', 'std-row' + (on ? ' on' : ''));
                 row.innerHTML = `
                     <input type="checkbox" aria-label="Include ${std.id}" ${on ? 'checked' : ''}>
-                    <div><div class="std-name"><b>${std.id}</b> ${std.label.replace(std.id + ': ', '')}</div><div class="std-desc">${std.desc}</div></div>
+                    <div><div class="std-name"><b>${std.id}</b> ${std.label.replace(std.id + ': ', '')}</div><div class="std-desc">${std.desc}${targetsOff(std.id).length ? `<br><b>Targets:</b> ${targetNote(std.id).slice(2, -1)}` : ''}</div></div>
                     <input type="number" min="1" max="${MAX_PER_STANDARD}" aria-label="${std.id} question count" value="${on ? s.sel[std.id] : s.defaultCount}" ${on ? '' : 'disabled'}>`;
+                addDokBoxes(row, std, on);
                 const box = row.querySelector('input[type=checkbox]'), num = row.querySelector('input[type=number]');
                 box.addEventListener('change', () => {
                     if (box.checked) {
-                        if (state.mode === 'exit') s.sel = {};    // one standard at a time
+                        if (state.mode === 'exit' || state.mode === 'lesson') s.sel = {};    // one standard at a time
                         else if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
                             box.checked = false;
                             flash(`A Quick CFA covers up to ${CFA_MAX_STANDARDS} standards. Switch to End of Unit to include more.`);
@@ -1659,6 +2038,42 @@
             });
             updateTotals();
         }
+        // ---------- Targets tab ----------
+        let leftTab = 'std';
+        function renderTargets() {
+            const s = S(), panel = $('tgt-panel');
+            document.querySelectorAll('.ltabs button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ltab === leftTab)));
+            $('std-list').style.display = leftTab === 'std' ? '' : 'none';
+            panel.style.display = leftTab === 'tgt' ? '' : 'none';
+            panel.innerHTML = '';
+            const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id] !== undefined);
+            if (!ids.length) { panel.appendChild(el('p', 'hint', 'Pick a standard on the Standards tab first.')); return; }
+            panel.appendChild(el('p', 'hint', 'Uncheck any target you do not want. Teach or test one target, or stretch across all of them. At least one stays on for each standard.'));
+            ids.forEach(id => {
+                const std = STANDARDS.find(x => x.id === id), box = el('div', 'tgt-std');
+                box.appendChild(el('div', 'std-name', std.label));
+                (TARGETS[id] || []).forEach(([key, label]) => {
+                    const lab = el('label', 'tgt-row'), cb = el('input');
+                    cb.type = 'checkbox'; cb.checked = !targetsOff(id).includes(key);
+                    const count = GEN[id].filter(f => f.targets.includes(key));
+                    const doks = [1, 2, 3].filter(d => count.some(f => f.dok === d)).join(', ');
+                    cb.addEventListener('change', () => {
+                        s.off = s.off || {};
+                        const off = new Set(targetsOff(id));
+                        if (cb.checked) off.delete(key); else off.add(key);
+                        if (off.size >= TARGETS[id].length) { cb.checked = true; flash('Keep at least one target on for each standard.'); return; }
+                        s.off[id] = [...off];
+                        if (!s.off[id].length) delete s.off[id];
+                        if (id === '4.CA.5') s.division = !off.has('div');
+                        updateTotals(); build();
+                    });
+                    lab.append(cb, el('span', '', label), el('span', 'tgt-dok', `DOK ${doks}`));
+                    box.appendChild(lab);
+                });
+                panel.appendChild(box);
+            });
+        }
+
         function updateTotals() {
             const vals = Object.values(S().sel);
             const n = vals.reduce((a, b) => a + b, 0);
@@ -1712,6 +2127,162 @@
             return r;
         }
 
+        // Lesson tab: a full lesson timed for the math block (base minutes are for 75 and scale to other lengths)
+        const LESSON_SEGMENTS = [
+            ['warm', 'Warm-up: review', 10, 'Students solve the warm-up problems at the top of the practice page.'],
+            ['teach', 'Mini-lesson (I do)', 10, 'Teach the target and work the example aloud.'],
+            ['guided', 'Guided practice (We do)', 10, 'Solve the practice-together problems with the class.'],
+            ['indep', 'Independent practice (You do)', 15, 'Students solve the on-your-own problems.'],
+            ['tier2', 'Tier 2 small groups', 20, 'Meet with each group using the small group practice page.'],
+            ['close', 'Closing and exit check', 10, 'Students solve the exit check; sort them to plan tomorrow\'s groups.']
+        ];
+        function scaleSegments(total) {
+            const base = LESSON_SEGMENTS.reduce((n, x) => n + x[2], 0);
+            const mins = LESSON_SEGMENTS.map(x => Math.max(5, Math.round(x[2] * total / base / 5) * 5));
+            mins[4] += total - mins.reduce((a, b) => a + b, 0);
+            if (mins[4] < 5) mins[4] = 5;
+            return mins;
+        }
+        // Problem plan: [role, standard ('self' or 'review'), DOK]
+        const LESSON_PLAN = [
+            ['warm', 'self', 1], ['warm', 'self', 1], ['warm', 'review', 1],
+            ['model', 'self', 1],
+            ['weDo', 'self', 1], ['weDo', 'self', 2],
+            ['youDo', 'self', 1], ['youDo', 'self', 2], ['youDo', 'self', 2], ['youDo', 'self', 3],
+            ['g1', 'self', 1], ['g1', 'self', 1], ['g1', 'self', 1],
+            ['g2', 'self', 2], ['g2', 'self', 2], ['g2', 'self', 2],
+            ['g3', 'self', 3], ['g3', 'self', 3],
+            ['exit', 'self', 1], ['exit', 'self', 2]
+        ];
+        function buildLesson(s) {
+            const id = Object.keys(s.sel)[0];
+            if (!id) return null;
+            // Spiral review comes from a standard earlier in the list (taught before this one)
+            const idx = STANDARDS.findIndex(x => x.id === id);
+            const reviewId = idx > 0 ? STANDARDS[Math.floor(R() * idx)].id : id;
+            const seen = new Set(), out = { id, reviewId, warm: [], model: null, weDo: [], youDo: [], g1: [], g2: [], g3: [], exit: [] };
+            LESSON_PLAN.forEach(([role, which, dok]) => {
+                const sid = which === 'self' ? id : reviewId;
+                let pool = gensFor(sid).filter(f => f.dok === dok); if (!pool.length) pool = gensFor(sid);
+                let g, fn, tries = 0;
+                do { fn = pick(pool); g = fn(); tries++; } while (seen.has(g.q + '|' + g.c) && tries < 15);
+                seen.add(g.q + '|' + g.c);
+                const q = { ...g, std: sid, dok: fn.dok, ...(g.fixed ? { options: g.fixed, correctLetter: g.correctLetter } : makeChoices(g.c, g.d, g.three, g.exact)) };
+                if (role === 'model') out.model = q; else out[role].push(q);
+            });
+            return out;
+        }
+
+        function renderLesson(D) {
+            const s = S(), sheet = $('sheet');
+            const L = D && LESSONS[D.id], std = D && STANDARDS.find(x => x.id === D.id);
+            if (!D || !L) { sheet.appendChild(el('p', 'empty', 'Pick a standard to build a lesson.')); return; }
+            const block = Number(s.block || 75), mins = scaleSegments(block);
+            const seg = Object.fromEntries(LESSON_SEGMENTS.map((x, i) => [x[0], { name: x[1], min: mins[i] }]));
+            const box = (cls, h) => { const b = el('div', 'lbox ' + cls); b.appendChild(el('h2', '', h)); return b; };
+            const list = (items, ordered, plain) => { const l = el(ordered ? 'ol' : 'ul', plain ? 'plain' : ''); items.forEach(t => l.appendChild(el('li', '', t))); return l; };
+            const keyList = (qs, start) => list(qs.map((q, i) => `${start + i}. ${q.correctLetter}: ${q.c}  (DOK ${q.dok})`), false, true);
+            const segBox = k => box('', `${seg[k].name} (${seg[k].min} min)`);
+            const guide = el('div', 'teacher-part');
+
+            const head = el('div', 'l-head');
+            head.appendChild(el('h1', '', `${s.title || 'Lesson'}: ${std.label}`));
+            head.appendChild(el('p', '', `Full lesson, ${block} minutes${targetNote(D.id) ? '  |  Targets:' + targetNote(D.id) : ''}  |  Version ${versionCode()}`));
+            guide.appendChild(head);
+            const t = box('target', 'Learning target'); t.appendChild(el('div', '', L.target)); guide.appendChild(t);
+            const ag = box('', 'Lesson at a glance');
+            const at = el('table', 'grid');
+            let c = 0;
+            at.innerHTML = '<tr><th>Part</th><th>Minutes</th><th>What happens</th></tr>' + LESSON_SEGMENTS.map((x, i) => {
+                const row = `<tr><td><b>${x[1]}</b></td><td>${c} to ${c + mins[i]}</td><td>${x[3]}</td></tr>`; c += mins[i]; return row;
+            }).join('');
+            ag.appendChild(at); guide.appendChild(ag);
+            const v = box('', 'Key vocabulary');
+            const vt = el('table', 'grid'); vt.innerHTML = L.vocab.map(([w, d]) => `<tr><td style="width:30%"><b>${w}</b></td><td>${d}</td></tr>`).join('');
+            v.appendChild(vt); guide.appendChild(v);
+
+            const w1 = segBox('warm');
+            w1.appendChild(el('div', '', `Two problems activate today's skill; the third reviews ${D.reviewId}. Have students share how they solved them.`));
+            w1.appendChild(keyList(D.warm, 1)); guide.appendChild(w1);
+
+            const m = segBox('teach');
+            m.appendChild(list(L.teach));
+            m.appendChild(el('div', 'mini-q', 'Work this example on the board, thinking aloud through each step:'));
+            m.appendChild(list(L.steps, true));
+            if (D.model) {
+                const ex = questionEl({ ...D.model }, 'Ex');
+                ex.querySelectorAll('.opt').forEach(o => { if (o.querySelector('.bubble').textContent === D.model.correctLetter) o.classList.add('correct'); });
+                m.appendChild(ex);
+            }
+            guide.appendChild(m);
+
+            const gd = segBox('guided');
+            gd.appendChild(el('div', '', 'Solve these together. Partners explain each step to each other before you reveal the answer.'));
+            gd.appendChild(keyList(D.weDo, D.warm.length + 1)); guide.appendChild(gd);
+            const ind = segBox('indep');
+            ind.appendChild(el('div', '', 'Students work on their own and show their work. Circulate and note who needs the reteach group.'));
+            ind.appendChild(keyList(D.youDo, D.warm.length + D.weDo.length + 1)); guide.appendChild(ind);
+
+            const t2 = segBox('tier2');
+            const each = Math.max(5, Math.round(seg.tier2.min / 3 / 5) * 5);
+            t2.appendChild(el('div', '', `Pull three groups for about ${each} minutes each with the Small Group Practice page. Students not with you finish independent practice or play a fact fluency game.`));
+            const groups = [['Group 1: Reteach (students who missed the practice problems)', `Use hands-on tools: ${L.support} Work each problem together, naming the step you are on.`, D.g1],
+                ['Group 2: On level (students who are close)', 'Partners solve, then explain their thinking to you before checking.', D.g2],
+                ['Group 3: Enrich (students who are ready for more)', `Students solve on their own, then try the challenge: ${L.extend}`, D.g3]];
+            let gn = 1;
+            groups.forEach(([name, note, qs]) => {
+                t2.appendChild(el('div', 'mini-q', name)); t2.appendChild(el('div', '', note));
+                t2.appendChild(keyList(qs, gn)); gn += qs.length;
+            });
+            t2.appendChild(el('div', 'mini-q', 'Watch for:')); t2.appendChild(list(L.watch));
+            guide.appendChild(t2);
+
+            const cl = segBox('close');
+            cl.appendChild(el('div', '', 'Students solve the exit check and finish the sentence "Today I learned..." Sort the exit checks into three piles (got it, almost, not yet) to set tomorrow\'s groups.'));
+            cl.appendChild(keyList(D.exit, D.warm.length + D.weDo.length + D.youDo.length + 1));
+            guide.appendChild(cl);
+            sheet.appendChild(guide);
+
+            // ---- Student pages ----
+            const pageHead = h => {
+                const sh = el('div', 'x-head'), left = el('div');
+                left.appendChild(el('h1', 'x-title', h + (state.showKey ? ' (Teacher Key)' : '')));
+                left.appendChild(el('p', 'x-std', `${D.id}  |  ${L.target}`));
+                const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
+                sh.append(left, nm); return sh;
+            };
+            const stu = el('div', 'newpage stu-q student-part');
+            stu.appendChild(pageHead(`Lesson Practice: ${std.label.replace(/^[^:]*:\s*/, '')}`));
+            if (NEEDS_REFERENCE.includes(D.id) || NEEDS_REFERENCE.includes(D.reviewId)) stu.appendChild(referenceChart());
+            let n = 1;
+            [['Warm-up', D.warm], ['Practice together', D.weDo], ['On your own', D.youDo], ['Exit check', D.exit]].forEach(([h, qs]) => {
+                stu.appendChild(el('div', 'stu-h', h));
+                qs.forEach(q => stu.appendChild(questionEl(q, n++)));
+                if (h === 'Exit check') {
+                    stu.appendChild(el('div', 'q-stem', 'Today I learned...'));
+                    const l = el('div', 'wlines'); for (let k = 0; k < 2; k++) l.appendChild(el('span')); stu.appendChild(l);
+                }
+            });
+            sheet.appendChild(stu);
+
+            const sg = el('div', 'newpage stu-q student-part');
+            sg.appendChild(pageHead('Small Group Practice'));
+            if (NEEDS_REFERENCE.includes(D.id)) sg.appendChild(referenceChart());
+            let g = 1;
+            groups.forEach(([name, , qs], i) => {
+                sg.appendChild(el('div', 'stu-h', name.split(':')[0]));
+                if (i === 0) {
+                    const rem = el('div', 'lbox'); rem.appendChild(el('h2', '', 'Remember the steps')); rem.appendChild(list(L.steps, true)); sg.appendChild(rem);
+                }
+                qs.forEach(q => sg.appendChild(questionEl(q, g++)));
+                if (i === 2) {
+                    sg.appendChild(el('div', 'q-stem', `Challenge: ${L.extend}`));
+                    const l = el('div', 'wlines'); for (let k = 0; k < 4; k++) l.appendChild(el('span')); sg.appendChild(l);
+                }
+            });
+            sheet.appendChild(sg);
+        }
+
         // Morning work: one page per day with a small header, then the answers for the week (key only)
         function renderMorning(days) {
             const s = S(), sheet = $('sheet');
@@ -1722,7 +2293,7 @@
                 const head = el('div', 'x-head'), left = el('div');
                 left.appendChild(el('h1', 'x-title', `${s.title || 'Morning Work'}: Day ${day.day + 1}` + (state.showKey ? ' (Teacher Key)' : '')));
                 const ids = STANDARDS.map(x => x.id).filter(id => day.questions.some(q => q.std === id));
-                left.appendChild(el('p', 'x-std', 'Review: ' + ids.join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + fullCode()));
+                left.appendChild(el('p', 'x-std', 'Review: ' + ids.join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + versionCode()));
                 const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
                 head.append(left, nm);
                 page.appendChild(head);
@@ -1736,7 +2307,7 @@
             });
             if (state.showKey) {
                 const k = el('div', 'end-block newpage');
-                k.appendChild(el('h3', '', `Morning work answers, version ${fullCode()}`));
+                k.appendChild(el('h3', '', `Morning work answers, version ${versionCode()}`));
                 const t = el('table', 'grid');
                 t.innerHTML = '<tr><th>Day</th><th>Answers</th></tr>' + days.map(d => `<tr><td>Day ${d.day + 1}</td><td>${d.questions.map((q, i) => `${i + 1}. <b>${q.correctLetter}</b> <span style="color:#666">(${q.std}, DOK ${q.dok})</span>`).join('&nbsp;&nbsp; ')}</td></tr>`).join('');
                 k.appendChild(t);
@@ -1752,7 +2323,7 @@
             const head = el('div', 'x-head'), left = el('div');
             left.appendChild(el('h1', 'x-title', (s.title || 'Exit Ticket') + (state.showKey ? ' (Teacher Key)' : '')));
             const std = sections[0] && STANDARDS.find(x => x.id === sections[0].stdId);
-            left.appendChild(el('p', 'x-std', (std ? std.label : 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + fullCode()));
+            left.appendChild(el('p', 'x-std', (std ? std.label + targetNote(std.id) : 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + versionCode()));
             const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
             head.append(left, nm);
             t.appendChild(head);
@@ -1771,26 +2342,27 @@
         }
 
         function renderSheet() {
-            showCode();
+            $('f-code').value = versionCode();   // settings that only re-render (copies, title) still update the code
             const s = S();
             const sheet = $('sheet');
             sheet.innerHTML = '';
             const { sections } = state.built;
             if (state.mode === 'exit') { renderTickets(sections); return; }
             if (state.mode === 'morning') { renderMorning(state.built.days); return; }
+            if (state.mode === 'lesson') { renderLesson(state.built.lesson); return; }
 
             const top = el('div');
             const head = el('div', 't-head');
             const left = el('div');
             left.appendChild(el('h1', 't-title', s.title || 'Math Assessment'));
             if (s.sub) left.appendChild(el('p', 't-sub', s.sub));
-            left.appendChild(el('p', 't-std', 'Standards: ' + (sections.map(x => x.stdId).join(', ') || 'none picked')));
+            left.appendChild(el('p', 't-std', 'Standards: ' + (sections.map(x => x.stdId + targetNote(x.stdId)).join(', ') || 'none picked')));
             const right = el('div', 't-lines');
             right.innerHTML = '<div>Name:<span class="fill"></span></div><div>Date:<span class="fill"></span></div>';
             head.append(left, right);
             top.appendChild(head);
             const meta = el('div', 't-meta');
-            meta.appendChild(el('span', '', 'Version ' + fullCode()));
+            meta.appendChild(el('span', '', 'Version ' + versionCode()));
             if (state.showKey) meta.appendChild(el('span', 't-badge', 'TEACHER KEY'));
             top.appendChild(meta);
 
@@ -1847,7 +2419,7 @@
 
             if (state.showKey) {
                 const k = el('div', 'end-block newpage');
-                k.appendChild(el('h3', '', `Answer key, version ${fullCode()}`));
+                k.appendChild(el('h3', '', `Answer key, version ${versionCode()}`));
                 const t = el('table', 'grid');
                 t.innerHTML = '<tr><th>#</th><th>Answer</th><th>Correct choice</th><th>Standard</th><th>DOK</th></tr>' +
                     keyRows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td></td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
@@ -1869,22 +2441,32 @@
             bindField('f-title', 'title');
             bindField('f-sub', 'sub');
             bindField('f-layout', 'layout', 'change');
-            $('f-rigor').addEventListener('change', e => { S().rigor = e.target.value; build(); });
+            document.querySelectorAll('.ltabs button').forEach(b => b.addEventListener('click', () => { leftTab = b.dataset.ltab; renderTargets(); }));
             bindField('f-newpage', 'newPage', 'change');
             bindField('f-score', 'score', 'change');
             bindField('f-copies', 'copies', 'change');
+            bindField('f-block', 'block', 'change');
             $('f-days').addEventListener('change', e => { S().days = e.target.value; build(); });
             $('f-perday').addEventListener('change', e => { S().perDay = e.target.value; build(); });
             $('clear-all').addEventListener('click', () => { S().sel = {}; renderControls(); build(); });
             $('btn-new').addEventListener('click', () => { state.code = newCode(); build(); });
             $('btn-key').addEventListener('click', () => { state.showKey = !state.showKey; $('btn-key').setAttribute('aria-pressed', String(state.showKey)); renderSheet(); });
             $('btn-print').addEventListener('click', () => window.print());
-            const loadCode = () => loadFullCode($('f-code').value);
+            $('btn-print-ws').addEventListener('click', () => {
+                document.body.classList.add('print-worksheet');
+                window.print();
+                document.body.classList.remove('print-worksheet');
+            });
+            window.addEventListener('afterprint', () => document.body.classList.remove('print-worksheet'));
+            const loadCode = () => {
+                if (!$('f-code').value.trim()) return;
+                if (!applyVersion($('f-code').value)) { flash('That version code was not recognized. Check it against the code printed on the test.'); return; }
+                renderControls(); build();
+            };
             $('btn-load').addEventListener('click', loadCode);
             $('f-code').addEventListener('keydown', e => { if (e.key === 'Enter') loadCode(); });
             renderControls();
             build();
-            if (location.hash.length > 1) loadFullCode(decodeURIComponent(location.hash.slice(1)));
         }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
     </script>
