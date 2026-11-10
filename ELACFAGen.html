@@ -44,7 +44,7 @@
     .hint { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
 
     .std-list { border: 1px solid var(--line); border-radius: 10px; max-height: 460px; overflow-y: auto; }
-    .std-head, .std-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 74px 74px; gap: 8px; align-items: center; padding: 8px 12px; }
+    .std-head, .std-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 74px 66px 84px; gap: 8px; align-items: center; padding: 8px 12px; }
     .std-head { position: sticky; top: 0; background: var(--teal-50); font-size: 12px; font-weight: 600; color: var(--teal-700); z-index: 1; }
     .std-head span:nth-child(n+3) { text-align: center; }
     .std-row { border-top: 1px solid var(--line); }
@@ -72,7 +72,7 @@
     .btn.primary:hover { background: var(--teal-900); }
     .btn.key[aria-pressed="true"] { background: var(--gold-500); border-color: var(--gold-500); color: var(--teal-900); }
     .version { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 13px; color: var(--muted); }
-    .version input { color: var(--ink); width: 230px; max-width: 60vw; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+    .version input { color: var(--ink); width: 260px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
     #notices { padding: 0 24px; }
     #notices:not(:empty) { padding: 12px 24px 16px; border-top: 1px solid var(--line); background: #fffaf0; }
     #notices p { margin: 4px 0; font-size: 13px; color: var(--warn); }
@@ -103,6 +103,7 @@
     .passage p { margin: 0 0 8px; padding-left: 26px; position: relative; text-indent: 1.2em; break-inside: avoid; }
     .passage .pnum { position: absolute; left: 0; top: 2px; text-indent: 0; font-family: var(--ui); font-size: 11px; font-weight: 700; color: #555; }
     .passage h3 { break-after: avoid; }
+    .passage p:has(.poem) { text-indent: 0; }
     .passage p strong { display: block; font-family: var(--ui); font-size: 14px; margin: 4px 0 2px; }
     .passage p:last-child { margin-bottom: 0; }
     .q { display: grid; grid-template-columns: 28px 1fr; margin-bottom: 18px; break-inside: avoid; }
@@ -120,8 +121,40 @@
     .lookfor { margin-top: 8px; padding: 6px 10px; border-left: 4px solid var(--gold-500); background: var(--gold-100); font-size: 13px; }
     .newpage { break-before: page; }
     body:not([data-mode="exit"]) .exit-only, body:not([data-mode="morning"]) .morning-only { display: none; }
-    body[data-mode="exit"] .test-only, body[data-mode="morning"] .test-only { display: none; }
-    body[data-mode="morning"] .std-row input[type=number], body[data-mode="morning"] .std-row select, body[data-mode="morning"] .std-head span:nth-child(n+3) { visibility: hidden; }
+    body[data-mode="exit"] .test-only, body[data-mode="morning"] .test-only, body[data-mode="lesson"] .test-only, body[data-mode="lesson"] .no-lesson { display: none; }
+    body[data-mode="morning"] .std-row input[type=number], body[data-mode="morning"] .std-row select,
+    body[data-mode="lesson"] .std-row input[type=number], body[data-mode="lesson"] .std-row select { visibility: hidden; }
+    .dokbox { display: flex; justify-content: center; gap: 6px; font-size: 12px; color: var(--teal-900); }
+    .dokbox label { display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; }
+    .dokbox input { width: 16px; height: 16px; accent-color: var(--teal-700); margin: 0; }
+    .std-row:not(.on) .dokbox { opacity: .35; }
+    body[data-mode="lesson"] .dokbox, body[data-mode="lesson"] .std-head .dokh { visibility: hidden; }
+    body[data-mode="morning"] .std-head .cnt, body[data-mode="lesson"] .std-head .cnt { visibility: hidden; }
+
+    .modes { flex-wrap: wrap; }
+    body:not([data-mode="lesson"]) .lesson-only { display: none; }
+    @media print {
+        body.print-worksheet .teacher-part, body.print-worksheet .word-work-part { display: none; }
+        body.print-worksheet .practice-part { break-before: auto; }
+        body.print-wordwork .teacher-part, body.print-wordwork .practice-part, body.print-wordwork .group-part { display: none; }
+        body.print-wordwork .word-work-part { break-before: auto; }
+    }
+    .l-head { border-bottom: 3px solid var(--teal-700); padding-bottom: 6px; margin-bottom: 14px; }
+    .l-head h1 { font-size: 22px; margin: 0; }
+    .l-head p { margin: 2px 0 0; font-size: 12px; color: #444; }
+    .lbox { border: 1.5px solid #9bb; border-radius: 8px; padding: 8px 14px 10px; margin-bottom: 12px; break-inside: avoid; font-size: 14px; }
+    .lbox h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--teal-700); margin: 0 0 6px; }
+    .lbox ul, .lbox ol { margin: 0; padding-left: 20px; }
+    .lbox li { margin-bottom: 3px; }
+    .lbox.target { background: var(--gold-100); border-color: var(--gold-500); font-size: 16px; font-weight: 600; }
+    .lbox .mini-q { margin: 6px 0; }
+    .lbox .say { font-style: italic; margin-top: 6px; }
+    table.org { width: 100%; border-collapse: collapse; margin-top: 6px; table-layout: fixed; }
+    .lbox ul.plain { list-style: none; padding-left: 4px; }
+    table.org th, table.org td { border: 1.5px solid #555; padding: 6px; vertical-align: top; font-size: 13px; }
+    table.org th { background: #eef5f4; }
+    table.org td { height: 0.75in; }
+    .stu-h { break-after: avoid;  font-size: 14px; font-weight: 800; margin: 14px 0 8px; padding-bottom: 3px; border-bottom: 1.5px solid #888; }
     .ticket { border: 2px solid #333; border-radius: 10px; padding: 10px 16px 4px; break-inside: avoid; }
     .ticket + .ticket { margin-top: 0.4in; position: relative; }
     .ticket + .ticket::before { content: "\2702  cut here"; position: absolute; left: 0; right: 0; top: -0.25in; border-top: 1.5px dashed #888; font-size: 10px; color: #666; padding-top: 2px; text-align: center; }
@@ -170,6 +203,7 @@
             <button type="button" data-mode="eou" aria-pressed="false">End of Unit</button>
             <button type="button" data-mode="exit" aria-pressed="false">Exit Ticket</button>
             <button type="button" data-mode="morning" aria-pressed="false">Morning Work</button>
+            <button type="button" data-mode="lesson" aria-pressed="false">Lesson</button>
         </div>
     </div>
 
@@ -202,16 +236,6 @@
                     <option value="nonfiction">Nonfiction / informational</option>
                 </select>
             </div>
-            <div class="field">
-                <label for="f-rigor">Question level</label>
-                <select id="f-rigor">
-                    <option value="mix">Balanced mix, easiest first</option>
-                    <option value="all">Any level, random</option>
-                    <option value="basic">Level 1: Developing (recall)</option>
-                    <option value="on-grade">Level 2: On grade (analysis)</option>
-                    <option value="advanced">Level 3: Extension (high DOK)</option>
-                </select>
-            </div>
             <div class="field morning-only">
                 <label for="f-days">Days</label>
                 <select id="f-days">
@@ -226,6 +250,14 @@
             </div>
             <div class="checks morning-only">
                 <label><input type="checkbox" id="f-written"> Add one short written response each day</label>
+            </div>
+            <div class="field lesson-only">
+                <label for="f-block">Reading block length</label>
+                <select id="f-block">
+                    <option value="60">60 minutes</option><option value="75">75 minutes</option><option value="90">90 minutes</option><option value="100">100 minutes</option>
+                    <option value="105">105 minutes</option><option value="110">110 minutes</option><option value="120">120 minutes</option><option value="135">135 minutes</option><option value="150">150 minutes</option>
+                </select>
+                <p class="hint">Times for each part scale to the block. Tier 2 small groups are about a quarter of the block.</p>
             </div>
             <div class="field exit-only">
                 <label for="f-copies">Copies per page</label>
@@ -248,9 +280,11 @@
         <button type="button" class="btn primary" id="btn-new">New version</button>
         <button type="button" class="btn key" id="btn-key" aria-pressed="false">Teacher key</button>
         <button type="button" class="btn" id="btn-print">Print</button>
+        <button type="button" class="btn lesson-only" id="btn-print-ws">Print worksheet only</button>
+        <button type="button" class="btn lesson-only" id="btn-print-ww">Print word work only</button>
         <div class="version">
             <label for="f-code">Version code</label>
-            <input type="text" id="f-code" maxlength="40" placeholder="Paste a code" spellcheck="false">
+            <input type="text" id="f-code" maxlength="60" spellcheck="false" aria-label="Version code">
             <button type="button" class="btn" id="btn-load">Load</button>
         </div>
     </div>
@@ -316,6 +350,18 @@ const STANDARDS = [
                     "+Sofia raked the soil, pressed the seeds into neat lines, and watered them every evening. In two weeks, tiny green leaves poked up through the dirt. One morning, she spotted the rabbit family munching on the new row, right where they belonged.",
                     "At the end of the summer, Grandpa pulled up the first big carrot and handed it to Sofia. It was crunchy and sweet. \"The best carrots in town,\" Grandpa said, \"thanks to the best detective in town.\""
                 ] },
+                { id: 'coffin-house', genre: 'nonfiction', title: "Informational Text: A Safe House in Indiana", text: [
+                    "Before the Civil War, millions of African Americans were enslaved in the southern United States. Some escaped and traveled north toward freedom. Along the way, they were helped by a secret network of people and hiding places called the Underground Railroad.",
+                    "+The Underground Railroad was not a real railroad, and it was not underground. People used railroad words as a code. Guides were called conductors, hiding places were called stations, and the people escaping were sometimes called passengers.",
+                    "One of the busiest stations was in Newport, Indiana, a small town that is now called Fountain City. There, a Quaker couple named Levi and Catharine Coffin opened their home to freedom seekers. Quakers believed that slavery was wrong.",
+                    "+The Coffins' brick house was built in 1839. From the outside, it looked like an ordinary home. Inside, a small door in an upstairs bedroom led to a narrow space where people could hide. A bed could be pushed in front of the door to keep it secret.",
+                    "Helping freedom seekers was against the law, and the Coffins could have been fined or jailed. Still, they never turned anyone away. Catharine cooked meals, sewed clothes, and cared for people who were sick or tired.",
+                    "+Freedom seekers often arrived late at night, after walking for hours through woods and fields. The Coffins kept a team of horses and a wagon ready so they could carry people to the next station.",
+                    "Over about twenty years, the Coffins helped more than one thousand people on their journey to freedom. Many of them continued north to Canada, where slavery was against the law.",
+                    "+Levi Coffin was sometimes called the \"President of the Underground Railroad.\" He later moved to Cincinnati, Ohio, where he kept helping freedom seekers and ran a store that sold goods made without enslaved labor.",
+                    "Today, the Levi and Catharine Coffin House is a museum. Visitors can climb the stairs and see the hidden space where people once waited, hoping to stay safe for one more night.",
+                    "The story of the Coffin House shows that ordinary people can make brave choices. By opening their door, Levi and Catharine Coffin helped change many lives."
+                ] },
             ],
             '4.RC.2': [
                 { id: 'great-oak', genre: 'fiction', title: "Story: The Great Oak Tree", text: [
@@ -341,6 +387,18 @@ const STANDARDS = [
                     "Shivering and hungry, Pip knocked on the chipmunks' door. He expected them to say, \"Go gather your own.\" Instead, the chipmunks pulled him inside, wrapped him in a leaf blanket, and shared what little food they had.",
                     "+All winter, the animals took turns sharing. Mrs. Rabbit brought dried clover, the chipmunks offered seeds, and Pip helped by cracking nuts with his strong teeth. Somehow, there was enough for everyone.",
                     "When autumn came again, Pip gathered acorns as fast as ever. But this time, he filled a second log near the creek and hung a sign above the door. It read, \"Take what you need.\" From that year on, no one in the forest ever went hungry."
+                ] },
+                { id: 'firefly', genre: 'fiction', title: "Legend: How the Firefly Got Its Light", text: [
+                    "Long ago, when the world was new, the nights were so dark that the animals could not see their own paws. The Moon had not yet learned to shine brightly, and the stars were hidden behind thick clouds.",
+                    "+In that darkness lived a tiny brown beetle named Flicker. Flicker was so small and plain that the other animals barely noticed her. The owls called her \"Speck,\" and the frogs said she was only good for a snack.",
+                    "One night, a young rabbit wandered away from home and became lost in the black forest. His mother called and called, but the darkness swallowed her voice. The bigger animals said, \"It is too dark to search. We will look in the morning.\"",
+                    "Flicker could not bear to think of the little rabbit alone and afraid. \"I am small,\" she said, \"but I can still try.\" She flew from tree to tree, calling out, \"Little rabbit, where are you?\"",
+                    "+All night she searched. She bumped into branches and tumbled into spiderwebs. Her wings ached, but every time she wanted to rest, she thought of the rabbit's mother crying by the den.",
+                    "At last, deep in a tangle of thorns, Flicker heard a tiny sniffle. She found the rabbit shivering and stayed beside him, humming softly so he would not feel alone, until the first gray light of morning appeared.",
+                    "+When the sun rose, the animals came running. The rabbit's mother wrapped her son in her paws and wept with joy. \"Who found you?\" she asked. The rabbit pointed to the tiny beetle resting on a leaf.",
+                    "The Moon, peeking through a gap in the clouds, had watched everything. \"You are small,\" the Moon told Flicker, \"but your heart is the brightest in the forest. From now on, everyone will see it.\" A soft golden glow began to shine from Flicker's body.",
+                    "+That night, Flicker flew over the meadow, and her light danced like a tiny lantern. The owls stopped calling her \"Speck,\" and the frogs no longer laughed. Even the rabbit's mother thanked her every evening.",
+                    "And that is why, on warm summer nights, fireflies still glow in the dark. They remind us that even the smallest creature can light the way for others."
                 ] },
             ],
             '4.RC.3': [
@@ -368,6 +426,18 @@ const STANDARDS = [
                     "At last, the Martins' boat glided safely into the harbor. The next morning, Captain Martin knocked on the lighthouse door with a basket of fresh fish. \"That light saved us,\" he said. \"We were heading straight for the cliffs.\"",
                     "+That afternoon, Nora climbed the lighthouse stairs again, all one hundred and twelve of them, just to look at the view. This time, she counted every step out loud, and she was not afraid at all."
                 ] },
+                { id: 'talent-show', genre: 'fiction', title: "Play: The Talent Show Tangle", text: [
+                    "CHARACTERS: Jada, a fourth grader who loves to sing; Marcus, her best friend, who plays the drums; Ms. Lopez, the music teacher. SETTING: Behind the curtain on the school stage, ten minutes before the talent show.",
+                    "(Jada paces back and forth, squeezing a sheet of song lyrics in her hands.) JADA: Marcus, my voice is shaking. What if I forget the words in front of the whole school?",
+                    "+MARCUS: (twirling his drumsticks) You sang that song perfectly at practice yesterday. You even hit the high note at the end. JADA: Practice was different. The gym was empty then.",
+                    "(Ms. Lopez hurries in, holding a clipboard.) MS. LOPEZ: Bad news, you two. The sound system just stopped working. There will be no microphones and no backing music tonight.",
+                    "+JADA: (gasping) No music? My song needs the music! Without it, I'll just be standing there all alone. MARCUS: (looking at his drum) Hmm. Maybe not all alone.",
+                    "MARCUS: Jada, what if I play the beat on my drum while you sing? We practiced together a hundred times at recess. JADA: (slowly) We did. And you always keep the beat steady, even when I mess up.",
+                    "(The curtain opens. The gym is packed. Jada takes a deep breath and nods at Marcus. He starts a slow, steady beat. Jada's first notes are soft, but her voice grows stronger with every line.)",
+                    "+(Halfway through the song, Jada glances at the crowd. Her little brother is waving a homemade sign that says GO JADA! She grins and sings even louder.)",
+                    "(The song ends. For one second, the gym is silent. Then the audience jumps up, clapping and cheering.) MS. LOPEZ: (from the side of the stage) That was the best act of the night!",
+                    "+JADA: (hugging Marcus) I couldn't have done it without you. MARCUS: Sure you could. You just needed to remember that you weren't alone. (They take a bow as the curtain closes.)"
+                ] },
             ],
             '4.RC.4': [
                 { id: 'science-fair', genre: 'fiction', title: "Story: The Science Fair Swap", text: [
@@ -393,6 +463,18 @@ const STANDARDS = [
                     "Ms. Patel found the shark book in the return slot on Tuesday morning. She noticed that it had been returned early, and she set it aside so she could thank Owen in person.",
                     "Meanwhile, Owen blamed his little brother. Max had not touched the book at all. He spent the week feeling hurt and confused, wondering why Owen would not believe him.",
                     "+When Owen came home on Friday, he knocked on Max's door. He apologized and offered to read the shark book with him that night. Max grinned and said yes. Their mother, overhearing from the hallway, suddenly remembered returning the book and laughed at herself."
+                ] },
+                { id: 'snow-day', genre: 'fiction', title: "Story: The Surprise Snow Day", text: [
+                    "<strong>Part 1, Ava's journal:</strong> Thursday night. I am writing this by the window because I cannot stop watching the snow. The weather report said three inches, but it already looks like a lot more. I have my snow pants laid out just in case.",
+                    "+I really, really hope school is canceled tomorrow. My best friend, Kiara, and I have planned the perfect snow day. First we will build a snow fort, then we will have a snowball battle, and then we will drink hot chocolate with extra marshmallows.",
+                    "Friday morning. I woke up at 5:30 and ran to Mom's phone. NO SCHOOL! I screamed so loud that I woke up the dog. I do not know who decided to cancel school, but I want to thank them.",
+                    "+Kiara came over at 9:00. The snow came up past our knees. Our fort has two rooms and a tunnel, and Mom says it is the best fort on our street. My cheeks are frozen, but I do not care.",
+                    "This is the best day of the whole year. I wish every day could be a snow day.",
+                    "<strong>Part 2, told by a narrator:</strong> At 4:00 on Friday morning, Principal Grant was already awake. He stood at his kitchen window, looking at the snow piling up on his driveway, and worried about the roads.",
+                    "+He called the head of the bus garage, Mr. Jenkins, who had been driving the bus routes in his truck since 3:00. \"The country roads are covered with ice,\" Mr. Jenkins reported. \"Two of them have drifts as tall as a mailbox.\"",
+                    "Principal Grant did not want to cancel school. He knew that some families would have to find childcare, and that the snow day would have to be made up in June. But he also knew that icy roads could be dangerous for the buses.",
+                    "At 5:15, he made the decision. He sent a message to every family: School is canceled today because of unsafe roads. Then he sat down with a cup of coffee and let out a long, tired sigh.",
+                    "+Later that morning, Principal Grant drove slowly past the neighborhood near the school. He smiled when he saw two girls building a snow fort with a tunnel. At least someone, he thought, was having a good day."
                 ] },
             ],
             '4.RC.5': [
@@ -420,6 +502,18 @@ const STANDARDS = [
                     "+Bees may sting, but only when they feel threatened. A honeybee usually dies after it stings, so it does not sting unless it must protect itself or its hive. Staying calm and slowly moving away is the best way to avoid being stung.",
                     "Kids can help, too. Planting flowers such as sunflowers, clover, and lavender gives bees more food. With a little help, these small insects can keep doing their big jobs for many years to come."
                 ] },
+                { id: 'sleep', genre: 'nonfiction', title: "Informational Text: Why Your Brain Needs Sleep", text: [
+                    "Every night, you spend hours with your eyes closed, barely moving. It might seem like nothing is happening, but sleep is one of the busiest times for your brain and body.",
+                    "Scientists say that children ages 6 to 12 need 9 to 12 hours of sleep each night. During that time, the brain sorts through everything you learned during the day and stores the most important information. That is why a good night's sleep can help you remember your spelling words or math facts.",
+                    "+Sleep happens in cycles. Each cycle lasts about an hour and a half. In some parts of the cycle, your body is in deep sleep and very still. In another part, called REM sleep, your eyes dart back and forth under your eyelids, and this is when most dreams happen.",
+                    "Sleep helps your body, too. While you sleep, your body releases a hormone that helps you grow. Your muscles repair themselves after a busy day, and your body fights off germs that could make you sick.",
+                    "+Without enough sleep, people can feel cranky and have trouble paying attention. They may make more mistakes and feel hungrier than usual.",
+                    "Many things can make it hard to get enough sleep. Bright screens from phones, tablets, and TVs can trick the brain into thinking it is still daytime. Caffeine in some sodas can keep the body awake for hours.",
+                    "+Noise and light in a bedroom can also wake people up during the night. Even a small glowing light can make it harder to stay asleep.",
+                    "Doctors suggest a few simple habits. Go to bed at the same time each night. Turn off screens at least an hour before bedtime. Keep your bedroom cool, dark, and quiet.",
+                    "+A calm bedtime routine can help, too. Reading a book, taking a warm bath, or listening to soft music tells your body that it is almost time to sleep.",
+                    "Sleep is not wasted time. It is when your brain and body get ready for tomorrow. So tonight, when someone says it is time for bed, remember that you are giving your brain the rest it needs to learn and grow."
+                ] },
             ],
             '4.RC.6': [
                 { id: 'maps', genre: 'nonfiction', title: "Informational Text: Navigating Maps & Diagrams", text: [
@@ -445,6 +539,18 @@ const STANDARDS = [
                     "<strong>Staying Safe</strong> Scientists called <b>volcanologists</b> study volcanoes to predict eruptions. They measure earthquakes, ground swelling, and gases. When danger is near, they warn people living nearby so they can leave in time.",
                     "+<strong>Volcanoes Can Help, Too</strong> Over time, volcanic ash breaks down into rich soil that is excellent for growing crops. Some countries even use the heat from underground magma to make electricity.",
                     "<strong>Glossary</strong> <b>crater:</b> the bowl-shaped opening at the top of a volcano. <b>lava:</b> melted rock that has reached Earth's surface. <b>magma:</b> melted rock beneath Earth's surface. <b>vent:</b> the tube that magma travels through. <b>volcanologist:</b> a scientist who studies volcanoes."
+                ] },
+                { id: 'dunes', genre: 'nonfiction', title: "Informational Text: Exploring Indiana Dunes National Park", text: [
+                    "<strong>A Park on the Lake</strong> Along the southern shore of Lake Michigan, mountains of sand rise above the water. This is Indiana Dunes National Park, one of the most surprising places in the Hoosier State.",
+                    "<strong>How the Dunes Formed</strong> Thousands of years ago, huge sheets of ice called <b>glaciers</b> covered this area. When the glaciers melted, they left behind sand and water. Over time, strong winds blowing off the lake piled the sand into hills called <b>dunes</b>.",
+                    "+<em>Caption: In a photo of the park, a steep dune covered in grass and trees rises behind a sandy beach on Lake Michigan.</em>",
+                    "<strong>A Dune That Moves</strong> Some dunes are held in place by plant roots. Others are always shifting. Mount Baldy, one of the park's tallest dunes, is a <b>moving dune</b>. Wind pushes its sand a few feet farther from the lake every year.",
+                    "+<strong>Did You Know?</strong> Indiana Dunes became a national park in 2019. It was the 61st national park in the United States.",
+                    "<strong>Plants and Animals</strong> The park is home to more than 1,000 kinds of plants, from prickly pear cactus to tall pine trees. Visitors may spot deer, foxes, turtles, and hundreds of kinds of birds.",
+                    "+<strong>Timeline</strong> 1916: Leaders hold meetings about protecting the dunes. 1966: Congress creates Indiana Dunes National Lakeshore. 2019: The lakeshore becomes Indiana Dunes National Park.",
+                    "<strong>Visiting the Park</strong> Visitors can swim at the beaches, hike about 50 miles of trails, and climb steep dunes. Rangers ask hikers to stay on marked trails so that plant roots can keep the dunes from blowing away.",
+                    "+<strong>Protecting the Dunes</strong> Scientists study how the dunes change from year to year. Volunteers help by pulling out plants that do not belong there and crowd out the <b>native</b> ones.",
+                    "<strong>Glossary</strong> <b>dune:</b> a hill of sand piled up by the wind. <b>glacier:</b> a huge, slow-moving sheet of ice. <b>moving dune:</b> a dune that shifts because plants do not hold its sand in place. <b>native:</b> belonging naturally to a place."
                 ] },
             ],
             '4.RC.7': [
@@ -472,6 +578,18 @@ const STANDARDS = [
                     "+News of the project spread quickly. A local newspaper wrote an article about the Green Team, and two other schools in the district asked for help starting programs of their own.",
                     "The lunchroom project shows that when people work together, even a big problem can be solved. What started as a pile of garbage became a lesson in teamwork, science, and caring for the planet."
                 ] },
+                { id: 'maple-syrup', genre: 'nonfiction', title: "Informational Text: From Tree to Table", text: [
+                    "Pancakes and waffles taste even better with maple syrup. But did you know that this sweet syrup begins as a watery liquid inside a tree? Making maple syrup takes several careful steps.",
+                    "First, syrup makers wait for the right weather. In late winter and early spring, when nights are below freezing and days are above freezing, sap begins to flow inside sugar maple trees.",
+                    "+Sap is a clear liquid that carries water and sugar through a tree. The change from freezing nights to warm days creates pressure inside the tree, which pushes the sap out of any opening.",
+                    "Next, workers tap the trees. They drill a small hole about two inches deep into the trunk and gently tap in a spout. Sap drips out of the spout into a bucket or flows through plastic tubes to a collecting tank.",
+                    "+A healthy tree can be tapped for many years. The small hole heals over by the next season, and the tree keeps growing. Most trees are not tapped until they are about 40 years old.",
+                    "Then, the sap is boiled in a wide pan called an evaporator, where a fire heats it for hours. As the water boils away as steam, the sap slowly turns thick, golden, and sweet. It takes about 40 gallons of sap to make just 1 gallon of syrup.",
+                    "+The sugarhouse fills with sweet-smelling steam all day long. Syrup makers stir and watch the pan carefully so that the syrup does not burn.",
+                    "After that, the hot syrup is filtered to remove any bits of sand or sugar crystals. Workers check it with a special tool to make sure it is thick enough.",
+                    "+Syrup comes in different grades. Syrup made early in the season is usually lighter in color with a mild taste. Syrup made later is darker, with a stronger flavor.",
+                    "Finally, the syrup is poured into bottles and jars while it is still hot. From a cold night in the forest to your breakfast table, every drop of maple syrup is the result of a long, careful process."
+                ] },
             ],
             '4.RC.8': [
                 { id: 'recess', genre: 'nonfiction', title: "Persuasive Article: Why Recess Matters", text: [
@@ -497,6 +615,18 @@ const STANDARDS = [
                     "Finally, gardens give students a peaceful place to relax. Spending time outdoors, surrounded by green plants, can help students feel calm and happy.",
                     "+One fourth grader said, \"The garden is my favorite place at school because I can see my sunflowers growing.\" Her classmate agreed and said that gardening helped him make new friends.",
                     "A school garden is the most wonderful gift a school can give its students. Principals, teachers, and families should work together to plant one at every school."
+                ] },
+                { id: 'library-card', genre: 'nonfiction', title: "Persuasive Article: Every Student Needs a Library Card", text: [
+                    "Every student should have a public library card. A library card is free, and it opens the door to books, learning, and fun all year long.",
+                    "First, a library card gives students access to thousands of books. Families do not have to spend money to find great stories. Students who read more often become stronger readers, and reading every day helps build vocabulary.",
+                    "+Libraries are not just about books. Many libraries lend audiobooks, movies, and board games. Some even have 3D printers and robotics kits that kids can use for free.",
+                    "Second, libraries keep students learning during the summer. Studies show that students who do not read over the summer can lose some of the reading skills they gained during the school year. Free summer reading programs help keep kids' minds active.",
+                    "+Libraries also offer homework help, story times, and clubs. Librarians can help students find exactly the right book for a report or just for fun.",
+                    "Some people say that students do not need library cards because they can read on tablets and phones. However, many families do not own enough devices for every child, and many libraries lend e-books for free with a library card.",
+                    "+Others say the library is too far away. But many libraries have bookmobiles that visit neighborhoods, and some let families return books at drop boxes around town.",
+                    "Finally, a library card teaches responsibility. Students learn to take care of borrowed books and return them on time.",
+                    "+One fourth grader said, \"Getting my own library card made me feel grown up.\" Her brother said the summer reading prizes were the best part.",
+                    "Getting a library card is the most important thing a student can do this year. Parents and teachers should help every child sign up today."
                 ] },
             ],
             '4.RC.9': [
@@ -524,6 +654,18 @@ const STANDARDS = [
                     "+Rescue work is hard and sometimes dangerous. Handlers protect their dogs' paws with special boots and give them plenty of rest and water between searches.",
                     "Every year, search and rescue dogs help save many lives. To their handlers, they are both heroes and best friends."
                 ] },
+                { id: 'balloons', genre: 'nonfiction', title: "Paired Passages: Up, Up, and Away", text: [
+                    "<strong>Text A: The First Hot Air Balloons.</strong> In 1783, two brothers in France named Joseph and Etienne Montgolfier built a giant balloon out of cloth and paper. They lit a fire beneath it, and the balloon rose into the sky.",
+                    "+The brothers had noticed that smoke and hot air always rise. They wondered whether a large bag filled with hot air could rise too. After many small tests, they were ready to try a big one.",
+                    "Hot air balloons rise because hot air is lighter than the cooler air around it. When the air inside the balloon is heated, the balloon floats upward. When the air cools, the balloon slowly comes back down.",
+                    "+The first passengers in a hot air balloon were not people. In September 1783, a sheep, a duck, and a rooster rode in a basket below a balloon for about eight minutes and landed safely.",
+                    "Two months later, the first people flew in a hot air balloon over the city of Paris. Today, people still ride hot air balloons for fun, drifting quietly over fields and rivers.",
+                    "<strong>Text B: Weather Balloons.</strong> Twice a day, at hundreds of places around the world, weather scientists release large balloons into the sky. These balloons are filled with helium or hydrogen, gases that are lighter than air.",
+                    "+A small box called a radiosonde hangs below each balloon. As the balloon rises, the box measures temperature, wind, and how much water is in the air, and it sends the information back to the ground by radio.",
+                    "A weather balloon can rise about 20 miles into the sky, much higher than airplanes fly. As it climbs, the air around it gets thinner, so the balloon stretches bigger and bigger until it finally pops.",
+                    "+After the balloon pops, a small parachute carries the box gently back to Earth. Some boxes are found by people who mail them back to the weather service.",
+                    "Scientists use the information from weather balloons to predict storms, rain, and snow. Every time you check a weather forecast, a balloon may have helped make it."
+                ] },
             ],
             '4.RC.11': [
                 { id: 'word-power', genre: 'both', title: "Passage: Word Power in Action", text: [
@@ -538,6 +680,18 @@ const STANDARDS = [
                     "Context clues help readers choose the right meaning of a multiple-meaning word. In \"The pitcher threw a fast ball,\" a pitcher is a baseball player. In \"Please fill the pitcher with lemonade,\" a pitcher is a container for pouring.",
                     "The more you notice how words are related, the stronger your reading and writing will become. Next time you read, look for homophones, homographs, synonyms, and antonyms hiding in the sentences."
                 ] },
+                { id: 'mixed-message', genre: 'fiction', title: "Story: The Mixed-Up Message", text: [
+                    "Theo wanted to surprise his friend Lena with a treasure hunt. He wrote her a note and slipped it into her backpack before the bus came.",
+                    "The note said, \"Meat me at the bear tree at for o'clock. You will find a prize there. Don't be late!\"",
+                    "+Theo was proud of his note. He even drew a little map with an X on it. But he had been in such a hurry that he never read it over.",
+                    "When Lena read the note, she was confused. \"Meat?\" she said. \"Is this about lunch? And what is a bear tree? There are no bears in our neighborhood!\"",
+                    "+Lena showed the note to her big sister, Mara, who laughed so hard that she snorted. \"I think Theo mixed up some homophones,\" Mara said. \"Those are words that sound the same but have different spellings and meanings.\"",
+                    "Lena studied the note again and figured it out. \"Meat should be meet, like getting together. For should be four, the number. And bear should be bare, like a tree with no leaves!\"",
+                    "+There was only one tree in the park with no leaves at all, a tall old oak that had been struck by lightning. Lena grabbed her coat and ran.",
+                    "At four o'clock, Lena found Theo waiting under the bare oak tree. Next to him sat a small box wrapped in newspaper. Inside was a homemade friendship bracelet.",
+                    "+\"Did my note make sense?\" Theo asked. Lena grinned and held up the paper. \"Sort of,\" she said. \"Next time, I'll bring a red pen.\"",
+                    "That night, Theo practiced writing homophones in his notebook: meet and meat, four and for, bare and bear. He decided that the next time he wrote a message, he would read it over twice."
+                ] },
             ],
             '4.RC.12': [
                 { id: 'word-building', genre: 'both', title: "Informational Text: Understanding Word Building", text: [
@@ -551,6 +705,18 @@ const STANDARDS = [
                     "+The Greek root \"tele\" means far. A telephone carries sound from far away, a telescope helps you see faraway objects, and television shows pictures sent from far away.",
                     "When you meet a long, unfamiliar word, try breaking it into parts. For \"unbelievable,\" cover the prefix and suffix to find the base word \"believe.\" Then add the meanings back: \"un-\" means not, and \"-able\" means able to be. Unbelievable means not able to be believed.",
                     "Learning roots and affixes is like collecting keys. Each new key unlocks dozens of words. The more keys you collect, the more doors you can open as a reader."
+                ] },
+                { id: 'word-lab', genre: 'fiction', title: "Story: The Word Lab", text: [
+                    "Every Friday, Mr. Ortiz turned his classroom into the Word Lab. Students wore paper lab coats and safety goggles made from cardboard, and their job was to build new words.",
+                    "\"Today's experiment uses prefixes,\" Mr. Ortiz announced. He held up a card that said <i>happy</i>. Then he put another card in front of it: <i>un-</i>. \"What happens when we mix them?\" \"Unhappy!\" the class shouted. \"It means not happy!\"",
+                    "+Next, he tried <i>re-</i> with <i>read</i>, <i>pre-</i> with <i>heat</i>, and <i>dis-</i> with <i>agree</i>. Each time, the class called out the new word and its meaning. Priya kept a list in her lab notebook.",
+                    "Then Mr. Ortiz moved on to suffixes. He placed <i>-ful</i> after <i>help</i> and <i>-less</i> after <i>fear</i>. \"Helpful means full of help,\" said Owen. \"And fearless means without fear,\" added Priya.",
+                    "+Mr. Ortiz smiled. \"A suffix can change a word's meaning, and sometimes it changes how the word is used in a sentence.\" He showed how <i>kind</i> became <i>kindness</i>, a thing instead of a describing word.",
+                    "For the final experiment, Mr. Ortiz brought out a jar labeled ROOTS. Inside were cards with Greek and Latin roots. Owen pulled out <i>tele</i>, which means far, and <i>scope</i>, which means to look at. \"Telescope!\" he said. \"A tool for looking at things far away.\"",
+                    "+Priya pulled out <i>bio</i>, meaning life, and <i>logy</i>, meaning the study of. \"Biology is the study of living things,\" she said. The class cheered as if she had discovered a new planet.",
+                    "Then came the challenge. Each team had to invent a brand-new word using real word parts and explain its meaning. Owen and Priya whispered, scribbled, and erased until they had it.",
+                    "+Other teams invented words like <i>unbreakfastable</i>, which they said meant too sleepy to eat breakfast, and <i>telesnack</i>, a snack you eat while watching from far away. Everyone laughed.",
+                    "Owen and Priya held up their card: <i>rehappyful</i>. \"It means full of happiness again,\" Priya explained. Mr. Ortiz laughed. \"Not a real word,\" he said, \"but you used every part correctly. That is real word building.\""
                 ] },
             ],
             '4.RC.13': [
@@ -577,6 +743,18 @@ const STANDARDS = [
                     "Then Talia ran over and pulled me to my feet. \"That was the best comeback in Field Day history,\" she laughed. \"You got up faster than anyone I've ever seen.\" Suddenly, my bad mood melted away like an ice pop in July.",
                     "+For the rest of the day, we cheered for every race, splashed through the water-balloon toss, and ate so much watermelon that we could have floated away.",
                     "When the final bell rang, the sky was painted orange and pink. I didn't win a single ribbon, but I went home with a smile as wide as the playground."
+                ] },
+                { id: 'winter-poem', genre: 'fiction', title: "Poem: When Winter Comes to Town", text: [
+                    "<span class=\"poem\"></span>Winter tiptoes into town<br>on soft and silent feet.<br>She drapes a blanket, thick and white,<br>across the sleeping street.",
+                    "<span class=\"poem\"></span>The wind becomes a howling wolf<br>that prowls around the door.<br>It rattles windows, shakes the trees,<br>and whistles more and more.",
+                    "+<span class=\"poem\"></span>The rooftops wear their frosty hats,<br>the chimneys puff and blow,<br>and every fence post sports a cap<br>of fluffy, fresh-baked snow.",
+                    "<span class=\"poem\"></span>My breath is like a dragon's smoke<br>that curls into the air.<br>My cheeks are red as cherry pie,<br>and snow is in my hair.",
+                    "+<span class=\"poem\"></span>We build a snowman, round and proud,<br>with buttons made of stone.<br>He stands guard in the yard all night,<br>a soldier on his own.",
+                    "<span class=\"poem\"></span>The icicles are crystal swords<br>that hang above the door.<br>They glitter in the morning sun<br>and drip upon the floor.",
+                    "+<span class=\"poem\"></span>I trudge through snow up to my knees,<br>a million miles to school.<br>My boots weigh twenty pounds apiece,<br>my toes are frozen cool.",
+                    "<span class=\"poem\"></span>The cardinal, a ruby spark,<br>sits singing on a branch.<br>He doesn't mind the bitter cold;<br>he's dancing his own dance.",
+                    "+<span class=\"poem\"></span>At night the moon, a silver coin,<br>is tossed into the sky,<br>and all the stars, like frosty eyes,<br>blink down a sleepy goodbye.",
+                    "<span class=\"poem\"></span>And when at last the spring arrives<br>and Winter packs to go,<br>she leaves one final flake behind,<br>a kiss of melting snow."
                 ] },
             ],
         };
@@ -1709,6 +1887,558 @@ const STANDARDS = [
            ],
            "clue": "Field Day races; winning or not winning"
           }
+         ],
+         "Informational Text: A Safe House in Indiana": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Some escaped and traveled north toward freedom.",
+           "word": "escaped",
+           "c": "got away from a place where they were held",
+           "d": [
+            "were captured",
+            "stayed home",
+            "were born"
+           ],
+           "clue": "they traveled north toward freedom"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Still, they never turned anyone away.",
+           "word": "turned anyone away",
+           "c": "refused to help someone",
+           "d": [
+            "invited someone in",
+            "spun someone around",
+            "walked away quickly"
+           ],
+           "clue": "they opened their home to freedom seekers"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Visitors can climb the stairs and see the hidden space where people once waited, hoping to stay safe for one more night.",
+           "word": "hidden",
+           "c": "kept out of sight",
+           "d": [
+            "very large",
+            "brightly lit",
+            "broken"
+           ],
+           "clue": "a secret space where people waited to stay safe"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "The story of the Coffin House shows that ordinary people can make brave choices.",
+           "word": "ordinary",
+           "c": "regular; not famous or special",
+           "d": [
+            "famous",
+            "very rich",
+            "unusual"
+           ],
+           "clue": "the Coffins were not famous leaders, but they still made brave choices"
+          }
+         ],
+         "Legend: How the Firefly Got Its Light": [
+          {
+           "rigor": "basic",
+           "sentence": "His mother called and called, but the darkness swallowed her voice.",
+           "word": "swallowed",
+           "c": "covered up so it could not be heard",
+           "d": [
+            "ate up",
+            "made louder",
+            "repeated"
+           ],
+           "clue": "it was so dark and far that no one heard her"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Flicker could not bear to think of the little rabbit alone and afraid.",
+           "word": "could not bear",
+           "c": "could not stand it; it made her too sad",
+           "d": [
+            "could not carry",
+            "did not care",
+            "forgot about"
+           ],
+           "clue": "she flew off right away to help"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "At last, deep in a tangle of thorns, Flicker heard a tiny sniffle.",
+           "word": "tangle",
+           "c": "a messy, twisted mass",
+           "d": [
+            "a straight path",
+            "an open field",
+            "a quiet pond"
+           ],
+           "clue": "thorns all twisted together"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "A soft golden glow began to shine from Flicker's body.",
+           "word": "glow",
+           "c": "a steady, gentle light",
+           "d": [
+            "a loud noise",
+            "a cold wind",
+            "a dark shadow"
+           ],
+           "clue": "soft, golden, shine"
+          }
+         ],
+         "Play: The Talent Show Tangle": [
+          {
+           "rigor": "basic",
+           "sentence": "(Jada paces back and forth, squeezing a sheet of song lyrics in her hands.)",
+           "word": "paces",
+           "c": "walks back and forth again and again",
+           "d": [
+            "sits still",
+            "runs away",
+            "sings loudly"
+           ],
+           "clue": "back and forth; she is nervous"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Jada's first notes are soft, but her voice grows stronger with every line.",
+           "word": "grows",
+           "c": "becomes more",
+           "d": [
+            "shrinks",
+            "stops",
+            "breaks"
+           ],
+           "clue": "soft at first, but stronger with every line"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "The gym is packed.",
+           "word": "packed",
+           "c": "very full of people",
+           "d": [
+            "empty",
+            "clean",
+            "locked"
+           ],
+           "clue": "the audience jumps up, clapping and cheering"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "MARCUS: Jada, what if I play the beat on my drum while you sing?",
+           "word": "beat",
+           "c": "the steady rhythm in music",
+           "d": [
+            "a win in a game",
+            "a hit or a punch",
+            "a stir with a spoon"
+           ],
+           "clue": "drum, while you sing, keep the beat steady"
+          }
+         ],
+         "Story: The Surprise Snow Day": [
+          {
+           "rigor": "basic",
+           "sentence": "He stood at his kitchen window, looking at the snow piling up on his driveway, and worried about the roads.",
+           "word": "piling up",
+           "c": "collecting in a bigger and bigger heap",
+           "d": [
+            "melting away",
+            "blowing away",
+            "falling slowly"
+           ],
+           "clue": "a lot more snow than the report said"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "He knew that some families would have to find childcare, and that the snow day would have to be made up in June.",
+           "word": "made up",
+           "c": "done later to replace what was missed",
+           "d": [
+            "imagined",
+            "put on makeup",
+            "forgotten"
+           ],
+           "clue": "the missed school day happens again later, in June"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "But he also knew that icy roads could be dangerous for the buses.",
+           "word": "dangerous",
+           "c": "likely to cause harm",
+           "d": [
+            "safe",
+            "quick",
+            "quiet"
+           ],
+           "clue": "icy roads; unsafe roads"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Then he sat down with a cup of coffee and let out a long, tired sigh.",
+           "word": "sigh",
+           "c": "a long, deep breath that shows a feeling",
+           "d": [
+            "a loud laugh",
+            "a quick sneeze",
+            "a happy shout"
+           ],
+           "clue": "long and tired, after a hard decision"
+          }
+         ],
+         "Informational Text: Why Your Brain Needs Sleep": [
+          {
+           "rigor": "on-grade",
+           "sentence": "During that time, the brain sorts through everything you learned during the day and stores the most important information.",
+           "word": "stores",
+           "c": "keeps something to use later",
+           "d": [
+            "throws away",
+            "sells",
+            "forgets"
+           ],
+           "clue": "it helps you remember spelling words and math facts"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Your muscles repair themselves after a busy day, and your body fights off germs that could make you sick.",
+           "word": "repair",
+           "c": "fix",
+           "d": [
+            "break",
+            "grow longer",
+            "stretch"
+           ],
+           "clue": "after a busy day; sleep helps the body"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Bright screens from phones, tablets, and TVs can trick the brain into thinking it is still daytime.",
+           "word": "trick",
+           "c": "fool someone into believing something untrue",
+           "d": [
+            "teach",
+            "wake up",
+            "show a magic act to"
+           ],
+           "clue": "the brain thinks it is daytime, but it is really night"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Doctors suggest a few simple habits.",
+           "word": "habits",
+           "c": "things you do regularly",
+           "d": [
+            "mistakes",
+            "doctors",
+            "rules for a game"
+           ],
+           "clue": "the next sentences list things to do every night"
+          }
+         ],
+         "Informational Text: Exploring Indiana Dunes National Park": [
+          {
+           "rigor": "on-grade",
+           "sentence": "Over time, strong winds blowing off the lake piled the sand into hills called dunes.",
+           "word": "piled",
+           "c": "heaped up",
+           "d": [
+            "washed away",
+            "spread flat",
+            "melted"
+           ],
+           "clue": "the sand became hills"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Others are always shifting.",
+           "word": "shifting",
+           "c": "moving or changing position",
+           "d": [
+            "staying still",
+            "growing plants",
+            "freezing"
+           ],
+           "clue": "the next sentence says Mount Baldy is a moving dune"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Rangers ask hikers to stay on marked trails so that plant roots can keep the dunes from blowing away.",
+           "word": "Rangers",
+           "c": "people who take care of a park",
+           "d": [
+            "hikers",
+            "plants",
+            "cowboys"
+           ],
+           "clue": "they ask hikers to follow park rules"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Along the southern shore of Lake Michigan, mountains of sand rise above the water.",
+           "word": "shore",
+           "c": "the land along the edge of a lake or sea",
+           "d": [
+            "the middle of a lake",
+            "a kind of boat",
+            "a mountaintop"
+           ],
+           "clue": "along Lake Michigan, beside the water"
+          }
+         ],
+         "Informational Text: From Tree to Table": [
+          {
+           "rigor": "basic",
+           "sentence": "Sap drips out of the spout into a bucket or flows through plastic tubes to a collecting tank.",
+           "word": "drips",
+           "c": "falls in small drops",
+           "d": [
+            "pours in a flood",
+            "freezes",
+            "disappears"
+           ],
+           "clue": "out of a small spout into a bucket"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "As the water boils away as steam, the sap slowly turns thick, golden, and sweet.",
+           "word": "thick",
+           "c": "not runny; flows slowly",
+           "d": [
+            "thin and watery",
+            "cold",
+            "clear"
+           ],
+           "clue": "the water boils away, leaving syrup"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "After that, the hot syrup is filtered to remove any bits of sand or sugar crystals.",
+           "word": "filtered",
+           "c": "passed through something that catches unwanted bits",
+           "d": [
+            "frozen",
+            "painted",
+            "stirred"
+           ],
+           "clue": "to remove sand or sugar crystals"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "From a cold night in the forest to your breakfast table, every drop of maple syrup is the result of a long, careful process.",
+           "word": "process",
+           "c": "a series of steps done in order",
+           "d": [
+            "a single drop",
+            "a kind of tree",
+            "a breakfast food"
+           ],
+           "clue": "the whole article lists steps with first, next, then, finally"
+          }
+         ],
+         "Persuasive Article: Every Student Needs a Library Card": [
+          {
+           "rigor": "on-grade",
+           "sentence": "First, a library card gives students access to thousands of books.",
+           "word": "access",
+           "c": "a way to get or use something",
+           "d": [
+            "a locked door",
+            "a price",
+            "a long line"
+           ],
+           "clue": "the card lets them use thousands of books"
+          },
+          {
+           "rigor": "basic",
+           "sentence": "Students learn to take care of borrowed books and return them on time.",
+           "word": "borrowed",
+           "c": "taken to use for a while and then given back",
+           "d": [
+            "bought",
+            "lost",
+            "written"
+           ],
+           "clue": "return them on time"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Finally, a library card teaches responsibility.",
+           "word": "responsibility",
+           "c": "being trusted to take care of things and do what you should",
+           "d": [
+            "a library rule",
+            "a kind of book",
+            "a punishment"
+           ],
+           "clue": "taking care of borrowed books and returning them on time"
+          }
+         ],
+         "Paired Passages: Up, Up, and Away": [
+          {
+           "rigor": "basic",
+           "sentence": "Twice a day, at hundreds of places around the world, weather scientists release large balloons into the sky.",
+           "word": "release",
+           "c": "let go",
+           "d": [
+            "catch",
+            "paint",
+            "fold"
+           ],
+           "clue": "the balloons go up into the sky"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Today, people still ride hot air balloons for fun, drifting quietly over fields and rivers.",
+           "word": "drifting",
+           "c": "moving slowly, carried along by the air",
+           "d": [
+            "racing loudly",
+            "sinking fast",
+            "standing still"
+           ],
+           "clue": "quietly, over fields and rivers"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Scientists use the information from weather balloons to predict storms, rain, and snow.",
+           "word": "predict",
+           "c": "tell what will happen before it happens",
+           "d": [
+            "stop",
+            "cause",
+            "remember"
+           ],
+           "clue": "a weather forecast"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "As it climbs, the air around it gets thinner, so the balloon stretches bigger and bigger until it finally pops.",
+           "word": "thinner",
+           "c": "having less air packed into the same space",
+           "d": [
+            "thicker and heavier",
+            "colder and wetter",
+            "darker"
+           ],
+           "clue": "the balloon stretches bigger because less air is pushing on it"
+          }
+         ],
+         "Poem: When Winter Comes to Town": [
+          {
+           "rigor": "basic",
+           "sentence": "She drapes a blanket, thick and white",
+           "word": "drapes",
+           "c": "lays something loosely over",
+           "d": [
+            "folds up",
+            "washes",
+            "tears"
+           ],
+           "clue": "a blanket covers the sleeping street"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "that prowls around the door",
+           "word": "prowls",
+           "c": "moves around quietly, like a hunter",
+           "d": [
+            "sleeps",
+            "sings",
+            "hides under a bed"
+           ],
+           "clue": "the wind is a howling wolf"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "He doesn't mind the bitter cold",
+           "word": "bitter",
+           "c": "very sharp and harsh",
+           "d": [
+            "sweet",
+            "mild",
+            "warm"
+           ],
+           "clue": "the winter cold that the cardinal does not mind"
+          }
+         ],
+         "Story: The Mixed-Up Message": [
+          {
+           "rigor": "basic",
+           "sentence": "He wrote her a note and slipped it into her backpack before the bus came.",
+           "word": "slipped",
+           "c": "put quietly and quickly",
+           "d": [
+            "fell on ice",
+            "tore",
+            "shouted"
+           ],
+           "clue": "it was a surprise, before the bus came"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Lena studied the note again and figured it out.",
+           "word": "figured it out",
+           "c": "understood or solved it",
+           "d": [
+            "threw it away",
+            "drew a picture of it",
+            "lost it"
+           ],
+           "clue": "she explains what each word should be"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Next to him sat a small box wrapped in newspaper.",
+           "word": "wrapped",
+           "c": "covered on all sides",
+           "d": [
+            "opened",
+            "filled",
+            "stacked"
+           ],
+           "clue": "a gift box covered in newspaper"
+          }
+         ],
+         "Story: The Word Lab": [
+          {
+           "rigor": "basic",
+           "sentence": "Students wore paper lab coats and safety goggles made from cardboard, and their job was to build new words.",
+           "word": "goggles",
+           "c": "glasses that protect the eyes",
+           "d": [
+            "gloves",
+            "boots",
+            "hats"
+           ],
+           "clue": "safety, worn in a lab"
+          },
+          {
+           "rigor": "on-grade",
+           "sentence": "Owen and Priya whispered, scribbled, and erased until they had it.",
+           "word": "scribbled",
+           "c": "wrote quickly and messily",
+           "d": [
+            "sang loudly",
+            "read slowly",
+            "drew neatly"
+           ],
+           "clue": "they wrote and erased ideas"
+          },
+          {
+           "rigor": "advanced",
+           "sentence": "Each team had to invent a brand-new word using real word parts and explain its meaning.",
+           "word": "invent",
+           "c": "create something new",
+           "d": [
+            "copy",
+            "find in a book",
+            "forget"
+           ],
+           "clue": "a brand-new word"
+          }
          ]
         };
 
@@ -1794,6 +2524,108 @@ const STANDARDS = [
                 {"rigor": "advanced", "q": "What does the metaphor 'the sun was a giant spotlight' suggest about Field Day?", "c": "The day was bright, and the narrator felt like everyone was watching.", "d": ["The day was cloudy and dark.", "The race was held inside a theater.", "The sun was very small that morning."]},
                 {"rigor": "advanced", "q": "Why does the author compare the narrator's bad mood to 'an ice pop in July'?", "c": "To show the bad mood disappeared quickly, the way an ice pop melts in summer heat", "d": ["To show the narrator was hungry for a snack", "To explain why Field Day was held in July", "To show the narrator's mood got colder and worse"]},
             ] },
+            'coffin-house': { std: '4.RC.1', items: [
+                {"rigor": "basic", "q": "According to 'A Safe House in Indiana', where did Levi and Catharine Coffin open their home to freedom seekers?", "c": "In Newport, Indiana, now called Fountain City", "d": ["In Cincinnati, Ohio, their whole lives", "In Canada", "In a southern state"]},
+                {"rigor": "basic", "q": "According to 'A Safe House in Indiana', about how many people did the Coffins help?", "c": "More than one thousand", "d": ["About ten", "Exactly fifty", "Two hundred"]},
+                {"rigor": "on-grade", "q": "The Coffins never turned anyone away, even though helping was against the law. What can you infer about them?", "c": "They were brave and believed in doing what was right.", "d": ["They did not know about the law.", "They wanted to be paid for their help.", "They were not worried about anything."]},
+                {"rigor": "on-grade", "q": "Which detail best supports the inference that helping freedom seekers was dangerous?", "c": "The Coffins could have been fined or jailed.", "d": ["The house is now a museum.", "Catharine sewed clothes.", "Many people continued north to Canada."]},
+                {"rigor": "advanced", "q": "Why might many freedom seekers have continued north to Canada?", "c": "Slavery was against the law there, so they could live freely and safely.", "d": ["Canada was closer than Indiana.", "The Coffins lived in Canada.", "There were no roads in Indiana."]},
+                {"rigor": "advanced", "q": "The text calls the Coffins' home one of the busiest 'stations.' What can you infer this word means here?", "c": "A stop where freedom seekers could rest and hide on their journey", "d": ["A place where trains stopped", "A store that sold train tickets", "A building next to a railroad track"]},
+            ] },
+            'firefly': { std: '4.RC.2', items: [
+                {"rigor": "basic", "q": "In 'How the Firefly Got Its Light', what problem happens in the forest?", "c": "A young rabbit gets lost in the dark.", "d": ["The Moon falls from the sky.", "The frogs eat all the beetles.", "A storm knocks down the trees."]},
+                {"rigor": "basic", "q": "In the legend, what does Flicker do to help the rabbit?", "c": "She searches through the night and stays beside him until morning.", "d": ["She waits until the sun rises to search.", "She asks the frogs to carry him home.", "She tells the rabbit's mother to stop looking."]},
+                {"rigor": "on-grade", "q": "Which sentence best summarizes 'How the Firefly Got Its Light'?", "c": "A tiny beetle bravely finds a lost rabbit in the dark and is rewarded with a glowing light.", "d": ["Animals live in a dark forest long ago.", "A rabbit's mother calls for her son.", "The Moon peeks through a gap in the clouds."]},
+                {"rigor": "on-grade", "q": "What is the theme of 'How the Firefly Got Its Light'?", "c": "Even the smallest creature can make a big difference by helping others.", "d": ["The dark is always dangerous.", "Big animals are better than small ones.", "You should never go into the forest."]},
+                {"rigor": "advanced", "q": "Why does the author include the bigger animals saying, 'We will look in the morning'?", "c": "To show that they gave up, while small Flicker chose to help right away", "d": ["To explain how long the night lasted", "To show that the bigger animals were the bravest", "To describe the forest in the morning"]},
+                {"rigor": "advanced", "q": "Legends often explain something in nature. What does this legend explain?", "c": "Why fireflies glow in the dark", "d": ["Why rabbits have long ears", "Why owls hunt at night", "Why thorns grow in forests"]},
+            ] },
+            'talent-show': { std: '4.RC.3', items: [
+                {"rigor": "basic", "q": "Where does 'The Talent Show Tangle' take place?", "c": "On the school stage before and during a talent show", "d": ["In Jada's bedroom", "At a music store", "On the playground at recess"]},
+                {"rigor": "basic", "q": "In 'The Talent Show Tangle', what problem happens right before the show?", "c": "The sound system stops working.", "d": ["Marcus loses his drumsticks.", "Ms. Lopez cancels the talent show.", "Jada's little brother gets lost."]},
+                {"rigor": "on-grade", "q": "How does Jada feel at the beginning of the play, and how do you know?", "c": "Nervous, because her voice is shaking and she paces back and forth", "d": ["Excited, because she smiles at the crowd", "Angry, because she yells at Marcus", "Bored, because she has nothing to do"]},
+                {"rigor": "on-grade", "q": "How does Marcus's idea change the plot of 'The Talent Show Tangle'?", "c": "His drumbeat replaces the missing music, so Jada can still perform.", "d": ["It makes Ms. Lopez fix the sound system.", "It causes the show to be canceled.", "It makes Jada decide not to sing."]},
+                {"rigor": "advanced", "q": "How do the stage directions in parentheses help the reader of a play?", "c": "They show what the characters are doing and feeling.", "d": ["They tell the reader which lines to skip.", "They give the title of Jada's song.", "They list the names of the audience members."]},
+                {"rigor": "advanced", "q": "Which word best describes Marcus, based on his words and actions?", "c": "Supportive", "d": ["Selfish", "Nervous", "Bossy"]},
+            ] },
+            'snow-day': { std: '4.RC.4', items: [
+                {"rigor": "basic", "q": "From which point of view is Part 1 of 'The Surprise Snow Day' told?", "c": "First person, by Ava", "d": ["Third person, by a narrator", "First person, by Principal Grant", "Third person, by Kiara"]},
+                {"rigor": "basic", "q": "Which word from Part 2 of 'The Surprise Snow Day' shows that it is told in the third person?", "c": "He", "d": ["I", "my", "we"]},
+                {"rigor": "on-grade", "q": "What does the narrator in Part 2 tell the reader that Ava does not know?", "c": "Principal Grant worried about icy roads before deciding to cancel school.", "d": ["School was canceled on Friday.", "It snowed on Thursday night.", "Ava had snow pants ready."]},
+                {"rigor": "on-grade", "q": "How is Ava's view of the snow day different from Principal Grant's?", "c": "Ava sees a fun surprise, while Principal Grant sees a hard decision about safety.", "d": ["Both of them think the snow day is a bad idea.", "Ava worries about the buses, while Principal Grant wants to build a fort.", "They feel exactly the same way."]},
+                {"rigor": "advanced", "q": "Why does the author include both a journal entry and a narrator's account?", "c": "To show the same event from two different points of view", "d": ["To explain how to build a snow fort", "To prove that snow days are dangerous", "To make the story funnier"]},
+                {"rigor": "advanced", "q": "Ava writes, 'I do not know who decided to cancel school.' How does Part 2 answer her question?", "c": "It shows that Principal Grant decided because the roads were unsafe.", "d": ["It shows that Ava's mom canceled school.", "It shows that the weather report canceled school.", "It does not answer her question."]},
+            ] },
+            'sleep': { std: '4.RC.5', items: [
+                {"rigor": "basic", "q": "According to 'Why Your Brain Needs Sleep', how much sleep do children ages 6 to 12 need?", "c": "9 to 12 hours each night", "d": ["4 to 5 hours each night", "About 2 hours each night", "15 to 18 hours each night"]},
+                {"rigor": "basic", "q": "According to 'Why Your Brain Needs Sleep', what can make it hard to get enough sleep?", "c": "Bright screens and caffeine", "d": ["Reading a book", "A cool, dark bedroom", "Going to bed at the same time"]},
+                {"rigor": "on-grade", "q": "What is the main idea of 'Why Your Brain Needs Sleep'?", "c": "Sleep helps the brain and body, and good habits help people get enough of it.", "d": ["Phones have bright screens.", "Some sodas have caffeine.", "Children ages 6 to 12 go to school."]},
+                {"rigor": "on-grade", "q": "Which detail best supports the idea that sleep helps you learn?", "c": "The brain sorts through what you learned and stores the most important information.", "d": ["Bright screens trick the brain.", "Keep your bedroom cool and dark.", "You spend hours with your eyes closed."]},
+                {"rigor": "advanced", "q": "Which is the best summary of the paragraph about how sleep helps your body?", "c": "Sleep helps the body grow, repair muscles, and fight germs.", "d": ["Muscles get tired during a busy day.", "Germs can make people sick.", "Your body releases a hormone."]},
+                {"rigor": "advanced", "q": "How does the paragraph with the doctors' suggestions connect to the paragraph about what makes sleep hard?", "c": "The first explains what makes sleep hard, and the next gives habits that solve those problems.", "d": ["Both paragraphs describe dreams.", "The doctors' paragraph disagrees with the one before it.", "The doctors' paragraph begins a new topic about food."]},
+            ] },
+            'dunes': { std: '4.RC.6', items: [
+                {"rigor": "basic", "q": "In 'Exploring Indiana Dunes National Park', under which subheading would you learn how the dunes were made?", "c": "How the Dunes Formed", "d": ["Plants and Animals", "Visiting the Park", "A Park on the Lake"]},
+                {"rigor": "basic", "q": "According to the glossary in the dunes article, what is a glacier?", "c": "A huge, slow-moving sheet of ice", "d": ["A hill of sand piled up by wind", "A dune that shifts every year", "A plant that belongs to a place"]},
+                {"rigor": "on-grade", "q": "In the dunes article, why is the phrase 'moving dune' printed in bold?", "c": "It is an important term that is defined in the glossary.", "d": ["It is the name of the park.", "It is the title of a section.", "It shows the most exciting part of the article."]},
+                {"rigor": "on-grade", "q": "Which text feature would BEST show where Indiana Dunes National Park is in Indiana?", "c": "A map of Indiana with the park marked", "d": ["The glossary entry for glacier", "A list of birds", "The subheading 'Visiting the Park'"]},
+                {"rigor": "advanced", "q": "How do the sections 'How the Dunes Formed' and 'A Dune That Moves' work together?", "c": "The first explains how dunes were made, and the second explains how some dunes keep changing.", "d": ["Both sections describe the animals in the park.", "The second section disagrees with the first.", "Both sections tell how to visit the park."]},
+                {"rigor": "advanced", "q": "Why might the author have put a glossary at the end of the dunes article?", "c": "To help readers understand the science words used in the article", "d": ["To list the page numbers of each topic", "To tell a story about a trip to the park", "To show where the park is located"]},
+            ] },
+            'maple-syrup': { std: '4.RC.7', items: [
+                {"rigor": "basic", "q": "In 'From Tree to Table', what is the FIRST step in making maple syrup?", "c": "Waiting for the right weather", "d": ["Boiling the sap", "Pouring syrup into bottles", "Filtering the syrup"]},
+                {"rigor": "basic", "q": "In 'From Tree to Table', which signal word shows the LAST step?", "c": "Finally", "d": ["First", "Next", "Then"]},
+                {"rigor": "on-grade", "q": "Which text structure does the author of 'From Tree to Table' mainly use?", "c": "Chronological order (sequence)", "d": ["Compare and contrast", "Problem and solution", "Description of a place"]},
+                {"rigor": "on-grade", "q": "In 'From Tree to Table', what happens right after the trees are tapped?", "c": "Sap drips into buckets or flows through tubes to a tank.", "d": ["The syrup is poured into bottles.", "The syrup is filtered.", "The sap is frozen."]},
+                {"rigor": "advanced", "q": "Why does the author use a sequence structure for this topic?", "c": "Making syrup happens in steps that must be done in a certain order.", "d": ["The author wants to compare two kinds of trees.", "The author wants to solve a problem about pancakes.", "The author wants to describe what a forest looks like."]},
+                {"rigor": "advanced", "q": "Which detail from 'From Tree to Table' shows a cause and effect inside the sequence?", "c": "As the water boils away as steam, the sap turns thick and sweet.", "d": ["Pancakes taste better with syrup.", "Workers drill a hole about two inches deep.", "Syrup is poured into bottles and jars."]},
+            ] },
+            'library-card': { std: '4.RC.8', items: [
+                {"rigor": "basic", "q": "What is the author's claim in 'Every Student Needs a Library Card'?", "c": "Every student should have a public library card.", "d": ["Libraries should close in the summer.", "Students should only read on tablets.", "Library cards cost too much."]},
+                {"rigor": "basic", "q": "Which sentence from 'Every Student Needs a Library Card' is an OPINION?", "c": "Getting a library card is the most important thing a student can do this year.", "d": ["A library card is free.", "Many libraries lend e-books with a library card.", "Studies show students can lose reading skills over the summer."]},
+                {"rigor": "on-grade", "q": "Which reason does the author give to support the claim that every student needs a library card?", "c": "Libraries keep students learning during the summer.", "d": ["Libraries are too far away.", "Tablets are better than books.", "Library books are expensive."]},
+                {"rigor": "on-grade", "q": "How does the author respond to people who say students can read on tablets instead?", "c": "By explaining that many families lack enough devices and that libraries lend e-books for free", "d": ["By agreeing that tablets are better", "By saying tablets are too expensive to use", "By ignoring the argument"]},
+                {"rigor": "advanced", "q": "Which evidence BEST supports the reason that libraries keep students learning in the summer?", "c": "Studies show students who do not read over the summer can lose reading skills.", "d": ["A library card teaches responsibility.", "Families do not have to spend money.", "Every student should have a library card."]},
+                {"rigor": "advanced", "q": "Why does the author of 'Every Student Needs a Library Card' use the words First, Second, and Finally?", "c": "To organize the reasons that support the claim", "d": ["To give the steps for getting a library card", "To compare libraries with schools", "To tell a story in time order"]},
+            ] },
+            'balloons': { std: '4.RC.9', items: [
+                {"rigor": "basic", "q": "In 'Up, Up, and Away', what is Text A mostly about?", "c": "The first hot air balloons and how they rise", "d": ["How weather balloons measure the air", "Why balloons pop", "How to predict the weather"]},
+                {"rigor": "basic", "q": "According to Text B of 'Up, Up, and Away', how often do scientists release weather balloons?", "c": "Twice a day", "d": ["Once a year", "Every hour", "Once a week"]},
+                {"rigor": "on-grade", "q": "Which idea is found in BOTH texts of 'Up, Up, and Away'?", "c": "Balloons rise because what is inside them is lighter than the air around them.", "d": ["Balloons were first built in France.", "Balloons carry a box called a radiosonde.", "Balloons fly over the city of Paris."]},
+                {"rigor": "on-grade", "q": "Which detail appears in Text B of 'Up, Up, and Away' but NOT in Text A?", "c": "A balloon can stretch bigger and bigger until it pops.", "d": ["Hot air is lighter than cooler air.", "People ride balloons for fun.", "Two brothers built a balloon."]},
+                {"rigor": "advanced", "q": "What conclusion can you draw from reading BOTH texts of 'Up, Up, and Away'?", "c": "Balloons have been used for both adventure and science.", "d": ["Hot air balloons are used to predict storms.", "Weather balloons carry passengers.", "Balloons are no longer used today."]},
+                {"rigor": "advanced", "q": "How are the purposes of the balloons in Text A and Text B DIFFERENT?", "c": "Hot air balloons carry riders, while weather balloons collect information for scientists.", "d": ["Hot air balloons collect weather data, while weather balloons carry people.", "Both kinds of balloons are used only for fun.", "There is no difference in their purposes."]},
+            ] },
+            'winter-poem': { std: '4.RC.13', items: [
+                {"rigor": "basic", "q": "In 'When Winter Comes to Town', which line contains a SIMILE?", "c": "My cheeks are red as cherry pie", "d": ["The wind becomes a howling wolf", "The icicles are crystal swords", "Winter tiptoes into town"]},
+                {"rigor": "basic", "q": "In 'When Winter Comes to Town', 'The icicles are crystal swords.' What type of figurative language is this?", "c": "Metaphor", "d": ["Simile", "Hyperbole", "Idiom"]},
+                {"rigor": "on-grade", "q": "The poem says, 'Winter tiptoes into town on soft and silent feet.' What does this personification suggest?", "c": "Winter arrives quietly and gently.", "d": ["Winter is a person who lives in town.", "Winter arrives with a loud storm.", "The town has no streets."]},
+                {"rigor": "on-grade", "q": "What does the metaphor 'the wind becomes a howling wolf' help the reader picture?", "c": "The wind is loud, wild, and a little scary.", "d": ["The wind is warm and gentle.", "A real wolf is outside the house.", "The wind has stopped blowing."]},
+                {"rigor": "advanced", "q": "Why does the poet compare the cardinal to 'a ruby spark'?", "c": "To show the bright red bird standing out against the white snow", "d": ["To show the bird is made of jewels", "To explain why cardinals eat seeds", "To show the bird is on fire"]},
+                {"rigor": "advanced", "q": "How does the poet show Winter as a character from the beginning to the end of the poem?", "c": "Winter arrives, covers the town, and then packs to go when spring comes, like a visitor.", "d": ["Winter is a wolf that hunts in the town.", "Winter is a snowman that guards the yard.", "Winter is a bird that sings on a branch."]},
+            ] },
+            'mixed-message': { std: '4.RC.11', items: [
+                {"rigor": "basic", "q": "In 'The Mixed-Up Message', which word should Theo have written instead of 'meat'?", "c": "meet", "d": ["met", "mate", "melt"]},
+                {"rigor": "basic", "q": "Which pair of words from 'The Mixed-Up Message' are homophones?", "c": "four and for", "d": ["tree and oak", "note and map", "late and early"]},
+                {"rigor": "on-grade", "q": "In 'The Mixed-Up Message', why is Lena confused when she reads the note?", "c": "Theo used the wrong spellings of words that sound the same.", "d": ["The note is written in another language.", "There is no tree in the park.", "Theo forgot to sign his name."]},
+                {"rigor": "on-grade", "q": "In the story, 'bare' describes a tree with no leaves. Which sentence uses 'bear' correctly?", "c": "We saw a brown bear at the zoo.", "d": ["The tree was bear in winter.", "Please bear me at four o'clock.", "The bear floor was cold on my feet."]},
+                {"rigor": "advanced", "q": "'Bare' and 'bear' are homophones. What makes them homophones?", "c": "They sound the same but have different spellings and meanings.", "d": ["They are spelled the same but sound different.", "They mean the same thing.", "They are opposites."]},
+                {"rigor": "advanced", "q": "What lesson does Theo learn about writing in 'The Mixed-Up Message'?", "c": "Reread your writing to check that you used the right words.", "d": ["Never write notes to friends.", "Always draw a map with a note.", "Use only short words in a note."]},
+            ] },
+            'word-lab': { std: '4.RC.12', items: [
+                {"rigor": "basic", "q": "In 'The Word Lab', what does the prefix 'un-' mean in 'unhappy'?", "c": "not", "d": ["again", "before", "full of"]},
+                {"rigor": "basic", "q": "According to 'The Word Lab', what does the root 'tele' mean?", "c": "far", "d": ["life", "look", "write"]},
+                {"rigor": "on-grade", "q": "In 'The Word Lab', which word has a suffix that means 'without'?", "c": "fearless", "d": ["helpful", "unhappy", "telescope"]},
+                {"rigor": "on-grade", "q": "In 'The Word Lab', how does Owen figure out the meaning of 'telescope'?", "c": "He puts together the meanings of tele (far) and scope (to look at).", "d": ["He looks it up in a dictionary.", "He asks Mr. Ortiz.", "He guesses because it is a long word."]},
+                {"rigor": "advanced", "q": "Priya and Owen invent 'rehappyful.' Which meaning matches the parts they used?", "c": "Full of happiness again", "d": ["Not happy before", "Without happiness", "Happy far away"]},
+                {"rigor": "advanced", "q": "Why does Mr. Ortiz say the made-up word is still 'real word building'?", "c": "The students used real prefixes, base words, and suffixes correctly to build its meaning.", "d": ["The word is in the dictionary.", "It is the longest word in the class.", "All made-up words are real words."]},
+            ] },
+            'midnight-rescue': { std: '4.RC.1', items: [
+                {"rigor": "advanced", "q": "In 'The Midnight Rescue', why does Maya go outside right away instead of waiting until morning?", "c": "She sees the water rising and knows the puppy could be in danger.", "d": ["She wants to play in the rain.", "She hears her mom calling her.", "She thinks the puppy belongs to her."]},
+            ] },
+            'deep-sea': { std: '4.RC.1', items: [
+                {"rigor": "advanced", "q": "What can you infer about why most of the deep ocean floor has never been seen?", "c": "Exploring it is difficult and expensive, so only a few trips can be made.", "d": ["Scientists are not interested in the deep ocean.", "The deep ocean floor is very small.", "Submersibles can only travel in shallow water."]},
+            ] },
         };
         const NEW_WRITTEN = {
             'garden-mystery': { std: '4.RC.1', items: [
@@ -1835,6 +2667,54 @@ const STANDARDS = [
             'field-day': { std: '4.RC.13', items: [
                 {"q": "Find one simile and one hyperbole in 'Field Day Fever.' Explain what each one means.", "key": "Simile: as quick as a rabbit, like a kangaroo, as red as a tomato, like an ice pop in July, or a smile as wide as the playground. Hyperbole: waiting for a million years. Meanings should match."},
                 {"q": "How does the author of 'Field Day Fever' use figurative language to show how the narrator's feelings change?", "key": "Nervous (butterflies), embarrassed (red as a tomato), then happy (mood melted away like an ice pop; smile as wide as the playground)."},
+            ] },
+            'coffin-house': { std: '4.RC.1', items: [
+                {"q": "What can you infer about Levi and Catharine Coffin? Use TWO details from 'A Safe House in Indiana' to support your answer.", "key": "Inference: they were brave and kind. Details: they never turned anyone away even though it was against the law; Catharine cooked, sewed, and cared for people; they helped more than one thousand people."},
+                {"q": "Explain why the Coffin House is important. Use details from 'A Safe House in Indiana.'", "key": "It was a busy Underground Railroad station where more than one thousand freedom seekers were helped; today it is a museum that shows how ordinary people made brave choices."},
+            ] },
+            'firefly': { std: '4.RC.2', items: [
+                {"q": "What is the theme of 'How the Firefly Got Its Light'? Explain how Flicker's actions show this theme.", "key": "Theme: even the smallest creature can make a big difference. Actions: she searches all night when bigger animals give up, and she stays with the rabbit until morning."},
+                {"q": "Summarize 'How the Firefly Got Its Light' in 3 to 4 sentences. Include the beginning, middle, and end.", "key": "The nights were dark long ago; a rabbit got lost; tiny Flicker searched and found him; the Moon gave her a glowing light, which is why fireflies glow."},
+            ] },
+            'talent-show': { std: '4.RC.3', items: [
+                {"q": "Describe how Jada changes from the beginning to the end of 'The Talent Show Tangle.' What event causes the change?", "key": "She starts nervous (voice shaking, pacing) and ends confident; after the sound system breaks, Marcus offers to play the beat, and singing with him gives her courage."},
+                {"q": "How does the setting of 'The Talent Show Tangle' create a problem for the characters? Use details from the play.", "key": "Backstage minutes before the show, the sound system breaks, so there are no microphones or music; the packed gym adds to Jada's nerves."},
+            ] },
+            'snow-day': { std: '4.RC.4', items: [
+                {"q": "Compare Ava's journal in Part 1 with the narrator's account in Part 2 of 'The Surprise Snow Day.' How does the point of view change what the reader learns?", "key": "Part 1 (first person) shows Ava's excitement, but she does not know why school was canceled. Part 2 (third person) shows Principal Grant's worries about icy roads and how he decided."},
+                {"q": "Rewrite this sentence from Ava's journal in the third person: 'I screamed so loud that I woke up the dog.' Then explain what changed.", "key": "'Ava screamed so loud that she woke up the dog.' I becomes Ava or she, because the narrator is now outside the story."},
+            ] },
+            'sleep': { std: '4.RC.5', items: [
+                {"q": "State the main idea of 'Why Your Brain Needs Sleep.' Give TWO key details that support it.", "key": "Main idea: sleep is important for the brain and body. Details: the brain stores what you learned; the body grows, repairs muscles, and fights germs; children need 9 to 12 hours."},
+                {"q": "In your own words, summarize the habits from 'Why Your Brain Needs Sleep' that help people sleep well.", "key": "Go to bed at the same time; turn off screens an hour before bed; keep the bedroom cool, dark, and quiet."},
+            ] },
+            'dunes': { std: '4.RC.6', items: [
+                {"q": "Choose two text features from 'Exploring Indiana Dunes National Park.' Explain how each one helps a reader.", "key": "Look for: subheadings organize topics; bold words mark key vocabulary; the glossary defines terms; a caption, timeline, or Did You Know? box adds information."},
+                {"q": "Using the subheadings, explain how the author organized 'Exploring Indiana Dunes National Park.'", "key": "It moves from what the park is, to how dunes formed, how some move, what lives there, and how to visit, and it ends with a glossary."},
+            ] },
+            'maple-syrup': { std: '4.RC.7', items: [
+                {"q": "Explain the steps for making maple syrup in order. Use at least THREE signal words from 'From Tree to Table.'", "key": "Wait for freezing nights and warm days; next tap the trees; then boil the sap; after that filter it; finally bottle it. Signal words: First, Next, Then, After that, Finally."},
+                {"q": "Why do you think the author chose chronological order to organize 'From Tree to Table'? Use details from the text.", "key": "Syrup making happens in a set order of steps, and signal words like first, next, then, and finally guide the reader through the process."},
+            ] },
+            'library-card': { std: '4.RC.8', items: [
+                {"q": "Identify the claim in 'Every Student Needs a Library Card.' Explain TWO reasons and the evidence the author gives for each.", "key": "Claim: every student should have a library card. Reasons: free access to books (reading builds vocabulary); summer learning (studies about losing skills); responsibility (returning books on time)."},
+                {"q": "Find one fact and one opinion in 'Every Student Needs a Library Card.' Explain how you can tell the difference.", "key": "Fact: a library card is free, or libraries lend e-books. Opinion: getting a card is the most important thing a student can do. Facts can be checked; opinions show a belief."},
+            ] },
+            'balloons': { std: '4.RC.9', items: [
+                {"q": "Use information from BOTH texts in 'Up, Up, and Away' to explain why balloons rise. Include a detail from Text A and a detail from Text B.", "key": "Text A: hot air is lighter than cooler air, so the balloon floats up. Text B: helium or hydrogen is lighter than air."},
+                {"q": "How are hot air balloons and weather balloons alike? How are they different? Use details from both texts.", "key": "Alike: both rise because they are filled with something lighter than air. Different: hot air balloons carry people for fun; weather balloons carry instruments, rise about 20 miles, and pop."},
+            ] },
+            'winter-poem': { std: '4.RC.13', items: [
+                {"q": "Find one simile and one metaphor in 'When Winter Comes to Town.' Explain what each one means.", "key": "Simile: breath like a dragon's smoke, or cheeks red as cherry pie. Metaphor: the wind is a howling wolf, the icicles are crystal swords, or the cardinal is a ruby spark. Meanings should match."},
+                {"q": "How does the poet of 'When Winter Comes to Town' use personification to make Winter seem like a person? Use two examples.", "key": "Winter tiptoes on silent feet, drapes a blanket, packs to go, and leaves a kiss of snow; these are human actions."},
+            ] },
+            'mixed-message': { std: '4.RC.11', items: [
+                {"q": "Find two homophone mistakes in Theo's note in 'The Mixed-Up Message.' For each one, write the correct word and explain what it means.", "key": "meat to meet (to get together); for to four (the number 4); bear to bare (with nothing on it, like a tree with no leaves)."},
+                {"q": "Write a sentence for each word in one homophone pair from 'The Mixed-Up Message' to show the difference in meaning.", "key": "Example: I will meet you at recess. We had meat for dinner. Each sentence should match its word's meaning."},
+            ] },
+            'word-lab': { std: '4.RC.12', items: [
+                {"q": "Choose two words from 'The Word Lab.' Break each one into its parts and explain how the parts create the meaning.", "key": "Examples: un + happy = not happy; help + ful = full of help; fear + less = without fear; tele + scope = a tool for looking at faraway things."},
+                {"q": "Invent your own word using a real prefix, base word or root, and suffix, like the students in 'The Word Lab.' Explain what it means and how you built it.", "key": "Any invented word whose meaning matches its real parts (for example, re + paint + able = able to be painted again)."},
             ] },
         };
 
@@ -2059,17 +2939,155 @@ const STANDARDS = [
             ]
         };
 
+        // ---------- Mini-lesson guides (Lesson tab) ----------
+        // target: student-friendly learning target. teach: teaching points. steps: the strategy to model aloud.
+        // watch: common misconceptions and what to do. organizer: graphic organizer for the student page.
+        const LESSONS = {
+            '4.RC.1': {
+                target: 'I can find details the text states directly and use them, along with what I already know, to make inferences.',
+                vocab: [['explicit detail', 'information the text states directly'], ['inference', 'a smart guess that uses text clues plus what you already know'], ['evidence', 'the exact words in the text that prove an answer']],
+                teach: ['Explicit details are "right there" in the text. You can put your finger on them.', 'An inference is not written in the text. Readers combine clues from the text with what they already know.', 'Good readers prove every answer with evidence, the exact words that support it.', 'Sentence frame: The text says ___. I know ___. So I can infer ___.'],
+                steps: ['Read the question and decide: is the answer stated (explicit), or do I have to figure it out (inference)?', 'Go back to the text and find the part that answers it.', 'For an inference, add what I already know to the clue.', 'Check each answer choice against the evidence and cross out choices the text does not support.'],
+                watch: ['Students choose an answer that sounds true but is not in the text. Ask, "Where does it say that?"', 'Students copy an explicit detail when the question asks for an inference. Ask, "What does that detail make you think?"'],
+                support: 'Give the It Says / I Say / And So chart and highlight one clue together before students work.',
+                extend: 'Have students write their own inference question about the passage and trade with a partner.',
+                organizer: { title: 'It Says / I Say / And So', cols: ['It says (text evidence)', 'I say (what I know)', 'And so (my inference)'], rows: 2 }
+            },
+            '4.RC.2': {
+                target: 'I can summarize a story and determine its theme, using details from the text.',
+                vocab: [['summary', 'a short retelling of the most important events, in your own words'], ['theme', 'the lesson or message of a story'], ['plot', 'the events of a story from beginning to end']],
+                teach: ['A summary tells only the most important events, in order, in your own words. It leaves out small details and opinions.', 'Somebody, Wanted, But, So, Then is a quick plan for summarizing a story.', 'The theme is the message the author wants readers to learn. It is usually not stated directly.', 'To find the theme, look at how the main character changes or what the character learns, then turn it into a message about life.'],
+                steps: ['Name the main character and the problem.', 'Find how the problem is solved.', 'Ask: What did the character learn? How did the character change?', 'Write the lesson as a message for everyone ("Kindness helps everyone"), not just for the character.'],
+                watch: ['Students name a one-word topic ("friendship") instead of a theme. Ask, "What about friendship?" until they say a full sentence.', 'Summaries include every small detail. Have students cross out details that do not change the story.'],
+                support: 'Give the Somebody / Wanted / But / So / Then frame with sentence starters.',
+                extend: 'Ask students to name another story with the same theme and explain the connection.',
+                organizer: { title: 'Summary Planner', cols: ['Somebody', 'Wanted', 'But', 'So', 'Then'], rows: 1 }
+            },
+            '4.RC.3': {
+                target: 'I can describe a character, setting, or event in depth and explain how it affects the plot.',
+                vocab: [['character trait', 'a word that describes what a character is like on the inside'], ['setting', 'when and where a story happens'], ['plot', 'the events of a story'], ['conflict', 'the main problem in a story']],
+                teach: ['Characters show who they are through what they say, do, think, and feel.', 'Traits (brave, selfish, curious) last. Feelings (scared, happy) change quickly.', 'The setting can create problems or change what characters do. Ask, "Could this story happen anywhere else?"', 'Strong answers name the trait or setting AND explain its effect on the plot with evidence.'],
+                steps: ['Find what the character says, does, or thinks.', 'Choose a trait word that fits those actions.', 'Find a setting detail and ask how it causes or changes events.', 'Connect it: Because the character (or setting) ___, the plot ___.'],
+                watch: ['Students mix up feelings and traits. Ask, "Is this how they feel right now, or what they are like all the time?"', 'Students describe the setting but stop there. Ask, "What happens BECAUSE of the setting?"'],
+                support: 'Post a trait word bank: brave, caring, stubborn, curious, selfish, patient, honest, nervous.',
+                extend: 'Have students imagine the story in a different setting and explain how the plot would change.',
+                organizer: { title: 'Story Element Chart', cols: ['Character, setting, or event', 'Evidence from the text', 'How it affects the plot'], rows: 2 }
+            },
+            '4.RC.4': {
+                target: 'I can compare and contrast stories told in first person and third person.',
+                vocab: [['narrator', 'the voice telling the story'], ['first person', 'the narrator is a character and uses I, me, my, we'], ['third person', 'the narrator is outside the story and uses he, she, they, and names'], ['point of view', 'who tells the story and what they know']],
+                teach: ['Look at the words the narrator uses for himself or herself: I and my mean first person.', 'A first-person narrator can only share his or her own thoughts and what he or she sees.', 'A third-person narrator is outside the story and can describe several characters.', 'Point of view changes what the reader learns. The same event can look very different from another character\'s view.'],
+                steps: ['Find the narrator\'s pronouns in the first few sentences.', 'Ask: Is the narrator a character in the story?', 'List what this narrator knows and does not know.', 'Compare with the other account: What new information appears?'],
+                watch: ['Students see "he" or "she" in dialogue and call a first-person story third person. Look at how the narrator talks, not the characters.', 'Students think "third person" means three characters. Reteach that the narrator is outside the story.'],
+                support: 'Give a pronoun sort card: first person (I, me, my, we, our) and third person (he, she, they, names).',
+                extend: 'Have students rewrite a short paragraph from first person to third person and explain what changed.',
+                organizer: { title: 'Point of View Chart', cols: ['Account', 'First or third person?', 'Clue words', 'What this narrator knows'], rows: 2 }
+            },
+            '4.RC.5': {
+                target: 'I can determine the main idea of an informational text, explain how key details support it, and summarize the text.',
+                vocab: [['topic', 'what the text is about, in a word or two'], ['main idea', 'the most important point the author makes about the topic'], ['key details', 'facts that support the main idea'], ['summary', 'a short retelling of the most important ideas']],
+                teach: ['The topic is one or two words. The main idea is a full sentence about the topic.', 'Titles, first paragraphs, and last paragraphs often hint at the main idea.', 'Key details support the main idea. An interesting fact is not always a key detail.', 'A nonfiction summary states the main idea and the most important details, without opinions.'],
+                steps: ['Name the topic.', 'Ask: What does the author most want me to know about it?', 'Find two or three details that prove that point.', 'Check: Does every key detail connect to my main idea?'],
+                watch: ['Students pick one interesting fact as the main idea. Ask, "Is the whole text about that?"', 'Students give the topic instead of the main idea. Have them finish: "The author wants me to know that ___."'],
+                support: 'Use a table-and-legs picture: the main idea is the tabletop, and the details are the legs that hold it up.',
+                extend: 'Have students write a summary of the text in exactly 25 words.',
+                organizer: { title: 'Main Idea and Details', cols: ['Main idea', 'Key detail 1', 'Key detail 2', 'Key detail 3'], rows: 1 }
+            },
+            '4.RC.6': {
+                target: 'I can use text features to find information quickly and understand a text.',
+                vocab: [['text feature', 'a part of a text that helps readers find or understand information'], ['subheading', 'a title for one section of a text'], ['glossary', 'a list of important words and their meanings'], ['caption', 'words that explain a picture or diagram'], ['diagram', 'a labeled picture that shows parts or steps']],
+                teach: ['Text features help readers find information fast and understand it better.', 'Subheadings tell what each section is about, so readers can skip to the part they need.', 'Bold words are important vocabulary and are often defined in a glossary.', 'Diagrams, maps, captions, and charts show information that is hard to explain with words alone.'],
+                steps: ['Before reading, preview the title, subheadings, and any pictures.', 'Read the question and decide which feature or section would hold the answer.', 'Go straight to that feature or section.', 'Explain how the feature helped me.'],
+                watch: ['Students reread the whole text instead of using subheadings. Practice "search, don\'t reread."', 'Students skip captions and diagrams. Have them read every caption aloud during the preview.'],
+                support: 'Give a text feature checklist for partners to use while previewing.',
+                extend: 'Have students add a new text feature (a subheading, a caption, or a "Did You Know?" box) to the passage.',
+                organizer: { title: 'Text Feature Hunt', cols: ['Text feature', 'Where I found it', 'How it helps the reader'], rows: 3 }
+            },
+            '4.RC.7': {
+                target: 'I can describe how an informational text is organized: cause and effect, compare and contrast, problem and solution, or time order.',
+                vocab: [['text structure', 'the way an author organizes information'], ['cause and effect', 'what happened and why'], ['compare and contrast', 'how things are alike and different'], ['problem and solution', 'a problem and the ways to fix it'], ['chronological', 'in time order']],
+                teach: ['Authors choose a structure that fits their purpose.', 'Signal words are clues: because, as a result, consequently (cause and effect); both, in contrast, however (compare and contrast); the problem is, one solution (problem and solution); first, next, finally (time order).', 'A text can use more than one structure, but one usually organizes the whole piece.', 'Match a graphic organizer to the structure: a Venn diagram for compare and contrast, arrows for cause and effect.'],
+                steps: ['Skim for signal words and circle them.', 'Ask: What is the author mostly doing: explaining why, comparing, solving, or telling steps?', 'Choose the structure that fits the WHOLE text, not just one sentence.', 'Prove it with two signal words or details.'],
+                watch: ['Students name a structure from one sentence. Ask, "Does the whole text work that way?"', 'Students confuse cause and effect with problem and solution. A solution is a fix someone chooses; an effect just happens.'],
+                support: 'Give a signal-word bookmark sorted by structure.',
+                extend: 'Have students rewrite one paragraph using a different structure.',
+                organizer: { title: 'Text Structure Detective', cols: ['Signal words I found', 'Text structure', 'How I know'], rows: 2 }
+            },
+            '4.RC.8': {
+                target: 'I can explain how an author uses reasons and evidence to support a point, and tell facts from opinions.',
+                vocab: [['claim', 'the author\'s main point or opinion'], ['reason', 'why the author believes the claim'], ['evidence', 'facts, examples, or data that support a reason'], ['fact', 'something that can be proven'], ['opinion', 'a belief or feeling that cannot be proven']],
+                teach: ['Persuasive authors state a claim and support it with reasons.', 'Each reason should be backed by evidence such as facts, numbers, or what experts say.', 'Facts can be checked. Opinions often use words like best, worst, should, and wonderful.', 'Strong writers also answer the other side and explain why it is wrong.'],
+                steps: ['Find the claim, often in the first or last paragraph.', 'Look for reason signal words: first, second, also, finally.', 'Under each reason, find the evidence.', 'Ask: Could this be proven? If yes, it is a fact.'],
+                watch: ['Students call any sentence they agree with a fact. Ask, "How could we prove it?"', 'Students treat one person\'s story as strong evidence. Compare it with research or numbers.'],
+                support: 'Give a list of opinion words: best, worst, should, amazing, wonderful, undeniably.',
+                extend: 'Have students add one more piece of evidence the author could use and explain why it is strong.',
+                organizer: { title: 'Claim, Reasons, Evidence', cols: ['Claim', 'Reason', 'Evidence'], rows: 3 }
+            },
+            '4.RC.9': {
+                target: 'I can combine information from two texts on the same topic.',
+                vocab: [['integrate', 'to combine information from more than one source'], ['paired texts', 'two texts about the same topic'], ['similarity', 'a way things are alike'], ['difference', 'a way things are different']],
+                teach: ['Read each text for its main idea first.', 'Look for information found in both texts and information found in only one.', 'Combining texts gives a fuller picture than either text alone.', 'When writing, name the source of each detail: "Text A explains... while Text B adds..."'],
+                steps: ['Summarize Text A in one sentence.', 'Summarize Text B in one sentence.', 'Mark what is the same and what is different.', 'Write one statement that uses details from BOTH texts.'],
+                watch: ['Students answer "both texts" questions with a detail from only one text. Have them check each choice in each text.', 'Students mix up which text said what. Have them label notes with A or B.'],
+                support: 'Use a three-column chart: Only in Text A, In Both, Only in Text B.',
+                extend: 'Ask students what a third text on the topic might add, and why.',
+                organizer: { title: 'Paired Text Chart', cols: ['Only in Text A', 'In BOTH texts', 'Only in Text B'], rows: 3 }
+            },
+            '4.RC.10': {
+                target: 'I can use context clues to figure out the meaning of unknown words.',
+                vocab: [['context clues', 'words around an unknown word that help explain it'], ['definition clue', 'the meaning is given in the sentence'], ['synonym or antonym clue', 'a nearby word means the same or the opposite'], ['example clue', 'examples help explain the word']],
+                teach: ['When you meet an unknown word, keep reading. The sentence often explains it.', 'Look for definition clues (is called, means), synonym clues (or, also), antonym clues (but, unlike), and example clues (such as).', 'Use the whole paragraph, not just the sentence.', 'Test your meaning: put it in place of the word and reread. Does it make sense?'],
+                steps: ['Reread the sentence with the unknown word.', 'Find clue words before and after it.', 'Make a guess at the meaning.', 'Replace the word with my meaning and check that the sentence still makes sense.'],
+                watch: ['Students choose a meaning they know from somewhere else (a multiple-meaning word). Ask, "Does that meaning fit this sentence?"', 'Students stare at the word itself. Point them to the words around it.'],
+                support: 'Give a chart of context clue types with their signal words.',
+                extend: 'Have students find a hard word in their independent reading and explain the clues that help.',
+                organizer: { title: 'Context Clue Detective', cols: ['Word', 'Clues from the text', 'What I think it means'], rows: 3 }
+            },
+            '4.RC.11': {
+                target: 'I can explain how words are related, including synonyms, antonyms, homophones, homographs, and multiple-meaning words.',
+                vocab: [['synonym', 'a word with a similar meaning'], ['antonym', 'a word with the opposite meaning'], ['homophone', 'words that sound the same but are spelled differently'], ['homograph', 'words spelled the same with different meanings'], ['multiple-meaning word', 'a word with more than one meaning']],
+                teach: ['Words are connected by meaning (synonyms, antonyms) and by sound or spelling (homophones, homographs).', 'Context tells which meaning of a multiple-meaning word fits.', 'Synonyms are not always exact. Choose the one that fits the feeling.', 'Homophones need careful spelling: their, there, they\'re.'],
+                steps: ['Read the word in its sentence.', 'Ask: Is this question about meaning, sound, or spelling?', 'Use context to choose the right meaning.', 'Check by using the word in a new sentence.'],
+                watch: ['Students mix up homophones and homographs. Homophones sound alike; homographs are spelled alike.', 'Students pick a synonym with the wrong shade of meaning (giggle vs. roar).'],
+                support: 'Keep an anchor chart with one example of each word relationship.',
+                extend: 'Have students write riddles that use multiple-meaning words.',
+                organizer: { title: 'Word Relationships', cols: ['Word pair', 'Relationship', 'Sentence using one of the words'], rows: 3 }
+            },
+            '4.RC.12': {
+                target: 'I can use prefixes, suffixes, and Greek and Latin roots to figure out word meanings.',
+                vocab: [['root', 'the main part of a word that carries its meaning'], ['prefix', 'a word part added to the beginning'], ['suffix', 'a word part added to the end'], ['affix', 'a prefix or a suffix']],
+                teach: ['Break long words into parts: prefix, root or base word, suffix.', 'Common prefixes: un- (not), re- (again), pre- (before), dis- (not). Common suffixes: -able (can be), -ful (full of), -less (without).', 'Greek and Latin roots: bio (life), geo (earth), graph (write), tele (far), aud (hear), port (carry).', 'Put the meanings back together, then check the meaning in the sentence.'],
+                steps: ['Find the prefix and suffix and cover them.', 'Look at what is left: the root or base word.', 'Say what each part means.', 'Put the meanings together and test it in the sentence.'],
+                watch: ['Students find fake prefixes (the "re" in ready). Check that what is left is a real word or root.', 'Students know the parts but combine them in the wrong order. Model: un + break + able = not able to be broken.'],
+                support: 'Give a word-parts card with common prefixes, suffixes, and roots.',
+                extend: 'Have students invent a new word from real word parts and define it.',
+                organizer: { title: 'Word Parts', cols: ['Word', 'Prefix', 'Root or base', 'Suffix', 'Meaning'], rows: 3 }
+            },
+            '4.RC.13': {
+                target: 'I can explain the meaning of figurative language, such as similes, metaphors, personification, and hyperbole.',
+                vocab: [['simile', 'compares two things using like or as'], ['metaphor', 'compares by saying one thing is another'], ['personification', 'gives human actions or feelings to something that is not human'], ['hyperbole', 'a huge exaggeration'], ['idiom', 'a saying that means something different from its words']],
+                teach: ['Figurative language says one thing but means another. Readers ask, "What does this really mean?"', 'Similes use like or as. Metaphors make the comparison without those words.', 'Personification makes things act like people. Hyperbole exaggerates for effect.', 'Authors use figurative language to help readers picture things and feel the mood.'],
+                steps: ['Find the phrase that cannot be literally true.', 'Name the type: like or as (simile), is or was (metaphor), human action (personification), huge exaggeration (hyperbole).', 'Ask what the two things have in common, or what the exaggeration shows.', 'Explain the meaning in plain words.'],
+                watch: ['Students name the type but cannot explain the meaning. Always ask, "What is the author really saying?"', 'Students call any sentence with "like" a simile ("I like pizza"). Check that two things are compared.'],
+                support: 'Give a figurative language chart with an example of each type.',
+                extend: 'Have students write their own example of each type about something in the classroom.',
+                organizer: { title: 'Figurative Language Finder', cols: ['Phrase from the text', 'Type', 'What it really means'], rows: 3 }
+            }
+        };
+
         // =====================================================================
         // App
         // =====================================================================
-        const LEVEL_NAME = { basic: 'Level 1', 'on-grade': 'Level 2', advanced: 'Level 3' };
+        const LEVEL_NAME = { basic: 'DOK 1', 'on-grade': 'DOK 2', advanced: 'DOK 3' };
+        const DOK_KEY = { 1: 'basic', 2: 'on-grade', 3: 'advanced' };
+        const levelsFor = id => dokFor(id).map(d => DOK_KEY[d]);   // the checked DOK levels as question levels
         const LEVEL_ORDER = { basic: 0, 'on-grade': 1, advanced: 2 };
         const CFA_MAX_STANDARDS = 2;
 
         const MODE_DEFAULTS = {
             cfa: {
                 title: 'ELA Common Formative Assessment', sub: '',
-                genre: 'auto', rigor: 'on-grade', newPage: false, score: false,
+                genre: 'auto', rigor: 'mix', newPage: false, score: false,
                 sel: { '4.RC.1': { mc: 3, wr: 1 } },
                 defaultCounts: { mc: 3, wr: 1 }
             },
@@ -2084,6 +3102,12 @@ const STANDARDS = [
                 genre: 'auto', rigor: 'mix', newPage: true, score: false, days: '5', perDay: '4', written: false,
                 sel: { '4.RC.1': { mc: 2, wr: 0 }, '4.RC.2': { mc: 2, wr: 0 }, '4.RC.3': { mc: 2, wr: 0 }, '4.RC.10': { mc: 1, wr: 0 }, '4.RC.11': { mc: 1, wr: 0 } },
                 defaultCounts: { mc: 2, wr: 0 }
+            },
+            lesson: {
+                title: 'Lesson', sub: '', block: '120',
+                genre: 'auto', rigor: 'mix', newPage: true, score: false,
+                sel: { '4.RC.1': { mc: 6, wr: 1 } },
+                defaultCounts: { mc: 6, wr: 1 }
             },
             exit: {
                 title: 'Exit Ticket', sub: '',
@@ -2158,11 +3182,14 @@ const STANDARDS = [
             const prefer = q => (genrePref !== 'auto' && q.genre === genrePref) ? 0 : 1;
             const byGenre = list => shuffle(list, rng).sort((a, b) => prefer(a) - prefer(b));
             if (rigor === 'all') return byGenre(pool);
-            if (rigor === 'mix') {
-                const tiers = ['basic', 'on-grade', 'advanced'].map(l => byGenre(pool.filter(q => q.rigor === l)));
+            if (rigor === 'mix') rigor = ['basic', 'on-grade', 'advanced'];
+            if (Array.isArray(rigor)) {
+                // Take turns across the checked levels; other levels are only a backup at the end
+                const tiers = rigor.map(l => byGenre(pool.filter(q => q.rigor === l)));
                 const out = [];
                 while (tiers.some(t => t.length)) tiers.forEach(t => { if (t.length) out.push(t.shift()); });
-                return out;
+                const rest = ['basic', 'on-grade', 'advanced'].filter(l => !rigor.includes(l));
+                return out.concat(rest.flatMap(l => byGenre(pool.filter(q => q.rigor === l))));
             }
             const tierOrder = { basic: ['basic', 'on-grade', 'advanced'], 'on-grade': ['on-grade', 'advanced', 'basic'], advanced: ['advanced', 'on-grade', 'basic'] }[rigor];
             return tierOrder.flatMap(l => byGenre(pool.filter(q => q.rigor === l)));
@@ -2184,8 +3211,11 @@ const STANDARDS = [
             // Which passages may be used (by id), in the order they should be tried
             const fits = list.filter(p => p.genre === genre || p.genre === 'both');
             let allowed;
-            if (genre === 'auto' || !list.length) allowed = shuffle(list.map(p => p.id), rng);
-            else if (fits.length) allowed = shuffle(fits.map(p => p.id), rng);
+            // Passages with the most questions at the checked DOK levels go first
+            const atLevel = pid => (QUESTION_POOLS[stdId] || []).filter(q => passageNeeded(stdId, q) === pid && (!Array.isArray(rigor) || rigor.includes(q.rigor))).length;
+            const byFit = ids => shuffle(ids, rng).sort((x, y) => atLevel(y) - atLevel(x));
+            if (genre === 'auto' || !list.length) allowed = byFit(list.map(p => p.id));
+            else if (fits.length) allowed = byFit(fits.map(p => p.id));
             else {
                 allowed = shuffle(list.map(p => p.id), rng);
                 notices.swap.push(stdId);
@@ -2209,8 +3239,8 @@ const STANDARDS = [
             if (chosen.length < mcWanted) {
                 notices.short.push(`${stdId}: ${chosen.length} of ${mcWanted} multiple-choice questions added. The bank has no more that fit${genre !== 'auto' ? ' this passage type' : ''}.`);
             }
-            if (rigor !== 'all' && rigor !== 'mix') {
-                const off = chosen.filter(q => q.rigor !== rigor).length;
+            if (Array.isArray(rigor) && rigor.length < 3) {
+                const off = chosen.filter(q => !rigor.includes(q.rigor)).length;
                 if (off) notices.level.push(`${stdId} (${off})`);
             }
 
@@ -2321,13 +3351,13 @@ const STANDARDS = [
             for (let d = 0; d < Number(s.days); d++) {
                 const daySecs = [];
                 const extras = (ctx ? 1 : 0) + (W.length ? 1 : 0);
-                if (P.length) daySecs.push(buildSection(P[d % P.length], Math.max(1, perDay - extras), s.written ? 1 : 0, s.genre, s.rigor, rng, notices, seenQ));
-                if (ctx) addContextClues(daySecs, 1, 0, s.genre, s.rigor, rng, notices, seenQ);
+                if (P.length) daySecs.push(buildSection(P[d % P.length], Math.max(1, perDay - extras), s.written ? 1 : 0, s.genre, levelsFor(P[d % P.length]), rng, notices, seenQ));
+                if (ctx) addContextClues(daySecs, 1, 0, s.genre, levelsFor(CONTEXT_STD), rng, notices, seenQ);
                 if (W.length) {
                     const w = W[d % W.length];
-                    const pool = (QUESTION_POOLS[w] || []).filter(q => !seenQ.has(q.q));
+                    const pool = (QUESTION_POOLS[w] || []).filter(q => !q.p && !seenQ.has(q.q));   // skip questions tied to a specific passage
                     const need = P.length || ctx ? 1 : perDay;
-                    const items = orderForLevel(pool, s.rigor, 'auto', rng).slice(0, need).map(q => ({ ...q, std: w, ...shuffleOptions(q.c, q.d, rng) }));
+                    const items = orderForLevel(pool, levelsFor(w), 'auto', rng).slice(0, need).map(q => ({ ...q, std: w, ...shuffleOptions(q.c, q.d, rng) }));
                     items.forEach(q => seenQ.add(q.q));
                     if (!daySecs.length) daySecs.push({ stdId: w, blocks: [], written: [] });
                     daySecs[daySecs.length - 1].blocks.push({ passage: null, questions: items, word: true });
@@ -2338,134 +3368,142 @@ const STANDARDS = [
             return out;
         }
 
-        // ---------- Full version codes ----------
-        // A code holds the random seed AND every setting that shapes the test (mode, standards, counts,
-        // level, and so on). Loading a code restores those settings, so anyone who loads it gets the
-        // exact same test. Changing a setting changes the code to match. Title and subtitle are not stored.
-        const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        const CODE_MODES = ['cfa', 'eou', 'exit', 'morning'];
-        const MODE_NAMES = { cfa: 'Quick CFA', eou: 'End of Unit', exit: 'Exit Ticket', morning: 'Morning Work' };
-        function encoderIO() {
-            const digits = [];
-            return { digits, num(radix, v) { v = Math.max(0, Math.min(radix - 1, v | 0)); digits.push([v, radix]); return v; } };
-        }
-        function decoderIO(big) {
-            let v = big;
-            return { num(radix) { const r = BigInt(radix); const x = Number(v % r); v = v / r; return x; }, rest: () => v };
-        }
-        const optCodec = (io, list, val) => list[io.num(list.length, Math.max(0, list.indexOf(String(val))))];
-        const boolCodec = (io, val) => !!io.num(2, val ? 1 : 0);
-        // Which standards are picked: a short list when only a few are picked, a full on/off mask otherwise.
-        function standardsCodec(io, sel) {
-            const ids = STANDARDS.map(x => x.id), N = ids.length;
-            let picked = ids.map((id, i) => sel && sel[id] !== undefined ? i : -1).filter(i => i >= 0);
-            const listCost = Math.log2(N + 1) + picked.length * Math.log2(N);
-            const useMask = io.num(2, listCost > N ? 1 : 0);
-            if (useMask) picked = ids.map((id, i) => io.num(2, picked.includes(i) ? 1 : 0) ? i : -1).filter(i => i >= 0);
-            else {
-                const k = io.num(N + 1, picked.length);
-                const out = [];
-                for (let j = 0; j < k; j++) out.push(io.num(N, picked[j]));
-                picked = [...new Set(out)].sort((a, b) => a - b);
-            }
-            return picked.map(i => ids[i]);
-        }
-        function packBody(mode, s) {
-            const io = encoderIO();
-            io.num(CODE_MODES.length, CODE_MODES.indexOf(mode));
-            settingsCodec(io, JSON.parse(JSON.stringify(s)), mode);
-            let big = 0n;
-            for (let i = io.digits.length - 1; i >= 0; i--) big = big * BigInt(io.digits[i][1]) + BigInt(io.digits[i][0]);
-            let out = '';
-            do { out += CODE_CHARS[Number(big % 32n)]; big /= 32n; } while (big > 0n);
-            return out;
-        }
-        function codeCheck(tag, text) {
-            let h = 2166136261;
-            for (const ch of tag + '|' + text) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
-            return CODE_CHARS[h % 32] + CODE_CHARS[(h >>> 5) % 32];
-        }
-        function fullCode() {
-            const body = packBody(state.mode, S());
-            const tail = (body + codeCheck(CODE_TAG, state.code + body)).match(/.{1,4}/g).join('-');
-            return state.code + '-' + tail;
-        }
-        function showCode() { $('f-code').value = fullCode(); }
-        function loadFullCode(raw) {
-            const c = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (!c) return;
-            if ([...c].some(ch => !CODE_CHARS.includes(ch))) {
-                flash('That code has a character these codes never use (they skip 0, 1, I, and O). Check it and try again.'); return;
-            }
-            if (c.length === 4) {
-                // Older short code: seed only, so it keeps whatever settings are on screen
-                state.code = c; build();
-                flash('This is an older 4-letter code that does not include settings. It keeps the standards and question level on screen, so set those to match the printed test.');
-                return;
-            }
-            const seed = c.slice(0, 4), body = c.slice(4, -2), chk = c.slice(-2);
-            if (c.length < 7 || codeCheck(CODE_TAG, seed + body) !== chk) {
-                flash(codeCheck(OTHER_TAG, seed + body) === chk && c.length >= 7
-                    ? `That code is from the ${OTHER_NAME}. Open that generator to load it.`
-                    : 'That code does not check out. A character is probably mistyped.');
-                return;
-            }
-            let big = 0n;
-            for (let i = body.length - 1; i >= 0; i--) big = big * 32n + BigInt(CODE_CHARS.indexOf(body[i]));
-            const io = decoderIO(big);
-            const mode = CODE_MODES[io.num(CODE_MODES.length)];
-            if (!mode) { flash('That code does not check out. A character is probably mistyped.'); return; }
-            const fresh = JSON.parse(JSON.stringify(MODE_DEFAULTS[mode]));
-            fresh.title = state.settings[mode].title;
-            fresh.sub = state.settings[mode].sub;
-            settingsCodec(io, fresh, mode);
-            if (io.rest() !== 0n) { flash('That code does not check out. A character is probably mistyped.'); return; }
-            state.settings[mode] = fresh;
-            state.mode = mode;
-            state.code = seed;
-            renderControls(); build();
-            flash(`Loaded ${MODE_NAMES[mode]} version ${seed}. The standards and settings now match the code.`);
-        }
 
-        const CODE_TAG = 'ELA', OTHER_TAG = 'MATH', OTHER_NAME = 'Math generator';
-        function settingsCodec(io, s, mode) {
-            s.genre = optCodec(io, ['auto', 'fiction', 'nonfiction'], s.genre);
-            s.rigor = optCodec(io, ['mix', 'all', 'basic', 'on-grade', 'advanced'], s.rigor);
-            if (mode === 'cfa' || mode === 'eou') { s.newPage = boolCodec(io, s.newPage); s.score = boolCodec(io, s.score); }
-            if (mode === 'exit') { s.copies = optCodec(io, ['1', '2'], s.copies || '2'); s.passage = boolCodec(io, s.passage); }
-            if (mode === 'morning') {
-                s.days = optCodec(io, ['1', '2', '3', '4', '5'], s.days || '5');
-                s.perDay = optCodec(io, ['3', '4', '5', '6'], s.perDay || '4');
-                s.written = boolCodec(io, s.written);
-            }
-            const ids = standardsCodec(io, s.sel);
-            const sel = {};
-            ids.forEach(id => {
-                const old = (s.sel && s.sel[id]) || {};
-                const mcMax = id === CONTEXT_STD ? 10 : (QUESTION_POOLS[id] || []).length;
-                const mc = io.num(64, old.mc), wr = io.num(8, old.wr);
-                sel[id] = { mc: Math.max(1, Math.min(mcMax, mc)), wr };
+        const VERSION_FLAGS = [
+            ['genre', { auto: 'A', fiction: 'F', nonfiction: 'N' }, 'auto'],
+            ['rigor', { mix: 'M', all: 'X', basic: '1', 'on-grade': '2', advanced: '3' }, 'mix'],
+            ['newPage', null, false], ['score', null, false], ['copies', null, '2'], ['passage', null, false],
+            ['days', null, '5'], ['perDay', null, '4'], ['written', null, false],
+            ['block', Object.fromEntries(Array.from({ length: 30 }, (_, i) => [String((i + 6) * 5), ((i + 6)).toString(36).toUpperCase()])), '120']
+        ];
+        const SEL_SIZE = 2;   // multiple-choice count (base 36) + written count
+        const SEL_CODE = v => b36(v.mc) + String(v.wr);
+        const SEL_READ = t => { const mc = parseInt(t[0], 36), wr = parseInt(t[1], 10); return isNaN(mc) || isNaN(wr) ? null : { mc, wr }; };
+
+
+        // ---------- Per-standard DOK checkboxes ----------
+        function dokFor(id) {
+            const d = S().dok && S().dok[id];
+            return d && d.length ? d.slice().sort() : [1, 2, 3];
+        }
+        function addDokBoxes(row, std, on) {
+            const wrap = el('div', 'dokbox');
+            [1, 2, 3].forEach(d => {
+                const lab = el('label'), cb = el('input');
+                cb.type = 'checkbox'; cb.dataset.d = d; cb.checked = dokFor(std.id).includes(d); cb.disabled = !on;
+                cb.setAttribute('aria-label', `${std.id} DOK ${d}`);
+                cb.addEventListener('change', () => {
+                    const s = S(), set = new Set(dokFor(std.id));
+                    if (cb.checked) set.add(d); else set.delete(d);
+                    if (!set.size) { cb.checked = true; flash('Keep at least one DOK level checked for each standard.'); return; }
+                    s.dok = s.dok || {};
+                    if (set.size === 3) delete s.dok[std.id]; else s.dok[std.id] = [...set].sort();
+                    build();
+                });
+                lab.append(cb, document.createTextNode(String(d)));
+                wrap.appendChild(lab);
             });
-            s.sel = sel;
+            row.appendChild(wrap);
+        }
+        // Version code piece for DOK choices: ".<standard index><mask>" for any standard not using all three
+        function dokCode() {
+            const s = S();
+            return STANDARDS.map((x, i) => {
+                const d = s.dok && s.dok[x.id];
+                if (!d || d.length === 3 || s.sel[x.id] === undefined) return '';
+                return b36(i) + b36(d.reduce((m, k) => m | (1 << (k - 1)), 0));
+            }).join('');
+        }
+        function readDokCode(part) {
+            const dok = {};
+            if (!part) return dok;
+            if (part.length % 2) return null;
+            for (let i = 0; i < part.length; i += 2) {
+                const std = STANDARDS[parseInt(part[i], 36)], mask = parseInt(part[i + 1], 36);
+                if (!std || isNaN(mask) || mask < 1 || mask > 7) return null;
+                dok[std.id] = [1, 2, 3].filter(k => mask & (1 << (k - 1)));
+            }
+            return dok;
         }
 
+        // ---------- Version codes ----------
+        // A version code holds the random seed AND the settings, so typing it back in (even on another
+        // computer, or after closing the page) rebuilds the exact same test:  SEED-MODE+SETTINGS-STANDARDS
+        const MODE_CHARS = { cfa: 'C', eou: 'E', exit: 'X', morning: 'W', lesson: 'L' };
+        const b36 = n => Number(n).toString(36).toUpperCase();
+        function versionCode() {
+            const s = S();
+            const flags = VERSION_FLAGS.map(([key, map, dflt]) => {
+                const v = s[key] === undefined ? dflt : s[key];
+                return map ? (map[v] || '?') : (typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
+            }).join('');
+            const sel = STANDARDS.map((x, i) => s.sel[x.id] === undefined ? '' : b36(i) + SEL_CODE(s.sel[x.id])).join('');
+            const dk = dokCode();
+            return `${state.code}-${MODE_CHARS[state.mode]}${flags}-${sel}` + (dk ? '.' + dk : '');
+        }
+        function applyVersion(raw) {
+            const [text, dokPart] = raw.toUpperCase().replace(/VERSION/g, '').replace(/\s+/g, '').split('.');
+            const dokRead = readDokCode(dokPart);
+            if (dokRead === null) return false;
+            if (/^[A-Z0-9]{4}$/.test(text)) { state.code = text; return true; }      // old four-letter codes: seed only
+            const parts = text.split('-');
+            if (parts.length !== 3 || !/^[A-Z0-9]{4}$/.test(parts[0])) return false;
+            const mode = Object.keys(MODE_CHARS).find(m => MODE_CHARS[m] === parts[1][0]);
+            const flags = parts[1].slice(1);
+            if (!mode) return false;
+            let flags2 = flags;
+            if (flags2.length === VERSION_FLAGS.length - 1) flags2 += VERSION_FLAGS[VERSION_FLAGS.length - 1][1][VERSION_FLAGS[VERSION_FLAGS.length - 1][2]];   // codes made before the block setting
+            if (flags2.length !== VERSION_FLAGS.length) return false;
+            const s = state.settings[mode];
+            const next = {};
+            for (let i = 0; i < VERSION_FLAGS.length; i++) {
+                const [key, map, dflt] = VERSION_FLAGS[i], ch = flags2[i];
+                if (map) {
+                    const v = Object.keys(map).find(k => map[k] === ch);
+                    if (v === undefined) return false;
+                    next[key] = v;
+                } else next[key] = typeof dflt === 'boolean' ? ch === '1' : ch;
+            }
+            const sel = {}, size = SEL_SIZE + 1;
+            if (parts[2].length % size) return false;
+            for (let i = 0; i < parts[2].length; i += size) {
+                const std = STANDARDS[parseInt(parts[2][i], 36)];
+                const val = SEL_READ(parts[2].slice(i + 1, i + size));
+                if (!std || val === null) return false;
+                sel[std.id] = val;
+            }
+            // Older codes had one level for the whole test; turn it into per-standard DOK choices
+            const oldLevel = { basic: [1], 'on-grade': [2], advanced: [3], '1': [1], '2': [2], '3': [3] }[next.rigor];
+            const dok = Object.keys(dokRead).length ? dokRead : (oldLevel ? Object.fromEntries(Object.keys(sel).map(id => [id, oldLevel])) : {});
+            next.rigor = 'mix';
+            Object.assign(s, next, { sel , dok });
+            state.mode = mode;
+            state.code = parts[0];
+            return true;
+        }
 
         function build() {
+            $('f-code').value = versionCode();
             const s = S();
             const notices = { swap: [], level: [], short: [] };
             const rng = makeRng(state.code + '|' + state.mode);
+            if (state.mode === 'lesson') {
+                state.built = { sections: [], lesson: buildLesson(s, rng, notices), notices: [...new Set(notices.short)] };
+                renderNotices(); renderSheet();
+                return;
+            }
             if (state.mode === 'morning') {
                 state.built = { sections: buildMorning(s, rng, notices), notices: [...new Set(notices.short)] };
                 renderNotices(); renderSheet();
                 return;
             }
             const ids = STANDARDS.map(x => x.id).filter(id => s.sel[id] && id !== CONTEXT_STD);
-            const sections = ids.map(id => buildSection(id, s.sel[id].mc, s.sel[id].wr, s.genre, s.rigor, rng, notices));
-            if (s.sel[CONTEXT_STD]) addContextClues(sections, s.sel[CONTEXT_STD].mc, s.sel[CONTEXT_STD].wr, s.genre, s.rigor, rng, notices);
+            const sections = ids.map(id => buildSection(id, s.sel[id].mc, s.sel[id].wr, s.genre, levelsFor(id), rng, notices));
+            if (s.sel[CONTEXT_STD]) addContextClues(sections, s.sel[CONTEXT_STD].mc, s.sel[CONTEXT_STD].wr, s.genre, levelsFor(CONTEXT_STD), rng, notices);
             const msgs = [...notices.short];
             const other = s.genre === 'fiction' ? 'nonfiction' : 'fiction';
             if (notices.swap.length) msgs.push(`No ${s.genre} passage exists for ${notices.swap.join(', ')}, so ${notices.swap.length > 1 ? 'those use their' : 'it uses its'} ${other} passage.`);
-            if (notices.level.length) msgs.push(`The ${LEVEL_NAME[s.rigor]} bank ran short, so some questions came from a neighboring level: ${notices.level.join(', ')}. The teacher key tags each question's level.`);
+            if (notices.level.length) msgs.push(`Some checked DOK levels ran short, so a few questions came from another level: ${notices.level.join(', ')}. The teacher key tags each question's DOK.`);
             state.built = { sections, notices: msgs };
             renderNotices();
             renderSheet();
@@ -2476,12 +3514,16 @@ const STANDARDS = [
             const s = S();
             document.querySelectorAll('.modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
             document.body.dataset.mode = state.mode;
+            $('btn-print').textContent = state.mode === 'lesson' ? 'Print lesson and worksheet' : 'Print';
             $('f-copies').value = s.copies || '2';
+            $('f-block').value = s.block || '120';
             $('f-days').value = s.days || '5';
             $('f-perday').value = s.perDay || '4';
             $('f-written').checked = !!s.written;
             $('f-passage').checked = !!s.passage;
-            $('std-hint').textContent = state.mode === 'morning'
+            $('std-hint').textContent = state.mode === 'lesson'
+                ? 'Pick one standard. You get a full timed lesson for the reading block (teacher guide), a lesson practice page, and a small group practice page with a second text. New version pulls fresh texts and questions. The lesson builds its own DOK 1 to 3 progression, so the DOK boxes are hidden here.'
+                : state.mode === 'morning'
                 ? 'Pick the standards to spiral. Each day uses the next reading passage in the rotation, plus a context-clue question (4.RC.10) and a word-work question (4.RC.11 to 4.RC.13) if those are picked.'
                 : state.mode === 'exit'
                 ? 'Pick one standard (4.RC.10 can be added to it). Two or three questions is plenty for an exit ticket.'
@@ -2491,14 +3533,13 @@ const STANDARDS = [
             $('f-title').value = s.title;
             $('f-sub').value = s.sub;
             $('f-genre').value = s.genre;
-            $('f-rigor').value = s.rigor;
             $('f-newpage').checked = s.newPage;
             $('f-score').checked = s.score;
-            showCode();
+            $('f-code').value = versionCode();
             $('btn-key').setAttribute('aria-pressed', String(state.showKey));
 
             const list = $('std-list');
-            list.innerHTML = '<div class="std-head"><span></span><span>Standard</span><span>Multiple choice</span><span>Written</span></div>';
+            list.innerHTML = '<div class="std-head"><span></span><span>Standard</span><span class="cnt">Multiple choice</span><span class="cnt">Written</span><span class="dokh">DOK</span></div>';
             STANDARDS.forEach(std => {
                 const pick = s.sel[std.id];
                 const row = document.createElement('div');
@@ -2513,10 +3554,13 @@ const STANDARDS = [
                     <select aria-label="${std.id} written count" ${pick ? '' : 'disabled'}>
                         ${Array.from({ length: wrMax + 1 }, (_, n) => `<option value="${n}" ${(pick ? pick.wr : s.defaultCounts.wr) === n ? 'selected' : ''}>${n}</option>`).join('')}
                     </select>`;
+                addDokBoxes(row, std, !!pick);
                 const [box, num, sel] = [row.querySelector('input[type=checkbox]'), row.querySelector('input[type=number]'), row.querySelector('select')];
                 box.addEventListener('change', () => {
                     if (box.checked) {
-                        if (state.mode === 'exit') {
+                        if (state.mode === 'lesson') {
+                            s.sel = {};
+                        } else if (state.mode === 'exit') {
                             // One standard at a time: picking a new one replaces the old one (4.RC.10 can ride along)
                             if (std.id !== CONTEXT_STD) Object.keys(s.sel).forEach(id => { if (id !== CONTEXT_STD) delete s.sel[id]; });
                         } else if (state.mode === 'cfa' && Object.keys(s.sel).length >= CFA_MAX_STANDARDS) {
@@ -2594,12 +3638,264 @@ const STANDARDS = [
             return e;
         }
 
+        // ---------- Full lesson (Lesson tab) ----------
+        // Timed for the whole block. Base minutes are for a 120-minute reading block and scale to other lengths.
+        const LESSON_SEGMENTS = [
+            ['warm', 'Warm-up: word work', 10, 'Students answer the questions on the Word Work page.'],
+            ['teach', 'Mini-lesson (I do)', 15, 'Teach the target and model the strategy aloud.'],
+            ['shared', 'Shared reading (We do)', 20, 'Read the main text together and answer the practice-together questions.'],
+            ['indep', 'Independent practice (You do)', 25, 'Students answer the on-your-own questions and fill in the organizer.'],
+            ['tier2', 'Tier 2 small groups', 30, 'Meet with each group using the small group practice page.'],
+            ['write', 'Writing about reading', 15, 'Students answer the written response.'],
+            ['close', 'Closing and exit check', 5, 'Students answer the exit check; sort them to plan tomorrow\'s groups.']
+        ];
+        function scaleSegments(total) {
+            const base = LESSON_SEGMENTS.reduce((n, x) => n + x[2], 0);
+            const mins = LESSON_SEGMENTS.map(x => Math.max(5, Math.round(x[2] * total / base / 5) * 5));
+            mins[4] += total - mins.reduce((a, b) => a + b, 0);       // small groups absorb the rounding
+            if (mins[4] < 5) mins[4] = 5;
+            return mins;
+        }
+
+        // Questions and written prompts that go with one passage of a standard
+        function vocabToMC(v, p) {
+            return { std: CONTEXT_STD, rigor: v.rigor, c: v.c, d: v.d,
+                q: `Read this sentence from "${shortTitle(p.title)}": "${v.sentence}" What does "${v.word}" mean in this sentence?` };
+        }
+        function lessonItems(id, p, rng) {
+            if (id === CONTEXT_STD) return {
+                mc: shuffle((CONTEXT_CLUES[p.title] || []).map(v => vocabToMC(v, p)), rng),
+                wr: shuffle(WRITTEN_QUESTION_POOLS[id] || [], rng)
+            };
+            return {
+                mc: shuffle((QUESTION_POOLS[id] || []).filter(q => passageNeeded(id, q) === p.id), rng),
+                wr: shuffle((WRITTEN_QUESTION_POOLS[id] || []).filter(w => { const n = passageNeeded(id, w); return n === p.id || n === null; }), rng)
+            };
+        }
+
+        function buildLesson(s, rng, notices) {
+            const id = Object.keys(s.sel)[0];
+            if (!id) return null;
+            const cands = id === CONTEXT_STD ? Object.values(PASSAGES).flat().filter(p => CONTEXT_CLUES[p.title]) : (PASSAGES[id] || []);
+            const fit = cands.filter(p => s.genre === 'auto' || p.genre === s.genre || p.genre === 'both');
+            const order = shuffle(fit.length ? fit : cands, rng);
+            const main = order[0], alt = order[1] || order[0];
+            const A = lessonItems(id, main, rng), B = alt === main ? A : lessonItems(id, alt, rng);
+            // Stand-alone questions (no passage needed) are a shared backup for both texts
+            const extra = shuffle((QUESTION_POOLS[id] || []).filter(q => passageNeeded(id, q) === null), rng);
+            const grab = (arr, lvl) => { const i = lvl ? arr.findIndex(q => q.rigor === lvl) : (arr.length ? 0 : -1); return i < 0 ? null : arr.splice(i, 1)[0]; };
+            const take = (P, lvl) => grab(P.mc, lvl) || grab(extra, lvl) || grab(P.mc) || grab(extra);
+            const prep = q => q ? { ...q, ...shuffleOptions(q.c, q.d, rng) } : null;
+            const model = prep(take(A, 'basic'));
+            const weDo = [take(A, 'basic'), take(A, 'on-grade')].map(prep).filter(Boolean);
+            const youDo = [take(A, 'on-grade'), take(A, 'advanced'), take(A, 'advanced')].map(prep).filter(Boolean);
+            const writing = A.wr.shift() || null;
+            const exit = A.wr.shift() || (B !== A && B.wr.shift()) || null;
+            // Small groups: two at each level when the text has them, then share out whatever is left
+            const levels = ['basic', 'on-grade', 'advanced'], groups = [[], [], []];
+            for (let r = 0; r < 2; r++) levels.forEach((l, i) => { const q = grab(B.mc, l) || grab(extra, l); if (q) groups[i].push(q); });
+            for (let i = 0; i < 3; i++) while (groups[i].length < 2) { const q = take(B); if (!q) break; groups[i].push(q); }
+            groups.forEach((g, i) => { groups[i] = g.map(prep); });
+            // Warm-up word work: a context clue from today's text plus word relationships and word parts
+            const warm = [];
+            if (id !== CONTEXT_STD && (CONTEXT_CLUES[main.title] || []).length) warm.push(prep(vocabToMC(shuffle(CONTEXT_CLUES[main.title], rng)[0], main)));
+            const used = new Set([model, ...weDo, ...youDo, ...groups.flat()].filter(Boolean).map(q => q.q));
+            const wordStds = ['4.RC.11', '4.RC.12'].filter(w => w !== id);
+            for (let k = 0; warm.length < 3 && k < 6; k++) {
+                const w = wordStds[k % wordStds.length];
+                const q = shuffle((QUESTION_POOLS[w] || []).filter(x => !x.p && !used.has(x.q) && !warm.some(y => y.q === x.q)), rng)[0];
+                if (q) warm.push(prep({ ...q, std: w }));
+            }
+            if (groups.flat().length < 6) notices.short.push(`${id}: the small group text ran out of questions, so some groups have fewer than two.`);
+            return { id, main, alt: alt === main ? null : alt, model, weDo, youDo, writing, exit, groups, warm };
+        }
+
+        function renderLesson() {
+            const s = S(), sheet = $('sheet');
+            const D = state.built.lesson;
+            const L = D && LESSONS[D.id], std = D && STANDARDS.find(x => x.id === D.id);
+            if (!D || !L) { sheet.appendChild(el('p', 'empty', 'Pick a standard to build a lesson.')); return; }
+            const block = Number(s.block || 120), mins = scaleSegments(block);
+            const seg = Object.fromEntries(LESSON_SEGMENTS.map((x, i) => [x[0], { name: x[1], min: mins[i] }]));
+            const title = p => p.title.replace(/^[^:]*:\s*/, '');
+            const box = (cls, h) => { const b = el('div', 'lbox ' + cls); b.appendChild(el('h2', '', h)); return b; };
+            const list = (items, ordered, plain) => { const l = el(ordered ? 'ol' : 'ul', plain ? 'plain' : ''); items.forEach(t => l.appendChild(el('li', '', t))); return l; };
+            const keyList = (qs, start) => list(qs.map((q, i) => `${start + i}. ${q.correctLetter}: ${q.c}`), false, true);
+            const segBox = k => box('', `${seg[k].name} (${seg[k].min} min)`);
+            const guide = el('div', 'teacher-part');
+
+            const head = el('div', 'l-head');
+            head.appendChild(el('h1', '', `${s.title || 'Lesson'}: ${std.label}`));
+            head.appendChild(el('p', '', `Full lesson, ${block} minutes  |  Main text: ${title(D.main)}  |  Small group text: ${title(D.alt || D.main)}  |  Version ${versionCode()}`));
+            guide.appendChild(head);
+            const t = box('target', 'Learning target'); t.appendChild(el('div', '', L.target)); guide.appendChild(t);
+
+            const ag = box('', 'Lesson at a glance');
+            const at = el('table', 'grid');
+            let clockMin = 0;
+            at.innerHTML = '<tr><th>Part</th><th>Minutes</th><th>What happens</th></tr>' + LESSON_SEGMENTS.map((x, i) => {
+                const row = `<tr><td><b>${x[1]}</b></td><td>${clockMin} to ${clockMin + mins[i]}</td><td>${x[3]}</td></tr>`;
+                clockMin += mins[i]; return row;
+            }).join('');
+            ag.appendChild(at); guide.appendChild(ag);
+
+            const v = box('', 'Key vocabulary');
+            const vt = el('table', 'grid'); vt.innerHTML = L.vocab.map(([w, d]) => `<tr><td style="width:30%"><b>${w}</b></td><td>${d}</td></tr>`).join('');
+            v.appendChild(vt); guide.appendChild(v);
+
+            const w1 = segBox('warm');
+            w1.appendChild(el('div', '', 'Students work quietly on the Word Work page, then share answers and the clues they used. (Print it separately with "Print word work only.")'));
+            w1.appendChild(keyList(D.warm, 1)); guide.appendChild(w1);
+
+            const m = segBox('teach');
+            m.appendChild(list(L.teach));
+            m.appendChild(el('div', 'mini-q', 'Model the strategy aloud:'));
+            m.appendChild(list(L.steps, true));
+            if (D.model) {
+                const mq = el('div', 'mini-q'); mq.innerHTML = '<b>Example question to model:</b> '; mq.appendChild(document.createTextNode(D.model.q)); m.appendChild(mq);
+                m.appendChild(el('div', '', D.model.options.map(o => `${o.label}. ${o.text}`).join('   ')));
+                m.appendChild(el('div', 'say', `Answer: ${D.model.correctLetter}. ${D.model.c}  Say: "I can prove this with the words in the text, and I can cross out the other choices because the text does not support them."`));
+            }
+            guide.appendChild(m);
+
+            const sr = segBox('shared');
+            sr.appendChild(el('div', '', `Read "${title(D.main)}" aloud while students follow along. Stop after each paragraph or two to ask what they noticed.`));
+            if (D.writing) sr.appendChild(el('div', 'say', `Turn and talk: ${D.writing.q}`));
+            sr.appendChild(el('div', 'mini-q', 'Practice together answers (first two questions after the passage):'));
+            sr.appendChild(keyList(D.weDo, 1));
+            guide.appendChild(sr);
+
+            const ind = segBox('indep');
+            ind.appendChild(el('div', '', `Students answer on their own, then complete the ${L.organizer.title} organizer. Circulate and note who needs the reteach group.`));
+            ind.appendChild(keyList(D.youDo, D.weDo.length + 1));
+            guide.appendChild(ind);
+
+            const t2 = segBox('tier2');
+            const each = Math.max(5, Math.round(seg.tier2.min / 3 / 5) * 5);
+            t2.appendChild(el('div', '', `Pull three groups for about ${each} minutes each, using the Small Group Practice page${D.alt ? ` with "${title(D.alt)}"` : ''}. Students not with you reread, finish the organizer, or read independently.`));
+            const gNames = ['Group 1: Reteach (students who missed the practice questions)', 'Group 2: On level (students who are close)', 'Group 3: Enrich (students who are ready for more)'];
+            const gNotes = [`Reteach with support: ${L.support} Reread the text with them and work each question together, naming the strategy step you are using.`,
+                'Partners answer the questions, then explain their evidence to you before checking.',
+                `Students answer the questions on their own, then do the challenge: ${L.extend}`];
+            let gn = 1;
+            D.groups.forEach((g, i) => {
+                t2.appendChild(el('div', 'mini-q', gNames[i]));
+                t2.appendChild(el('div', '', gNotes[i]));
+                if (g.length) t2.appendChild(keyList(g, gn));
+                gn += g.length;
+            });
+            t2.appendChild(el('div', 'mini-q', 'Watch for:'));
+            t2.appendChild(list(L.watch));
+            guide.appendChild(t2);
+
+            const wr = segBox('write');
+            if (D.writing) {
+                wr.appendChild(el('div', '', `Prompt: ${D.writing.q}`));
+                wr.appendChild(el('div', 'say', `Look for: ${D.writing.key.replace(/^Look for:\s*/i, '')}`));
+            }
+            wr.appendChild(el('div', '', 'Model the first sentence: restate the question, then add evidence ("In the text, it says...").'));
+            guide.appendChild(wr);
+
+            const cl = segBox('close');
+            if (D.exit) {
+                cl.appendChild(el('div', '', `Exit check: ${D.exit.q}`));
+                cl.appendChild(el('div', 'say', `Look for: ${D.exit.key.replace(/^Look for:\s*/i, '')}`));
+            }
+            cl.appendChild(el('div', '', 'Sort the exit checks into three piles (got it, almost, not yet) to set tomorrow\'s small groups.'));
+            guide.appendChild(cl);
+            sheet.appendChild(guide);
+
+            // ---- Student pages ----
+            const mcEl = (q, n) => {
+                const qd = el('div', 'q'); qd.appendChild(el('div', 'q-num', n + '.'));
+                const body = el('div'); body.appendChild(el('div', 'q-stem', q.q));
+                const opts = el('div', 'opts');
+                q.options.forEach(o => {
+                    const row = el('div', 'opt' + (state.showKey && o.label === q.correctLetter ? ' correct' : ''));
+                    row.appendChild(el('span', 'bubble', o.label)); row.appendChild(el('span', 'opt-text', o.text)); opts.appendChild(row);
+                });
+                body.appendChild(opts); qd.appendChild(body); return qd;
+            };
+            const wrEl = (w, n, lines) => {
+                const qd = el('div', 'q'); qd.appendChild(el('div', 'q-num', n + '.'));
+                const body = el('div'); body.appendChild(el('div', 'q-stem', w.q));
+                if (state.showKey) body.appendChild(el('div', 'lookfor', 'Look for: ' + w.key.replace(/^Look for:\s*/i, '')));
+                else { const l = el('div', 'wlines'); for (let k = 0; k < lines; k++) l.appendChild(el('span')); body.appendChild(l); }
+                qd.appendChild(body); return qd;
+            };
+            const pageHead = (h) => {
+                const sh = el('div', 'x-head'), left = el('div');
+                left.appendChild(el('h1', 'x-title', h + (state.showKey ? ' (Teacher Key)' : '')));
+                left.appendChild(el('p', 'x-std', `${D.id}  |  ${L.target}`));
+                const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
+                sh.append(left, nm); return sh;
+            };
+            const passageEl = pg => {
+                const p = el('div', 'passage');
+                p.appendChild(el('h3', '', pg.title));
+                passageParagraphs(pg).forEach((tx, k) => {
+                    const para = el('p'); para.appendChild(el('span', 'pnum', String(k + 1)));
+                    const body = el('span'); body.innerHTML = tx; para.appendChild(body); p.appendChild(para);
+                });
+                return p;
+            };
+
+            // Word work gets its own page so it can be printed separately
+            const ww = el('div', 'newpage student-part word-work-part');
+            ww.appendChild(pageHead('Word Work'));
+            let wn = 1;
+            D.warm.forEach(q => ww.appendChild(mcEl(q, wn++)));
+            sheet.appendChild(ww);
+
+            const stu = el('div', 'newpage student-part practice-part');
+            stu.appendChild(pageHead(`Lesson Practice: ${std.label.replace(/^[^:]*:\s*/, '')}`));
+            let n = 1;
+            stu.appendChild(passageEl(D.main));
+            stu.appendChild(el('div', 'stu-h', 'Practice together'));
+            D.weDo.forEach(q => stu.appendChild(mcEl(q, n++)));
+            stu.appendChild(el('div', 'stu-h', 'On your own'));
+            D.youDo.forEach(q => stu.appendChild(mcEl(q, n++)));
+            const org = el('div', 'end-block');
+            org.appendChild(el('div', 'stu-h', L.organizer.title));
+            const ot = el('table', 'org');
+            ot.innerHTML = '<tr>' + L.organizer.cols.map(c => `<th>${c}</th>`).join('') + '</tr>' + Array.from({ length: L.organizer.rows }, () => '<tr>' + L.organizer.cols.map(() => '<td></td>').join('') + '</tr>').join('');
+            org.appendChild(ot); stu.appendChild(org);
+            if (D.writing) { stu.appendChild(el('div', 'stu-h', 'Writing about reading')); stu.appendChild(wrEl(D.writing, n++, 7)); }
+            if (D.exit) { stu.appendChild(el('div', 'stu-h', 'Exit check')); stu.appendChild(wrEl(D.exit, n++, 3)); }
+            sheet.appendChild(stu);
+
+            const sg = el('div', 'newpage student-part group-part');
+            sg.appendChild(pageHead('Small Group Practice'));
+            if (D.alt) sg.appendChild(passageEl(D.alt));
+            else sg.appendChild(el('p', 'x-note', `Use "${title(D.main)}" from your lesson practice page.`));
+            let g = 1;
+            ['Group 1', 'Group 2', 'Group 3'].forEach((name, i) => {
+                if (!D.groups[i].length && i < 2) return;
+                const sec = el('div', 'end-block');
+                sec.appendChild(el('div', 'stu-h', name));
+                if (i === 0) {
+                    const rem = el('div', 'lbox');
+                    rem.appendChild(el('h2', '', 'Remember the steps'));
+                    rem.appendChild(list(L.steps, true));
+                    sec.appendChild(rem);
+                }
+                D.groups[i].forEach(q => sec.appendChild(mcEl(q, g++)));
+                if (i === 2) {
+                    sec.appendChild(el('div', 'q-stem', `Challenge: ${L.extend}`));
+                    const l = el('div', 'wlines'); for (let k = 0; k < 4; k++) l.appendChild(el('span')); sec.appendChild(l);
+                }
+                sg.appendChild(sec);
+            });
+            sheet.appendChild(sg);
+        }
+
         function renderSheet() {
-            showCode();
+            $('f-code').value = versionCode();   // settings that only re-render (copies, title) still update the code
             const s = S();
             const sheet = $('sheet');
             sheet.innerHTML = '';
             const { sections } = state.built;
+            if (state.mode === 'lesson') { renderLesson(); return; }
 
             const exit = state.mode === 'exit';
             const out = exit ? el('div', 'ticket') : sheet;   // an exit ticket is built once, then copied
@@ -2612,7 +3908,7 @@ const STANDARDS = [
                 const head = el('div', 'x-head');
                 const left = el('div');
                 left.appendChild(el('h1', 'x-title', (s.title || 'Exit Ticket') + (state.showKey ? ' (Teacher Key)' : '')));
-                left.appendChild(el('p', 'x-std', (stdIds.map(id => STANDARDS.find(x => x.id === id).label).join('; ') || 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + fullCode()));
+                left.appendChild(el('p', 'x-std', (stdIds.map(id => STANDARDS.find(x => x.id === id).label).join('; ') || 'No standard picked') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + versionCode()));
                 const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
                 head.append(left, nm);
                 out.appendChild(head);
@@ -2627,7 +3923,7 @@ const STANDARDS = [
                 head.append(left, right);
                 sheet.appendChild(head);
                 const meta = el('div', 't-meta');
-                meta.appendChild(el('span', '', 'Version ' + fullCode()));
+                meta.appendChild(el('span', '', 'Version ' + versionCode()));
                 if (state.showKey) meta.appendChild(el('span', 't-badge', 'TEACHER KEY'));
                 sheet.appendChild(meta);
             }
@@ -2652,7 +3948,7 @@ const STANDARDS = [
                     const head = el('div', 'x-head');
                     const left = el('div');
                     left.appendChild(el('h1', 'x-title', `${s.title || 'Morning Work'}: Day ${sec.day + 1}` + (state.showKey ? ' (Teacher Key)' : '')));
-                    left.appendChild(el('p', 'x-std', 'Review: ' + STANDARDS.map(x => x.id).filter(id => dayIds.has(id)).join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + fullCode()));
+                    left.appendChild(el('p', 'x-std', 'Review: ' + STANDARDS.map(x => x.id).filter(id => dayIds.has(id)).join(', ') + (s.sub ? '  |  ' + s.sub : '') + '  |  Version ' + versionCode()));
                     const nm = el('div', 'x-name'); nm.append('Name:', el('span'));
                     head.append(left, nm);
                     wrap.appendChild(head);
@@ -2750,7 +4046,7 @@ const STANDARDS = [
             if (morning) {
                 if (state.showKey) {
                     const page = el('div', 'end-block newpage');
-                    page.appendChild(el('h3', '', `Morning work answers, version ${fullCode()}`));
+                    page.appendChild(el('h3', '', `Morning work answers, version ${versionCode()}`));
                     const t = el('table', 'grid');
                     const days = [...new Set(keyRows.map(r => r[4]))];
                     t.innerHTML = '<tr><th>Day</th><th>Answers</th></tr>' + days.map(d => `<tr><td>Day ${d + 1}</td><td>${keyRows.filter(r => r[4] === d).map(r => `${r[0]}. <b>${r[1] === 'Written' ? 'written' : r[1]}</b> <span style="color:#666">(${r[2]})</span>`).join('&nbsp;&nbsp; ')}</td></tr>`).join('');
@@ -2774,7 +4070,7 @@ const STANDARDS = [
             // Answer key page (key only)
             if (state.showKey) {
                 const page = el('div', 'end-block newpage');
-                page.appendChild(el('h3', '', `Answer key, version ${fullCode()}`));
+                page.appendChild(el('h3', '', `Answer key, version ${versionCode()}`));
                 const t = el('table', 'grid');
                 t.innerHTML = '<tr><th>#</th><th>Answer</th><th>Standard</th><th>Level</th></tr>' +
                     keyRows.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
@@ -2799,10 +4095,10 @@ const STANDARDS = [
             bindField('f-title', 'title');
             bindField('f-sub', 'sub');
             bindField('f-genre', 'genre', 'change');
-            bindField('f-rigor', 'rigor', 'change');
             bindField('f-newpage', 'newPage', 'change');
             bindField('f-score', 'score', 'change');
             bindField('f-copies', 'copies', 'change');
+            bindField('f-block', 'block', 'change');
             bindField('f-days', 'days', 'change');
             bindField('f-perday', 'perDay', 'change');
             bindField('f-written', 'written', 'change');
@@ -2815,13 +4111,27 @@ const STANDARDS = [
                 renderSheet();
             });
             $('btn-print').addEventListener('click', () => window.print());
-            const loadCode = () => loadFullCode($('f-code').value);
+            $('btn-print-ws').addEventListener('click', () => {
+                document.body.classList.add('print-worksheet');
+                window.print();
+                document.body.classList.remove('print-worksheet');
+            });
+            $('btn-print-ww').addEventListener('click', () => {
+                document.body.classList.add('print-wordwork');
+                window.print();
+                document.body.classList.remove('print-wordwork');
+            });
+            window.addEventListener('afterprint', () => document.body.classList.remove('print-worksheet', 'print-wordwork'));
+            const loadCode = () => {
+                if (!$('f-code').value.trim()) return;
+                if (!applyVersion($('f-code').value)) { flash('That version code was not recognized. Check it against the code printed on the test.'); return; }
+                renderControls(); build();
+            };
             $('btn-load').addEventListener('click', loadCode);
             $('f-code').addEventListener('keydown', e => { if (e.key === 'Enter') loadCode(); });
 
             renderControls();
             build();
-            if (location.hash.length > 1) loadFullCode(decodeURIComponent(location.hash.slice(1)));
         }
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
