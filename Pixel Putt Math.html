@@ -200,6 +200,7 @@ tr.win td{color:var(--gold)}
             <li><i style="background:#8a4422"></i>Walls bounce the ball</li>
             <li><i style="background:#e9cf8a"></i>Sand slows the ball</li>
             <li><i style="background:#2f62e0"></i>Water = +1 stroke</li>
+            <li><i style="background:#ffd23f"></i>Hole in one = your meters get 25% faster</li>
           </ul>
         </div>
         <div class="panel">
@@ -591,7 +592,7 @@ const SPEEDS={slow:{aim:.9,pow:.011},medium:{aim:1.5,pow:.017},fast:{aim:2.3,pow
 let G=null;
 
 function startGame(){
-  G={players:S.names.slice(0,S.count).map((n,i)=>({name:(n||'').trim()||`Player ${i+1}`,color:COLORS[i],scores:[],right:0,asked:0})),
+  G={players:S.names.slice(0,S.count).map((n,i)=>({name:(n||'').trim()||`Player ${i+1}`,color:COLORS[i],scores:[],right:0,asked:0,boost:1})),
      hole:0,turn:0,review:[],used:new Set(),fog:1,phase:'idle'};
   show('game'); beginTurn();
 }
@@ -677,10 +678,11 @@ function scoreName(n){ return n===1?'HOLE IN ONE!':n===2?'BIRDIE!':n===3?'PAR':n
 function finishHole(sunk){
   const p=G.players[G.turn], score=sunk?G.strokes:MAXS;
   p.scores[G.hole]=score; G.phase='done';
-  if(sunk){ score===1?sfx.ace():sfx.sink(); flash(scoreName(score),score===1?'#ffd23f':score<=PAR?'#5ce07a':'#ffffff',p.name.toUpperCase()); }
+  if(sunk&&score===1) p.boost+=.25;
+  if(sunk){ score===1?sfx.ace():sfx.sink(); flash(scoreName(score),score===1?'#ffd23f':score<=PAR?'#5ce07a':'#ffffff',score===1?'METERS NOW FASTER!':p.name.toUpperCase()); }
   else flash('MAX STROKES','#ff6470',`${MAXS} STROKES`);
   const last=G.turn===G.players.length-1, lastHole=G.hole===S.holes-1;
-  $('#dMsg').textContent=`${p.name} finished hole ${G.hole+1} with ${score} stroke${score===1?'':'s'}${sunk?'':' (picked up at the max)'}.`;
+  $('#dMsg').textContent=`${p.name} finished hole ${G.hole+1} with ${score} stroke${score===1?'':'s'}${sunk?'':' (picked up at the max)'}.`+(sunk&&score===1?` Hole in one! ${p.name}'s arrow and power meter are now ${Math.round(p.boost*100)}% speed.`:'');
   $('#nextBtn').textContent=!last?`PASS TO ${G.players[G.turn+1].name.toUpperCase()} ▶`:lastHole?'SEE FINAL SCORES ▶':`GO TO HOLE ${G.hole+2} ▶`;
   updateUI(); $('#nextBtn').focus({preventScroll:true});
 }
@@ -693,11 +695,11 @@ function nextTurn(){
 function update(){
   frame++;
   if(!G||!G.course) return;
-  const sp=SPEEDS[S.speed]||SPEEDS.slow;
+  const sp=SPEEDS[S.speed]||SPEEDS.slow, bo=G.players[G.turn].boost||1;
   if(G.phase!=='question'&&G.phase!=='feedback') G.fog=Math.max(0,G.fog-.04);
   if(G.flash&&--G.flash.t<=0) G.flash=null;
-  if(G.phase==='aim'&&G.fog<.5){ G.aimOff+=G.aimDir*sp.aim; if(G.aimOff>=90){G.aimOff=90;G.aimDir=-1;} if(G.aimOff<=-90){G.aimOff=-90;G.aimDir=1;} }
-  else if(G.phase==='power'){ G.pow+=G.powDir*sp.pow; if(G.pow>=1){G.pow=1;G.powDir=-1;} if(G.pow<=0){G.pow=0;G.powDir=1;} meterFill.style.width=(G.pow*100)+'%'; }
+  if(G.phase==='aim'&&G.fog<.5){ G.aimOff+=G.aimDir*sp.aim*bo; if(G.aimOff>=90){G.aimOff=90;G.aimDir=-1;} if(G.aimOff<=-90){G.aimOff=-90;G.aimDir=1;} }
+  else if(G.phase==='power'){ G.pow+=G.powDir*sp.pow*bo; if(G.pow>=1){G.pow=1;G.powDir=-1;} if(G.pow<=0){G.pow=0;G.powDir=1;} meterFill.style.width=(G.pow*100)+'%'; }
   else if(G.phase==='rolling') physics();
   else if(G.phase==='sinking'){ G.ball.scale-=.08; if(G.ball.scale<=0){ G.ball.scale=0; finishHole(true); } }
   else if(G.phase==='splash'){
@@ -753,7 +755,7 @@ function updateUI(){
   G.players.forEach((pl,i)=>{
     const tot=pl.scores.reduce((a,b)=>a+(b||0),0);
     const d=document.createElement('div'); d.className='prow'+(i===G.turn?' now':'');
-    d.innerHTML=`<span class="swatch"></span><span class="nm"></span><span class="tot">${tot}</span><span class="sub">Math: ${pl.right}/${pl.asked} correct</span>`;
+    d.innerHTML=`<span class="swatch"></span><span class="nm"></span><span class="tot">${tot}</span><span class="sub">Math: ${pl.right}/${pl.asked} correct${pl.boost>1?` · Meter speed ${Math.round(pl.boost*100)}%`:''}</span>`;
     d.querySelector('.swatch').style.background=pl.color; d.querySelector('.nm').textContent=pl.name;
     board.appendChild(d);
   });
@@ -822,7 +824,7 @@ function renderDivs(){
 renderDivs();
 seg($('#remSeg'),[false,true],()=>S.rems,v=>S.rems=v,v=>v?'INCLUDE REMAINDERS':'NO REMAINDERS');
 seg($('#countSeg'),[1,2,3,4],()=>S.count,v=>S.count=v);
-seg($('#holeSeg'),[3,6,9],()=>S.holes,v=>S.holes=v);
+seg($('#holeSeg'),[3,6,9,18],()=>S.holes,v=>S.holes=v);
 seg($('#speedSeg'),['slow','medium','fast'],()=>S.speed,v=>S.speed=v,v=>v.toUpperCase());
 renderNames(); renderStds();
 
