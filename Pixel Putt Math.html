@@ -56,6 +56,9 @@ button.ghost{background:var(--panel2);color:var(--ink)}
 .game{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:start}
 .stage{display:flex;flex-direction:column;gap:20px;min-width:0}
 .screen{background:var(--line);padding:8px;box-shadow:0 0 0 4px #3a3470}
+.screens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.screenbox{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+@media (max-width:700px){ .screens{grid-template-columns:minmax(0,1fr)} }
 canvas{display:block;width:100%;max-width:100%;aspect-ratio:4/3;image-rendering:pixelated;image-rendering:crisp-edges;cursor:pointer;background:#0b0920}
 .topbar{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
 .topbar .who{display:flex;gap:10px;align-items:center;font-family:var(--font-display);font-size:19px;font-weight:700}
@@ -160,13 +163,17 @@ tr.win td{color:var(--gold)}
 
   <!-- GAME -->
   <section id="gameScreen" hidden>
+   <div class="wrap">
+    <div class="topbar">
+      <div class="who"><span class="swatch" id="whoSwatch"></span><span id="whoName">Player 1</span></div>
+      <div class="stat">HOLE <b id="holeNum">1</b>/<b id="holeTot">9</b> · PAR <b>3</b> · STROKES <b id="strokeNum">0</b></div>
+    </div>
+    <div class="screens">
+      <figure class="screenbox"><figcaption class="label">Swing view</figcaption><div class="screen"><canvas id="sv" width="320" height="240" aria-label="Third-person swing view"></canvas></div></figure>
+      <figure class="screenbox"><figcaption class="label">Course map</figcaption><div class="screen"><canvas id="cv" width="320" height="240" aria-label="Mini golf course map"></canvas></div></figure>
+    </div>
     <div class="game">
       <div class="stage">
-        <div class="topbar">
-          <div class="who"><span class="swatch" id="whoSwatch"></span><span id="whoName">Player 1</span></div>
-          <div class="stat">HOLE <b id="holeNum">1</b>/<b id="holeTot">9</b> · PAR <b>3</b> · STROKES <b id="strokeNum">0</b></div>
-        </div>
-        <div class="screen"><canvas id="cv" width="320" height="240" aria-label="Mini golf course"></canvas></div>
         <div class="panel console">
           <div id="qView">
             <div class="qmeta"><span class="chip" id="qStd">4.CA.2</span><span class="label" id="qWho">Question</span></div>
@@ -209,6 +216,7 @@ tr.win td{color:var(--gold)}
         </div>
       </aside>
     </div>
+   </div>
   </section>
 
   <!-- END -->
@@ -567,6 +575,174 @@ function drawFlash(){
   txt(ctx,f.text,W/2,121,size,f.color);
   if(f.sub) txt(ctx,f.sub,W/2,152,8,'#ffffff');
 }
+/* ---------- Third-person swing view (8-bit "mode 7" perspective, walls extruded) ---------- */
+const sv=$('#sv'), sctx=sv.getContext('2d'); sctx.imageSmoothingEnabled=false;
+const BW=160,BH=120,HOR=44,F3=80,PPR=320/(Math.PI/2),DEG=Math.PI/180,NEAR=.5,WALLH=6;
+const CAMP={h:24,back:60,far:420};
+const gbuf=document.createElement('canvas'); gbuf.width=BW; gbuf.height=BH;
+const gbx=gbuf.getContext('2d'), gimg=gbx.createImageData(BW,BH);
+const rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const PC={g1:rgb('#3fa82c'),g2:rgb('#47b533'),gg1:rgb('#5bc93f'),gg2:rgb('#52bd38'),sand:rgb('#e9cf8a'),sand2:rgb('#c9a75c'),
+  w:rgb('#2f62e0'),ws:rgb('#9cd0ff'),wall:rgb('#8a4422'),tee:rgb('#2a7d1c'),lawn1:rgb('#2d6e24'),lawn2:rgb('#286520'),haze:rgb('#8f7fc6')};
+const SKIN=['#f1c27d','#8d5524','#c68642','#e0ac69'];
+const STARS=Array.from({length:40},(_,i)=>({a:i*0.157+((i*37)%11)*.05,y:4+((i*53)%60)}));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const angDiff=(a,b)=>Math.atan2(Math.sin(b-a),Math.cos(b-a));
+const inR=(r,x,y)=>x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h;
+function camPos(){ const c=G.cam; return {x:c.bx-Math.cos(c.a)*CAMP.back,y:c.by-Math.sin(c.a)*CAMP.back,a:c.a}; }
+function toCam(c,wx,wy){ const fx=Math.cos(c.a),fy=Math.sin(c.a),dx=wx-c.x,dy=wy-c.y; return {l:-dx*fy+dy*fx,z:dx*fx+dy*fy}; }
+function scr(l,z,h){ return {x:2*(BW/2+l*F3/z),y:2*(HOR+(CAMP.h-h)*F3/z),s:2*F3/z}; }
+function proj(c,wx,wy,h){ const q=toCam(c,wx,wy); if(q.z<NEAR) return null; const p=scr(q.l,q.z,h); p.z=q.z; return p; }
+function groundPP(wx,wy,wf){
+  if(wx<0||wy<0||wx>=W||wy>=H) return ((Math.floor(wx/8)+Math.floor(wy/8))&1)?PC.lawn1:PC.lawn2;
+  const co=G.course;
+  for(const w of co.water) if(inR(w,wx,wy)) return ((Math.floor(wx/3)+Math.floor(wy/3)+wf)%7===0)?PC.ws:PC.w;
+  for(const s of co.sand) if(inR(s,wx,wy)) return ((Math.floor(wx)*7+Math.floor(wy)*13)%9===0)?PC.sand2:PC.sand;
+  for(const w of co.walls) if(inR(w,wx,wy)) return PC.wall;
+  for(const t of co.tees) if(Math.abs(wx-t.x)<8&&Math.abs(wy-t.y)<5) return PC.tee;
+  const ch=(Math.floor(wx/8)+Math.floor(wy/8))&1;
+  return wy<GY?(ch?PC.gg1:PC.gg2):(ch?PC.g1:PC.g2);
+}
+function renderGround(c){
+  const fx=Math.cos(c.a),fy=Math.sin(c.a),d=gimg.data,wf=frame>>4;
+  for(let y=HOR+1;y<BH;y++){
+    const z=CAMP.h*F3/(y-HOR), hz=clamp((z-CAMP.far*.45)/(CAMP.far*.55),0,1);
+    for(let x=0;x<BW;x++){
+      const lx=(x-BW/2+.5)*z/F3, col=hz>=1?PC.haze:groundPP(c.x+fx*z-fy*lx,c.y+fy*z+fx*lx,wf), i=(y*BW+x)*4;
+      d[i]=col[0]+(PC.haze[0]-col[0])*hz; d[i+1]=col[1]+(PC.haze[1]-col[1])*hz; d[i+2]=col[2]+(PC.haze[2]-col[2])*hz; d[i+3]=255;
+    }
+  }
+  gbx.putImageData(gimg,0,0);
+}
+function drawSky(c){
+  ['#1c1846','#251f5a','#33296e','#463481','#5e4192','#7a4f9f'].forEach((b,i)=>{ sctx.fillStyle=b; sctx.fillRect(0,i*15,320,15); });
+  sctx.fillStyle='#ffffff';
+  for(const s of STARS){ const x=Math.round(160+angDiff(c.a,s.a*6.283/6.283*1)*PPR); if(x>=0&&x<320) sctx.fillRect(x,s.y,1,1); }
+  // town skyline beyond the fence
+  for(let x=0;x<320;x+=4){
+    const yaw=c.a+(x-160)/PPR, k=Math.floor((yaw+20)*9), hgt=6+((k*37)%5)*4;
+    sctx.fillStyle='#120f30'; sctx.fillRect(x,88-hgt,4,hgt+3);
+    if((k*13)%3===0&&hgt>10){ sctx.fillStyle='#ffd23f'; sctx.fillRect(x+1,88-hgt+3,1,1); }
+  }
+}
+function clipPoly(c,pts){
+  const poly=pts.map(p=>{const q=toCam(c,p[0],p[1]); return {l:q.l,z:q.z,h:p[2]};}), out=[];
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i], b=poly[(i+1)%poly.length], ai=a.z>=NEAR, bi=b.z>=NEAR;
+    if(ai) out.push(a);
+    if(ai!==bi){ const t=(NEAR-a.z)/(b.z-a.z); out.push({l:a.l+(b.l-a.l)*t,z:NEAR,h:a.h+(b.h-a.h)*t}); }
+  }
+  return out.length>=3?out.map(p=>scr(p.l,p.z,p.h)):null;
+}
+function fillPoly(pts,col){
+  sctx.fillStyle=col; sctx.beginPath();
+  pts.forEach((p,i)=>i?sctx.lineTo(Math.round(p.x),Math.round(p.y)):sctx.moveTo(Math.round(p.x),Math.round(p.y)));
+  sctx.closePath(); sctx.fill();
+}
+function drawWall3D(c,r){
+  const x0=r.x,x1=r.x+r.w,y0=r.y,y1=r.y+r.h;
+  const sides=[[[x0,y0],[x1,y0],[0,-1],'#a0522a'],[[x1,y0],[x1,y1],[1,0],'#6b3318'],[[x1,y1],[x0,y1],[0,1],'#a0522a'],[[x0,y1],[x0,y0],[-1,0],'#6b3318']];
+  for(const [a,b,n,col] of sides){
+    const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2; if((c.x-mx)*n[0]+(c.y-my)*n[1]<=0) continue;
+    const p=clipPoly(c,[[a[0],a[1],0],[b[0],b[1],0],[b[0],b[1],WALLH],[a[0],a[1],WALLH]]); if(p) fillPoly(p,col);
+  }
+  const top=clipPoly(c,[[x0,y0,WALLH],[x1,y0,WALLH],[x1,y1,WALLH],[x0,y1,WALLH]]); if(top) fillPoly(top,'#c4733d');
+}
+function tline(c,x1,y1,x2,y2,w,col){
+  const n=Math.max(1,Math.ceil(Math.hypot(x2-x1,y2-y1))); c.fillStyle=col;
+  for(let i=0;i<=n;i++){ const t=i/n; c.fillRect(Math.round(x1+(x2-x1)*t-w/2),Math.round(y1+(y2-y1)*t-w/2),w,w); }
+}
+// Golfer drawn around (0,0) = ball contact point; s: -1 top of backswing, 0 address, +1 finish
+function drawGolfer(s,color,skin){
+  const c=sctx, fx=-22, fy=3, sh={x:fx+6,y:fy-38};
+  const handsAt=ta=>({x:sh.x+Math.cos(ta*DEG)*13,y:sh.y+Math.sin(ta*DEG)*13});
+  const h0=handsAt(75), L=Math.hypot(h0.x,h0.y), tc0=Math.atan2(-h0.y,-h0.x)/DEG;
+  let ta,tc;
+  if(s<=0){ ta=lerp(75,-118,-s); tc=lerp(tc0,-195,-s); } else { ta=lerp(75,-50,s); tc=lerp(tc0,-120,s); }
+  const hd=handsAt(ta), ce={x:hd.x+Math.cos(tc*DEG)*L,y:hd.y+Math.sin(tc*DEG)*L};
+  c.fillStyle='rgba(0,0,0,.25)'; c.fillRect(fx-12,fy-1,26,3);
+  c.fillStyle='#2b2b4a'; c.fillRect(fx-7,fy-22,5,20); c.fillRect(fx+1,fy-22,5,20);
+  c.fillStyle='#151515'; c.fillRect(fx-9,fy-3,8,3); c.fillRect(fx,fy-3,8,3);
+  tline(c,hd.x,hd.y,ce.x,ce.y,2,'#d9d9e0');
+  c.fillStyle='#9aa0a8'; c.fillRect(Math.round(ce.x)-3,Math.round(ce.y)-1,6,3);
+  tline(c,fx-1,fy-22,sh.x,sh.y,9,color);
+  const hx0=sh.x+5, hy0=sh.y-9;
+  c.fillStyle=skin; c.fillRect(hx0-4,hy0-3,9,9);
+  c.fillStyle=color; c.fillRect(hx0-5,hy0-6,10,4); c.fillRect(hx0+4,hy0-3,5,2);
+  c.fillStyle='#0b0920'; c.fillRect(hx0+3,hy0+1,1,2);
+  const mid={x:(sh.x+hd.x)/2,y:(sh.y+1+hd.y)/2};
+  tline(c,sh.x,sh.y+1,mid.x,mid.y,3,color); tline(c,mid.x,mid.y,hd.x,hd.y,3,skin);
+  c.fillStyle='#ffffff'; c.fillRect(Math.round(hd.x)-2,Math.round(hd.y)-2,4,4);
+}
+function pose(){
+  if(G.phase==='power') return -G.pow*.45;
+  if(G.phase==='swinging') return G.sw.from*(1-G.sw.t/G.sw.dur);
+  if(G.follow!=null) return Math.min(1,G.follow/14)*.5;
+  if(G.phase==='aim') return Math.sin(frame/18)*.03;
+  return 0;
+}
+function circ(x,y,r,col){ sctx.fillStyle=col; for(let dy=-r;dy<=r;dy++){ const w=Math.floor(Math.sqrt(r*r-dy*dy+.5)); sctx.fillRect(x-w,y+dy,w*2+1,1); } }
+function drawBall3D(p,color,sc){
+  const r=Math.round(Math.max(1,Math.min(9,R*p.s*.5))*sc); if(r<1) return;
+  const x=Math.round(p.x), y=Math.round(p.y)-r;
+  sctx.fillStyle='rgba(0,0,0,.3)'; sctx.fillRect(x-r,Math.round(p.y)-1,r*2+1,2);
+  circ(x,y,r+1,'#0b0920'); circ(x,y,r,color);
+  if(r>=3){ sctx.fillStyle='#ffffff'; sctx.fillRect(x-Math.ceil(r/2),y-Math.ceil(r/2),2,2); }
+}
+function drawCup3D(c,h){
+  const p0=proj(c,h.x,h.y,0); if(!p0) return null;
+  return {z:p0.z,draw:()=>{
+    const w=Math.max(3,Math.round(8*p0.s*.5)), hh=Math.max(2,Math.round(w*.3)), x=Math.round(p0.x);
+    sctx.fillStyle='#0b0b14'; sctx.fillRect(x-Math.floor(w/2),Math.round(p0.y-hh/2),w,hh);
+    const p1=proj(c,h.x,h.y,22), top=Math.round(Math.min(p1?p1.y:p0.y-12,p0.y-12));
+    sctx.fillStyle='#eeeeee'; sctx.fillRect(x,top,Math.max(1,Math.round(p0.s*.25)),Math.round(p0.y)-top);
+    const fw=Math.max(6,Math.round(5*p0.s)), fh=Math.max(4,Math.round(3.5*p0.s));
+    sctx.fillStyle='#ff3b3b'; sctx.fillRect(x+1,top,fw-(Math.floor(frame/12)%2),fh);
+  }};
+}
+// Aim shown as a dotted line on the ground; it stops where it would first hit a wall
+function aimLine3D(c){
+  if(G.phase!=='aim'&&G.phase!=='power') return;
+  const b=G.ball, h=G.course.hole, base=Math.atan2(h.y-b.y,h.x-b.x);
+  const ang=G.phase==='aim'?base+G.aimOff*DEG:G.locked;
+  const len=G.phase==='aim'?Math.min(110,Math.hypot(h.x-b.x,h.y-b.y)):300*Math.max(.05,G.pow);
+  const col=G.phase==='power'?(G.pow<.6?'#5ce07a':G.pow<.85?'#ffd23f':'#ff6470'):'#ffd23f';
+  let last=null;
+  for(let d=4;d<=len;d+=4){
+    const wx=b.x+Math.cos(ang)*d, wy=b.y+Math.sin(ang)*d;
+    if(G.course.walls.some(w=>wx>w.x-R&&wx<w.x+w.w+R&&wy>w.y-R&&wy<w.y+w.h+R)) break;
+    const q=proj(c,wx,wy,0); if(!q) continue;
+    const sz=q.s>4?3:q.s>2?2:1, x=Math.round(q.x)-(sz>>1), y=Math.round(q.y)-(sz>>1);
+    sctx.fillStyle='#0b0920'; sctx.fillRect(x,y+1,sz,sz); sctx.fillStyle=col; sctx.fillRect(x,y,sz,sz); last=q;
+  }
+  if(last){ const x=Math.round(last.x), y=Math.round(last.y); sctx.fillStyle='#0b0920'; sctx.fillRect(x-4,y-2,9,5); sctx.fillStyle=col; sctx.fillRect(x-3,y-1,7,3); }
+}
+function swingFog(){
+  sctx.fillStyle='#1c1946'; sctx.fillRect(0,0,320,240);
+  sctx.fillStyle='#29245e'; for(let y=0;y<240;y+=4) for(let x=(y/4)%2?2:0;x<320;x+=4) sctx.fillRect(x,y,2,2);
+  txt(sctx,'PICK AN ANSWER',160,104,8,'#ffffff');
+  txt(sctx,'YOUR GOLFER IS WAITING',160,122,8,'#b9b3e6');
+}
+function draw3D(){
+  if(!G||!G.course) return;
+  if(!G.cam||!G.ball||G.phase==='question'||G.phase==='feedback'){ swingFog(); return; }
+  const c=camPos(), co=G.course, p=G.players[G.turn];
+  drawSky(c); renderGround(c); sctx.drawImage(gbuf,0,0,320,240);
+  aimLine3D(c);
+  const items=[];
+  for(const w of co.walls){
+    // walls fully behind the ball (between camera and golfer) are hidden so they never block the view
+    const zs=[[w.x,w.y],[w.x+w.w,w.y],[w.x,w.y+w.h],[w.x+w.w,w.y+w.h]].map(k=>toCam(c,k[0],k[1]).z);
+    if(Math.max(...zs)<CAMP.back-3) continue;
+    const q=toCam(c,w.x+w.w/2,w.y+w.h/2); items.push({z:q.z,draw:()=>drawWall3D(c,w)});
+  }
+  const cup=drawCup3D(c,co.hole); if(cup) items.push(cup);
+  const bp=proj(c,G.ball.x,G.ball.y,0); if(bp) items.push({z:bp.z-.01,draw:()=>drawBall3D(bp,p.color,G.ball.scale??1)});
+  const an=proj(c,G.cam.bx,G.cam.by,0);
+  if(an) items.push({z:an.z+.3,draw:()=>{ sctx.save(); sctx.translate(Math.round(an.x),Math.round(an.y)); sctx.scale(1.5,1.5); drawGolfer(pose(),p.color,SKIN[G.turn%4]); sctx.restore(); }});
+  items.sort((a,b)=>b.z-a.z).forEach(it=>it.draw());
+  if(G.fog>0){ sctx.globalAlpha=G.fog; swingFog(); sctx.globalAlpha=1; }
+}
 let frame=0;
 function draw(){
   if(!G||!G.course) return;
@@ -599,7 +775,7 @@ function startGame(){
 function beginTurn(){
   G.q=genQuestion(S.stds,G.used);
   G.course=makeCourse(G.q.answer); renderStatic(G.course);
-  Object.assign(G,{phase:'question',fog:1,ball:null,strokes:0,flash:null,choice:null,splash:null});
+  Object.assign(G,{phase:'question',fog:1,ball:null,strokes:0,flash:null,choice:null,splash:null,cam:null,follow:null});
   buildQuestion(); updateUI();
 }
 function choose(i){
@@ -624,7 +800,12 @@ function teeOff(){
   G.ball={x:t.x,y:t.y,vx:0,vy:0,scale:1};
   startAim(); updateUI();
 }
-function startAim(){ G.phase='aim'; G.aimOff=-90; G.aimDir=1; updateUI(); }
+function startAim(){
+  const h=G.course.hole;
+  G.follow=null;
+  G.cam={bx:G.ball.x,by:G.ball.y,a:G.cam?G.cam.a:Math.atan2(h.y-G.ball.y,h.x-G.ball.x)};
+  G.phase='aim'; G.aimOff=-90; G.aimDir=1; updateUI();
+}
 function swingPress(){
   ensureAudio();
   if(!G) return;
@@ -632,10 +813,15 @@ function swingPress(){
     const h=G.course.hole; G.locked=Math.atan2(h.y-G.ball.y,h.x-G.ball.x)+G.aimOff*Math.PI/180;
     G.phase='power'; G.pow=0; G.powDir=1; sfx.lock(); updateUI();
   }else if(G.phase==='power'){
-    const p=Math.max(.05,G.pow), v=VMAX*Math.sqrt(p);
-    G.ball.vx=Math.cos(G.locked)*v; G.ball.vy=Math.sin(G.locked)*v;
-    G.shotStart={x:G.ball.x,y:G.ball.y}; G.strokes++; G.phase='rolling'; sfx.hit(p); updateUI();
+    G.sw={from:-G.pow*.45,t:0,dur:7,pow:Math.max(.05,G.pow)};
+    G.phase='swinging'; updateUI();
   }
+}
+function launch(p){
+  const v=VMAX*Math.sqrt(p);
+  G.follow=0;
+  G.ball.vx=Math.cos(G.locked)*v; G.ball.vy=Math.sin(G.locked)*v;
+  G.shotStart={x:G.ball.x,y:G.ball.y}; G.strokes++; G.phase='rolling'; sfx.hit(p); updateUI();
 }
 function inside(b,r){ return b.x>r.x&&b.x<r.x+r.w&&b.y>r.y&&b.y<r.y+r.h; }
 function collide(b,w){
@@ -698,7 +884,10 @@ function update(){
   const sp=SPEEDS[S.speed]||SPEEDS.slow, bo=G.players[G.turn].boost||1;
   if(G.phase!=='question'&&G.phase!=='feedback') G.fog=Math.max(0,G.fog-.04);
   if(G.flash&&--G.flash.t<=0) G.flash=null;
-  if(G.phase==='aim'&&G.fog<.5){ G.aimOff+=G.aimDir*sp.aim*bo; if(G.aimOff>=90){G.aimOff=90;G.aimDir=-1;} if(G.aimOff<=-90){G.aimOff=-90;G.aimDir=1;} }
+  if(G.follow!=null) G.follow++;
+  if(G.cam){ const h=G.course.hole; G.cam.a+=angDiff(G.cam.a,Math.atan2(h.y-G.cam.by,h.x-G.cam.bx))*.15; }
+  if(G.phase==='swinging'){ if(++G.sw.t>=G.sw.dur) launch(G.sw.pow); }
+  else if(G.phase==='aim'&&G.fog<.5){ G.aimOff+=G.aimDir*sp.aim*bo; if(G.aimOff>=90){G.aimOff=90;G.aimDir=-1;} if(G.aimOff<=-90){G.aimOff=-90;G.aimDir=1;} }
   else if(G.phase==='power'){ G.pow+=G.powDir*sp.pow*bo; if(G.pow>=1){G.pow=1;G.powDir=-1;} if(G.pow<=0){G.pow=0;G.powDir=1;} meterFill.style.width=(G.pow*100)+'%'; }
   else if(G.phase==='rolling') physics();
   else if(G.phase==='sinking'){ G.ball.scale-=.08; if(G.ball.scale<=0){ G.ball.scale=0; finishHole(true); } }
@@ -713,7 +902,7 @@ let acc=0,last=performance.now();
 function loop(now){
   acc+=Math.min(100,now-last); last=now;
   while(acc>=1000/60){ update(); acc-=1000/60; }
-  draw(); requestAnimationFrame(loop);
+  draw(); draw3D(); requestAnimationFrame(loop);
 }
 
 /* ================= UI ================= */
@@ -742,10 +931,10 @@ function updateUI(){
   $('#holeNum').textContent=G.hole+1; $('#holeTot').textContent=S.holes; $('#strokeNum').textContent=G.strokes;
   const ph=G.phase;
   $('#qView').hidden=!(ph==='question'||ph==='feedback');
-  $('#sView').hidden=!(ph==='aim'||ph==='power'||ph==='rolling'||ph==='sinking'||ph==='splash');
+  $('#sView').hidden=!(ph==='aim'||ph==='power'||ph==='swinging'||ph==='rolling'||ph==='sinking'||ph==='splash');
   $('#dView').hidden=ph!=='done';
   const instr=$('#instr');
-  if(ph==='aim'){ instr.innerHTML='<b>STEP 1 · AIM</b>The arrow sweeps across the half circle. Press SWING to lock your direction.'; meterFill.style.width='0%'; }
+  if(ph==='aim'){ instr.innerHTML='<b>STEP 1 · AIM</b>The yellow aim line sweeps left and right. Press SWING when it points where you want to go.'; meterFill.style.width='0%'; }
   else if(ph==='power') instr.innerHTML='<b>STEP 2 · POWER</b>Watch the power meter. Press SWING again to hit the ball.';
   else if(ph==='rolling'||ph==='sinking') instr.innerHTML='<b>ROLLING…</b>';
   else if(ph==='splash') instr.innerHTML='<b>SPLASH!</b>Penalty stroke. The ball goes back to where you hit it.';
@@ -832,7 +1021,7 @@ $('#startBtn').addEventListener('click',()=>{ ensureAudio(); startGame(); });
 $('#teeBtn').addEventListener('click',teeOff);
 $('#swingBtn').addEventListener('click',swingPress);
 $('#nextBtn').addEventListener('click',nextTurn);
-cv.addEventListener('pointerdown',e=>{ if(G&&(G.phase==='aim'||G.phase==='power')){ e.preventDefault(); swingPress(); } });
+[cv,sv].forEach(el=>el.addEventListener('pointerdown',e=>{ if(G&&(G.phase==='aim'||G.phase==='power')){ e.preventDefault(); swingPress(); } }));
 $('#againBtn').addEventListener('click',startGame);
 $('#setupBtn').addEventListener('click',()=>show('setup'));
 $('#muteBtn').addEventListener('click',()=>{ muted=!muted; $('#muteBtn').textContent=muted?'SOUND: OFF':'SOUND: ON'; });
