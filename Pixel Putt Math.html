@@ -145,6 +145,9 @@ tr.win td{color:var(--gold)}
           <span class="label">Arrow &amp; meter speed</span>
           <div class="seg" id="speedSeg" role="group" aria-label="Arrow and meter speed"></div>
           <p class="hint">Slow is best for first-time players.</p>
+          <span class="label">Windmill holes</span>
+          <div class="seg" id="millSeg" role="group" aria-label="Windmill holes"></div>
+          <p class="hint">The windmill sits in the straight lane. Time your shot so the blades don't block the tunnel.</p>
         </div>
         <div class="panel" id="factOpts">
           <span class="label">Division facts: divide by</span>
@@ -451,17 +454,22 @@ function genQuestion(stds,used){
 /* ================= COURSE ================= */
 const W=320,H=240,GY=72,LW=76,R=2.5,VMAX=5.2;
 const laneX=i=>8+i*LW, laneC=i=>8+i*LW+LW/2;
-function makeCourse(correct){
+function makeCourse(correct,withMill){
   const walls=[{x:0,y:0,w:W,h:8},{x:0,y:232,w:W,h:8},{x:0,y:0,w:8,h:H},{x:312,y:0,w:8,h:H}];
   for(let i=1;i<4;i++) walls.push({x:laneX(i)-2,y:GY,w:4,h:232-GY});
-  const sand=[],water=[],tees=[];
+  const sand=[],water=[],tees=[]; let mill=null;
   const patterns=shuffle([0,1,2,0,1,2]);
   let pi=0;
   for(let i=0;i<4;i++){
     const L=i===0?8:laneX(i)+2, Rr=i===3?312:laneX(i)+LW-2, w=Rr-L, cx=laneC(i);
     tees.push({x:cx,y:214});
     if(i===correct){
-      sand.push({x:L,y:112,w:8,h:48},{x:Rr-8,y:112,w:8,h:48});
+      if(withMill){
+        // windmill body fills the lane except a tunnel in the middle; blades guard the tunnel mouth
+        const MY=124, MH=22, TW=7;
+        walls.push({x:L,y:MY,w:(cx-TW)-L,h:MH,mill:1},{x:cx+TW,y:MY,w:Rr-(cx+TW),h:MH,mill:1});
+        mill={cx,y0:MY,y1:MY+MH,L,Rr,tw:TW,gate:{x:cx-TW,y:MY+MH,w:TW*2,h:3}};
+      }else sand.push({x:L,y:112,w:8,h:48},{x:Rr-8,y:112,w:8,h:48});
       continue;
     }
     const p=patterns[pi++], left=Math.random()<.5;
@@ -478,7 +486,7 @@ function makeCourse(correct){
       walls.push({x:left?L:L+26,y:106,w:w-26,h:5});
     }
   }
-  return {walls,sand,water,tees,hole:{x:laneC(correct),y:34},correct};
+  return {walls,sand,water,tees,mill,hole:{x:laneC(correct),y:34},correct};
 }
 
 /* ================= RENDER ================= */
@@ -488,6 +496,32 @@ const FONT=s=>`${s}px "Press Start 2P", monospace`;
 function txt(c,s,x,y,size,col,shadow='#0b0920'){
   c.font=FONT(size); c.textAlign='center'; c.textBaseline='middle';
   c.fillStyle=shadow; c.fillText(s,x+1,y+1); c.fillStyle=col; c.fillText(s,x,y);
+}
+const MILL_SPEED=.03, MILLH=28, HUBH=36;
+const millAngle=()=>frame*MILL_SPEED;
+function millBlocked(){
+  const a=millAngle();
+  for(let k=0;k<4;k++){ const d=Math.atan2(Math.sin(a+k*Math.PI/2-Math.PI/2),Math.cos(a+k*Math.PI/2-Math.PI/2)); if(Math.abs(d)<.33) return true; }
+  return false;
+}
+function pline(c,x1,y1,x2,y2,w,col){
+  const n=Math.max(1,Math.ceil(Math.hypot(x2-x1,y2-y1))); c.fillStyle=col;
+  for(let i=0;i<=n;i++){ const t=i/n; c.fillRect(Math.round(x1+(x2-x1)*t-w/2),Math.round(y1+(y2-y1)*t-w/2),w,w); }
+}
+function drawMillMap(m){
+  const {cx,y0,y1,L,Rr,tw}=m, c=ctx;
+  c.fillStyle='#0b0920'; c.fillRect(L-1,y0-1,Rr-L+2,y1-y0+2);
+  c.fillStyle='#e9e1c9'; c.fillRect(L,y0,Rr-L,y1-y0);
+  c.fillStyle='#c0392b'; c.fillRect(L,y0,Rr-L,8);
+  c.fillStyle='#8e2a20'; for(let x=L+1;x<Rr;x+=4) c.fillRect(x,y0+7,2,1);
+  c.fillStyle='#2a1a10'; c.fillRect(cx-tw,y0+12,tw*2,y1-y0-12);
+  c.fillStyle='#4fa8ff'; c.fillRect(L+6,y0+12,5,5); c.fillRect(Rr-11,y0+12,5,5);
+  const hx=cx, hy=y0+10, a=millAngle();
+  for(let k=0;k<4;k++){
+    const t=a+k*Math.PI/2, ex=hx+Math.cos(t)*20, ey=hy+Math.sin(t)*20;
+    pline(c,hx,hy,ex,ey,4,'#6b3318'); pline(c,hx+Math.cos(t)*5,hy+Math.sin(t)*5,ex,ey,2,'#f4efe1');
+  }
+  c.fillStyle='#3a2414'; c.fillRect(hx-2,hy-2,5,5);
 }
 function drawWall(c,r){
   c.fillStyle='#8a4422'; c.fillRect(r.x,r.y,r.w,r.h);
@@ -516,7 +550,7 @@ function renderStatic(course){
     bx.fillStyle='#1b1840'; bx.fillRect(t.x-6,220,12,11);
     txt(bx,'ABCD'[i],t.x+.5,226,8,'#ffd23f');
   });
-  for(const w of course.walls) drawWall(bx,w);
+  for(const w of course.walls) if(!w.mill) drawWall(bx,w);
 }
 function drawBall(b,color){
   const x=Math.round(b.x), y=Math.round(b.y), s=b.scale??1;
@@ -639,14 +673,32 @@ function fillPoly(pts,col){
   pts.forEach((p,i)=>i?sctx.lineTo(Math.round(p.x),Math.round(p.y)):sctx.moveTo(Math.round(p.x),Math.round(p.y)));
   sctx.closePath(); sctx.fill();
 }
-function drawWall3D(c,r){
+function drawBox3D(c,r,h0,h1,ctop,ca,cb){
   const x0=r.x,x1=r.x+r.w,y0=r.y,y1=r.y+r.h;
-  const sides=[[[x0,y0],[x1,y0],[0,-1],'#a0522a'],[[x1,y0],[x1,y1],[1,0],'#6b3318'],[[x1,y1],[x0,y1],[0,1],'#a0522a'],[[x0,y1],[x0,y0],[-1,0],'#6b3318']];
+  const sides=[[[x0,y0],[x1,y0],[0,-1],ca],[[x1,y0],[x1,y1],[1,0],cb],[[x1,y1],[x0,y1],[0,1],ca],[[x0,y1],[x0,y0],[-1,0],cb]];
   for(const [a,b,n,col] of sides){
     const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2; if((c.x-mx)*n[0]+(c.y-my)*n[1]<=0) continue;
-    const p=clipPoly(c,[[a[0],a[1],0],[b[0],b[1],0],[b[0],b[1],WALLH],[a[0],a[1],WALLH]]); if(p) fillPoly(p,col);
+    const p=clipPoly(c,[[a[0],a[1],h0],[b[0],b[1],h0],[b[0],b[1],h1],[a[0],a[1],h1]]); if(p) fillPoly(p,col);
   }
-  const top=clipPoly(c,[[x0,y0,WALLH],[x1,y0,WALLH],[x1,y1,WALLH],[x0,y1,WALLH]]); if(top) fillPoly(top,'#c4733d');
+  const top=clipPoly(c,[[x0,y0,h1],[x1,y0,h1],[x1,y1,h1],[x0,y1,h1]]); if(top) fillPoly(top,ctop);
+}
+function drawWall3D(c,r){
+  if(r.mill) drawBox3D(c,r,0,MILLH,'#c0392b','#e9e1c9','#c9bfa3');
+  else drawBox3D(c,r,0,WALLH,'#c4733d','#a0522a','#6b3318');
+}
+// Front of the windmill: roof over the tunnel, gable, and the spinning blades (in the plane facing the tee)
+function drawMillFront3D(c,m){
+  const fy=m.y1+.3;
+  drawBox3D(c,{x:m.cx-m.tw,y:m.y0,w:m.tw*2,h:m.y1-m.y0},12,MILLH,'#c0392b','#e9e1c9','#c9bfa3');
+  const g=clipPoly(c,[[m.L+3,fy,MILLH],[m.Rr-3,fy,MILLH],[m.cx,fy,MILLH+16]]); if(g) fillPoly(g,'#c0392b');
+  const a=millAngle();
+  for(let k=0;k<4;k++){
+    const t=a+k*Math.PI/2, dx=Math.cos(t), dy=Math.sin(t), px=-dy, py=dx;
+    const P=(r,w)=>[m.cx+dx*r+px*w,fy+.2,HUBH-(dy*r+py*w)];
+    const arm=clipPoly(c,[P(1,-1),P(27,-1),P(27,1),P(1,1)]); if(arm) fillPoly(arm,'#6b3318');
+    const sail=clipPoly(c,[P(7,1),P(27,1),P(27,7),P(7,5)]); if(sail) fillPoly(sail,'#f4efe1');
+  }
+  const hub=clipPoly(c,[[m.cx-2.5,fy+.4,HUBH-2.5],[m.cx+2.5,fy+.4,HUBH-2.5],[m.cx+2.5,fy+.4,HUBH+2.5],[m.cx-2.5,fy+.4,HUBH+2.5]]); if(hub) fillPoly(hub,'#3a2414');
 }
 function tline(c,x1,y1,x2,y2,w,col){
   const n=Math.max(1,Math.ceil(Math.hypot(x2-x1,y2-y1))); c.fillStyle=col;
@@ -737,9 +789,10 @@ function draw3D(){
     const q=toCam(c,w.x+w.w/2,w.y+w.h/2); items.push({z:q.z,draw:()=>drawWall3D(c,w)});
   }
   const cup=drawCup3D(c,co.hole); if(cup) items.push(cup);
+  if(co.mill){ const q=toCam(c,co.mill.cx,co.mill.y1); if(q.z>NEAR) items.push({z:q.z-.1,draw:()=>drawMillFront3D(c,co.mill)}); }
   const bp=proj(c,G.ball.x,G.ball.y,0); if(bp) items.push({z:bp.z-.01,draw:()=>drawBall3D(bp,p.color,G.ball.scale??1)});
   const an=proj(c,G.cam.bx,G.cam.by,0);
-  if(an) items.push({z:an.z+.3,draw:()=>{ sctx.save(); sctx.translate(Math.round(an.x),Math.round(an.y)); sctx.scale(1.5,1.5); drawGolfer(pose(),p.color,SKIN[G.turn%4]); sctx.restore(); }});
+  if(an) items.push({z:an.z+.3,draw:()=>{ sctx.save(); sctx.translate(Math.round(an.x),Math.round(an.y)); sctx.scale(1.25,1.25); drawGolfer(pose(),p.color,SKIN[G.turn%4]); sctx.restore(); }});
   items.sort((a,b)=>b.z-a.z).forEach(it=>it.draw());
   if(G.fog>0){ sctx.globalAlpha=G.fog; swingFog(); sctx.globalAlpha=1; }
 }
@@ -751,6 +804,7 @@ function draw(){
   drawHole(G.course.hole,frame);
   const p=G.players[G.turn];
   if(G.ball) drawBall(G.ball,p.color);
+  if(G.course.mill) drawMillMap(G.course.mill);
   if(G.ball&&(G.phase==='aim'||G.phase==='power')&&G.fog<.5) drawAim(G.ball,frame);
   if(G.splash){ const s=G.splash; ctx.fillStyle='#d6ecff'; for(let i=0;i<6;i++){ const a=i*Math.PI/3, r=(30-s.t)/2; ctx.fillRect(Math.round(s.x+Math.cos(a)*r),Math.round(s.y+Math.sin(a)*r-(30-s.t)/4),2,2);} }
   if(G.fog>0) drawFog(frame);
@@ -758,7 +812,7 @@ function draw(){
 }
 
 /* ================= GAME ================= */
-const S={count:2,names:['Player 1','Player 2','Player 3','Player 4'],stds:{facts:true,ca2:false,ca4:false},divisors:[4],rems:false,holes:9,speed:'slow'};
+const S={count:2,names:['Player 1','Player 2','Player 3','Player 4'],stds:{facts:true,ca2:false,ca4:false},divisors:[4],rems:false,holes:9,speed:'slow',mill:'third'};
 try{ const s=JSON.parse(localStorage.getItem('pixelputt')||'null'); if(s) Object.assign(S,s); }catch(e){}
 if(S.stds.facts===undefined) S.stds={facts:true,ca2:false,ca4:false};
 if(!Array.isArray(S.divisors)||!S.divisors.length) S.divisors=[4];
@@ -774,7 +828,8 @@ function startGame(){
 }
 function beginTurn(){
   G.q=genQuestion(S.stds,G.used);
-  G.course=makeCourse(G.q.answer); renderStatic(G.course);
+  const mill=S.mill==='all'||(S.mill==='third'&&(G.hole+1)%3===0);
+  G.course=makeCourse(G.q.answer,mill); renderStatic(G.course);
   Object.assign(G,{phase:'question',fog:1,ball:null,strokes:0,flash:null,choice:null,splash:null,cam:null,follow:null});
   buildQuestion(); updateUI();
 }
@@ -799,6 +854,7 @@ function teeOff(){
   const t=G.course.tees[G.choice];
   G.ball={x:t.x,y:t.y,vx:0,vy:0,scale:1};
   startAim(); updateUI();
+  if(G.course.mill&&G.choice===G.course.correct) flash('WINDMILL!','#ffd23f','TIME YOUR SHOT');
 }
 function startAim(){
   const h=G.course.hole;
@@ -842,6 +898,7 @@ function physics(){
   for(let s=0;s<steps;s++){
     b.x+=b.vx/steps; b.y+=b.vy/steps;
     for(const w of c.walls) collide(b,w);
+    if(c.mill&&millBlocked()) collide(b,c.mill.gate);
     for(const wa of c.water) if(inside(b,wa)){ G.phase='splash'; G.splash={x:b.x,y:b.y,t:30}; b.vx=b.vy=0; G.ball.scale=0; sfx.splash(); flash('SPLASH! +1','#4fa8ff'); return; }
     sp=Math.hypot(b.vx,b.vy);
     if(Math.hypot(h.x-b.x,h.y-b.y)<4.5&&sp<3.4){ G.phase='sinking'; b.vx=b.vy=0; b.x=h.x; b.y=h.y; return; }
@@ -934,7 +991,7 @@ function updateUI(){
   $('#sView').hidden=!(ph==='aim'||ph==='power'||ph==='swinging'||ph==='rolling'||ph==='sinking'||ph==='splash');
   $('#dView').hidden=ph!=='done';
   const instr=$('#instr');
-  if(ph==='aim'){ instr.innerHTML='<b>STEP 1 · AIM</b>The yellow aim line sweeps left and right. Press SWING when it points where you want to go.'; meterFill.style.width='0%'; }
+  if(ph==='aim'){ instr.innerHTML='<b>STEP 1 · AIM</b>The yellow aim line sweeps left and right. Press SWING when it points where you want to go.'+(G.course.mill&&G.choice===G.course.correct?' Watch the windmill: hit when the blades are out of the way.':''); meterFill.style.width='0%'; }
   else if(ph==='power') instr.innerHTML='<b>STEP 2 · POWER</b>Watch the power meter. Press SWING again to hit the ball.';
   else if(ph==='rolling'||ph==='sinking') instr.innerHTML='<b>ROLLING…</b>';
   else if(ph==='splash') instr.innerHTML='<b>SPLASH!</b>Penalty stroke. The ball goes back to where you hit it.';
@@ -1015,6 +1072,7 @@ seg($('#remSeg'),[false,true],()=>S.rems,v=>S.rems=v,v=>v?'INCLUDE REMAINDERS':'
 seg($('#countSeg'),[1,2,3,4],()=>S.count,v=>S.count=v);
 seg($('#holeSeg'),[3,6,9,18],()=>S.holes,v=>S.holes=v);
 seg($('#speedSeg'),['slow','medium','fast'],()=>S.speed,v=>S.speed=v,v=>v.toUpperCase());
+seg($('#millSeg'),['off','third','all'],()=>S.mill,v=>S.mill=v,v=>({off:'OFF',third:'EVERY 3RD HOLE',all:'EVERY HOLE'})[v]);
 renderNames(); renderStds();
 
 $('#startBtn').addEventListener('click',()=>{ ensureAudio(); startGame(); });
