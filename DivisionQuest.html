@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Long Division Mission — 4th Grade Math Adventure</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-grid: #eef4ff;
+      --grid-line: rgba(99, 102, 241, 0.08);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: var(--bg-grid);
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 28px 28px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    .font-math {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Long Division Bracket Styling */
+    .division-house-top {
+      border-top: 4px solid #1e293b;
+      border-left: 4px solid #1e293b;
+      border-top-left-radius: 14px;
+    }
+
+    /* Active Input Pulse */
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35), 0 8px 16px -4px rgba(245, 158, 11, 0.3);
+        transform: scale(1.04);
+      }
+      50% {
+        box-shadow: 0 0 0 7px rgba(245, 158, 11, 0.18), 0 8px 20px -4px rgba(245, 158, 11, 0.45);
+        transform: scale(1.07);
+      }
+    }
+
+    .active-target-box {
+      animation: pulseGlow 1.7s infinite ease-in-out;
+      border-color: #f59e0b !important;
+      background-color: #fffbeb !important;
+      color: #b45309 !important;
+      z-index: 10;
+    }
+
+    /* Gentle Shake on Incorrect Input */
+    @keyframes gentleShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .shake-error {
+      animation: gentleShake 0.42s ease-in-out;
+      border-color: #ef4444 !important;
+      background-color: #fef2f2 !important;
+      color: #b91c1c !important;
+    }
+
+    /* Pop-in animation for newly completed digits */
+    @keyframes popIn {
+      0% { transform: scale(0.65); opacity: 0; }
+      75% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .digit-pop {
+      animation: popIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Bring-down arrow bounce */
+    @keyframes floatDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    .arrow-bounce {
+      animation: floatDown 1s infinite ease-in-out;
+    }
+
+    /* Custom Scrollbar for Helper Modal */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 60;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- TOP HEADER & TEACHER SETTINGS BAR -->
+  <header class="bg-white/95 backdrop-blur-md border-b-2 border-indigo-100 shadow-sm sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand / Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 text-xl sm:text-2xl font-display font-bold">
+          ÷
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-1.5">
+            Long Division Mission
+            <span class="hidden md:inline-block text-xs font-extrabold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">4th Grade</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-semibold hidden sm:block">Master Divide • Multiply • Subtract • Bring Down</p>
+        </div>
+      </div>
+
+      <!-- Teacher Controls (Digits + Remainders + New Problem) -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 bg-slate-50 p-1.5 rounded-2xl border border-slate-200/80">
+        
+        <!-- Dividend Digit Selector -->
+        <div class="flex items-center bg-white rounded-xl p-1 border border-slate-200 shadow-xs" role="group" aria-label="Dividend Digits">
+          <button onclick="setDigitMode(2)" id="btn-digit-2" class="digit-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer">
+            2-Digit
+          </button>
+          <button onclick="setDigitMode(3)" id="btn-digit-3" class="digit-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer">
+            3-Digit
+          </button>
+          <button onclick="setDigitMode(4)" id="btn-digit-4" class="digit-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer">
+            4-Digit
+          </button>
+        </div>
+
+        <!-- Remainders Toggle -->
+        <button onclick="toggleRemainders()" id="btn-remainders" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs" title="Toggle whether problems have remainders">
+          <span id="rem-indicator" class="w-2.5 h-2.5 rounded-full"></span>
+          <span id="rem-label">No Remainders</span>
+        </button>
+
+        <!-- New Problem Button -->
+        <button onclick="startNewProblem(true)" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold shadow-sm shadow-indigo-200 transition-all cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>New Problem</span>
+        </button>
+      </div>
+
+      <!-- Student Gamification Stats -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Stars Counter -->
+        <div class="flex items-center gap-1.5 bg-amber-50 border-2 border-amber-200 px-3 py-1 rounded-2xl shadow-xs" title="Problems Solved">
+          <span class="text-lg sm:text-xl">⭐</span>
+          <div class="leading-none">
+            <div class="text-[10px] font-extrabold uppercase text-amber-600">Stars</div>
+            <div id="stat-stars" class="text-sm sm:text-base font-black text-amber-800">0</div>
+          </div>
+        </div>
+
+        <!-- Streak Counter -->
+        <div class="flex items-center gap-1.5 bg-orange-50 border-2 border-orange-200 px-3 py-1 rounded-2xl shadow-xs" title="First-Try Step Streak">
+          <span class="text-lg sm:text-xl">🔥</span>
+          <div class="leading-none">
+            <div class="text-[10px] font-extrabold uppercase text-orange-600">Streak</div>
+            <div id="stat-streak" class="text-sm sm:text-base font-black text-orange-800">0</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN GAME ARENA -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    
+    <!-- LEFT COLUMN: DMSB STRATEGY TRACKER & MULTIPLICATION HELPER (4 cols on lg) -->
+    <section class="lg:col-span-4 flex flex-col gap-4">
+      
+      <!-- DMSB Family Mnemonic Card -->
+      <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-md shadow-slate-200/70 border-2 border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-black">🧭</span>
+            <span>Strategy Steps</span>
+          </h2>
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Repeat Cycle</span>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-1 gap-2.5" id="dmsb-tracker">
+          <!-- Step D: Divide -->
+          <div id="step-card-D" class="step-card flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 transition-all">
+            <div class="step-badge w-10 h-10 rounded-xl bg-sky-100 text-sky-700 font-display font-bold text-xl flex items-center justify-center shrink-0">
+              D
+            </div>
+            <div class="min-w-0">
+              <div class="font-extrabold text-sm sm:text-base text-slate-800 leading-tight">Divide</div>
+              <div class="text-xs font-bold text-slate-500 truncate">👨 Dad • How many fit?</div>
+            </div>
+          </div>
+
+          <!-- Step M: Multiply -->
+          <div id="step-card-M" class="step-card flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 transition-all">
+            <div class="step-badge w-10 h-10 rounded-xl bg-purple-100 text-purple-700 font-display font-bold text-xl flex items-center justify-center shrink-0">
+              M
+            </div>
+            <div class="min-w-0">
+              <div class="font-extrabold text-sm sm:text-base text-slate-800 leading-tight">Multiply</div>
+              <div class="text-xs font-bold text-slate-500 truncate">👩 Mom • Top × Divisor</div>
+            </div>
+          </div>
+
+          <!-- Step S: Subtract -->
+          <div id="step-card-S" class="step-card flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 transition-all">
+            <div class="step-badge w-10 h-10 rounded-xl bg-rose-100 text-rose-700 font-display font-bold text-xl flex items-center justify-center shrink-0">
+              S
+            </div>
+            <div class="min-w-0">
+              <div class="font-extrabold text-sm sm:text-base text-slate-800 leading-tight">Subtract</div>
+              <div class="text-xs font-bold text-slate-500 truncate">👧 Sister • Find leftover</div>
+            </div>
+          </div>
+
+          <!-- Step B: Bring Down -->
+          <div id="step-card-B" class="step-card flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 transition-all">
+            <div class="step-badge w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 font-display font-bold text-xl flex items-center justify-center shrink-0">
+              B
+            </div>
+            <div class="min-w-0">
+              <div class="font-extrabold text-sm sm:text-base text-slate-800 leading-tight">Bring Down</div>
+              <div class="text-xs font-bold text-slate-500 truncate">👦 Brother • Next digit</div>
+            </div>
+          </div>
+
+          <!-- Step R: Remainder / Rover (Full width on mobile grid) -->
+          <div id="step-card-R" class="step-card col-span-2 lg:col-span-1 flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 transition-all">
+            <div class="step-badge w-10 h-10 rounded-xl bg-amber-100 text-amber-700 font-display font-bold text-xl flex items-center justify-center shrink-0">
+              R
+            </div>
+            <div class="min-w-0">
+              <div class="font-extrabold text-sm sm:text-base text-slate-800 leading-tight">Remainder / Repeat</div>
+              <div class="text-xs font-bold text-slate-500 truncate">🐶 Rover • Any left over?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multiplication Helper Card (Collapsible / Always Ready) -->
+      <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-md shadow-slate-200/70 border-2 border-slate-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-black">✖️</span>
+            <h3 class="font-bold text-slate-800 text-sm sm:text-base">Multiplication Helper</h3>
+          </div>
+          <button onclick="toggleHelperTable()" id="btn-toggle-helper" class="text-xs font-extrabold px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 transition-colors cursor-pointer">
+            Show Facts
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 font-semibold mt-1">Need a quick boost with your <span id="helper-divisor-text" class="font-extrabold text-indigo-600">4</span>s facts?</p>
+        
+        <div id="helper-table-container" class="hidden mt-3 pt-3 border-t border-slate-100">
+          <div id="helper-facts-grid" class="grid grid-cols-3 gap-1.5 font-math text-xs sm:text-sm">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- CENTER / RIGHT COLUMN: INTERACTIVE WORKSPACE & NUMBER PAD (8 cols on lg) -->
+    <section class="lg:col-span-8 flex flex-col gap-4">
+
+      <!-- COACH GUIDANCE BANNER -->
+      <div id="coach-banner" class="bg-white rounded-3xl p-4 sm:p-5 shadow-md shadow-indigo-100/80 border-2 border-indigo-200 transition-all">
+        <div class="flex items-start gap-3.5">
+          <div id="coach-avatar" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-600 text-white flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-md">
+            🤖
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span id="coach-step-pill" class="text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800">
+                Step 1: Divide (Dad)
+              </span>
+              <span id="problem-equation-badge" class="text-xs font-math font-bold text-slate-400">
+                Problem: 84 ÷ 4
+              </span>
+            </div>
+            <p id="coach-prompt" class="text-base sm:text-lg font-extrabold text-slate-800 leading-snug">
+              Loading mission...
+            </p>
+            <!-- Scaffolded Hint / Feedback Area -->
+            <div id="feedback-box" class="hidden mt-2.5 p-3 rounded-2xl text-xs sm:text-sm font-bold flex items-start gap-2">
+              <span id="feedback-icon" class="text-base shrink-0">💡</span>
+              <span id="feedback-text"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LONG DIVISION WORKSPACE + TOUCH NUMBER PAD -->
+      <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-md shadow-slate-200/70 border-2 border-slate-100 flex flex-col md:flex-row items-center md:items-stretch justify-between gap-6">
+        
+        <!-- Long Division House Canvas / Grid -->
+        <div class="flex-1 w-full flex flex-col items-center justify-center bg-slate-50/80 rounded-2xl border-2 border-dashed border-slate-200 p-4 sm:p-6 min-h-[290px] overflow-x-auto">
+          
+          <!-- Place Value Column Labels -->
+          <div id="place-value-header" class="flex items-center mb-1.5 text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">
+            <!-- Dynamically aligned with columns -->
+          </div>
+
+          <!-- The Long Division Grid -->
+          <div id="division-grid" class="inline-flex flex-col select-none">
+            <!-- Dynamically rendered rows -->
+          </div>
+
+          <!-- Solved Celebration Card (Replaces or sits cleanly below when solved) -->
+          <div id="solved-banner" class="hidden mt-5 w-full max-w-md bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-4 shadow-lg text-center digit-pop">
+            <div class="text-2xl mb-1">🎉 Mission Accomplished! 🎉</div>
+            <div id="solved-summary" class="font-math text-lg sm:text-xl font-extrabold bg-white/15 rounded-xl py-1.5 px-3 mb-3">
+              84 ÷ 4 = 21
+            </div>
+            <button onclick="startNewProblem(true)" class="w-full sm:w-auto bg-white text-emerald-700 hover:bg-emerald-50 active:scale-95 font-extrabold px-6 py-2.5 rounded-xl shadow-md transition-all cursor-pointer text-sm sm:text-base">
+              Next Problem →
+            </button>
+          </div>
+        </div>
+
+        <!-- Kid-Friendly On-Screen Number Pad (Great for iPads, Chromebooks, & Desktop) -->
+        <div id="numpad-panel" class="w-full md:w-60 shrink-0 flex flex-col justify-between bg-slate-50 rounded-2xl p-3.5 border border-slate-200">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Number Pad</span>
+              <span class="text-[11px] font-bold text-slate-400 hidden sm:inline">or use keyboard</span>
+            </div>
+
+            <!-- Current Input Readout Box -->
+            <div class="bg-white border-2 border-slate-200 rounded-xl px-3 py-2 mb-3 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400">Your Answer:</span>
+              <span id="numpad-display" class="font-math text-xl font-extrabold text-indigo-600 min-h-[28px]">_</span>
+            </div>
+
+            <!-- Digits 1-9, 0, Clear, Check -->
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="handleDigitPress('1')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">1</button>
+              <button onclick="handleDigitPress('2')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">2</button>
+              <button onclick="handleDigitPress('3')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">3</button>
+              <button onclick="handleDigitPress('4')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">4</button>
+              <button onclick="handleDigitPress('5')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">5</button>
+              <button onclick="handleDigitPress('6')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">6</button>
+              <button onclick="handleDigitPress('7')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">7</button>
+              <button onclick="handleDigitPress('8')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">8</button>
+              <button onclick="handleDigitPress('9')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">9</button>
+              
+              <button onclick="handleBackspace()" class="bg-rose-50 hover:bg-rose-100 active:bg-rose-200 border-2 border-rose-200 rounded-xl py-2.5 sm:py-3 text-sm font-extrabold text-rose-700 transition-all cursor-pointer" title="Backspace / Clear">
+                ⌫ Clear
+              </button>
+              <button onclick="handleDigitPress('0')" class="num-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 border-2 border-slate-200 hover:border-indigo-300 rounded-xl py-2.5 sm:py-3 font-math text-lg sm:text-xl font-extrabold text-slate-800 shadow-xs transition-all cursor-pointer">0</button>
+              <button onclick="submitCurrentAnswer()" id="btn-submit" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 border-2 border-emerald-600 rounded-xl py-2.5 sm:py-3 text-sm font-extrabold text-white shadow-sm transition-all cursor-pointer">
+                Check ✓
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Hint Button -->
+          <button onclick="showStepHint()" id="btn-step-hint" class="mt-3 w-full py-2 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+            <span>💡</span>
+            <span>Give Me a Hint</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /**
+     * ============================================================================
+     * LONG DIVISION MISSION - GAME ENGINE & STATE
+     * ============================================================================
+     * Teaches 4th-grade standard algorithm long division using the DMSB strategy:
+     *   D = Divide (Dad)
+     *   M = Multiply (Mom)
+     *   S = Subtract (Sister)
+     *   B = Bring Down (Brother)
+     *   R = Remainder / Rover
+     */
+
+    const state = {
+      digitCount: 2,          // 2, 3, or 4 digits in dividend
+      allowRemainders: false, // false = exact division, true = guaranteed remainder > 0
+      stars: 0,
+      streak: 0,
+      helperOpen: false,
+
+      // Current math problem data
+      divisor: 4,
+      dividend: 84,
+      dividendDigits: [8, 4],
+      quotient: 21,
+      remainder: 0,
+
+      // Step-by-step execution sequence
+      steps: [],
+      currentStepIndex: 0,
+      currentInput: '',
+      attemptsOnCurrentStep: 0,
+      isSolved: false,
+
+      // Visual grid rows constructed dynamically as steps progress
+      // Each workRow represents a subtraction pair or bring-down state
+      quotientDisplay: [], // Array of length digitCount (null, '', or digit char)
+      remainderDisplay: null, // null or string when R step is reached/solved
+      workRows: [],        // Array of visual rows under the dividend
+      activeHighlights: {
+        dividendCols: [],  // Indices of dividend columns currently being referenced
+        workRowIndex: -1,  // Which workRow is being referenced
+        workCols: []       // Which columns in that workRow are referenced
+      }
+    };
+
+    // Place value labels right-aligned (Ones, Tens, Hundreds, Thousands)
+    const PLACE_LABELS_FROM_RIGHT = ['Ones', 'Tens', 'Hund', 'Thous'];
+
+    /**
+     * Initialize application on load
+     */
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSettingsUI();
+      startNewProblem(false);
+      setupKeyboardSupport();
+      resizeConfettiCanvas();
+      window.addEventListener('resize', resizeConfettiCanvas);
+    });
+
+    /**
+     * ============================================================================
+     * TEACHER CONTROLS
+     * ============================================================================
+     */
+    function setDigitMode(digits) {
+      state.digitCount = digits;
+      updateSettingsUI();
+      startNewProblem(true);
+    }
+
+    function toggleRemainders() {
+      state.allowRemainders = !state.allowRemainders;
+      updateSettingsUI();
+      startNewProblem(true);
+    }
+
+    function updateSettingsUI() {
+      // Update 2-Digit, 3-Digit, 4-Digit pills
+      [2, 3, 4].forEach(d => {
+        const btn = document.getElementById(`btn-digit-${d}`);
+        if (d === state.digitCount) {
+          btn.className = 'digit-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer bg-indigo-600 text-white shadow-xs';
+        } else {
+          btn.className = 'digit-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer text-slate-600 hover:bg-slate-100';
+        }
+      });
+
+      // Update Remainders toggle button
+      const remBtn = document.getElementById('btn-remainders');
+      const remInd = document.getElementById('rem-indicator');
+      const remLbl = document.getElementById('rem-label');
+
+      if (state.allowRemainders) {
+        remBtn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-900 text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs';
+        remInd.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+        remLbl.textContent = 'With Remainders';
+      } else {
+        remBtn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-800 text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs';
+        remInd.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+        remLbl.textContent = 'No Remainders';
+      }
+    }
+
+    /**
+     * ============================================================================
+     * PROBLEM GENERATOR & STEP PLANNER
+     * ============================================================================
+     */
+    function generateProblem(digits, withRemainder) {
+      // Choose a 1-digit divisor from 2 to 9
+      const divisor = Math.floor(Math.random() * 8) + 2;
+
+      const minVal = Math.pow(10, digits - 1);
+      const maxVal = Math.pow(10, digits) - 1;
+
+      let dividend = 0;
+      let attempts = 0;
+
+      while (attempts < 200) {
+        attempts++;
+        if (!withRemainder) {
+          // Pick a quotient such that quotient * divisor has exact `digits` length
+          const minQ = Math.ceil(minVal / divisor);
+          const maxQ = Math.floor(maxVal / divisor);
+          const q = Math.floor(Math.random() * (maxQ - minQ + 1)) + minQ;
+          dividend = q * divisor;
+        } else {
+          // Pick a random dividend in range and ensure remainder != 0
+          const candidate = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+          if (candidate % divisor !== 0) {
+            dividend = candidate;
+          }
+        }
+
+        // Avoid trivial all-zero tails like 2000 ÷ 2 too often so kids practice multiple cycles
+        if (dividend >= minVal && dividend <= maxVal) {
+          const nonZeroDigits = String(dividend).split('').filter(ch => ch !== '0').length;
+          if (nonZeroDigits >= 2 || attempts > 50) {
+            break;
+          }
+        }
+      }
+
+      return {
+        divisor,
+        dividend,
+        quotient: Math.floor(dividend / divisor),
+        remainder: dividend % divisor
+      };
+    }
+
+    /**
+     * Builds the exact pedagogical sequence of DMSB steps for the current problem.
+     * Standard 4th-grade convention:
+     * - If the leading digit is smaller than the divisor (e.g., 256 ÷ 4),
+     *   we explain that 4 doesn't fit into 2, so we group the first two digits (25)
+     *   and place the first quotient digit above the 5!
+     */
+    function buildSolutionSteps(divisor, dividend) {
+      const digits = String(dividend).split('').map(Number);
+      const n = digits.length;
+      const steps = [];
+
+      let col = 0;
+      let workingNum = digits[0];
+      let groupedFirstTwo = false;
+
+      // Check if first digit is smaller than divisor (and there is a second digit)
+      if (workingNum < divisor && n > 1) {
+        workingNum = workingNum * 10 + digits[1];
+        col = 1;
+        groupedFirstTwo = true;
+      }
+
+      let cycleIndex = 0;
+
+      while (col < n) {
+        const qDigit = Math.floor(workingNum / divisor);
+        const product = qDigit * divisor;
+        const diff = workingNum - product;
+
+        // 1. DIVIDE STEP
+        let dividePrompt = '';
+        if (cycleIndex === 0 && groupedFirstTwo) {
+          dividePrompt = `${divisor} doesn't fit into ${digits[0]}, so look at ${workingNum} together! How many groups of ${divisor} fit into ${workingNum}?`;
+        } else if (cycleIndex === 0) {
+          dividePrompt = `Start on the left! How many groups of ${divisor} fit into ${workingNum} without going over?`;
+        } else {
+          dividePrompt = `How many groups of ${divisor} fit into ${workingNum} without going over?`;
+        }
+
+        steps.push({
+          type: 'D',
+          col: col,
+          workingNum: workingNum,
+          expected: qDigit,
+          maxDigits: 1,
+          groupedFirstTwo: cycleIndex === 0 && groupedFirstTwo,
+          prompt: dividePrompt
+        });
+
+        // 2. MULTIPLY STEP
+        steps.push({
+          type: 'M',
+          col: col,
+          qDigit: qDigit,
+          workingNum: workingNum,
+          expected: product,
+          maxDigits: String(workingNum).length,
+          prompt: `Multiply your top number by the divisor: what is ${qDigit} × ${divisor}?`
+        });
+
+        // 3. SUBTRACT STEP
+        steps.push({
+          type: 'S',
+          col: col,
+          workingNum: workingNum,
+          product: product,
+          expected: diff,
+          maxDigits: String(workingNum).length,
+          prompt: `Subtract to find what's left over: what is ${workingNum} − ${product}?`
+        });
+
+        // 4. BRING DOWN STEP (if another digit remains to the right)
+        if (col + 1 < n) {
+          const nextDigit = digits[col + 1];
+          const nextWorking = diff * 10 + nextDigit;
+
+          steps.push({
+            type: 'B',
+            col: col + 1,
+            prevDiff: diff,
+            broughtDigit: nextDigit,
+            expected: nextDigit,
+            nextWorking: nextWorking,
+            maxDigits: 1,
+            prompt: `Bring down the next digit (${nextDigit}) right next to ${diff}! Type ${nextDigit} to bring it down.`
+          });
+
+          workingNum = nextWorking;
+        } else {
+          // Final step: Remainder check!
+          if (state.allowRemainders || diff > 0) {
+            steps.push({
+              type: 'R',
+              col: col,
+              expected: diff,
+              maxDigits: 1,
+              prompt: `No more digits to bring down! Type the leftover amount (${diff}) into the Remainder (R) box.`
+            });
+          }
+        }
+
+        col++;
+        cycleIndex++;
+      }
+
+      return steps;
+    }
+
+    /**
+     * Start a brand new problem and reset workspace visuals
+     */
+    function startNewProblem(clearFeedback = true) {
+      const prob = generateProblem(state.digitCount, state.allowRemainders);
+      state.divisor = prob.divisor;
+      state.dividend = prob.dividend;
+      state.dividendDigits = String(prob.dividend).split('').map(Number);
+      state.quotient = prob.quotient;
+      state.remainder = prob.remainder;
+
+      state.steps = buildSolutionSteps(state.divisor, state.dividend);
+      state.currentStepIndex = 0;
+      state.currentInput = '';
+      state.attemptsOnCurrentStep = 0;
+      state.isSolved = false;
+
+      // Initialize quotient slots (null = unused leading column, '' = empty box)
+      state.quotientDisplay = new Array(state.dividendDigits.length).fill('');
+      if (state.steps[0] && state.steps[0].groupedFirstTwo) {
+        state.quotientDisplay[0] = null; // Leave tens/hundreds/thousands above skipped first digit blank
+      }
+
+      state.remainderDisplay = null;
+      state.workRows = [];
+
+      // Update UI Elements
+      document.getElementById('solved-banner').classList.add('hidden');
+      document.getElementById('numpad-panel').classList.remove('opacity-50', 'pointer-events-none');
+      document.getElementById('problem-equation-badge').textContent = `Equation: ${state.dividend.toLocaleString()} ÷ ${state.divisor}`;
+      
+      if (clearFeedback) {
+        hideFeedback();
+      }
+
+      populateMultiplicationHelper();
+      prepareCurrentStepVisuals();
+      renderAll();
+    }
+
+    /**
+     * Prepares the active input target row/box for the current step
+     */
+    function prepareCurrentStepVisuals() {
+      const step = state.steps[state.currentStepIndex];
+      if (!step) return;
+
+      state.currentInput = '';
+      state.attemptsOnCurrentStep = 0;
+      updateNumpadDisplay();
+
+      const n = state.dividendDigits.length;
+
+      if (step.type === 'D') {
+        // Highlight dividend digits or latest working number being divided
+        if (state.workRows.length === 0) {
+          const cols = step.groupedFirstTwo ? [0, 1] : [0];
+          state.activeHighlights = { dividendCols: cols, workRowIndex: -1, workCols: [] };
+        } else {
+          const lastRowIdx = state.workRows.length - 1;
+          const activeCols = [];
+          for (let c = 0; c < n; c++) {
+            if (state.workRows[lastRowIdx].cells[c] !== null) activeCols.push(c);
+          }
+          state.activeHighlights = { dividendCols: [], workRowIndex: lastRowIdx, workCols: activeCols };
+        }
+      } else if (step.type === 'M') {
+        // Add a new subtraction product row aligned ending at step.col
+        const numDigits = String(step.expected).length;
+        const cells = new Array(n).fill(null);
+        for (let i = 0; i < numDigits; i++) {
+          const targetCol = step.col - (numDigits - 1 - i);
+          if (targetCol >= 0) cells[targetCol] = '';
+        }
+
+        state.workRows.push({
+          kind: 'product',
+          endCol: step.col,
+          isInput: true,
+          cells: cells
+        });
+
+        state.activeHighlights = { dividendCols: [], workRowIndex: -1, workCols: [] };
+      } else if (step.type === 'S') {
+        // Add a new difference row aligned ending at step.col
+        const numDigits = String(step.expected).length;
+        const cells = new Array(n).fill(null);
+        for (let i = 0; i < numDigits; i++) {
+          const targetCol = step.col - (numDigits - 1 - i);
+          if (targetCol >= 0) cells[targetCol] = '';
+        }
+
+        state.workRows.push({
+          kind: 'difference',
+          endCol: step.col,
+          isInput: true,
+          cells: cells
+        });
+
+        state.activeHighlights = { dividendCols: [], workRowIndex: -1, workCols: [] };
+      } else if (step.type === 'B') {
+        // Extend the latest difference row to include column `step.col`
+        const lastRow = state.workRows[state.workRows.length - 1];
+        lastRow.cells[step.col] = '';
+        lastRow.bringDownCol = step.col;
+        lastRow.isInput = true;
+
+        state.activeHighlights = { dividendCols: [step.col], workRowIndex: -1, workCols: [] };
+      } else if (step.type === 'R') {
+        // Activate the Remainder R box next to quotient
+        state.remainderDisplay = '';
+        const lastRowIdx = state.workRows.length - 1;
+        state.activeHighlights = { dividendCols: [], workRowIndex: lastRowIdx, workCols: [step.col] };
+      }
+    }
+
+    /**
+     * ============================================================================
+     * INPUT HANDLING & VALIDATION WITH SCAFFOLDED HINTS
+     * ============================================================================
+     */
+    function handleDigitPress(digitChar) {
+      if (state.isSolved) return;
+      const step = state.steps[state.currentStepIndex];
+      if (!step) return;
+
+      if (state.currentInput.length < step.maxDigits) {
+        state.currentInput += digitChar;
+      } else {
+        // Replace single-digit input smoothly if student types a new digit
+        if (step.maxDigits === 1) {
+          state.currentInput = digitChar;
+        }
+      }
+
+      updateNumpadDisplay();
+      renderDivisionGrid();
+    }
+
+    function handleBackspace() {
+      if (state.isSolved) return;
+      state.currentInput = state.currentInput.slice(0, -1);
+      updateNumpadDisplay();
+      renderDivisionGrid();
+    }
+
+    function updateNumpadDisplay() {
+      const disp = document.getElementById('numpad-display');
+      disp.textContent = state.currentInput.length > 0 ? state.currentInput : '_';
+    }
+
+    function setupKeyboardSupport() {
+      window.addEventListener('keydown', (e) => {
+        if (state.isSolved) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            startNewProblem(true);
+          }
+          return;
+        }
+
+        if (e.key >= '0' && e.key <= '9') {
+          e.preventDefault();
+          handleDigitPress(e.key);
+        } else if (e.key === 'Backspace' || e.key === 'Delete') {
+          e.preventDefault();
+          handleBackspace();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          submitCurrentAnswer();
+        }
+      });
+    }
+
+    /**
+     * Checks student's entered number against current DMSB step
+     */
+    function submitCurrentAnswer() {
+      if (state.isSolved) return;
+      const step = state.steps[state.currentStepIndex];
+      if (!step) return;
+
+      if (state.currentInput === '') {
+        showFeedback('info', 'Type a number first, then tap Check ✓!');
+        triggerInputShake();
+        return;
+      }
+
+      const entered = parseInt(state.currentInput, 10);
+
+      if (entered === step.expected) {
+        // CORRECT!
+        if (state.attemptsOnCurrentStep === 0) {
+          state.streak++;
+        }
+        updateStatsUI();
+        hideFeedback();
+        commitStepAnswer(step, state.currentInput);
+      } else {
+        // INCORRECT — Give specific, encouraging 4th-grade scaffolding!
+        state.attemptsOnCurrentStep++;
+        state.streak = 0;
+        updateStatsUI();
+        triggerInputShake();
+
+        const hintMsg = buildScaffoldedErrorHint(step, entered);
+        showFeedback('error', hintMsg);
+
+        // Clear wrong input so they can immediately try again
+        state.currentInput = '';
+        updateNumpadDisplay();
+        setTimeout(() => {
+          renderDivisionGrid();
+        }, 420);
+      }
+    }
+
+    /**
+     * Generates specific, friendly math feedback based on the exact mistake made
+     */
+    function buildScaffoldedErrorHint(step, entered) {
+      const d = state.divisor;
+
+      if (step.type === 'D') {
+        const prod = entered * d;
+        if (prod > step.workingNum) {
+          return `Too big! ${entered} × ${d} = ${prod}, which goes over ${step.workingNum}. Try a smaller number!`;
+        } else {
+          const leftover = step.workingNum - prod;
+          return `You can fit more! ${entered} × ${d} = ${prod}, leaving ${leftover} left over (another group of ${d} still fits!).`;
+        }
+      }
+
+      if (step.type === 'M') {
+        return `Check your multiplication: multiply the top digit (${step.qDigit}) × divisor (${d}). Use the Multiplication Helper on the left if needed!`;
+      }
+
+      if (step.type === 'S') {
+        return `Check your subtraction carefully: start with ${step.workingNum} and take away ${step.product}.`;
+      }
+
+      if (step.type === 'B') {
+        return `Look straight up at the highlighted digit in the dividend—bring down the ${step.broughtDigit}!`;
+      }
+
+      if (step.type === 'R') {
+        return `Look at the bottom number left over after subtracting—type ${step.expected} for the Remainder!`;
+      }
+
+      return `Not quite—give it another try!`;
+    }
+
+    /**
+     * Explicit "Give Me a Hint" button handler
+     */
+    function showStepHint() {
+      if (state.isSolved) return;
+      const step = state.steps[state.currentStepIndex];
+      const d = state.divisor;
+
+      if (step.type === 'D') {
+        const low = Math.max(0, step.expected - 1);
+        showFeedback('info', `Hint: Count by ${d}s! ${d} × ${step.expected} = ${step.expected * d}, which gets as close to ${step.workingNum} as possible without going over.`);
+      } else if (step.type === 'M') {
+        showFeedback('info', `Hint: ${step.qDigit} groups of ${d} is ${step.qDigit} × ${d}. Check the Multiplication Helper for ${d} × ${step.qDigit}!`);
+      } else if (step.type === 'S') {
+        showFeedback('info', `Hint: Count up from ${step.product} to ${step.workingNum}, or subtract ${step.workingNum} − ${step.product}.`);
+      } else if (step.type === 'B') {
+        showFeedback('info', `Hint: Drop the ${step.broughtDigit} straight down next to ${step.prevDiff} to make ${step.nextWorking}.`);
+      } else if (step.type === 'R') {
+        showFeedback('info', `Hint: The number at the very bottom (${step.expected}) is your remainder!`);
+      }
+    }
+
+    /**
+     * Locks the correct value into the grid and advances to the next step
+     */
+    function commitStepAnswer(step, valStr) {
+      const n = state.dividendDigits.length;
+
+      if (step.type === 'D') {
+        state.quotientDisplay[step.col] = valStr;
+      } else if (step.type === 'M' || step.type === 'S') {
+        const lastRow = state.workRows[state.workRows.length - 1];
+        lastRow.isInput = false;
+        const padded = valStr.padStart(String(step.expected).length, '0');
+        for (let i = 0; i < padded.length; i++) {
+          const targetCol = step.col - (padded.length - 1 - i);
+          if (targetCol >= 0) {
+            lastRow.cells[targetCol] = padded[i];
+          }
+        }
+      } else if (step.type === 'B') {
+        const lastRow = state.workRows[state.workRows.length - 1];
+        lastRow.isInput = false;
+        lastRow.bringDownCol = null;
+        lastRow.cells[step.col] = valStr;
+      } else if (step.type === 'R') {
+        state.remainderDisplay = valStr;
+      }
+
+      // Advance step index
+      state.currentStepIndex++;
+
+      if (state.currentStepIndex >= state.steps.length) {
+        completeMission();
+      } else {
+        prepareCurrentStepVisuals();
+        renderAll();
+      }
+    }
+
+    /**
+     * Celebrates completion of the full long division equation
+     */
+    function completeMission() {
+      state.isSolved = true;
+      state.stars++;
+      updateStatsUI();
+
+      state.activeHighlights = { dividendCols: [], workRowIndex: -1, workCols: [] };
+      renderAll();
+
+      const remText = state.remainder > 0 ? ` R${state.remainder}` : '';
+      const fullEq = `${state.dividend.toLocaleString()} ÷ ${state.divisor} = ${state.quotient.toLocaleString()}${remText}`;
+
+      document.getElementById('solved-summary').textContent = fullEq;
+      document.getElementById('solved-banner').classList.remove('hidden');
+      document.getElementById('numpad-panel').classList.add('opacity-50', 'pointer-events-none');
+
+      // Update Coach Banner to celebratory message
+      document.getElementById('coach-step-pill').className = 'text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+      document.getElementById('coach-step-pill').textContent = '★ Mission Complete!';
+      document.getElementById('coach-avatar').textContent = '🏆';
+      document.getElementById('coach-prompt').textContent = `Awesome job! You solved ${fullEq} step-by-step!`;
+
+      launchConfetti();
+    }
+
+    /**
+     * ============================================================================
+     * UI RENDERING FUNCTIONS
+     * ============================================================================
+     */
+    function renderAll() {
+      updateStrategyTracker();
+      updateCoachPrompt();
+      renderDivisionGrid();
+    }
+
+    function updateStatsUI() {
+      document.getElementById('stat-stars').textContent = state.stars;
+      document.getElementById('stat-streak').textContent = state.streak;
+    }
+
+    function updateStrategyTracker() {
+      const step = state.steps[state.currentStepIndex];
+      const activeType = state.isSolved ? 'DONE' : (step ? step.type : 'D');
+
+      const colors = {
+        D: 'border-sky-400 bg-sky-50 ring-2 ring-sky-200 scale-[1.02]',
+        M: 'border-purple-400 bg-purple-50 ring-2 ring-purple-200 scale-[1.02]',
+        S: 'border-rose-400 bg-rose-50 ring-2 ring-rose-200 scale-[1.02]',
+        B: 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200 scale-[1.02]',
+        R: 'border-amber-400 bg-amber-50 ring-2 ring-amber-200 scale-[1.02]'
+      };
+
+      ['D', 'M', 'S', 'B', 'R'].forEach(code => {
+        const card = document.getElementById(`step-card-${code}`);
+        if (code === activeType) {
+          card.className = `step-card ${code === 'R' ? 'col-span-2 lg:col-span-1' : ''} flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl border-2 transition-all shadow-sm ${colors[code]}`;
+        } else {
+          card.className = `step-card ${code === 'R' ? 'col-span-2 lg:col-span-1' : ''} flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 opacity-65 transition-all`;
+        }
+      });
+    }
+
+    function updateCoachPrompt() {
+      if (state.isSolved) return;
+      const step = state.steps[state.currentStepIndex];
+      if (!step) return;
+
+      const meta = {
+        D: { label: 'Step 1: Divide (Dad)', pill: 'bg-sky-100 text-sky-800', icon: '👨' },
+        M: { label: 'Step 2: Multiply (Mom)', pill: 'bg-purple-100 text-purple-800', icon: '👩' },
+        S: { label: 'Step 3: Subtract (Sister)', pill: 'bg-rose-100 text-rose-800', icon: '👧' },
+        B: { label: 'Step 4: Bring Down (Brother)', pill: 'bg-emerald-100 text-emerald-800', icon: '👦' },
+        R: { label: 'Final Step: Remainder (Rover)', pill: 'bg-amber-100 text-amber-800', icon: '🐶' }
+      }[step.type];
+
+      const pill = document.getElementById('coach-step-pill');
+      pill.className = `text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${meta.pill}`;
+      pill.textContent = meta.label;
+
+      document.getElementById('coach-avatar').textContent = meta.icon;
+      document.getElementById('coach-prompt').textContent = step.prompt;
+    }
+
+    /**
+     * Renders the aligned traditional long division bracket and work rows
+     */
+    function renderDivisionGrid() {
+      const n = state.dividendDigits.length;
+      const step = state.isSolved ? null : state.steps[state.currentStepIndex];
+
+      // 1. Place Value Headers
+      const pvHeader = document.getElementById('place-value-header');
+      let pvHtml = `<div class="w-12 sm:w-14 shrink-0"></div>`; // Spacer for divisor column
+      for (let c = 0; c < n; c++) {
+        const label = PLACE_LABELS_FROM_RIGHT[n - 1 - c] || '';
+        pvHtml += `<div class="w-12 sm:w-14 text-center">${label}</div>`;
+      }
+      if (state.allowRemainders || state.remainderDisplay !== null) {
+        pvHtml += `<div class="w-16 sm:w-20 text-center ml-2 text-amber-600">Rem</div>`;
+      }
+      pvHeader.innerHTML = pvHtml;
+
+      // 2. Main Division Grid
+      const gridEl = document.getElementById('division-grid');
+      let html = '';
+
+      // --- ROW 1: QUOTIENT ROW (Above the bracket) ---
+      html += `<div class="flex items-center mb-1.5">`;
+      html += `<div class="w-12 sm:w-14 shrink-0"></div>`; // Divisor spacer
+
+      for (let c = 0; c < n; c++) {
+        const val = state.quotientDisplay[c];
+        const isTarget = step && step.type === 'D' && step.col === c;
+
+        if (val === null) {
+          // Skipped leading column when first two digits grouped
+          html += `<div class="w-12 sm:w-14 h-12 sm:h-14 flex items-center justify-center text-slate-300 font-math text-lg">·</div>`;
+        } else if (isTarget) {
+          const typed = state.currentInput || '?';
+          html += `
+            <div id="active-input-box" class="w-12 sm:w-14 h-12 sm:h-14 rounded-xl border-3 border-amber-400 bg-amber-50 flex items-center justify-center font-math text-2xl sm:text-3xl font-extrabold active-target-box mx-0.5">
+              ${typed}
+            </div>`;
+        } else if (val !== '') {
+          html += `
+            <div class="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-sky-50 border-2 border-sky-200 text-sky-800 flex items-center justify-center font-math text-2xl sm:text-3xl font-extrabold digit-pop mx-0.5">
+              ${val}
+            </div>`;
+        } else {
+          html += `
+            <div class="w-12 sm:w-14 h-12 sm:h-14 rounded-xl border-2 border-dashed border-slate-200 bg-white/60 flex items-center justify-center font-math text-xl text-slate-300 mx-0.5">
+            </div>`;
+        }
+      }
+
+      // Optional Remainder Box on Quotient Row
+      if (state.allowRemainders || state.remainderDisplay !== null) {
+        const isRTarget = step && step.type === 'R';
+        if (isRTarget) {
+          const typedR = state.currentInput || '?';
+          html += `
+            <div class="ml-2 flex items-center gap-1">
+              <span class="font-math font-extrabold text-xl text-amber-600">R</span>
+              <div id="active-input-box" class="w-12 sm:w-14 h-12 sm:h-14 rounded-xl border-3 border-amber-400 bg-amber-50 flex items-center justify-center font-math text-2xl sm:text-3xl font-extrabold active-target-box">
+                ${typedR}
+              </div>
+            </div>`;
+        } else if (state.remainderDisplay !== null) {
+          html += `
+            <div class="ml-2 flex items-center gap-1 digit-pop">
+              <span class="font-math font-extrabold text-xl text-amber-600">R</span>
+              <div class="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-amber-100 border-2 border-amber-300 text-amber-900 flex items-center justify-center font-math text-2xl sm:text-3xl font-extrabold">
+                ${state.remainderDisplay}
+              </div>
+            </div>`;
+        } else {
+          html += `
+            <div class="ml-2 flex items-center gap-1 opacity-40">
+              <span class="font-math font-extrabold text-lg text-slate-400">R</span>
+              <div class="w-12 sm:w-14 h-12 sm:h-14 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center font-math text-slate-300"></div>
+            </div>`;
+        }
+      }
+      html += `</div>`;
+
+      // --- ROW 2: DIVISOR + BRACKET + DIVIDEND ---
+      html += `<div class="flex items-center">`;
+      // Divisor Box
+      const highlightDivisor = step && (step.type === 'D' || step.type === 'M');
+      html += `
+        <div class="w-12 sm:w-14 h-13 sm:h-14 flex items-center justify-center font-math text-2xl sm:text-3xl font-extrabold pr-2 ${highlightDivisor ? 'text-indigo-700 scale-110 transition-transform' : 'text-slate-800'}">
+          ${state.divisor}
+        </div>`;
+
+      // Dividend House Wrapper
+      html += `<div class="flex items-center division-house-top pl-1 pt-1 pb-1">`;
+      for (let c = 0; c < n; c++) {
+        const isDivHighlighted = state.activeHighlights.dividendCols.includes(c);
+        const isBringDownSource = step && step.type === 'B' && step.col === c;
+
+        html += `
+          <div class="relative w-12 sm:w-14 h-12 sm:h-13 flex items-center justify-center font-math text-2xl sm:text-3xl font-extrabold rounded-xl mx-0.5 transition-all ${
+            isDivHighlighted
+              ? 'bg-amber-100 text-amber-900 ring-2 ring-amber-400'
+              : 'text-slate-900'
+          }">
+            ${state.dividendDigits[c]}
+            ${isBringDownSource ? '<span class="absolute -bottom-5 text-emerald-600 text-base font-black arrow-bounce">↓</span>' : ''}
+          </div>`;
+      }
+      html += `</div></div>`;
+
+      // --- WORK ROWS (Products, Subtractions, Bring-Downs) ---
+      state.workRows.forEach((row, rIdx) => {
+        const isProduct = row.kind === 'product';
+        const isDifference = row.kind === 'difference';
+
+        // Prepare live typed digits if this row is currently taking input
+        let inputChars = [];
+        if (row.isInput && step) {
+          if (step.type === 'M' || step.type === 'S') {
+            // Map currentInput from left to right across the active cells
+            const activeIndices = [];
+            row.cells.forEach((cell, idx) => {
+              if (cell !== null) activeIndices.push(idx);
+            });
+            inputChars = activeIndices.map((_, i) => state.currentInput[i] || (i === 0 && !state.currentInput ? '?' : ''));
+          }
+        }
+
+        let activeCellCounter = 0;
+
+        html += `<div class="flex items-center mt-1.5">`;
+        // Left column: minus sign for product rows
+        if (isProduct) {
+          html += `<div class="w-12 sm:w-14 flex items-center justify-end pr-3 font-math text-2xl font-extrabold text-rose-500">−</div>`;
+        } else {
+          html += `<div class="w-12 sm:w-14 shrink-0"></div>`;
+        }
+
+        // Cells aligned under dividend columns
+        html += `<div class="flex items-center pl-1 ${isProduct ? 'border-b-3 border-slate-700 pb-1.5' : ''}">`;
+
+        for (let c = 0; c < n; c++) {
+          const cellVal = row.cells[c];
+
+          if (cellVal === null) {
+            html += `<div class="w-12 sm:w-14 h-11 sm:h-12 mx-0.5"></div>`;
+          } else if (row.isInput && (step.type === 'M' || step.type === 'S')) {
+            const displayChar = inputChars[activeCellCounter] || '';
+            const isFirstActive = activeCellCounter === 0;
+            activeCellCounter++;
+
+            html += `
+              <div ${isFirstActive ? 'id="active-input-box"' : ''} class="w-12 sm:w-14 h-11 sm:h-12 rounded-xl border-3 border-amber-400 bg-amber-50 flex items-center justify-center font-math text-xl sm:text-2xl font-extrabold active-target-box mx-0.5">
+                ${displayChar}
+              </div>`;
+          } else if (row.isInput && step.type === 'B' && row.bringDownCol === c) {
+            const typedB = state.currentInput || '?';
+            html += `
+              <div id="active-input-box" class="w-12 sm:w-14 h-11 sm:h-12 rounded-xl border-3 border-emerald-500 bg-emerald-50 flex items-center justify-center font-math text-xl sm:text-2xl font-extrabold active-target-box mx-0.5">
+                ${typedB}
+              </div>`;
+          } else {
+            const isHighlightedWork =
+              state.activeHighlights.workRowIndex === rIdx &&
+              state.activeHighlights.workCols.includes(c);
+
+            html += `
+              <div class="w-12 sm:w-14 h-11 sm:h-12 rounded-xl flex items-center justify-center font-math text-xl sm:text-2xl font-extrabold mx-0.5 digit-pop ${
+                isHighlightedWork
+                  ? 'bg-amber-100 text-amber-900 ring-2 ring-amber-400'
+                  : isProduct
+                    ? 'bg-purple-50 text-purple-900'
+                    : 'bg-slate-100 text-slate-800'
+              }">
+                ${cellVal}
+              </div>`;
+          }
+        }
+
+        html += `</div></div>`;
+      });
+
+      gridEl.innerHTML = html;
+    }
+
+    /**
+     * ============================================================================
+     * FEEDBACK, ANIMATIONS & MULTIPLICATION HELPER
+     * ============================================================================
+     */
+    function showFeedback(kind, message) {
+      const box = document.getElementById('feedback-box');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+
+      box.classList.remove('hidden', 'bg-rose-50', 'text-rose-800', 'border-rose-200', 'bg-amber-50', 'text-amber-900', 'border-amber-200');
+      box.classList.add('border');
+
+      if (kind === 'error') {
+        box.classList.add('bg-rose-50', 'text-rose-800', 'border-rose-200');
+        icon.textContent = '🤔';
+      } else {
+        box.classList.add('bg-amber-50', 'text-amber-900', 'border-amber-200');
+        icon.textContent = '💡';
+      }
+
+      text.textContent = message;
+    }
+
+    function hideFeedback() {
+      document.getElementById('feedback-box').classList.add('hidden');
+    }
+
+    function triggerInputShake() {
+      const activeBox = document.getElementById('active-input-box');
+      if (activeBox) {
+        activeBox.classList.remove('active-target-box');
+        activeBox.classList.add('shake-error');
+      }
+    }
+
+    function toggleHelperTable() {
+      state.helperOpen = !state.helperOpen;
+      const container = document.getElementById('helper-table-container');
+      const btn = document.getElementById('btn-toggle-helper');
+
+      if (state.helperOpen) {
+        container.classList.remove('hidden');
+        btn.textContent = 'Hide Facts';
+      } else {
+        container.classList.add('hidden');
+        btn.textContent = 'Show Facts';
+      }
+    }
+
+    function populateMultiplicationHelper() {
+      const d = state.divisor;
+      document.getElementById('helper-divisor-text').textContent = d;
+
+      const grid = document.getElementById('helper-facts-grid');
+      let html = '';
+      for (let m = 1; m <= 9; m++) {
+        html += `
+          <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg py-1.5 px-2 text-center font-bold text-slate-700">
+            ${d} × ${m} = <span class="text-indigo-700 font-extrabold">${d * m}</span>
+          </div>`;
+      }
+      grid.innerHTML = html;
+    }
+
+    /**
+     * ============================================================================
+     * CELEBRATION CONFETTI SYSTEM
+     * ============================================================================
+     */
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const ctx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimId = null;
+
+    function resizeConfettiCanvas() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+
+    function launchConfetti() {
+      const colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
+      confettiParticles = [];
+
+      for (let i = 0; i < 95; i++) {
+        confettiParticles.push({
+          x: confettiCanvas.width * (0.2 + Math.random() * 0.6),
+          y: confettiCanvas.height * 0.45,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 1.1) * 14,
+          size: Math.random() * 8 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 12,
+          life: 110
+        });
+      }
+
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+      confettiParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35; // gravity
+        p.rotation += p.vRot;
+        p.life--;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.life / 110);
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+        ctx.restore();
+      });
+
+      confettiParticles = confettiParticles.filter(p => p.life > 0);
+
+      if (confettiParticles.length > 0) {
+        confettiAnimId = requestAnimationFrame(animateConfetti);
+      } else {
+        ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+  </script>
+</body>
+</html>
