@@ -234,6 +234,15 @@ html.flying, html.flying body { overflow: hidden; overscroll-behavior: none; }
   box-shadow: 0 6px 0 #5a1016, 0 0 30px rgba(255,90,80,.35); touch-action: none;
 }
 .fire.down { transform: translateY(4px); box-shadow: 0 2px 0 #5a1016, 0 0 40px rgba(255,90,80,.6); }
+.lctl { position: absolute; z-index: 2; display: flex; gap: 14px; left: calc(max(16px, env(safe-area-inset-left, 0px)) + 10px); bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); }
+.lbtn { width: 92px; height: 92px; border-radius: 24px; display: grid; place-items: center; touch-action: none;
+  background: rgba(35,30,77,.85); color: var(--ink); border: 3px solid var(--line); box-shadow: 0 5px 0 #0d0a22; }
+.lbtn.down { background: var(--graw); color: #1d0e02; transform: translateY(3px); box-shadow: 0 2px 0 #0d0a22; }
+.flight.lefty .lctl { left: auto; right: calc(max(16px, env(safe-area-inset-right, 0px)) + 10px); }
+.fire.thrust { font-size: 17px; background: radial-gradient(circle at 35% 30%, #ffd08a, #f08a3c 60%, #8a3a0a); box-shadow: 0 6px 0 #5a2406, 0 0 30px rgba(240,138,60,.35); }
+.fire.thrust.down { box-shadow: 0 2px 0 #5a2406, 0 0 40px rgba(240,138,60,.7); }
+.fscore.bad { color: var(--miss); }
+.lwind { font-family: var(--f-hud); font-size: 15px; color: var(--ink); }
 .flight.lefty .fire { right: auto; left: calc(max(16px, env(safe-area-inset-left, 0px)) + 10px); }
 .steer-hint {
   position: absolute; z-index: 1; pointer-events: none; width: 150px; height: 150px; border-radius: 50%;
@@ -268,6 +277,8 @@ html.flying, html.flying body { overflow: hidden; overscroll-behavior: none; }
   .fhud { gap: 10px 14px; }
   .bar.small { width: 60px; }
   .fire { width: 92px; height: 92px; font-size: 17px; }
+  .fire.thrust { font-size: 14px; }
+  .lbtn { width: 76px; height: 76px; }
   .ctl { grid-template-columns: 1fr; gap: 2px; }
 }
 @media (max-width: 860px) {
@@ -1094,6 +1105,243 @@ const EXTRA = {
   ]
 };
 
+/* ---------- Update 2: a fourth story for every planet ---------- */
+const EXTRA2 = {
+  Mossmoor: { title: "Grandma Burl's Rain Hat", genre: "Story", theme: "kindness",
+    recap: "Grandma Burl gave her rain hat to a shivering boy",
+    paras: [
+      "Grandma Burl is the oldest toad on Mossmoor, and she runs the filling station by the Big Bog. Everyone knows her by her yellow rain hat. She has worn it every single day for forty years.",
+      "One rainy evening, a small boy climbed out of a spaceship at the station. His parents were busy filling the fuel tank. The boy had no coat, and he was shivering. Raindrops dripped off the end of his nose.",
+      "Grandma Burl took off her yellow rain hat and set it gently on the boy's head. It was much too big. It covered his ears and almost covered his eyes. But it kept the rain off, and the boy began to smile.",
+      "\"Won't you get wet?\" he asked. Grandma Burl laughed. \"I'm a toad, little one. I love the rain!\"",
+      "A year later, a package arrived at the station. Inside was a brand-new yellow rain hat, with a note in wobbly letters: \"This one is toad-sized. Thank you for keeping me dry.\""
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "What color is Grandma Burl's rain hat?",
+        a: "Yellow", d: ["Green", "Blue", "Red"],
+        why: "Paragraph 1 says, \"Everyone knows her by her yellow rain hat.\"" },
+      { dok: 1, p: 2, q: "Why was the boy shivering?",
+        a: "He had no coat, and he was standing in the rain.", d: ["He was scared of toads.", "His spaceship was broken.", "He had fallen into the bog."],
+        why: "Paragraph 2 says it was a rainy evening and \"The boy had no coat, and he was shivering.\"" },
+      { dok: 2, p: 4, q: "Why wasn't Grandma Burl worried about getting wet?",
+        a: "Toads like being wet, so the rain didn't bother her.", d: ["She had another hat in her pocket.", "The rain was about to stop.", "She was going inside right away."],
+        why: "In paragraph 4 she says, \"I'm a toad, little one. I love the rain!\" Toads live in wet places, so rain feels good to her." },
+      { dok: 2, p: 5, q: "Why did the boy send Grandma Burl a new hat?",
+        a: "To thank her for being kind to him", d: ["Because her old hat was too big", "Because she asked him to buy her one", "Because he wanted to keep the old hat a secret"],
+        why: "His note says, \"Thank you for keeping me dry.\" He remembered her kindness and wanted to give something back." }
+    ] },
+  Aquara: { title: "The Lantern Jellies", genre: "Informational", theme: "nature",
+    recap: "children borrow glowing jellies for night-lights and return them by morning",
+    paras: [
+      "When night falls on Aquara, the ocean begins to glow. The light comes from lantern jellies, small sea creatures about the size of a teacup. Their soft bodies shine a gentle green whenever the water around them moves.",
+      "Lantern jellies glow to protect themselves. When a hungry fish bumps into one, the jelly flashes brightly. The sudden light startles the fish, and the jelly has time to drift away.",
+      "Aquarans have a special way of using lantern jellies. On dark nights, children scoop a few jellies into glass jars filled with seawater. When the jar is gently shaken, the jellies glow, making a night-light for the raft.",
+      "There is one important rule: every jelly must go back into the ocean by morning. Lantern jellies cannot eat inside a jar, and they will grow weak if they are kept too long. Aquaran children say, \"Borrow the light, return the light.\""
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "About how big is a lantern jelly?",
+        a: "The size of a teacup", d: ["The size of a school bus", "The size of a grain of sand", "The size of a raft"],
+        why: "Paragraph 1 says lantern jellies are \"about the size of a teacup.\"" },
+      { dok: 1, p: 4, q: "When must the jellies go back into the ocean?",
+        a: "By morning", d: ["After one week", "At the Shell Festival", "Whenever they stop glowing"],
+        why: "Paragraph 4 says, \"every jelly must go back into the ocean by morning.\"" },
+      { dok: 2, p: 2, q: "How does glowing help a lantern jelly stay safe?",
+        a: "The bright flash startles a hungry fish so the jelly can drift away.", d: ["The light makes the jelly too hot to eat.", "The glow calls other jellies to help.", "The light helps the jelly swim faster."],
+        why: "Paragraph 2 explains that the sudden flash startles the fish, which gives the jelly \"time to drift away.\"" },
+      { dok: 2, p: 4, q: "What does the saying \"Borrow the light, return the light\" mean?",
+        a: "Use the jellies for a little while, then give them back so they stay healthy.", d: ["Never touch a lantern jelly.", "Keep the jellies as pets forever.", "Trade jellies with other raft-towns."],
+        why: "Borrowing means using something and giving it back. Paragraph 4 explains the jellies need to go back to the ocean because they can't eat in a jar." }
+    ] },
+  Cindral: { title: "Tilly's Moss Boots", genre: "Story", theme: "persistence",
+    recap: "Tilly tried three times to make moss boots that wouldn't melt",
+    paras: [
+      "On Cindral, the ground is so warm that regular shoes don't last long. Tilly's boots had melted three times that month. Each time, the rubber soles turned soft and sticky, and she left gooey footprints across the kitchen floor.",
+      "\"There has to be a better way,\" Tilly said. She knew that emberglass collectors wore suits made from fireproof moss. If moss could protect a whole person, maybe it could protect a pair of feet.",
+      "Tilly gathered moss from the cool side of the mountain. Her first pair of moss boots was too thin, and she could still feel the heat. Her second pair was so thick she could barely walk. For her third pair, she wove the moss in tight layers, like a basket.",
+      "The third pair worked. Tilly walked across the hottest rocks in the village without leaving a single gooey footprint. Soon everyone wanted a pair, and Tilly opened Cindral's very first boot shop."
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "What kept happening to Tilly's boots?",
+        a: "The rubber soles melted and turned soft and sticky.", d: ["They were too small for her feet.", "They got lost in the mines.", "They filled up with lava rocks."],
+        why: "Paragraph 1 says her boots \"had melted three times\" and the soles \"turned soft and sticky.\"" },
+      { dok: 1, p: 3, q: "Where did Tilly gather the moss?",
+        a: "On the cool side of the mountain", d: ["Inside the bakery", "At the bottom of a lava lake", "In the village square"],
+        why: "Paragraph 3 says, \"Tilly gathered moss from the cool side of the mountain.\"" },
+      { dok: 2, p: 2, q: "What gave Tilly the idea to make boots out of moss?",
+        a: "Emberglass collectors wear fireproof moss suits.", d: ["Her mother told her to.", "She read it in a boot catalog.", "The moss looked soft and pretty."],
+        why: "In paragraph 2 Tilly connects two ideas: moss protects collectors from heat, so it might protect feet too." },
+      { dok: 2, p: 3, q: "Why did Tilly's third pair of boots work when the first two did not?",
+        a: "She wove the moss in tight layers, so it was not too thin or too thick.", d: ["She used rubber instead of moss.", "She only wore them on cool days.", "She bought them from a store."],
+        why: "The first pair was too thin and the second too thick. Weaving the moss in tight layers fixed both problems." }
+    ] },
+  Frostveil: { title: "Built for the Cold: Snow-Hares", genre: "Informational", theme: "nature",
+    recap: "snow-hares have thick fur, big feet, and stored fat to survive the cold",
+    paras: [
+      "Snow-hares are the most important animals on Frostveil. They pull sleds, carry supplies, and keep children warm on cold nights. To survive on such a frozen planet, snow-hares have some amazing features.",
+      "A snow-hare's fur has two layers. The bottom layer is short and fluffy, and it traps warm air close to the hare's skin. The top layer is long and oily, so snow and water slide right off. Even in a blizzard, a snow-hare stays dry underneath.",
+      "Snow-hares also have huge back feet covered in thick fur. These feet work like snowshoes, spreading the hare's weight so it does not sink into deep snow. A snow-hare can run across fresh powder that would swallow a person up to the waist.",
+      "Every autumn, snow-hares eat as much as they can. They store the extra food as fat, which keeps them warm and gives them energy during the long dark winter, when food is hard to find. By spring, a snow-hare can weigh half as much as it did in autumn."
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "What are three ways snow-hares help people on Frostveil?",
+        a: "They pull sleds, carry supplies, and keep children warm.", d: ["They catch fish, build igloos, and sing songs.", "They light lanterns, guard houses, and dig wells.", "They grow snowbeans, fly kites, and carry letters."],
+        why: "Paragraph 1 lists these three jobs: pulling sleds, carrying supplies, and keeping children warm." },
+      { dok: 2, p: 2, q: "How do the two layers of a snow-hare's fur work together?",
+        a: "The bottom layer holds in warmth, and the top layer keeps snow and water out.", d: ["Both layers are oily so the hare can swim.", "The top layer is warm and the bottom layer is cool.", "The layers fall off in winter."],
+        why: "Paragraph 2 explains each layer's job: the fluffy bottom traps warm air, and the oily top makes snow slide off." },
+      { dok: 2, p: 3, q: "Why does the author say a snow-hare's feet \"work like snowshoes\"?",
+        a: "To explain that the big feet spread out the hare's weight so it stays on top of the snow", d: ["To show that snow-hares wear shoes", "To explain how hares stay warm", "To show that hares are slow runners"],
+        why: "Snowshoes are wide so people don't sink. Paragraph 3 says the hare's feet do the same thing by \"spreading the hare's weight.\"" },
+      { dok: 3, p: 4, q: "Which conclusion is best supported by the whole passage?",
+        a: "A snow-hare's body is built in several different ways to survive the cold.", d: ["Snow-hares would be happier on a warm planet.", "Snow-hares are the fastest animals on Frostveil.", "Snow-hares need people to feed them all winter."],
+        why: "Each paragraph after the first describes a different feature (fur, feet, stored fat) that helps the hare survive the cold." }
+    ] },
+  Zephyrine: { title: "Old Brisa's Eyes", genre: "Story", theme: "teamwork",
+    recap: "a boy described the sky to an old messenger, and she taught him to read it",
+    paras: [
+      "Brisa had been a kite messenger on Zephyrine for sixty years. She could read the clouds better than anyone. But lately, her eyes had grown cloudy themselves. Shapes in the sky looked fuzzy, and she could no longer tell a ribbon cloud from a tumble cloud.",
+      "The messenger guild said it was time for Brisa to retire. Brisa did not argue, but every morning she sat by her window and stared at the blurry sky with a sad face.",
+      "Her neighbor, a boy named Tem, noticed. Tem wanted to become a messenger, but he did not know how to read clouds. One morning he knocked on Brisa's door. \"I'll be your eyes,\" he said, \"if you'll be my teacher.\"",
+      "From then on, Tem described the sky each morning: the shape of each cloud, its color, and how fast it moved. Brisa listened and told him what the wind would do. She was almost never wrong.",
+      "By the end of the year, Tem could read the sky on his own. On the day he earned his messenger wings, he flew his first official kite past Brisa's window. Tied to its tail was a ribbon that said, \"Thank you, teacher.\""
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "Why couldn't Brisa read the clouds anymore?",
+        a: "Her eyesight had become fuzzy.", d: ["She had moved to a planet with no clouds.", "She forgot what the clouds meant.", "Her kite was broken."],
+        why: "Paragraph 1 says her eyes had grown cloudy and \"shapes in the sky looked fuzzy.\"" },
+      { dok: 2, p: 3, q: "What did Tem mean when he said, \"I'll be your eyes\"?",
+        a: "He would look at the sky and describe it to her.", d: ["He would give her a new pair of glasses.", "He would fly her kites for her.", "He would take her job in the guild."],
+        why: "Paragraph 4 shows what he meant: each morning he described the clouds so Brisa could figure out the wind." },
+      { dok: 2, p: 4, q: "How did Tem's plan help both of them?",
+        a: "Brisa could still use her skill, and Tem learned to read the sky.", d: ["Brisa got her eyesight back, and Tem got a kite.", "Tem became a teacher, and Brisa became a student.", "They both retired from the guild."],
+        why: "Brisa kept predicting the wind, which she loved, and Tem learned from her until he could read the sky on his own." },
+      { dok: 3, p: 1, q: "The author writes that Brisa's eyes \"had grown cloudy themselves.\" Why is this a clever way to describe her eyesight?",
+        a: "It connects her eye problem to the clouds she spent her life reading.", d: ["It shows that it was raining that day.", "It means Brisa was crying.", "It proves the clouds made her sick."],
+        why: "\"Cloudy\" describes blurry eyesight, and it also echoes the clouds in the sky. The word choice ties her problem to her life's work." }
+    ] },
+  Quillon: { title: "How the Crystals Learned to Listen", genre: "Legend", theme: "persistence",
+    recap: "Lio sang to the silent crystals for years until they learned to listen",
+    greet: "This is the oldest story on Quillon. Nobody knows if it really happened, but we tell it anyway.",
+    paras: [
+      "Long ago, the people of Quillon say, the crystals were silent. They grew tall and purple and beautiful, but they could not hold a single sound. Words spoken near them simply floated away on the wind.",
+      "In those days there lived a girl named Lio who loved to sing. Every evening she sang to the crystals as the sun went down. The other villagers thought she was silly. \"Crystals can't hear you,\" they said. But Lio kept singing, night after night, year after year.",
+      "When Lio grew old, she could no longer walk to the grove. On her last evening there, she pressed her hand to the tallest crystal and sang one final song, the softest she had ever sung.",
+      "The next morning, a child touched that crystal and heard Lio's voice, clear and sweet, singing the song from the night before. From that day on, every crystal on Quillon could listen. The people say the crystals learned how from Lio, who had been teaching them all along."
+    ],
+    qs: [
+      { dok: 1, p: 1, q: "According to the legend, what could the crystals NOT do long ago?",
+        a: "Hold any sound", d: ["Grow tall", "Shine purple", "Survive the wind"],
+        why: "Paragraph 1 says the crystals \"could not hold a single sound.\"" },
+      { dok: 2, p: 2, q: "How did the other villagers feel about Lio singing to the crystals?",
+        a: "They thought it was silly.", d: ["They were jealous of her voice.", "They joined in every night.", "They were afraid of the crystals."],
+        why: "Paragraph 2 says, \"The other villagers thought she was silly.\"" },
+      { dok: 2, p: 4, q: "What happened as a result of Lio's final song?",
+        a: "The crystal held her voice, and from then on all the crystals could listen.", d: ["The crystals stopped growing.", "Lio was able to walk to the grove again.", "The villagers began singing to the crystals."],
+        why: "Paragraph 4 says a child heard Lio's song in the crystal the next morning, and \"from that day on, every crystal on Quillon could listen.\"" },
+      { dok: 3, p: 4, q: "What are the two main purposes of this legend?",
+        a: "To explain how the crystals began holding voices, and to honor someone who kept going when others doubted her", d: ["To teach how to sing, and to warn people about crystals", "To prove the crystals are alive, and to list Quillon's best singers", "To explain the weather, and to describe the grove"],
+        why: "Legends often explain how something in nature began. This one explains the crystals' power and celebrates Lio, who sang for years even though people called her silly." }
+    ] },
+  Hollowstone: { title: "The Booming Dunes", genre: "Informational", theme: "nature",
+    recap: "sand dunes boom when smooth, dry sand slides down their slopes",
+    paras: [
+      "On hot afternoons in Hollowstone's Red Sea of Sand, a strange sound rolls across the desert. It begins as a low hum and grows into a deep boom, like a giant drum. Travelers have heard it for hundreds of years. The sound comes from the dunes themselves.",
+      "For a long time, people told stories to explain the booming. Some said giants lived under the sand. Others said it was the ghost of the old Copper River. Today, scientists have a different explanation.",
+      "The booming happens when sand slides down the steep side of a dune. The grains of sand on Hollowstone are unusually round, smooth, and dry. When millions of them slide at once, they rub against each other and shake in rhythm. Those shakes travel through the dune and make the whole hill hum, almost like the wooden body of a guitar.",
+      "Not every dune can sing. A dune must be tall and steep, and the sand must be completely dry. Even a little morning fog can silence a booming dune for days. Visitors who want to hear the dunes are told to come on the hottest, driest afternoons."
+    ],
+    qs: [
+      { dok: 2, p: 3, q: "According to scientists, what causes the booming sound?",
+        a: "Millions of smooth, dry sand grains sliding and shaking together", d: ["Giants moving under the sand", "Wind blowing through caves", "Water rushing underground"],
+        why: "Paragraph 3 explains that sliding grains \"rub against each other and shake in rhythm,\" which makes the dune hum." },
+      { dok: 2, p: 4, q: "Why can morning fog silence a booming dune?",
+        a: "The dune only booms when the sand is completely dry, and fog makes it damp.", d: ["Fog is too loud for people to hear the dune.", "Fog blows the sand away.", "Fog makes the dunes taller."],
+        why: "Paragraph 4 says the sand \"must be completely dry.\" Fog adds moisture, which stops the grains from sliding and shaking the same way." },
+      { dok: 3, p: 2, q: "How is the scientists' explanation different from the older explanations in paragraph 2?",
+        a: "It is based on how sand actually behaves, not on imaginary creatures or ghosts.", d: ["It says the river is still flowing underground.", "It agrees that giants live under the sand.", "It says nobody can explain the sound."],
+        why: "Paragraph 2's explanations are stories about giants and ghosts. Paragraph 3 explains the sound using real properties of sand that can be observed and tested." },
+      { dok: 3, p: 3, q: "Why does the author compare the dune to the body of a guitar?",
+        a: "To help readers understand that the whole dune shakes and makes the sound louder", d: ["To show that people play music on the dunes", "To explain that dunes are made of wood", "To show that the sound is quiet and gentle"],
+        why: "A guitar's hollow body vibrates and makes the strings' sound louder. The comparison helps readers picture the whole dune vibrating and humming." }
+    ] },
+  Nocturna: { title: "The Experiment That Failed", genre: "Story", theme: "mistakes",
+    recap: "Arlo's failed experiment led him to a surprising discovery",
+    paras: [
+      "Arlo had worked on his experiment for a whole year. He wanted to prove that heat mats, the tiny living things that grow near warm cracks on Nocturna, could grow without any heat at all. If he was right, food could be grown anywhere on the Long Night side.",
+      "He planted heat mats in twenty cold trays and checked them every day. Week after week, nothing happened. The trays stayed gray and empty. By the end of the year, Arlo was sure he had failed.",
+      "Disappointed, he carried the trays outside to empty them. That was when he noticed something odd. Tray number fourteen had a thin green line growing along one edge. That edge had been sitting next to the station's water pipes, which hummed and shook all day long.",
+      "Arlo raced back to the lab. Over the next month, he tested new trays, some kept still and some gently shaken. The shaken trays grew. The still trays did not. Heat mats didn't need heat after all. They needed movement, like the rumbling of the ground near the warm cracks.",
+      "Arlo's discovery helped the station grow its own food for the first time. Years later, when students asked about his success, he always told them, \"It started with a failure. I just almost forgot to look at it.\""
+    ],
+    qs: [
+      { dok: 2, p: 1, q: "What was Arlo trying to prove with his first experiment?",
+        a: "That heat mats could grow without any heat", d: ["That heat mats could glow in the dark", "That the water pipes were broken", "That food could not grow on Nocturna"],
+        why: "Paragraph 1 says he \"wanted to prove that heat mats... could grow without any heat at all.\"" },
+      { dok: 2, p: 3, q: "Why did tray fourteen grow when the other trays did not?",
+        a: "It sat next to the water pipes, which shook all day.", d: ["Arlo watered it more than the others.", "It was the warmest tray.", "It had a different kind of heat mat."],
+        why: "Paragraph 3 notes the growing edge was next to the humming, shaking pipes. Paragraph 4 confirms that movement is what heat mats need." },
+      { dok: 3, p: 5, q: "What does Arlo mean when he says, \"I just almost forgot to look at it\"?",
+        a: "He nearly threw away his failed experiment without noticing the clue that led to his discovery.", d: ["He forgot where he put his trays.", "His eyesight was poor in the dark.", "He never really failed at anything."],
+        why: "Arlo was about to dump the trays when he noticed tray fourteen. His words remind students that a failure can hold important information if you look closely." },
+      { dok: 3, p: 4, q: "Which conclusion is best supported by Arlo's results?",
+        a: "Heat mats near warm cracks may grow partly because the ground there shakes, not only because it is warm.", d: ["Heat mats grow best in completely still places.", "Water pipes make heat mats sick.", "Heat mats cannot be used for food."],
+        why: "The shaken trays grew without heat and the still ones didn't. Since the ground near cracks rumbles, the movement there likely matters too." }
+    ] },
+  Tessera: { title: "Welcome Robot Manual", genre: "Manual", unit: "Section", theme: "kindness",
+    recap: "a robot manual taught robots how to make strangers feel welcome",
+    greet: "GREETINGS. PLEASE READ THE MANUAL. I FOLLOW IT EVERY DAY.",
+    paras: [
+      "WELCOME UNIT INSTRUCTIONS\nThese instructions were written by the Builders for every robot that greets visitors at Tessera's filling stations. Follow each step in order.",
+      "Step 1: Stand still.\nVisitors may feel nervous meeting a robot for the first time. Sudden movement can be frightening. Wait three seconds before moving any arm, wheel, or antenna.",
+      "Step 2: Lower your height.\nIf you are taller than the visitor, bend your joints until your eyes are level with theirs. It is easier to trust someone who looks at you from the same height.",
+      "Step 3: Speak slowly.\nIf you do not know the visitor's language, point to the fuel pump, then to their ship, then smile. (If you do not have a mouth, flash your lights in a friendly pattern: two short, one long.)",
+      "Step 4: Ask one question about the visitor's journey.\nThen listen to the whole answer. Visitors have traveled a long way, and many of them have stories they want to tell.",
+      "NOTE FROM THE BUILDERS\nThese steps are not about fuel. They are about making strangers feel welcome. Every robot can pump fuel. A good robot makes visitors want to come back."
+    ],
+    qs: [
+      { dok: 2, p: 2, q: "Why does the manual tell robots to wait three seconds before moving?",
+        a: "Sudden movement might frighten a nervous visitor.", d: ["The robot's battery needs to warm up.", "The fuel pump takes three seconds to start.", "Visitors need time to find their money."],
+        why: "Section 2 explains that visitors \"may feel nervous\" and that \"sudden movement can be frightening.\"" },
+      { dok: 2, p: 3, q: "What does Step 2 suggest about how trust is built?",
+        a: "People feel more comfortable with someone who meets them at eye level.", d: ["Taller robots are more trustworthy.", "Visitors only trust robots that can talk.", "Trust comes from pumping fuel quickly."],
+        why: "Step 2 says, \"It is easier to trust someone who looks at you from the same height.\"" },
+      { dok: 3, p: 6, q: "What is the main purpose of the Note from the Builders?",
+        a: "To explain that the real goal of the steps is making strangers feel welcome", d: ["To teach robots how to pump fuel faster", "To list the robots' other jobs", "To warn visitors about robots"],
+        why: "The note says, \"These steps are not about fuel. They are about making strangers feel welcome.\" It tells the reason behind every step." },
+      { dok: 3, p: 5, q: "Based on the whole manual, what can you infer about the Builders?",
+        a: "They cared about treating travelers with kindness and respect.", d: ["They did not like visitors.", "They cared only about selling fuel.", "They were afraid of their own robots."],
+        why: "Every step is about helping visitors feel safe, understood, and listened to. The Builders wrote the manual to make kindness part of the robots' job." }
+    ] },
+  Veyra: { title: "Oda's First Solo", genre: "Story", theme: "courage",
+    recap: "Captain Oda handled an engine emergency on her first solo flight",
+    link: { themes: ["courage", "curiosity"], near: ["persistence", "patience", "mistakes", "strengths"],
+      prompt: "Captain Oda learned that being brave means knowing what to do next, even when you're scared. Which story from earlier in your journey shares that lesson?",
+      why: "Captain Oda's story is about facing something scary and acting anyway." },
+    fallback: { dok: 3, p: 5, q: "Why does Captain Oda keep the scorched bolt on a string around her neck?",
+      a: "It reminds her, and the pilots she teaches, that being brave means acting even when you are scared.", d: ["It is a lucky charm that stops engines from breaking.", "Marrow told her she had to wear it.", "She plans to put it back in the engine someday."],
+      why: "She shows the bolt when pilots ask if she was scared, and says, \"Brave doesn't mean you're not scared. It means you know what to do next.\"" },
+    paras: [
+      "Captain Oda was eleven when she took her first solo flight. Her teacher, an old pilot named Marrow, had flown beside her for two years. Now he stood on the landing pad with his arms crossed. \"Today you fly alone,\" he said.",
+      "Oda's hands shook on the controls. \"What if something goes wrong?\" she asked. \"Something will go wrong,\" Marrow said. \"Something always goes wrong. That's not the question. The question is what you'll do next.\"",
+      "Twenty minutes into the flight, a warning light blinked on. The left engine was overheating. Oda's heart pounded so hard she could hear it. For a moment she wanted to scream for Marrow. Then she remembered the checklist he had made her practice a hundred times. She shut off the left engine, steadied the ship on the right one, and turned slowly back toward home.",
+      "She landed crooked and bumpy, but she landed. Marrow walked over and looked at the smoking engine. Then he looked at Oda. \"Well,\" he said, \"now you know the answer to your question.\"",
+      "Oda still wears a small, scorched bolt from that engine on a string around her neck. When young pilots ask if she was ever scared, she shows them the bolt. \"Every time,\" she says. \"Brave doesn't mean you're not scared. It means you know what to do next.\""
+    ],
+    qs: [
+      { dok: 3, p: 2, q: "Why did Marrow say \"Something will go wrong\" instead of promising Oda that everything would be fine?",
+        a: "To get her ready to focus on handling problems instead of hoping none would happen", d: ["To scare her so she wouldn't fly", "Because he knew the engine was broken", "Because he didn't think she was a good pilot"],
+        why: "Marrow says the real question is \"what you'll do next.\" He wants Oda to expect problems and be ready to act." },
+      { dok: 3, p: 3, q: "Which detail best explains why Oda was able to handle the emergency?",
+        a: "\"She remembered the checklist he had made her practice a hundred times.\"", d: ["\"Oda's heart pounded so hard she could hear it.\"", "\"For a moment she wanted to scream for Marrow.\"", "\"Her teacher... had flown beside her for two years.\""],
+        why: "Practicing the checklist again and again gave her a plan to follow, even though she was frightened." },
+      { dok: 3, p: 4, q: "What does Marrow mean by \"now you know the answer to your question\"?",
+        a: "Oda found out that when something goes wrong, she can figure out what to do next.", d: ["Oda learned that engines always overheat.", "Oda will never have to fly alone again.", "Oda's question was silly."],
+        why: "Her question was \"What if something goes wrong?\" Something did go wrong, and she handled it. Her own actions answered the question." },
+      null
+    ] }
+};
+Object.entries(EXTRA2).forEach(([name, st]) => EXTRA[name].push(st));
+
 /* Build PLANETS[i].stories from the original story + extras */
 PLANETS.forEach(p => {
   const orig = { title: p.title, genre: p.genre, paras: p.paras, qs: p.qs, ...ORIGINAL_META[p.name] };
@@ -1261,7 +1509,7 @@ function renderIntro() {
         <div class="hud">Captain's log</div>
         <p>Your space ship made a hard landing after running out of fuel on the orange, dusty planet <b>Graw</b>. You meet a Grawlien named <b>Ted</b>, who tells you about the filling stations on 10 planets between Graw and home. Each planet has a story to tell, and filling your ship depends on your attention to details.</p>
       </div>
-      <div style="margin-top:18px;max-width:60ch">${tedTalk(`Hiya, pilot! I'm <b>Ted</b>. Each station keeper will tell you a story, then ask you 4 questions. Every right answer on your first try fills one fuel cell. Fill at least <b>${NEED} of 4</b> cells and you can blast off. Every trip, the keepers tell different stories, so no two journeys are the same. Between planets you'll fly through asteroid belts, so steer around the rocks and blast the ones you can't dodge!`)}</div>
+      <div style="margin-top:18px;max-width:60ch">${tedTalk(`Hiya, pilot! I'm <b>Ted</b>. Each station keeper will tell you a story, then ask you 4 questions. Every right answer on your first try fills one fuel cell. Fill at least <b>${NEED} of 4</b> cells and you can blast off. Every trip, the keepers tell different stories, so no two journeys are the same. Between planets, you'll take turns blasting through <b>asteroid belts</b> and <b>landing your ship</b> on the station pads by hand.`)}</div>
       <form class="namebox" id="nameform">
         <label><span class="hud">Pilot name</span><input id="pilot" maxlength="24" autocomplete="off" placeholder="Type your name" value="${esc(S.name)}" required></label>
         <button class="btn" type="submit">${saved ? "Start over" : "Start the journey"}</button>
@@ -1412,7 +1660,7 @@ function renderPlanet() {
       <div class="hud">Fuel tank report</div>
       <h3 style="color:${pass ? "var(--fuel)" : "var(--miss)"}">${fuel} of 4 cells filled</h3>
       ${pass
-        ? tedTalk(fuel === 4 ? `A perfect fill! ${esc(P.keeper.split(",")[0])} is waving you off. Next stop: ${S.at === 9 ? "<b>HOME</b>!" : `<b>${esc(PLANETS[S.at + 1].name)}</b>.`}` : `That's enough fuel to fly! Next stop: ${S.at === 9 ? "<b>HOME</b>!" : `<b>${esc(PLANETS[S.at + 1].name)}</b>.`}`)
+        ? tedTalk(fuel === 4 ? `A perfect fill! ${esc(P.keeper.split(",")[0])} is waving you off. Next stop: ${S.at === 9 ? "<b>HOME</b>!" : `<b>${esc(PLANETS[S.at + 1].name)}</b>.`}${nextLegNote()}` : `That's enough fuel to fly! Next stop: ${S.at === 9 ? "<b>HOME</b>!" : `<b>${esc(PLANETS[S.at + 1].name)}</b>.`}${nextLegNote()}`)
         : tedTalk(`Not quite enough to launch. You need ${NEED} cells. No worries, pilot: reread the story, look closely at the paragraph numbers, and try the station again. The answers will be in a new order.`)}
       ${pass ? `<button class="btn go" id="launch">${S.at === 9 ? "Fly home!" : "Launch"}</button>` : `<button class="btn" id="retry">Reread and try again</button>`}
     </div>`;
@@ -1480,17 +1728,20 @@ const isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
 let FL = null;          // live flight runtime (not saved)
 const keys = { up: 0, down: 0, left: 0, right: 0, fire: 0 };
 
+function nextLegNote() { return (S.at + 1) % 2 === 0 ? " This time there's no docking crane, so you'll <b>land the ship yourself</b>." : " Watch out for the <b>asteroid belt</b> on the way!"; }
 function launch() {
   beep("launch");
   const from = S.at + 1; // map stop of the planet just refueled
   S.at++;
   S.cur = null;
-  S.flight = { to: from + 1 > 10 ? 11 : from + 1, tries: 0 };
+  const to = from + 1 > 10 ? 11 : from + 1;
+  S.flight = { to, tries: 0, mode: (to - 1) % 2 === 0 ? "lander" : "belt" };
   S.screen = "flight";
   render();
 }
 
 function renderFlight() {
+  if (flightMode(S.flight) === "lander") return renderLander();
   const dest = destOf(S.flight.to);
   document.documentElement.classList.add("flying");
   app.innerHTML = `
@@ -1540,8 +1791,8 @@ function briefing() {
   document.getElementById("fgo").onclick = () => { overlay(""); countdown(); };
 }
 
-function countdown() {
-  newRun();
+function countdown(init) {
+  (init || newRun)();
   let n = 3;
   const tick = () => {
     if (!FL) return;
@@ -1614,13 +1865,14 @@ function clampShip() {
 }
 function sizeFlight() {
   if (!FL) return;
+  const oW = FL.W, oH = FL.H;
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   FL.W = FL.el.clientWidth; FL.H = FL.el.clientHeight;
   FL.cv.width = FL.W * dpr; FL.cv.height = FL.H * dpr; FL.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   FL.L = Math.max(42, Math.min(78, Math.min(FL.W, FL.H) * 0.085));
   const hud = document.getElementById("fhud");
   FL.top = hud ? hud.getBoundingClientRect().bottom - FL.el.getBoundingClientRect().top + 4 : 70;
-  if (FL.run) clampShip();
+  if (FL.run) { if (FL.mode === "lander") landerRescale(oW, oH); else clampShip(); }
 }
 addEventListener("resize", () => sizeFlight());
 addEventListener("orientationchange", () => setTimeout(sizeFlight, 300));
@@ -1850,8 +2102,9 @@ function flightFail() {
   const R = FL.run; R.done = true; R.running = false;
   S.flight.tries++; save();
   logFlight({ crashed: true });
+  const run = FL.run;
   setTimeout(() => {
-    if (!FL) return;
+    if (!FL || FL.run !== run) return;
     overlay(`<div class="hud">Shields at zero</div><h3>Ted towed you back!</h3>
       ${tedTalk(`Whoa, that was a bumpy ride! I hooked a tow cable to your ship and pulled you back to the start of the belt. Shields are recharged. Remember: <b>dodge first</b>, and <b>blast</b> anything you can't get around.`)}
       <div class="fbtns"><button class="btn go" id="fagain">Try the flight again</button>
@@ -1895,6 +2148,389 @@ addEventListener("keyup", e => {
   const k = map[e.key.toLowerCase()]; if (k) keys[k] = 0;
 });
 addEventListener("blur", () => { for (const k in keys) keys[k] = 0; });
+
+
+/* =================== LANDER: alternates with the asteroid belt =================== */
+// Flights 1, 3, 5, 7, 9 cross an asteroid belt. Flights 2, 4, 6, 8, 10 end with a hand-flown landing.
+const flightMode = F => F.mode || ((F.to - 1) % 2 === 0 ? "lander" : "belt");
+const SAFE = 10, SAFE_X = 8; // drop speed and sideways speed limits, in game units
+
+function renderLander() {
+  const dest = destOf(S.flight.to);
+  document.documentElement.classList.add("flying");
+  const tri = d => `<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="${d}" fill="currentColor"/></svg>`;
+  app.innerHTML = `
+  <div class="flight lander ${S.fireLeft ? "lefty" : ""}" id="flight">
+    <canvas id="fc" aria-label="Landing on ${esc(dest.name)}. Use the thrusters to land gently on the fuel pad."></canvas>
+    <div class="fhud" id="fhud">
+      <div class="fgroup"><span class="hud">Fuel</span><div class="bar small"><div id="lfuel" class="laser"></div></div></div>
+      <div class="fgroup"><span class="hud">Drop speed</span><b id="lspd" class="fscore">0</b></div>
+      <div class="fgroup"><span class="hud">Drift</span><b id="lvx" class="fscore">0</b></div>
+      <div class="fgroup grow"><span class="hud">Wind</span><b id="lwind" class="lwind">Calm</b></div>
+      <button class="icon-btn" id="fpause">Pause</button>
+    </div>
+    <div class="ftoast" id="ftoast" hidden></div>
+    <div class="lctl" id="lctl">
+      <button class="lbtn" id="bl" aria-label="Push left">${tri("M16 4 L6 12 L16 20 Z")}</button>
+      <button class="lbtn" id="br" aria-label="Push right">${tri("M8 4 L18 12 L8 20 Z")}</button>
+    </div>
+    <button class="fire thrust" id="bthrust" aria-label="Main thruster">THRUST</button>
+    <div class="fover" id="fover"></div>
+  </div>`;
+  setupLander();
+  landerBriefing();
+}
+
+function landerBriefing() {
+  const F = S.flight, dest = destOf(F.to), n = F.to - 1, lvl = n;
+  const tips = {
+    2: `This station doesn't have a docking crane, so you'll have to <b>land the ship yourself</b>! Gravity pulls you down. Fire your thrusters to slow your fall and touch down <b>gently</b> on the striped fuel pad. Watch your fuel!`,
+    4: `Frostveil's winds are strong. <b>Gusts will push your ship sideways</b>, so keep correcting with the arrow buttons.`,
+    6: `Old satellites drift above the pad here. <b>Bumping one knocks you around and wastes fuel.</b> Wait for a gap before you drop.`,
+    8: `This station's pad <b>hovers and slides side to side</b>. Drift along with it, then drop gently. Watch the <b>Drift</b> number!`,
+    10: `There's home! The town let loose a sky full of <b>party balloons</b>. Pop them if you like, they won't hurt you. Now land gently in front of everyone!`
+  };
+  const o = overlay(`
+    <div class="hud">Flight ${n} of 10 · Landing on ${esc(dest.name)}</div>
+    <h3>${F.to === 11 ? "Bring it home!" : "Land at the " + esc(dest.name) + " station"}</h3>
+    ${tedTalk(tips[lvl] || tips[2])}
+    <div class="controls">
+      <div class="ctl"><b>Thrust</b><span>Hold <b>THRUST</b> to fire the main engine and slow your fall. Short taps save fuel.</span></div>
+      <div class="ctl"><b>Steer</b><span>Hold the arrow buttons to drift left or right over the pad.</span></div>
+      <div class="ctl"><b>Goal</b><span>Touch down on the striped pad with a drop speed of <b>${SAFE} or less</b>. The number turns green when you're safe.</span></div>
+      <div class="ctl"><b>Keyboard</b><span>Up arrow or Space for thrust. Left and Right arrows to steer. P to pause.</span></div>
+    </div>
+    ${isTouch ? `<label class="lefty-opt"><input type="checkbox" id="lefty" ${S.fireLeft ? "checked" : ""}> Put the THRUST button on the left side</label>` : ""}
+    <div class="fbtns"><button class="btn go" id="fgo">Begin descent</button></div>`);
+  const l = document.getElementById("lefty");
+  if (l) l.onchange = () => { S.fireLeft = l.checked; save(); document.getElementById("flight").classList.toggle("lefty", l.checked); };
+  document.getElementById("fgo").onclick = () => { overlay(""); countdown(newLanding); };
+}
+
+function lockTouch(el) {
+  el.addEventListener("touchmove", e => { if (!e.target.closest(".fpanel")) e.preventDefault(); }, { passive: false });
+  el.addEventListener("touchstart", e => { if (!e.target.closest(".fpanel, input, label")) e.preventDefault(); }, { passive: false });
+  el.addEventListener("gesturestart", e => e.preventDefault());
+  el.addEventListener("contextmenu", e => e.preventDefault());
+}
+function holdBtn(b, k) {
+  const on = e => { e.preventDefault(); FL.btn[k] = 1; b.classList.add("down"); try { b.setPointerCapture(e.pointerId); } catch (_) {} };
+  const off = () => { if (FL) FL.btn[k] = 0; b.classList.remove("down"); };
+  b.addEventListener("pointerdown", on);
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(t => b.addEventListener(t, off));
+}
+
+function setupLander() {
+  stopFlight();
+  const el = document.getElementById("flight"), cv = document.getElementById("fc");
+  FL = { mode: "lander", el, cv, ctx: cv.getContext("2d"), W: 0, H: 0, L: 50, top: 70, run: null, last: performance.now(),
+         btn: { l: 0, r: 0, t: 0 }, bg: [] };
+  sizeFlight();
+  FL.bg = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random() * 0.6, r: Math.random() * 1.3 + 0.3, t: Math.random() * 6 }));
+  lockTouch(el);
+  holdBtn(document.getElementById("bl"), "l");
+  holdBtn(document.getElementById("br"), "r");
+  holdBtn(document.getElementById("bthrust"), "t");
+  document.getElementById("fpause").onclick = pauseFlight;
+  FL.raf = requestAnimationFrame(landerFrame);
+}
+
+function newLanding() {
+  const lvl = S.flight.to - 1, W = FL.W, H = FL.H, L = FL.L;
+  FL.lvl = lvl;
+  const ground = H - Math.max(70, H * 0.15);
+  const padW = L * Math.max(2.1, 3.5 - lvl * 0.14);
+  const hover = lvl === 8;
+  const padX = rand(Math.max(W * 0.45, L * 2), W - padW - Math.max(24, W * 0.06));
+  const pad = { x: padX, w: padW, y: hover ? ground - H * 0.16 : ground, vx: hover ? W * 0.045 : 0, hover };
+  // bumpy ground, flattened under a fixed pad
+  const terrain = [];
+  const steps = 28;
+  for (let i = 0; i <= steps; i++) {
+    const x = W * i / steps;
+    let y = ground - Math.abs(Math.sin(i * 1.7 + lvl) * 0.5 + Math.sin(i * 0.6) * 0.5) * L * 0.9;
+    if (!hover && x > pad.x - L * 0.8 && x < pad.x + pad.w + L * 0.8) y = ground;
+    terrain.push({ x, y });
+  }
+  const debris = [];
+  if (lvl === 6) {
+    for (let i = 0; i < 2; i++) {
+      const r = makeRock("junk", rand(FL.top + H * 0.25, ground - H * 0.28), (i % 2 ? -1 : 1) * W * rand(0.07, 0.11));
+      r.x = rand(0, W); debris.push(r);
+    }
+  }
+  const balloons = lvl === 10 ? Array.from({ length: 14 }, () => newBalloon(true)) : [];
+  FL.run = {
+    t: 0, running: false, paused: false, done: false,
+    ship: { x: W * 0.14, y: FL.top + L * 1.1, vx: W * 0.035, vy: 0 },
+    fuel: 100, ground, pad, terrain, debris, balloons, popped: 0, bumps: 0,
+    wind: 0, windTarget: 0, windT: 1, windMax: lvl >= 4 ? H * (0.03 + (lvl - 4) * 0.006) : 0,
+    parts: [], shake: 0, inv: 0, firing: { t: 0, l: 0, r: 0 }
+  };
+  updLanderHud();
+}
+function newBalloon(anywhere) {
+  const W = FL.W, H = FL.H;
+  const cols = ["#ff7a8a", "#ffd166", "#5fe3b5", "#7fd6ff", "#b18cff", "#ff7a4a"];
+  return { x: rand(W * 0.25, W * 0.95), y: anywhere ? rand(FL.top + 40, H * 0.85) : H + 30, r: FL.L * rand(0.28, 0.36), vy: -H * rand(0.04, 0.08), sway: rand(0, 6), c: cols[Math.floor(Math.random() * cols.length)] };
+}
+
+function landerRescale(oW, oH) {
+  const R = FL.run; if (!R || !oW || !oH) return;
+  const kx = FL.W / oW, ky = FL.H / oH;
+  const sx = o => { o.x *= kx; }, sy = o => { o.y *= ky; };
+  [R.ship, R.pad, ...R.terrain, ...R.debris, ...R.balloons, ...R.parts].forEach(o => { sx(o); sy(o); });
+  R.ship.vx *= kx; R.ship.vy *= ky; R.pad.w *= kx; R.pad.vx *= kx; R.ground *= ky;
+}
+
+const units = (v, H) => Math.round(Math.abs(v) / H * 100);
+function terrainY(x) {
+  const T = FL.run.terrain;
+  for (let i = 1; i < T.length; i++) if (x <= T[i].x) { const a = T[i - 1], b = T[i], k = (x - a.x) / (b.x - a.x || 1); return a.y + (b.y - a.y) * k; }
+  return T[T.length - 1].y;
+}
+
+function updateLander(dt) {
+  const R = FL.run, s = R.ship, W = FL.W, H = FL.H, L = FL.L;
+  R.t += dt;
+  const g = H * (0.075 + FL.lvl * 0.004);
+  const has = R.fuel > 0;
+  const up = has && (FL.btn.t || keys.up || keys.fire);
+  const lf = has && (FL.btn.l || keys.left), rt = has && (FL.btn.r || keys.right);
+  let ax = 0, ay = g;
+  if (up) { ay -= g * 2.3; R.fuel -= 9 * dt; }
+  if (lf) { ax -= g * 0.9; R.fuel -= 2.5 * dt; }
+  if (rt) { ax += g * 0.9; R.fuel -= 2.5 * dt; }
+  R.fuel = Math.max(0, R.fuel);
+  R.firing = { t: up, l: lf, r: rt };
+  if (R.windMax) {
+    R.windT -= dt;
+    if (R.windT <= 0) { R.windTarget = rand(-1, 1) * R.windMax; R.windT = rand(2.5, 4.5); }
+    R.wind += (R.windTarget - R.wind) * Math.min(1, dt * 0.9);
+    ax += R.wind;
+  }
+  s.vx += ax * dt; s.vy += ay * dt;
+  s.vx *= 1 - 0.12 * dt;
+  const prevBottom = s.y + L * 0.5;
+  s.x += s.vx * dt; s.y += s.vy * dt;
+  if (s.x < L * 0.4) { s.x = L * 0.4; s.vx = Math.abs(s.vx) * 0.3; }
+  if (s.x > W - L * 0.4) { s.x = W - L * 0.4; s.vx = -Math.abs(s.vx) * 0.3; }
+  if (s.y < FL.top + L * 0.6) { s.y = FL.top + L * 0.6; s.vy = Math.max(0, s.vy); }
+
+  // exhaust
+  if (up && Math.random() < 0.8) R.parts.push({ x: s.x + rand(-4, 4), y: s.y + L * 0.55, vx: rand(-30, 30), vy: rand(120, 220), life: 0.4, max: 0.4, c: Math.random() < 0.5 ? "#ffd166" : "#ff7a4a", r: rand(2, 4) });
+  if (lf && Math.random() < 0.5) R.parts.push({ x: s.x + L * 0.25, y: s.y, vx: rand(80, 140), vy: rand(-15, 15), life: 0.3, max: 0.3, c: "#d9d5ff", r: rand(1.5, 3) });
+  if (rt && Math.random() < 0.5) R.parts.push({ x: s.x - L * 0.25, y: s.y, vx: -rand(80, 140), vy: rand(-15, 15), life: 0.3, max: 0.3, c: "#d9d5ff", r: rand(1.5, 3) });
+
+  // moving pad
+  const P = R.pad;
+  if (P.vx) {
+    P.x += P.vx * dt;
+    if (P.x < W * 0.3) { P.x = W * 0.3; P.vx = Math.abs(P.vx); }
+    if (P.x + P.w > W - 20) { P.x = W - 20 - P.w; P.vx = -Math.abs(P.vx); }
+  }
+
+  // drifting satellites bump the ship
+  R.inv = Math.max(0, R.inv - dt);
+  for (const d of R.debris) {
+    d.x += d.vx * dt; d.rot += d.vr * dt; d.flash = Math.max(0, d.flash - dt);
+    if (d.x < -d.r * 2) d.x = W + d.r * 2; if (d.x > W + d.r * 2) d.x = -d.r * 2;
+    if (R.inv <= 0 && Math.hypot(d.x - s.x, d.y - s.y) < d.r + L * 0.3) {
+      R.inv = 1.2; R.bumps++; R.fuel = Math.max(0, R.fuel - 8); R.shake = 0.3; d.flash = 0.2;
+      const a = Math.atan2(s.y - d.y, s.x - d.x);
+      s.vx += Math.cos(a) * H * 0.25; s.vy += Math.sin(a) * H * 0.25;
+      boomL(s.x, s.y, 10, "#ff7a8a"); beep("bad"); toast("Bonk! Lost fuel", 900);
+    }
+  }
+  // party balloons pop harmlessly
+  for (const b of R.balloons) {
+    b.y += b.vy * dt; b.sway += dt; b.x += Math.sin(b.sway * 1.5) * 12 * dt;
+    if (!b.dead && Math.hypot(b.x - s.x, b.y - s.y) < b.r + L * 0.3) { b.dead = true; R.popped++; boomL(b.x, b.y, 14, b.c); beep("pew"); }
+  }
+  R.balloons = R.balloons.filter(b => !b.dead && b.y > FL.top - 60);
+  if (FL.lvl === 10) while (R.balloons.length < 12) R.balloons.push(newBalloon(false));
+
+  for (const p of R.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
+  R.parts = R.parts.filter(p => p.life > 0);
+  R.shake = Math.max(0, R.shake - dt);
+
+  // touchdown
+  const bottom = s.y + L * 0.5;
+  const onPadX = s.x > P.x + L * 0.12 && s.x < P.x + P.w - L * 0.12;
+  if (onPadX && prevBottom <= P.y + 2 && bottom >= P.y) { s.y = P.y - L * 0.5; return touchdown(true); }
+  const tY = Math.min(terrainY(s.x - L * 0.22), terrainY(s.x + L * 0.22));
+  if (bottom >= tY) { s.y = tY - L * 0.5; return touchdown(false); }
+  updLanderHud();
+}
+
+function boomL(x, y, n, col) {
+  for (let i = 0; i < n; i++) { const a = rand(0, 6.28), sp = rand(40, 200); FL.run.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rand(0.35, 0.8), max: 0.8, c: col, r: rand(1.5, 3.5) }); }
+}
+
+function touchdown(onPad) {
+  const R = FL.run, s = R.ship, H = FL.H;
+  const vy = units(s.vy - (R.pad.vx && onPad ? 0 : 0), H);
+  const vxRel = units(s.vx - (onPad ? R.pad.vx : 0), H);
+  R.done = true; R.running = false; R.landSpeed = vy; R.firing = { t: 0, l: 0, r: 0 };
+  updLanderHud();
+  const safeX = R.pad.hover ? SAFE_X + 4 : SAFE_X;
+  if (vy <= SAFE && vxRel <= safeX && onPad) return landerWin(vy);
+  if (vy <= SAFE && vxRel <= safeX) return landerFail("offpad");
+  R.crashed = true; R.shake = 0.5;
+  boomL(s.x, s.y + FL.L * 0.3, 40, "#ffd166"); boomL(s.x, s.y, 20, "#ff7a4a"); beep("boom");
+  landerFail(vxRel > safeX && vy <= SAFE ? "sideways" : "fast");
+}
+
+function updLanderHud() {
+  const R = FL.run; if (!R) return;
+  const H = FL.H;
+  const f = document.getElementById("lfuel"); if (f) { f.style.width = R.fuel + "%"; f.classList.toggle("low", R.fuel < 20); }
+  const sp = document.getElementById("lspd");
+  const vy = R.done && R.landSpeed != null ? R.landSpeed : (R.ship.vy > 0 ? units(R.ship.vy, H) : 0);
+  if (sp) { sp.textContent = vy; sp.classList.toggle("bad", vy > SAFE); }
+  const vx = document.getElementById("lvx");
+  if (vx) { const v = units(R.ship.vx - (R.pad.hover ? R.pad.vx : 0), H); vx.textContent = v; vx.classList.toggle("bad", v > (R.pad.hover ? SAFE_X + 4 : SAFE_X)); }
+  const w = document.getElementById("lwind");
+  if (w) {
+    const m = R.windMax ? Math.abs(R.wind) / R.windMax : 0;
+    w.textContent = m < 0.15 ? "Calm" : `${R.wind < 0 ? "←" : "→"} ${m < 0.55 ? "Breezy" : "Strong gust"}`;
+  }
+}
+
+function landerFrame(now) {
+  if (!FL) return;
+  const dt = Math.min(0.05, (now - FL.last) / 1000); FL.last = now;
+  const R = FL.run;
+  if (R && R.running && !R.paused && !R.done) updateLander(dt);
+  else if (R && R.done) { for (const p of R.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; } R.parts = R.parts.filter(p => p.life > 0); R.shake = Math.max(0, R.shake - dt); }
+  drawLander(now);
+  FL.raf = requestAnimationFrame(landerFrame);
+}
+
+function drawLander(now) {
+  const { ctx, W, H, L } = FL, R = FL.run;
+  const dest = destOf(S.flight.to), c = dest.colors, home = S.flight.to === 11;
+  ctx.save();
+  if (R && R.shake > 0 && !reduced) ctx.translate(rand(-6, 6) * R.shake * 2, rand(-6, 6) * R.shake * 2);
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, "#07051a"); sky.addColorStop(0.65, home ? "#3b6fb3" : c[2]); sky.addColorStop(1, home ? "#7fb8e0" : c[1]);
+  ctx.fillStyle = sky; ctx.fillRect(-10, -10, W + 20, H + 20);
+  for (const s of FL.bg) { ctx.globalAlpha = 0.3 + 0.4 * (0.5 + 0.5 * Math.sin(now / 700 + s.t)); ctx.fillStyle = "#f1edff"; ctx.fillRect(s.x * W, s.y * H, s.r, s.r); }
+  ctx.globalAlpha = 1;
+  if (!R) { ctx.restore(); return; }
+
+  // ground
+  const T = R.terrain;
+  ctx.beginPath(); ctx.moveTo(-10, H + 10); T.forEach(p => ctx.lineTo(p.x, p.y)); ctx.lineTo(W + 10, H + 10); ctx.closePath();
+  const gr = ctx.createLinearGradient(0, R.ground - L, 0, H);
+  gr.addColorStop(0, home ? "#3d8a4f" : c[1]); gr.addColorStop(1, home ? "#1f5230" : c[2]);
+  ctx.fillStyle = gr; ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = 2; ctx.stroke();
+
+  // station: fuel tank beside the pad
+  const P = R.pad;
+  if (!P.hover) {
+    const tx = P.x + P.w + L * 0.5 < W - L * 0.9 ? P.x + P.w + L * 0.4 : P.x - L * 1.1;
+    ctx.fillStyle = "#c9ccd6"; ctx.fillRect(tx, P.y - L * 1.1, L * 0.7, L * 1.1);
+    ctx.fillStyle = "#f08a3c"; ctx.fillRect(tx, P.y - L * 0.75, L * 0.7, L * 0.16);
+    ctx.fillStyle = "#8a8fa3"; ctx.beginPath(); ctx.ellipse(tx + L * 0.35, P.y - L * 1.1, L * 0.35, L * 0.1, 0, 0, 6.283); ctx.fill();
+  } else {
+    ctx.strokeStyle = "rgba(127,214,255,.45)"; ctx.setLineDash([4, 6]); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(P.x + 8, P.y + 8); ctx.lineTo(P.x + 8, terrainY(P.x + 8)); ctx.moveTo(P.x + P.w - 8, P.y + 8); ctx.lineTo(P.x + P.w - 8, terrainY(P.x + P.w - 8)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  // home crowd
+  if (home) {
+    const cols = ["#ff7a4a", "#5fe3b5", "#ffd166", "#b18cff", "#ff7a8a", "#7fd6ff"];
+    for (let i = 0; i < 26; i++) {
+      const x = (i + 0.5) * W / 26; if (x > P.x - L * 0.6 && x < P.x + P.w + L * 0.6) continue;
+      const y = terrainY(x), hop = Math.abs(Math.sin(now / 250 + i)) * 4;
+      ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(x - 5, y - 18 - hop, 10, 16);
+      ctx.fillStyle = "#f3c7a0"; ctx.beginPath(); ctx.arc(x, y - 23 - hop, 5, 0, 6.283); ctx.fill();
+    }
+  }
+  // pad with stripes and blinking lights
+  ctx.save(); ctx.beginPath(); ctx.rect(P.x, P.y, P.w, 10); ctx.clip();
+  for (let x = P.x - 20; x < P.x + P.w + 20; x += 16) { ctx.fillStyle = "#ffd166"; ctx.beginPath(); ctx.moveTo(x, P.y + 10); ctx.lineTo(x + 8, P.y); ctx.lineTo(x + 16, P.y); ctx.lineTo(x + 8, P.y + 10); ctx.fill(); }
+  ctx.restore();
+  ctx.strokeStyle = "#1a1438"; ctx.lineWidth = 2; ctx.strokeRect(P.x, P.y, P.w, 10);
+  const blink = Math.floor(now / 400) % 2;
+  ctx.fillStyle = blink ? "#5fe3b5" : "#1f8f6b";
+  ctx.beginPath(); ctx.arc(P.x, P.y, 4, 0, 6.283); ctx.arc(P.x + P.w, P.y, 4, 0, 6.283); ctx.fill();
+  // guide arrow above pad
+  if (!R.done) {
+    ctx.fillStyle = "rgba(255,209,102,.8)"; const ax = P.x + P.w / 2, ay = P.y - L * 1.6 + Math.sin(now / 300) * 5;
+    ctx.beginPath(); ctx.moveTo(ax - 9, ay); ctx.lineTo(ax + 9, ay); ctx.lineTo(ax, ay + 12); ctx.fill();
+  }
+
+  for (const d of R.debris) drawRock(d);
+  for (const b of R.balloons) {
+    ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(b.x, b.y + b.r); ctx.lineTo(b.x + Math.sin(b.sway) * 6, b.y + b.r * 3); ctx.stroke();
+    ctx.fillStyle = b.c; ctx.beginPath(); ctx.ellipse(b.x, b.y, b.r * 0.85, b.r, 0, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.35, b.r * 0.2, 0, 6.283); ctx.fill();
+  }
+  for (const p of R.parts) { ctx.globalAlpha = Math.max(0, p.life / p.max); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  if (!R.crashed && !(R.inv > 0 && Math.floor(R.inv * 10) % 2 === 0)) drawUprightShip(R.ship.x, R.ship.y, L, R.ship.vx / FL.W, R.firing);
+  ctx.restore();
+}
+
+function drawUprightShip(x, y, L, tilt, firing) {
+  const ctx = FL.ctx, s = L / 50;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(-Math.PI / 2 + Math.max(-0.3, Math.min(0.3, tilt * 2))); ctx.scale(s, s);
+  if (firing.t) { const f = Math.random(); ctx.fillStyle = "#ffd166"; ctx.beginPath(); ctx.moveTo(-22, -6); ctx.lineTo(-38 - f * 14, 0); ctx.lineTo(-22, 6); ctx.fill(); }
+  ctx.fillStyle = "#ff7a4a"; ctx.beginPath(); ctx.moveTo(-10, -9); ctx.lineTo(-24, -18); ctx.lineTo(-18, 0); ctx.lineTo(-24, 18); ctx.lineTo(-10, 9); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#e9e6ff"; ctx.beginPath(); ctx.moveTo(-16, -7); ctx.lineTo(20, -7); ctx.quadraticCurveTo(34, 0, 20, 7); ctx.lineTo(-16, 7); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#5fe3b5"; ctx.beginPath(); ctx.arc(10, 0, 3.6, 0, 6.283); ctx.fill();
+  // landing legs
+  ctx.strokeStyle = "#c9ccd6"; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(-12, -7); ctx.lineTo(-25, -15); ctx.moveTo(-12, 7); ctx.lineTo(-25, 15); ctx.stroke();
+  ctx.restore();
+}
+
+function logLander(extra) {
+  const R = FL.run;
+  S.flightLog = S.flightLog || {};
+  S.flightLog[S.flight.to] = Object.assign({ game: "lander", tries: S.flight.tries + 1, fuelLeft: Math.round(R.fuel), speed: R.landSpeed, popped: R.popped }, extra);
+}
+
+function landerFail(kind) {
+  S.flight.tries++; save();
+  logLander({ landed: false });
+  const msg = {
+    fast: ["Too fast!", `Ouch! That pad is going to need a new coat of paint. I patched up your ship and flew it back up for you. Tip: start firing <b>THRUST</b> early, in short bursts, so your drop speed stays green.`],
+    sideways: ["Sideways skid!", `You came down slow enough, but you were sliding sideways and tipped over. Watch the <b>Drift</b> number and get it green before you touch down.`],
+    offpad: ["So close!", `You landed safely, but you missed the fuel pad! Use the arrow buttons to line up over the <b>striped pad</b> before you drop.`]
+  }[kind];
+  const run = FL.run;
+  setTimeout(() => {
+    if (!FL || FL.run !== run) return;
+    overlay(`<div class="hud">Landing missed</div><h3>${msg[0]}</h3>${tedTalk(msg[1])}
+      <div class="fbtns"><button class="btn go" id="fagain">Try the landing again</button>
+      ${S.flight.tries >= 2 ? `<button class="btn ghost" id="fauto">Use autopilot</button>` : ""}</div>`);
+    document.getElementById("fagain").onclick = () => { overlay(""); countdown(newLanding); };
+    const a = document.getElementById("fauto");
+    if (a) a.onclick = () => { logLander({ landed: true, auto: true }); arrive(); };
+  }, kind === "offpad" ? 400 : 900);
+}
+
+function landerWin(speed) {
+  const R = FL.run, dest = destOf(S.flight.to), home = S.flight.to === 11;
+  const perfect = speed <= 4;
+  const score = Math.round(R.fuel) * 2 + (perfect ? 50 : 0) + R.popped * 5;
+  logLander({ landed: true, perfect, score });
+  beep(home ? "cheer" : "good");
+  const run = FL.run;
+  setTimeout(() => {
+    if (!FL || FL.run !== run) return;
+    overlay(`<div class="hud">Touchdown</div><h3>${home ? "You're home!" : perfect ? "Perfect landing!" : "Landed at " + esc(dest.name) + "!"}</h3>
+      <div class="fstats"><div><b>${speed}</b><span class="hud">Drop speed</span></div><div><b>${Math.round(R.fuel)}%</b><span class="hud">Fuel left</span></div><div><b>${score}</b><span class="hud">Score</span></div></div>
+      ${perfect ? `<p class="hud" style="color:var(--gold);text-align:center">Feather-soft bonus +50</p>` : ""}
+      ${home && R.popped ? `<p class="hud" style="color:var(--gold);text-align:center">Balloons popped: ${R.popped}</p>` : ""}
+      ${tedTalk(home ? "Listen to that crowd! They're chanting your name. Come on, let's go say hi!" : perfect ? `Smooth as snowbean soup! The keeper on <b>${esc(dest.name)}</b> barely felt you land.` : `Nice landing! The station on <b>${esc(dest.name)}</b> is ready for you.`)}
+      <div class="fbtns"><button class="btn go" id="fland">${home ? "Step out to the crowd" : "Head to the station"}</button></div>`);
+    document.getElementById("fland").onclick = arrive;
+  }, 500);
+}
 
 /* =================== HOME =================== */
 function homeSVG() {
@@ -1942,6 +2578,7 @@ function renderHome() {
   const totalTries = S.results.reduce((n, r) => n + ((r && r.tries) || 0), 0);
   const firstTryPlanets = S.results.filter(r => r && r.tries === 1).length;
   const blasted = Object.values(S.flightLog || {}).reduce((n, f) => n + (f.blasted || 0), 0);
+  const softLandings = Object.values(S.flightLog || {}).filter(f => f.game === "lander" && f.landed && !f.auto).length;
   const byDok = [1, 2, 3].map(d => { const xs = all.filter(x => x.dok === d); return { d, n: xs.length, ok: xs.filter(x => x.ok).length }; });
   const date = new Date(S.finishedAt || Date.now()).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   const medals = PLANETS.map((p, i) => `<li><span class="medal" style="${orbStyle(p.colors)}"></span><span><b>${esc(p.name)}</b> · ${esc(p.stories[(S.picks || [])[i] || 0].title)}</span></li>`).join("");
@@ -1965,7 +2602,7 @@ function renderHome() {
         <div class="stats">
           <div class="stat"><b>10</b><span class="hud">Planets</span></div>
           <div class="stat"><b>${firstRight}/40</b><span class="hud">First-try</span></div>
-          <div class="stat"><b>${firstTryPlanets}</b><span class="hud">One-try stops</span></div>
+          <div class="stat"><b>${softLandings}/5</b><span class="hud">Hand landings</span></div>
           <div class="stat"><b>${blasted}</b><span class="hud">Rocks blasted</span></div>
         </div>
         <div class="hud" style="margin-top:6px">First-try accuracy by DOK level</div>
